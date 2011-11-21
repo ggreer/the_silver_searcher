@@ -1,0 +1,8 @@
+.deps
+.dirstamp
+autom4te.cache
+config.log
+config.status
+configure
+Makefile
+Makefile.in
