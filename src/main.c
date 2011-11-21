@@ -15,20 +15,19 @@ typedef struct {
     enum case_behavior casing;
 } cli_options;
 
-int main(int argc, char **argv) {
-    cli_options opts;
-    DIR *dp;
-    // want to use scandir
-    struct dirent *ep;
+int filename_filter(struct dirent *dir_list) {
+    return(1);
+}
 
-    dp = opendir ("./");
-    if (dp != NULL)
+int main(int argc, char **argv) {
+//    cli_options opts;
+    struct dirent **dir_list;
+
+    int err = scandir("./", &dir_list, &filename_filter, &alphasort);
+    if (err != 0)
     {
-        while (ep = readdir (dp))
-            puts (ep->d_name);
-        (void) closedir (dp);
+        perror("Couldn't open the directory");
     }
-    else
-        perror ("Couldn't open the directory");
+
     return(0);
 }
