@@ -1,6 +1,8 @@
+*.o
 .deps
 .dirstamp
 autom4te.cache
+bta
 config.log
 config.status
 configure
