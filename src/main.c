@@ -32,12 +32,7 @@ int filename_filter(struct dirent *dir) {
     return(1);
 }
 
-void die(const char *message) {
-    perror(message);
-    exit(1);
-}
-
-void log(const int level, const char *fmt, ...) {
+void plog(const int level, const char *fmt, ...) {
     if (level <= log_threshold) {
         return;
     }
@@ -55,7 +50,8 @@ int main(int argc, char **argv) {
     char *query;
     // last argument is the query
     if (argc < 2) {
-        die("Not enough arguments :P\n");
+        plog(LOG_LEVEL_ERR, "Not enough arguments :P\n");
+        exit(1);
     }
     query = malloc(strlen(argv[argc-1])+1);
     strcpy(query, argv[argc-1]);
@@ -74,10 +70,12 @@ int main(int argc, char **argv) {
     results = scandir("./", &dir_list, &filename_filter, &alphasort);
     if (results == 0)
     {
-        die("No results found");
+        plog(LOG_LEVEL_ERR, "No results found\n");
+        exit(1);
     }
     else if (results == -1) {
-        die("Couldn't open the directory");
+        plog(LOG_LEVEL_ERR, "Couldn't open the directory\n");
+        exit(1);
     }
 
     int pcre_opts = 0;
@@ -86,24 +84,26 @@ int main(int argc, char **argv) {
     pcre *re = NULL;
     re = pcre_compile(query, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
     if (re == NULL) {
-        die("pcre_compile failed");
+        plog(LOG_LEVEL_ERR, "pcre_compile failed\n");
+        exit(1);
     }
 
     for (int i=0; i<results; i++) {
         dir = dir_list[i];
         fp = fopen(dir->d_name, "r");
         if (fp == NULL) {
-            printf("Error opening file %s. Skipping...\n", dir->d_name);
+            plog(LOG_LEVEL_WARN, "Error opening file %s. Skipping...\n", dir->d_name);
             continue;
         }
 
         rv = fseek(fp, 0, SEEK_END);
         if (rv != 0) {
-            die("fseek error");
+            plog(LOG_LEVEL_ERR, "fseek error");
+            exit(1);
         }
         f_len = ftell(fp); //TODO: behave differently if file is HUGE
         if (f_len == 0) {
-            printf("file is empty\n");
+            plog(LOG_LEVEL_DEBUG, "file is empty\n");
             goto cleanup;
         }
 
