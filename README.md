@@ -5,6 +5,7 @@ ack annoyances:
   only uses one core  
   can't prioritize certain dirs/files  
   can't say "just ignore stuff that's in .gitignore/.svnignore/.hgignore/whatever"  
+  can't easily introspect what files are being ignored/searched  
   poor/no support for searching/ignoring files with no dots in their name or dots at the beginning or multiple dots, etc  
   ack is a giant hack. it's full of crazy stuff that perl programmers do. tons of special-cases and other dumb stuff  
   ack hates anything that isn't utf-8  
