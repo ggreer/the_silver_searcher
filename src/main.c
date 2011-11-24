@@ -48,8 +48,10 @@ int main(int argc, char **argv) {
     int results = 0;
 
     FILE *fp = NULL;
-    int f_len, r_len;
+    int f_len;
+    size_t r_len;
     char *buf = NULL;
+    int rv = 0;
 
     results = scandir("./", &dir_list, &filename_filter, &alphasort);
     if (results == 0)
@@ -64,18 +66,31 @@ int main(int argc, char **argv) {
     for (int i=0; i<results; i++) {
         dir = dir_list[i];
         fp = fopen(dir->d_name, "r");
-        if (!fp) {
+        if (fp == NULL) {
             printf("Error opening file %s. Skipping...\n", dir->d_name);
             continue;
         }
-        f_len = fseek(fp, 0, SEEK_END);
+        printf("opened %s\n", dir->d_name);
+        rv = fseek(fp, 0, SEEK_END);
+        if (rv != 0) {
+            die("fseek error");
+        }
+        f_len = ftell(fp);
+        printf("f_len: %i", f_len);
+        if (f_len == 0) {
+            printf("file is empty\n");
+            goto cleanup;
+        }
+
         rewind(fp);
-        buf = (char*) malloc(sizeof(char) * f_len);
-        r_len = fread(buf, f_len, 1, fp);
-        
+        buf = (char*) malloc(sizeof(char) * f_len + 1);
+        r_len = fread(buf, 1, f_len, fp);
+        buf[r_len] = '\0';
+        printf("file length: %u\n file %s\n", (unsigned int)r_len, buf);
         free(buf);
+
+        cleanup:
         fclose(fp);
-        printf("match file: %s\n", dir->d_name);
         free(dir);
     }
 
