@@ -7,6 +7,15 @@
 #include <string.h>
 #include <stdlib.h>
 
+enum log_level {
+    LOG_LEVEL_DEBUG = 10,
+    LOG_LEVEL_MSG   = 20,
+    LOG_LEVEL_WARN  = 30,
+    LOG_LEVEL_ERR   = 40
+};
+
+const enum log_level log_threshold = LOG_LEVEL_DEBUG;
+
 enum case_behavior {
     CASE_SENSITIVE,
     CASE_INSENSITIVE,
@@ -23,10 +32,21 @@ int filename_filter(struct dirent *dir) {
     return(1);
 }
 
-void die(char *message) {
+void die(const char *message) {
     perror(message);
     exit(1);
 }
+
+void log(const int level, const char *fmt, ...) {
+    if (level <= log_threshold) {
+        return;
+    }
+
+    va_list args;
+    va_start(args, fmt);
+    vprintf(fmt, args);
+    va_end(args);
+};
 
 int main(int argc, char **argv) {
     cli_options opts;
@@ -97,7 +117,7 @@ int main(int argc, char **argv) {
         int offset_vector[100]; //XXXX max number of matches in a file
         int rc = 0;
         while(buf_offset < buf_len && (rc = pcre_exec(re, NULL, buf, r_len, buf_offset, 0, offset_vector, sizeof(offset_vector))) >= 0 ) {
-        //TODO check return code
+            
             printf("match found. file %s offset %i\n", dir->d_name, offset_vector[0]);
             buf_offset = offset_vector[1];
         }
