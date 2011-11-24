@@ -53,6 +53,7 @@ int main(int argc, char **argv) {
     char *buf = NULL;
     int rv = 0;
 
+    //TODO: recurse dirs
     results = scandir("./", &dir_list, &filename_filter, &alphasort);
     if (results == 0)
     {
@@ -95,6 +96,7 @@ int main(int argc, char **argv) {
         buf = (char*) malloc(sizeof(char) * f_len + 1);
         r_len = fread(buf, 1, f_len, fp);
         buf[r_len] = '\0';
+        int buf_len = (int)r_len;
 
         printf("file length: %u\n", (unsigned int)r_len);
         //printf("file %s\n", buf);
@@ -102,8 +104,11 @@ int main(int argc, char **argv) {
         int buf_offset = 0;
         int offset_vector[100]; //XXXX max number of matches in a file
         int rc = 0;
-        rc = pcre_exec(re, NULL, buf, r_len, buf_offset, 0, offset_vector, sizeof(offset_vector));
-        
+        while(buf_offset < buf_len && (rc = pcre_exec(re, NULL, buf, r_len, buf_offset, 0, offset_vector, sizeof(offset_vector))) >= 0 ) {
+        //TODO check return code
+            printf("match found. file %s offset %i\n", dir->d_name, offset_vector[0]);
+            buf_offset = offset_vector[1];
+        }
 
         free(buf);
 
