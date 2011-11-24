@@ -20,7 +20,6 @@ typedef struct {
 
 int filename_filter(struct dirent *dir) {
 //    regex = pcre_compile();
-    printf("%s\n", dir->d_name);
     return(1);
 }
 
@@ -34,14 +33,12 @@ int main(int argc, char **argv) {
     opts.casing = CASE_SENSITIVE_RETRY_INSENSITIVE;
     opts.recurse_dirs = 1;
     char *query;
-    printf("%i", argc);
     // last argument is the query
     if (argc < 2) {
         die("Not enough arguments :P\n");
     }
     query = malloc(strlen(argv[argc-1])+1);
     strcpy(query, argv[argc-1]);
-    printf("query is %s\n", query);
 
     struct dirent **dir_list = NULL;
     struct dirent *dir = NULL;
@@ -72,7 +69,6 @@ int main(int argc, char **argv) {
         die("pcre_compile failed");
     }
 
-    printf("Found %i results\n", results);
     for (int i=0; i<results; i++) {
         dir = dir_list[i];
         fp = fopen(dir->d_name, "r");
@@ -80,13 +76,12 @@ int main(int argc, char **argv) {
             printf("Error opening file %s. Skipping...\n", dir->d_name);
             continue;
         }
-        printf("opened %s\n", dir->d_name);
+
         rv = fseek(fp, 0, SEEK_END);
         if (rv != 0) {
             die("fseek error");
         }
-        f_len = ftell(fp);
-        printf("f_len: %i", f_len);
+        f_len = ftell(fp); //TODO: behave differently if file is HUGE
         if (f_len == 0) {
             printf("file is empty\n");
             goto cleanup;
@@ -97,9 +92,6 @@ int main(int argc, char **argv) {
         r_len = fread(buf, 1, f_len, fp);
         buf[r_len] = '\0';
         int buf_len = (int)r_len;
-
-        printf("file length: %u\n", (unsigned int)r_len);
-        //printf("file %s\n", buf);
 
         int buf_offset = 0;
         int offset_vector[100]; //XXXX max number of matches in a file
