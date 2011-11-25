@@ -33,7 +33,7 @@ int filename_filter(struct dirent *dir) {
 }
 
 void plog(const int level, const char *fmt, ...) {
-    if (level <= log_threshold) {
+    if (level < log_threshold) {
         return;
     }
 
@@ -90,6 +90,7 @@ int main(int argc, char **argv) {
 
     for (int i=0; i<results; i++) {
         dir = dir_list[i];
+        plog(LOG_LEVEL_DEBUG, "dir name %s type %i\n", dir->d_name, dir->d_type);
         fp = fopen(dir->d_name, "r");
         if (fp == NULL) {
             plog(LOG_LEVEL_WARN, "Error opening file %s. Skipping...\n", dir->d_name);
