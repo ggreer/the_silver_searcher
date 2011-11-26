@@ -7,14 +7,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-enum log_level {
-    LOG_LEVEL_DEBUG = 10,
-    LOG_LEVEL_MSG   = 20,
-    LOG_LEVEL_WARN  = 30,
-    LOG_LEVEL_ERR   = 40
-};
-
-const enum log_level log_threshold = LOG_LEVEL_DEBUG;
+#include "util/log.h"
 
 enum case_behavior {
     CASE_SENSITIVE,
@@ -28,25 +21,18 @@ typedef struct {
 } cli_options;
 
 int filename_filter(struct dirent *dir) {
-//    regex = pcre_compile();
+    //regex = pcre_compile();
+    plog(LOG_LEVEL_DEBUG, "File %s", dir->d_name);
     return(1);
-}
-
-void plog(const int level, const char *fmt, ...) {
-    if (level < log_threshold) {
-        return;
-    }
-
-    va_list args;
-    va_start(args, fmt);
-    vprintf(fmt, args);
-    va_end(args);
 };
 
 int main(int argc, char **argv) {
     cli_options opts;
     opts.casing = CASE_SENSITIVE_RETRY_INSENSITIVE;
     opts.recurse_dirs = 1;
+
+//    use getopts and ilk
+
     char *query;
     // last argument is the query
     if (argc < 2) {
