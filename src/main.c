@@ -7,7 +7,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "util/log.h"
+#include "log.h"
 
 enum case_behavior {
     CASE_SENSITIVE,
