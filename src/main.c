@@ -22,7 +22,7 @@ typedef struct {
 
 int filename_filter(struct dirent *dir) {
     //regex = pcre_compile();
-    plog(LOG_LEVEL_DEBUG, "File %s", dir->d_name);
+    log_debug("File %s", dir->d_name);
     return(1);
 };
 
@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
     char *query;
     // last argument is the query
     if (argc < 2) {
-        plog(LOG_LEVEL_ERR, "Not enough arguments :P\n");
+        log_err("Not enough arguments :P");
         exit(1);
     }
     query = malloc(strlen(argv[argc-1])+1);
@@ -56,11 +56,11 @@ int main(int argc, char **argv) {
     results = scandir("./", &dir_list, &filename_filter, &alphasort);
     if (results == 0)
     {
-        plog(LOG_LEVEL_ERR, "No results found\n");
+        log_err("No results found");
         exit(1);
     }
     else if (results == -1) {
-        plog(LOG_LEVEL_ERR, "Couldn't open the directory\n");
+        log_err("Couldn't open the directory");
         exit(1);
     }
 
@@ -70,16 +70,16 @@ int main(int argc, char **argv) {
     pcre *re = NULL;
     re = pcre_compile(query, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
     if (re == NULL) {
-        plog(LOG_LEVEL_ERR, "pcre_compile failed\n");
+        log_err("pcre_compile failed");
         exit(1);
     }
 
     for (int i=0; i<results; i++) {
         dir = dir_list[i];
-        plog(LOG_LEVEL_DEBUG, "dir name %s type %i\n", dir->d_name, dir->d_type);
+        log_debug("dir name %s type %i", dir->d_name, dir->d_type);
         fp = fopen(dir->d_name, "r");
         if (fp == NULL) {
-            plog(LOG_LEVEL_WARN, "Error opening file %s. Skipping...\n", dir->d_name);
+            log_warn("Error opening file %s. Skipping...", dir->d_name);
             continue;
         }
 
@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
         }
         f_len = ftell(fp); //TODO: behave differently if file is HUGE
         if (f_len == 0) {
-            plog(LOG_LEVEL_DEBUG, "file is empty\n");
+            log_debug("file is empty");
             goto cleanup;
         }
 
@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
         int rc = 0;
         while(buf_offset < buf_len && (rc = pcre_exec(re, NULL, buf, r_len, buf_offset, 0, offset_vector, sizeof(offset_vector))) >= 0 ) {
             
-            printf("match found. file %s offset %i\n", dir->d_name, offset_vector[0]);
+            log_debug("match found. file %s offset %i", dir->d_name, offset_vector[0]);
             buf_offset = offset_vector[1];
         }
 

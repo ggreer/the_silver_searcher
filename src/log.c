@@ -42,7 +42,22 @@ void vplog(const int level, const char *fmt, va_list args) {
         return;
     }
 
+    switch(level) {
+        case LOG_LEVEL_DEBUG:
+            printf("DEBUG: ");
+        break;
+        case LOG_LEVEL_MSG:
+            printf("MSG: ");
+        break;
+        case LOG_LEVEL_WARN:
+            printf("WARN: ");
+        break;
+        case LOG_LEVEL_ERR:
+            printf("ERR: ");
+        break;
+    }
     vprintf(fmt, args);
+    printf("\n");
 }
 
 void plog(const int level, const char *fmt, ...) {
