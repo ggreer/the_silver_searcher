@@ -10,6 +10,8 @@
 #include "log.h"
 #include "options.h"
 
+cli_options opts;
+
 const int MAX_SEARCH_DEPTH = 8;
 
 const char *evil_hardcoded_ignore_files[] = {
@@ -72,14 +74,15 @@ int search_dir(pcre *re, const char* path, const int depth) {
         dir = dir_list[i];
         path_length = (size_t)(strlen(path) + strlen(dir->d_name) + 2); // 2 for slash and null char
         dir_full_path = malloc(path_length);
+        (*dir_full_path) = '\0';
         dir_full_path = strncat(dir_full_path, path, path_length);
         dir_full_path = strncat(dir_full_path, "/", path_length);
         dir_full_path = strncat(dir_full_path, dir->d_name, path_length);
 
         log_debug("dir %s type %i", dir_full_path, dir->d_type);
         //TODO: scan files in current dir before going deeper
-        if (dir->d_type == DT_DIR) {
-            log_msg("searching dir %s", dir_full_path);
+        if (dir->d_type == DT_DIR && opts.recurse_dirs) {
+            log_debug("searching dir %s", dir_full_path);
             rv = search_dir(re, dir_full_path, depth + 1);
             continue;
         }
@@ -116,7 +119,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
             buf_eol = buf + buf_offset;
             printf("%s: ", dir_full_path);
             while(*buf_eol != '\n') {
-                putchar(buf_eol);
+                putchar(*buf_eol);
                 buf_eol++;
             }
         }
@@ -135,7 +138,6 @@ int search_dir(pcre *re, const char* path, const int depth) {
 
 int main(int argc, char **argv) {
     set_log_level(LOG_LEVEL_DEBUG);
-    cli_options opts;
     opts.casing = CASE_SENSITIVE_RETRY_INSENSITIVE;
     opts.recurse_dirs = 1;
 
