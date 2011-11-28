@@ -1,4 +1,0 @@
-#!/bin/sh
-
-aclocal && \
-automake
