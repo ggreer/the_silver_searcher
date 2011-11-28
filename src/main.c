@@ -66,25 +66,25 @@ int search_dir(pcre *re, const char* path, const int depth) {
     }
 
     char *dir_full_path = NULL;
-    int path_length = 0;
+    size_t path_length = 0;
 
     for (int i=0; i<results; i++) {
         dir = dir_list[i];
         path_length = strlen(path) + strlen(dir->d_name) + 2; // 2 for slash and null char
         dir_full_path = malloc(path_length);
-        dir_full_path = strcat(dir_full_path, path);
-        dir_full_path = strcat(dir_full_path, "/");
-        dir_full_path = strcat(dir_full_path, dir->d_name);
+        dir_full_path = strncat(dir_full_path, path, path_length);
+        dir_full_path = strncat(dir_full_path, "/", path_length);
+        dir_full_path = strncat(dir_full_path, dir->d_name, path_length);
 
-        log_debug("dir name %s type %i", dir->d_name, dir->d_type);
+        log_debug("dir %s type %i", dir_full_path, dir->d_type);
         if (dir->d_type == DT_DIR) {
-            log_msg("searching dir %s", dir->d_name);
-            rv = search_dir(re, dir->d_name, depth + 1);
+            log_msg("searching dir %s", dir_full_path);
+            rv = search_dir(re, dir_full_path, depth + 1);
             continue;
         }
-        fp = fopen(dir->d_name, "r");
+        fp = fopen(dir_full_path, "r");
         if (fp == NULL) {
-            log_warn("Error opening file %s. Skipping...", dir->d_name);
+            log_warn("Error opening file %s. Skipping...", dir_full_path);
             continue;
         }
 
@@ -110,7 +110,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
         int rc = 0;
         while(buf_offset < buf_len && (rc = pcre_exec(re, NULL, buf, r_len, buf_offset, 0, offset_vector, sizeof(offset_vector))) >= 0 ) {
             
-            log_debug("match found. file %s offset %i", dir->d_name, offset_vector[0]);
+            log_debug("match found. file %s offset %i", dir_full_path, offset_vector[0]);
             buf_offset = offset_vector[1];
         }
 
@@ -147,6 +147,7 @@ int main(int argc, char **argv) {
     int rv = 0;
     int pcre_opts = 0;
     const char *pcre_err = NULL;
+    char *path = "."; //TODO: get this from command line opts
     int pcre_err_offset = 0;
     pcre *re = NULL;
     re = pcre_compile(query, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
@@ -155,8 +156,9 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    rv = search_dir(re, "./", 0);
+    rv = search_dir(re, path, 0);
 
+    free(re);
     free(query);
     return(0);
 }
