@@ -8,17 +8,9 @@
 #include <stdlib.h>
 
 #include "log.h"
+#include "options.h"
 
-enum case_behavior {
-    CASE_SENSITIVE,
-    CASE_INSENSITIVE,
-    CASE_SENSITIVE_RETRY_INSENSITIVE
-};
-
-typedef struct {
-    int recurse_dirs;
-    enum case_behavior casing;
-} cli_options;
+char **ignored_patterns = NULL;
 
 int filename_filter(struct dirent *dir) {
     //regex = pcre_compile();
