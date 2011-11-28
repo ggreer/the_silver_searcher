@@ -119,6 +119,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
         cleanup:
         fclose(fp);
         free(dir);
+        free(dir_full_path);
     }
 
     free(dir_list);
@@ -156,5 +157,6 @@ int main(int argc, char **argv) {
 
     rv = search_dir(re, "./", 0);
 
+    free(query);
     return(0);
 }
