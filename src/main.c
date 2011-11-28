@@ -74,8 +74,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
         dir = dir_list[i];
         path_length = (size_t)(strlen(path) + strlen(dir->d_name) + 2); // 2 for slash and null char
         dir_full_path = malloc(path_length);
-        (*dir_full_path) = '\0';
-        dir_full_path = strncat(dir_full_path, path, path_length);
+        dir_full_path = strncpy(dir_full_path, path, path_length);
         dir_full_path = strncat(dir_full_path, "/", path_length);
         dir_full_path = strncat(dir_full_path, dir->d_name, path_length);
 
@@ -129,7 +128,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
         cleanup:
         fclose(fp);
         free(dir);
-//        free(dir_full_path);
+        free(dir_full_path);
     }
 
     free(dir_list);
