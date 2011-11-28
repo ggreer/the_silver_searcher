@@ -77,6 +77,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
         dir_full_path = strncat(dir_full_path, dir->d_name, path_length);
 
         log_debug("dir %s type %i", dir_full_path, dir->d_type);
+        //TODO: scan files in current dir before going deeper
         if (dir->d_type == DT_DIR) {
             log_msg("searching dir %s", dir_full_path);
             rv = search_dir(re, dir_full_path, depth + 1);
@@ -93,7 +94,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
             plog(LOG_LEVEL_ERR, "fseek error");
             exit(1);
         }
-        f_len = ftell(fp); //TODO: behave differently if file is HUGE
+        f_len = ftell(fp); //TODO: behave differently if file is HUGE. anything > 2GB will screw up this program
         if (f_len == 0) {
             log_debug("file is empty. skipping");
             goto cleanup;
@@ -109,7 +110,6 @@ int search_dir(pcre *re, const char* path, const int depth) {
         int offset_vector[100]; //XXXX max number of matches in a file
         int rc = 0;
         while(buf_offset < buf_len && (rc = pcre_exec(re, NULL, buf, r_len, buf_offset, 0, offset_vector, sizeof(offset_vector))) >= 0 ) {
-            
             log_debug("match found. file %s offset %i", dir_full_path, offset_vector[0]);
             buf_offset = offset_vector[1];
         }
@@ -119,7 +119,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
         cleanup:
         fclose(fp);
         free(dir);
-        free(dir_full_path);
+//        free(dir_full_path);
     }
 
     free(dir_list);
@@ -132,8 +132,7 @@ int main(int argc, char **argv) {
     opts.casing = CASE_SENSITIVE_RETRY_INSENSITIVE;
     opts.recurse_dirs = 1;
 
-//    use getopts and ilk
-
+    //TODO: use getopts and ilk
     char *query;
     // last argument is the query
     if (argc < 2) {
