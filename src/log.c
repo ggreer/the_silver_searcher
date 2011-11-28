@@ -3,12 +3,13 @@
 
 #include "log.h"
 
-enum log_level log_threshold = LOG_LEVEL_DEBUG;
+enum log_level log_threshold = LOG_LEVEL_ERR;
 
 void set_log_level(enum log_level threshold) {
     log_threshold = threshold;
 }
 
+// Maybe these should be macros?
 void log_debug(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);

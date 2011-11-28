@@ -20,10 +20,11 @@ const char *evil_hardcoded_ignore_files[] = {
 
 int filename_filter(struct dirent *dir) {
     //regex = pcre_compile();
-    if (dir->d_type != DT_REG && dir->d_type != DT_DIR) {
+/*    if (dir->d_type != DT_REG && dir->d_type != DT_DIR) {
         log_debug("file %s ignored becaused of type", dir->d_name);
         return(0);
     }
+    */
     for (int i = 0; evil_hardcoded_ignore_files[i] != NULL; i++) {
         if (strcmp(dir->d_name, evil_hardcoded_ignore_files[i]) == 0) {
             log_debug("file %s ignored because of name", dir->d_name);
@@ -35,7 +36,10 @@ int filename_filter(struct dirent *dir) {
     return(1);
 };
 
+//TODO: append matches to some data structure instead of just printing them out
+// then there can be sweet summaries of matches/files scanned/time/etc
 int search_dir(pcre *re, const char* path, const int depth) {
+    //TODO: don't just die. also make max depth configurable
     if(depth > MAX_SEARCH_DEPTH) {
         log_err("Search depth greater than %i, giving up.", depth);
         exit(1);
@@ -57,12 +61,21 @@ int search_dir(pcre *re, const char* path, const int depth) {
         return(0);
     }
     else if (results == -1) {
-        log_err("Couldn't open the directory");
-        exit(1);
+        log_err("Error opening directory %s", path);
+        return(0);
     }
+
+    char *dir_full_path = NULL;
+    int path_length = 0;
 
     for (int i=0; i<results; i++) {
         dir = dir_list[i];
+        path_length = strlen(path) + strlen(dir->d_name) + 2; // 2 for slash and null char
+        dir_full_path = malloc(path_length);
+        dir_full_path = strcat(dir_full_path, path);
+        dir_full_path = strcat(dir_full_path, "/");
+        dir_full_path = strcat(dir_full_path, dir->d_name);
+
         log_debug("dir name %s type %i", dir->d_name, dir->d_type);
         if (dir->d_type == DT_DIR) {
             log_msg("searching dir %s", dir->d_name);
@@ -113,6 +126,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
 };
 
 int main(int argc, char **argv) {
+    set_log_level(LOG_LEVEL_DEBUG);
     cli_options opts;
     opts.casing = CASE_SENSITIVE_RETRY_INSENSITIVE;
     opts.recurse_dirs = 1;

@@ -1,5 +1,12 @@
 Just kidding. This thing is nowhere close to ack.
 
+1. Make it compile.
+2. Make it run.
+3. Make it behave correctly.
+4. Make it fast.
+
+It's somewhere between 2 and 3 right now.
+
 notes:  
 ack annoyances:  
   only uses one core  
