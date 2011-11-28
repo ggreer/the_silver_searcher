@@ -112,6 +112,13 @@ int search_dir(pcre *re, const char* path, const int depth) {
         while(buf_offset < buf_len && (rc = pcre_exec(re, NULL, buf, r_len, buf_offset, 0, offset_vector, sizeof(offset_vector))) >= 0 ) {
             log_debug("match found. file %s offset %i", dir_full_path, offset_vector[0]);
             buf_offset = offset_vector[1];
+            char *buf_eol = NULL;
+            buf_eol = buf + buf_offset;
+            printf("%s: ", dir_full_path);
+            while(*buf_eol != '\n') {
+                putchar(buf_eol);
+                buf_eol++;
+            }
         }
 
         free(buf);
