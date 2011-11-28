@@ -10,25 +10,34 @@
 #include "log.h"
 #include "options.h"
 
-char **ignored_patterns = NULL;
+const int MAX_SEARCH_DEPTH = 8;
+
+const char *evil_hardcoded_ignore_files[] = {
+    ".",
+    "..",
+    NULL
+};
 
 int filename_filter(struct dirent *dir) {
     //regex = pcre_compile();
-    if (strcmp(dir->d_name, ".") == 0) {
-        log_debug("No %s", dir->d_name);
+    if (dir->d_type != DT_REG && dir->d_type != DT_DIR) {
+        log_debug("file %s ignored becaused of type", dir->d_name);
         return(0);
     }
-    else if (strcmp(dir->d_name, "..") == 0) {
-        log_debug("No %s", dir->d_name);
-        return(0);
+    for (int i = 0; evil_hardcoded_ignore_files[i] != NULL; i++) {
+        if (strcmp(dir->d_name, evil_hardcoded_ignore_files[i]) == 0) {
+            log_debug("file %s ignored because of name", dir->d_name);
+            return(0);
+        }
     }
+
     log_debug("Yes %s", dir->d_name);
     return(1);
 };
 
 int search_dir(pcre *re, const char* path, const int depth) {
-    log_err("depth %i", depth);
-    if(depth > 8) {
+    if(depth > MAX_SEARCH_DEPTH) {
+        log_err("Search depth greater than %i, giving up.", depth);
         exit(1);
     }
     struct dirent **dir_list = NULL;
@@ -41,7 +50,6 @@ int search_dir(pcre *re, const char* path, const int depth) {
     char *buf = NULL;
     int rv = 0;
 
-    //TODO: recurse dirs
     results = scandir(path, &dir_list, &filename_filter, &alphasort);
     if (results == 0)
     {
