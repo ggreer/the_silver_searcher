@@ -6,5 +6,3 @@ LDFLAGS = -lpcre
 
 bin_PROGRAMS = bta
 bta_SOURCES = src/log.c src/main.c
-
-dist_noinst_SCRIPTS = autogen.sh
