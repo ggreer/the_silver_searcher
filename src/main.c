@@ -53,7 +53,7 @@ int filename_filter(struct dirent *dir) {
             log_debug("file %s ignored because name matches pattern %s", dir->d_name, pattern);
             return(0);
         }
-        free(re);
+        pcre_free(re);
     }
 
     log_debug("Yes %s", dir->d_name);
@@ -115,7 +115,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
 
         rv = fseek(fp, 0, SEEK_END);
         if (rv != 0) {
-            plog(LOG_LEVEL_ERR, "fseek error");
+            log_err("fseek error");
             exit(1);
         }
         f_len = ftell(fp); //TODO: behave differently if file is HUGE. anything > 2GB will screw up this program
@@ -135,6 +135,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
         int rc = 0;
         while(buf_offset < buf_len && (rc = pcre_exec(re, NULL, buf, r_len, buf_offset, 0, offset_vector, sizeof(offset_vector))) >= 0 ) {
             log_debug("match found. file %s offset %i", dir_full_path, offset_vector[0]);
+            //TODO: split this out into its own function
             buf_offset = offset_vector[1];
             char *match_start = buf + offset_vector[0];
             char *match_end = buf + offset_vector[1];
@@ -170,7 +171,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
         free(dir_full_path);
     }
 
-    free(dir_list);
+    free(dir_list); // XXX I'm pretty sure this isn't right. we need to iterate and free the entries
     return(0);
 };
 
@@ -204,7 +205,7 @@ int main(int argc, char **argv) {
 
     rv = search_dir(re, path, 0);
 
-    free(re);
+    pcre_free(re);
     free(query);
     return(0);
 }
