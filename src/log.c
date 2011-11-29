@@ -3,7 +3,7 @@
 
 #include "log.h"
 
-enum log_level log_threshold = LOG_LEVEL_ERR;
+static enum log_level log_threshold = LOG_LEVEL_ERR;
 
 void set_log_level(enum log_level threshold) {
     log_threshold = threshold;

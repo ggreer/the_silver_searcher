@@ -114,13 +114,29 @@ int search_dir(pcre *re, const char* path, const int depth) {
         while(buf_offset < buf_len && (rc = pcre_exec(re, NULL, buf, r_len, buf_offset, 0, offset_vector, sizeof(offset_vector))) >= 0 ) {
             log_debug("match found. file %s offset %i", dir_full_path, offset_vector[0]);
             buf_offset = offset_vector[1];
-            char *buf_eol = NULL;
-            buf_eol = buf + buf_offset;
-            printf("%s: ", dir_full_path);
-            while(*buf_eol != '\n') {
-                putchar(*buf_eol);
-                buf_eol++;
+            char *match_start = buf + offset_vector[0];
+            char *match_end = buf + offset_vector[1];
+            char *match_bol = match_start;
+            while (match_bol > buf && *match_bol != '\n') {
+                match_bol--;
             }
+            if (*match_bol == '\n') {
+                match_bol++;
+            }
+            printf("\e[31m%s\e[0m:", dir_full_path);
+            // print line start to start of match
+            for (char *j = match_bol; j<match_start; j++) {
+                putchar(*j);
+            }
+            // print match
+            for (char *j = match_start; j<match_end; j++) {
+                putchar(*j);
+            }
+            // print end of match to end of line
+            for (char *j = match_end; *j != '\n'; j++) {
+                putchar(*j);
+            }
+            printf("\n");
         }
 
         free(buf);
@@ -136,7 +152,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
 };
 
 int main(int argc, char **argv) {
-    set_log_level(LOG_LEVEL_DEBUG);
+    set_log_level(LOG_LEVEL_MSG);
     opts.casing = CASE_SENSITIVE_RETRY_INSENSITIVE;
     opts.recurse_dirs = 1;
 
