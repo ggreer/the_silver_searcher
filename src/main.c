@@ -20,18 +20,40 @@ const char *evil_hardcoded_ignore_files[] = {
     NULL
 };
 
+char *ignore_patterns[] = { NULL };
+
 int filename_filter(struct dirent *dir) {
-    //regex = pcre_compile();
 /*    if (dir->d_type != DT_REG && dir->d_type != DT_DIR) {
         log_debug("file %s ignored becaused of type", dir->d_name);
         return(0);
     }
     */
+    char *filename = dir->d_name;
     for (int i = 0; evil_hardcoded_ignore_files[i] != NULL; i++) {
-        if (strcmp(dir->d_name, evil_hardcoded_ignore_files[i]) == 0) {
-            log_debug("file %s ignored because of name", dir->d_name);
+        if (strcmp(filename, evil_hardcoded_ignore_files[i]) == 0) {
+            log_debug("file %s ignored because of name", filename);
             return(0);
         }
+    }
+
+    int pcre_opts = 0;
+    int rc = 0;
+    const char *pcre_err = NULL;
+    pcre *re = NULL;
+    char *pattern = NULL;
+    int pcre_err_offset;
+    int buf_offset = 0;
+    int offset_vector[2]; //only need to grab the first match
+
+    for (int i = 0; ignore_patterns[i] != NULL; i++) {
+        pattern = ignore_patterns[i];
+        re = pcre_compile(pattern, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
+        rc = pcre_exec(re, NULL, filename, strlen(filename), buf_offset, 0, offset_vector, sizeof(offset_vector));
+        if (rc >= 0) {
+            log_debug("file %s ignored because name matches pattern %s", dir->d_name, pattern);
+            return(0);
+        }
+        free(re);
     }
 
     log_debug("Yes %s", dir->d_name);
@@ -109,7 +131,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
         int buf_len = (int)r_len;
 
         int buf_offset = 0;
-        int offset_vector[100]; //XXXX max number of matches in a file
+        int offset_vector[100]; //XXXX max number of matches in a file / 2
         int rc = 0;
         while(buf_offset < buf_len && (rc = pcre_exec(re, NULL, buf, r_len, buf_offset, 0, offset_vector, sizeof(offset_vector))) >= 0 ) {
             log_debug("match found. file %s offset %i", dir_full_path, offset_vector[0]);
@@ -123,6 +145,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
             if (*match_bol == '\n') {
                 match_bol++;
             }
+            // MAKE IT RED
             printf("\e[31m%s\e[0m:", dir_full_path);
             // print line start to start of match
             for (char *j = match_bol; j<match_start; j++) {
