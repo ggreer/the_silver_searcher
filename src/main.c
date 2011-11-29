@@ -176,25 +176,28 @@ int search_dir(pcre *re, const char* path, const int depth) {
 };
 
 int main(int argc, char **argv) {
-    set_log_level(LOG_LEVEL_MSG);
+    set_log_level(LOG_LEVEL_ERR);
+//    set_log_level(LOG_LEVEL_DEBUG);
     opts.casing = CASE_SENSITIVE_RETRY_INSENSITIVE;
     opts.recurse_dirs = 1;
 
     //TODO: use getopts and ilk
     char *query;
+    char *path;
     // last argument is the query
-    if (argc < 2) {
+    if (argc < 3) {
         log_err("Not enough arguments :P");
         exit(1);
     }
 
-    query = malloc(strlen(argv[argc-1])+1);
-    strcpy(query, argv[argc-1]);
+    query = malloc(strlen(argv[1])+1);
+    strcpy(query, argv[1]);
+    path = malloc(strlen(argv[2])+1);
+    strcpy(path, argv[2]);
 
     int rv = 0;
     int pcre_opts = 0;
     const char *pcre_err = NULL;
-    char *path = "."; //TODO: get this from command line opts
     int pcre_err_offset = 0;
     pcre *re = NULL;
     re = pcre_compile(query, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
