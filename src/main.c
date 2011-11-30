@@ -12,7 +12,7 @@
 
 cli_options opts;
 
-const int MAX_SEARCH_DEPTH = 8;
+const int MAX_SEARCH_DEPTH = 100;
 
 const char *evil_hardcoded_ignore_files[] = {
     ".",
@@ -58,7 +58,7 @@ int filename_filter(struct dirent *dir) {
 
     log_debug("Yes %s", dir->d_name);
     return(1);
-};
+}
 
 void print_match(const char* path, const char* buf, char* match_start, char* match_end) {
     char *match_bol = match_start;
@@ -82,8 +82,8 @@ void print_match(const char* path, const char* buf, char* match_start, char* mat
     for (char *j = match_end; *j != '\n'; j++) {
         putchar(*j);
     }
-    printf("\n");
-};
+    putchar('\n');
+}
 
 //TODO: append matches to some data structure instead of just printing them out
 // then there can be sweet summaries of matches/files scanned/time/etc
@@ -181,7 +181,28 @@ int search_dir(pcre *re, const char* path, const int depth) {
 
     free(dir_list); // XXX I'm pretty sure this isn't right. we need to iterate and free the entries
     return(0);
-};
+}
+
+void add_ignore_pattern(const char* pattern) {
+    
+}
+
+void load_ignore_patterns(const char *ignore_filename) {
+    FILE *fp = NULL;
+    fp = fopen(ignore_filename, "r");
+    if (fp == NULL) {
+        log_debug("Skipping ignore file %s", ignore_filename);
+        return;
+    }
+
+    char *line = NULL;
+    ssize_t line_length = 0;
+    size_t line_cap = 0;
+
+    while((line_length = getline(&line, &line_cap, fp)) > 0) {
+        add_ignore_pattern(line);
+    }
+}
 
 int main(int argc, char **argv) {
     set_log_level(LOG_LEVEL_ERR);
@@ -197,6 +218,8 @@ int main(int argc, char **argv) {
         log_err("Not enough arguments :P");
         exit(1);
     }
+
+    load_ignore_patterns(".gitignore");
 
     query = malloc(strlen(argv[1])+1);
     strcpy(query, argv[1]);
