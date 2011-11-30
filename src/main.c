@@ -27,7 +27,7 @@ int filename_filter(struct dirent *dir) {
         log_debug("file %s ignored becaused of type", dir->d_name);
         return(0);
     }
-    */
+*/
     char *filename = dir->d_name;
     for (int i = 0; evil_hardcoded_ignore_files[i] != NULL; i++) {
         if (strcmp(filename, evil_hardcoded_ignore_files[i]) == 0) {
@@ -82,6 +82,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
     if (results == 0)
     {
         log_debug("No results found");
+        free(dir_list);
         return(0);
     }
     else if (results == -1) {
@@ -105,12 +106,13 @@ int search_dir(pcre *re, const char* path, const int depth) {
         if (dir->d_type == DT_DIR && opts.recurse_dirs) {
             log_debug("searching dir %s", dir_full_path);
             rv = search_dir(re, dir_full_path, depth + 1);
+            goto cleanup;
             continue;
         }
         fp = fopen(dir_full_path, "r");
         if (fp == NULL) {
             log_warn("Error opening file %s. Skipping...", dir_full_path);
-            //TODO: clean up allocated memory
+            goto cleanup;
             continue;
         }
 
@@ -167,7 +169,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
         free(buf);
 
         cleanup:
-        fclose(fp);
+        fclose(fp); // sometimes fp is null. the manpage says this should segfault but... it works so whatever
         free(dir);
         free(dir_full_path);
     }
