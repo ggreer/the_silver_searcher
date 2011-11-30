@@ -60,6 +60,31 @@ int filename_filter(struct dirent *dir) {
     return(1);
 };
 
+void print_match(const char* path, const char* buf, char* match_start, char* match_end) {
+    char *match_bol = match_start;
+    while (match_bol > buf && *match_bol != '\n') {
+        match_bol--;
+    }
+    if (*match_bol == '\n') {
+        match_bol++;
+    }
+    // MAKE IT RED
+    printf("\e[31m%s\e[0m:", path);
+    // print line start to start of match
+    for (char *j = match_bol; j<match_start; j++) {
+        putchar(*j);
+    }
+    // print match
+    for (char *j = match_start; j<match_end; j++) {
+        putchar(*j);
+    }
+    // print end of match to end of line
+    for (char *j = match_end; *j != '\n'; j++) {
+        putchar(*j);
+    }
+    printf("\n");
+};
+
 //TODO: append matches to some data structure instead of just printing them out
 // then there can be sweet summaries of matches/files scanned/time/etc
 int search_dir(pcre *re, const char* path, const int depth) {
@@ -121,7 +146,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
             log_err("fseek error");
             exit(1);
         }
-        f_len = ftell(fp); //TODO: behave differently if file is HUGE. anything > 2GB will screw up this program
+        f_len = ftell(fp); //TODO: behave differently if file is HUGE. on 32 bit, anything > 2GB will screw up this program
         if (f_len == 0) {
             log_debug("file is empty. skipping");
             goto cleanup;
@@ -136,34 +161,14 @@ int search_dir(pcre *re, const char* path, const int depth) {
         int buf_offset = 0;
         int offset_vector[100]; //XXXX max number of matches in a file / 2
         int rc = 0;
+        char *match_start = NULL;
+        char *match_end = NULL;
         while(buf_offset < buf_len && (rc = pcre_exec(re, NULL, buf, r_len, buf_offset, 0, offset_vector, sizeof(offset_vector))) >= 0 ) {
             log_debug("match found. file %s offset %i", dir_full_path, offset_vector[0]);
-            //TODO: split this out into its own function
+            match_start = buf + offset_vector[0];
+            match_end = buf + offset_vector[1];
+            print_match(dir_full_path, buf, match_start, match_end);
             buf_offset = offset_vector[1];
-            char *match_start = buf + offset_vector[0];
-            char *match_end = buf + offset_vector[1];
-            char *match_bol = match_start;
-            while (match_bol > buf && *match_bol != '\n') {
-                match_bol--;
-            }
-            if (*match_bol == '\n') {
-                match_bol++;
-            }
-            // MAKE IT RED
-            printf("\e[31m%s\e[0m:", dir_full_path);
-            // print line start to start of match
-            for (char *j = match_bol; j<match_start; j++) {
-                putchar(*j);
-            }
-            // print match
-            for (char *j = match_start; j<match_end; j++) {
-                putchar(*j);
-            }
-            // print end of match to end of line
-            for (char *j = match_end; *j != '\n'; j++) {
-                putchar(*j);
-            }
-            printf("\n");
         }
 
         free(buf);
