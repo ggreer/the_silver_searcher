@@ -110,6 +110,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
         fp = fopen(dir_full_path, "r");
         if (fp == NULL) {
             log_warn("Error opening file %s. Skipping...", dir_full_path);
+            //TODO: clean up allocated memory
             continue;
         }
 
@@ -210,5 +211,7 @@ int main(int argc, char **argv) {
 
     pcre_free(re);
     free(query);
+    free(path);
+
     return(0);
 }
