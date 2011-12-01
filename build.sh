@@ -1,6 +1,7 @@
 #!/bin/sh
 
 aclocal && \
-automake && \
+autoconf && \
+automake --add-missing && \
 ./configure && \
 make
