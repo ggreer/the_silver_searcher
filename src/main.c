@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
     pcre *re = NULL;
     re = pcre_compile(query, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
     if (re == NULL) {
-        log_err("pcre_compile failed");
+        log_err("pcre_compile failed at position %i. Error: %s", pcre_err_offset, pcre_err);
         exit(1);
     }
 
@@ -176,7 +176,7 @@ int main(int argc, char **argv) {
     pcre_free(re);
     free(query);
     free(path);
-//    cleanup_ignore_patterns();
+    cleanup_ignore_patterns();
 
     return(0);
 }
