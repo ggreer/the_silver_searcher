@@ -57,6 +57,24 @@ int search_dir(pcre *re, const char* path, const int depth) {
     size_t r_len;
     char *buf = NULL;
     int rv = 0;
+    char *dir_full_path = NULL;
+    size_t path_length = 0;
+
+    results = scandir(path, &dir_list, &ignorefile_filter, &alphasort);
+    if (results > 0) {
+        for (int i = 0; i < results; i++) {
+            dir = dir_list[i];
+            path_length = (size_t)(strlen(path) + strlen(dir->d_name) + 2); // 2 for slash and null char
+            dir_full_path = malloc(path_length);
+            dir_full_path = strncpy(dir_full_path, path, path_length);
+            dir_full_path = strncat(dir_full_path, "/", path_length);
+            dir_full_path = strncat(dir_full_path, dir->d_name, path_length);
+            load_ignore_patterns(dir_full_path);
+            free(dir);
+            free(dir_full_path);
+        }
+        free(dir_list);
+    }
 
     results = scandir(path, &dir_list, &filename_filter, &alphasort);
     if (results == 0)
@@ -69,9 +87,6 @@ int search_dir(pcre *re, const char* path, const int depth) {
         log_err("Error opening directory %s", path);
         return(0);
     }
-
-    char *dir_full_path = NULL;
-    size_t path_length = 0;
 
     for (int i=0; i<results; i++) {
         dir = dir_list[i];
@@ -152,8 +167,6 @@ int main(int argc, char **argv) {
         log_err("Not enough arguments :P");
         exit(1);
     }
-
-    load_ignore_patterns(".gitignore");
 
     query = malloc(strlen(argv[1])+1);
     strcpy(query, argv[1]);

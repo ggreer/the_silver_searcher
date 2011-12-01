@@ -13,6 +13,12 @@ const char *evil_hardcoded_ignore_files[] = {
     NULL
 };
 
+const char *ignore_pattern_files[] = {
+    ".gitignore",
+    ".hgignore",
+    NULL
+};
+
 // TODO: make this a sorted array so filtering is O(log(n)) instead of O(n)
 char **ignore_patterns = NULL;
 int ignore_patterns_len = 0;
@@ -23,6 +29,7 @@ void add_ignore_pattern(const char* pattern) {
     ignore_patterns = realloc(ignore_patterns, (ignore_patterns_len + 1) * sizeof(char**));
     ignore_patterns[ignore_patterns_len] = strdup(pattern);
     ignore_patterns_len++;
+    log_debug("added ignore pattern %s", pattern);
 }
 
 void cleanup_ignore_patterns() {
@@ -37,7 +44,7 @@ void load_ignore_patterns(const char *ignore_filename) {
     FILE *fp = NULL;
     fp = fopen(ignore_filename, "r");
     if (fp == NULL) {
-        log_debug("Skipping ignore file %s", ignore_filename);
+        log_err("Skipping ignore file %s", ignore_filename);
         return;
     }
 
@@ -49,6 +56,23 @@ void load_ignore_patterns(const char *ignore_filename) {
         line[line_length-1] = '\0'; //kill the \n
         add_ignore_pattern(line);
     }
+
+//    free(line);
+    fclose(fp);
+}
+
+int ignorefile_filter(struct dirent *dir) {
+    if (dir->d_type == DT_DIR) {
+        return(0);
+    }
+
+    for (int i = 0; ignore_pattern_files[i] != NULL; i++) {
+        if (strcmp(ignore_pattern_files[i], dir->d_name) == 0) {
+            log_debug("ignore pattern matched for %s", dir->d_name);
+            return(1);
+        }
+    }
+    return(0);
 }
 
 // this function is REALLY HOT. It gets called for every file
@@ -64,6 +88,7 @@ int filename_filter(struct dirent *dir) {
     if (filename[0] == '.') {
         return(0);
     }
+
     for (int i = 0; evil_hardcoded_ignore_files[i] != NULL; i++) {
         if (strcmp(filename, evil_hardcoded_ignore_files[i]) == 0) {
             log_err("file %s ignored because of name", filename);
@@ -74,7 +99,7 @@ int filename_filter(struct dirent *dir) {
     for (int i = 0; i<ignore_patterns_len; i++) {
         pattern = ignore_patterns[i];
         if (fnmatch(pattern, filename, fnmatch_flags) == 0) {
-            log_err("file %s ignored because name matches pattern %s", dir->d_name, pattern);
+            log_debug("file %s ignored because name matches pattern %s", dir->d_name, pattern);
             return(0);
         }
     }
