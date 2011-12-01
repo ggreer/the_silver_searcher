@@ -1,11 +1,11 @@
-#include <stdarg.h>
-#include <stdio.h>
-#include <sys/dir.h>
-#include <sys/types.h>
 #include <dirent.h>
 #include <pcre.h>
-#include <string.h>
+#include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/dir.h>
+#include <sys/types.h>
 
 #include "ignore.h"
 #include "log.h"

@@ -1,12 +1,11 @@
-#include <string.h>
-#include <stdio.h>
-#include <math.h>
-#include <stdlib.h>
-#include <pcre.h>
 #include <dirent.h>
+#include <math.h>
+#include <pcre.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "ignore.h"
-
 
 const char *evil_hardcoded_ignore_files[] = {
     ".",
