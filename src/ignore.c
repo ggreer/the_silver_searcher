@@ -1,11 +1,11 @@
 #include <dirent.h>
-#include <math.h>
-#include <pcre.h>
+#include <fnmatch.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "ignore.h"
+#include "log.h"
 
 const char *evil_hardcoded_ignore_files[] = {
     ".",
@@ -18,12 +18,8 @@ char **ignore_patterns = NULL;
 int ignore_patterns_len = 0;
 
 void add_ignore_pattern(const char* pattern) {
-    if(ignore_patterns == NULL) {
-        ignore_patterns = malloc(sizeof(char**));
-    }
-    ignore_patterns = realloc(ignore_patterns, ignore_patterns_len + sizeof(char*));
+    ignore_patterns = realloc(ignore_patterns, (ignore_patterns_len + 1) * sizeof(char**));
     ignore_patterns[ignore_patterns_len] = strdup(pattern);
-    ignore_patterns[ignore_patterns_len + 1] = NULL;
     ignore_patterns_len++;
 }
 
@@ -34,6 +30,7 @@ void cleanup_ignore_patterns() {
     free(ignore_patterns);
 }
 
+// For loading git/svn/hg ignore patterns
 void load_ignore_patterns(const char *ignore_filename) {
     FILE *fp = NULL;
     fp = fopen(ignore_filename, "r");
@@ -47,7 +44,8 @@ void load_ignore_patterns(const char *ignore_filename) {
     size_t line_cap = 0;
 
     while((line_length = getline(&line, &line_cap, fp)) > 0) {
-        log_debug("ignoring pattern %s", line);
+        line[line_length-1] = '\0'; //kill the \n
+        log_err("ignoring pattern %s", line);
         add_ignore_pattern(line);
     }
 }
@@ -58,7 +56,9 @@ int filename_filter(struct dirent *dir) {
         return(0);
     }
 */
+    int fnmatch_flags = 0;
     char *filename = dir->d_name;
+    char *pattern = NULL;
     for (int i = 0; evil_hardcoded_ignore_files[i] != NULL; i++) {
         if (strcmp(filename, evil_hardcoded_ignore_files[i]) == 0) {
             log_debug("file %s ignored because of name", filename);
@@ -66,24 +66,12 @@ int filename_filter(struct dirent *dir) {
         }
     }
 
-    int pcre_opts = 0;
-    int rc = 0;
-    const char *pcre_err = NULL;
-    pcre *re = NULL;
-    char *pattern = NULL;
-    int pcre_err_offset;
-    int buf_offset = 0;
-    int offset_vector[2]; //only need to grab the first match
-
-    for (int i = 0; ignore_patterns[i] != NULL; i++) {
+    for (int i = 0; i<ignore_patterns_len; i++) {
         pattern = ignore_patterns[i];
-        re = pcre_compile(pattern, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
-        rc = pcre_exec(re, NULL, filename, strlen(filename), buf_offset, 0, offset_vector, sizeof(offset_vector));
-        if (rc >= 0) {
+        if (fnmatch(pattern, filename, fnmatch_flags) == 0) {
             log_debug("file %s ignored because name matches pattern %s", dir->d_name, pattern);
             return(0);
         }
-        pcre_free(re);
     }
 
     log_debug("Yes %s", dir->d_name);
