@@ -14,6 +14,7 @@ const char *evil_hardcoded_ignore_files[] = {
     NULL
 };
 
+// TODO: make this a sorted array so filtering is O(log(n)) instead of O(n)
 char **ignore_patterns = NULL;
 int ignore_patterns_len = 0;
 
@@ -34,7 +35,6 @@ void cleanup_ignore_patterns() {
     free(ignore_patterns);
 }
 
-// TODO: make this a sorted array so filtering is O(log(n)) instead of O(n)
 void load_ignore_patterns(const char *ignore_filename) {
     FILE *fp = NULL;
     fp = fopen(ignore_filename, "r");
