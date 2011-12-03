@@ -57,7 +57,7 @@ void load_ignore_patterns(const char *ignore_filename) {
         add_ignore_pattern(line);
     }
 
-//    free(line);
+    free(line);
     fclose(fp);
 }
 
