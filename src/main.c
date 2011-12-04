@@ -73,8 +73,8 @@ int search_dir(pcre *re, const char* path, const int depth) {
             free(dir);
             free(dir_full_path);
         }
-        free(dir_list);
     }
+    free(dir_list);
 
     results = scandir(path, &dir_list, &filename_filter, &alphasort);
     if (results == 0)
