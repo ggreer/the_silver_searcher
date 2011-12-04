@@ -6,6 +6,7 @@
 
 #include "ignore.h"
 #include "log.h"
+#include "options.h"
 
 const char *evil_hardcoded_ignore_files[] = {
     ".",
@@ -62,10 +63,6 @@ void load_ignore_patterns(const char *ignore_filename) {
 }
 
 int ignorefile_filter(struct dirent *dir) {
-/*    if (dir->d_type == DT_DIR) {
-        return(0);
-    }
-*/
     for (int i = 0; ignore_pattern_files[i] != NULL; i++) {
         if (strcmp(ignore_pattern_files[i], dir->d_name) == 0) {
             log_debug("ignore pattern matched for %s", dir->d_name);
@@ -77,11 +74,11 @@ int ignorefile_filter(struct dirent *dir) {
 
 // this function is REALLY HOT. It gets called for every file
 int filename_filter(struct dirent *dir) {
-/*    if (dir->d_type != DT_REG && dir->d_type != DT_DIR) {
-        log_debug("file %s ignored becaused of type", dir->d_name);
+    if (opts.follow_symlinks == 0 && dir->d_type == DT_LNK) {
+        log_debug("File %s ignored becaused it's a symlink", dir->d_name);
         return(0);
     }
-*/
+
     char *filename = dir->d_name;
     char *pattern = NULL;
     // TODO: check if opts want to ignore hidden files
