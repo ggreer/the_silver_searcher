@@ -90,6 +90,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
 
     for (int i=0; i<results; i++) {
         dir = dir_list[i];
+        // XXX: this is copy-pasted from about 30 lines above
         path_length = (size_t)(strlen(path) + strlen(dir->d_name) + 2); // 2 for slash and null char
         dir_full_path = malloc(path_length);
         dir_full_path = strncpy(dir_full_path, path, path_length);
