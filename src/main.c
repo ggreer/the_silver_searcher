@@ -162,13 +162,10 @@ int main(int argc, char **argv) {
     char *path;
     opts = parse_options(argc, argv);
 
-    opts->casing = CASE_SENSITIVE_RETRY_INSENSITIVE;
-    opts->recurse_dirs = 1;
-
-    query = malloc(strlen(argv[1])+1);
-    strcpy(query, argv[1]);
-    path = malloc(strlen(argv[2])+1);
-    strcpy(path, argv[2]);
+    query = malloc(strlen(argv[argc-2])+1);
+    strcpy(query, argv[argc-2]);
+    path = malloc(strlen(argv[argc-1])+1);
+    strcpy(path, argv[argc-1]);
 
     int rv = 0;
     int pcre_opts = 0;
