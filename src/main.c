@@ -107,7 +107,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
         }
         fp = fopen(dir_full_path, "r");
         if (fp == NULL) {
-            log_warn("Error opening file %s. Skipping...", dir_full_path);
+            log_err("Error opening file %s. Skipping...", dir_full_path);
             goto cleanup;
             continue;
         }
