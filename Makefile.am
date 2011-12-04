@@ -5,4 +5,4 @@ CFLAGS = -Wall -std=c99 -O2 -g
 LDFLAGS = -lpcre
 
 bin_PROGRAMS = bta
-bta_SOURCES = src/ignore.c src/log.c src/main.c
+bta_SOURCES = src/ignore.c src/log.c src/options.c src/main.c
