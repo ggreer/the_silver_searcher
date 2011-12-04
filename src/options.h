@@ -19,6 +19,11 @@ typedef struct {
     enum case_behavior casing;
 } cli_options;
 
-cli_options *parse_options(int argc, char **argv);
+// global options. parse_options gives it sane values, everything else reads from it
+cli_options opts;
+
+void parse_options(int argc, char **argv);
+
+void usage();
 
 #endif

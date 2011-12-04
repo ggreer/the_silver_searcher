@@ -11,8 +11,6 @@
 #include "log.h"
 #include "options.h"
 
-cli_options *opts = NULL;
-
 const int MAX_SEARCH_DEPTH = 100;
 
 void print_match(const char* path, const char* buf, char* match_start, char* match_end) {
@@ -99,7 +97,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
 
         log_debug("dir %s type %i", dir_full_path, dir->d_type);
         //TODO: scan files in current dir before going deeper
-        if (dir->d_type == DT_DIR && opts->recurse_dirs) {
+        if (dir->d_type == DT_DIR && opts.recurse_dirs) {
             log_debug("searching dir %s", dir_full_path);
             rv = search_dir(re, dir_full_path, depth + 1);
             goto cleanup;
@@ -160,7 +158,7 @@ int main(int argc, char **argv) {
 
     char *query;
     char *path;
-    opts = parse_options(argc, argv);
+    parse_options(argc, argv);
 
     query = malloc(strlen(argv[argc-2])+1);
     strcpy(query, argv[argc-2]);
@@ -183,7 +181,6 @@ int main(int argc, char **argv) {
     pcre_free(re);
     free(query);
     free(path);
-    free(opts);
     cleanup_ignore_patterns();
 
     return(0);
