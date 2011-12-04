@@ -58,9 +58,9 @@ void parse_options(int argc, char **argv) {
     }
     argc -= optind;
     argv += optind;
-};
+}
 
 void usage() {
     // I am a terrible person
     printf("Usage: omg I hate writing docs just look at the source :P\n");
-};
+}
