@@ -8,3 +8,4 @@ config.status
 configure
 Makefile
 Makefile.in
+callgrind.out.*
