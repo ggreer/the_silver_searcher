@@ -1,11 +1,16 @@
+*.dSYM
 *.o
 .deps
 .dirstamp
+aclocal.m4
 autom4te.cache
 bta
+callgrind.out.*
 config.log
 config.status
 configure
+depcomp
+install-sh
 Makefile
 Makefile.in
-callgrind.out.*
+missing
