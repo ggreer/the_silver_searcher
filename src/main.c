@@ -15,9 +15,18 @@ const int MAX_SEARCH_DEPTH = 100;
 
 void print_match(const char* path, const char* buf, char* match_start, char* match_end) {
     char *match_bol = match_start;
+    char *match_eol = NULL;
+    // find start of line
     while (match_bol > buf && *match_bol != '\n') {
         match_bol--;
     }
+    // print context before match line
+    for (int i = 0; i < opts.before && match_bol > buf; i++) {
+        while (match_bol > buf && *match_bol != '\n') {
+            match_bol--;
+        }
+    }
+    // XXXX this will screw up if the previous line is empty or something
     if (*match_bol == '\n') {
         match_bol++;
     }
@@ -32,10 +41,20 @@ void print_match(const char* path, const char* buf, char* match_start, char* mat
         putchar(*j);
     }
     // print end of match to end of line
+    match_eol = match_end;
     for (char *j = match_end; *j != '\n'; j++) {
         putchar(*j);
+        match_eol = j;
     }
     putchar('\n');
+
+    // print context after match line
+    for (int i = 0; i < opts.after; i++) {
+        for (char *j = match_eol; *j != '\n'; j++) {
+            putchar(*j);
+        }
+        putchar('\n');
+    }
 }
 
 //TODO: append matches to some data structure instead of just printing them out
