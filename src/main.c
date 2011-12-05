@@ -37,12 +37,15 @@ const int MAX_SEARCH_DEPTH = 100;
 void print_match(const char* path, const char* buf, char* match_start, char* match_end) {
     char *match_bol = match_start;
     char *match_eol = NULL;
-    int line = 0;
+    int line = 1;
     int column = 0;
     // find start of line
     while (match_bol > buf && *match_bol != '\n') {
         match_bol--;
         column++;
+    }
+    if (*match_bol == '\n') {
+        column--;
     }
 
     // find line number. XXXXX this is extremely ineffecient for files with multiple matches
