@@ -153,7 +153,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
         char *match_end = NULL;
         // In my profiling, most of the execution time is spent in this pcre_exec
         while(buf_offset < buf_len && (rc = pcre_exec(re, NULL, buf, r_len, buf_offset, 0, offset_vector, sizeof(offset_vector))) >= 0 ) {
-            log_debug("match found. file %s offset %i", dir_full_path, offset_vector[0]);
+            log_debug("Match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
             match_start = buf + offset_vector[0];
             match_end = buf + offset_vector[1];
             print_match(dir_full_path, buf, match_start, match_end);
@@ -168,7 +168,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
         free(dir_full_path);
     }
 
-    free(dir_list); // XXX I'm pretty sure this isn't right. we need to iterate and free the entries
+    free(dir_list);
     return(0);
 }
 
@@ -178,6 +178,12 @@ int main(int argc, char **argv) {
 
     char *query;
     char *path;
+    int pcre_opts = 0;
+    int rv = 0;
+    const char *pcre_err = NULL;
+    int pcre_err_offset = 0;
+    pcre *re = NULL;
+
     parse_options(argc, argv);
 
     query = malloc(strlen(argv[argc-2])+1);
@@ -185,11 +191,10 @@ int main(int argc, char **argv) {
     path = malloc(strlen(argv[argc-1])+1);
     strcpy(path, argv[argc-1]);
 
-    int rv = 0;
-    int pcre_opts = 0;
-    const char *pcre_err = NULL;
-    int pcre_err_offset = 0;
-    pcre *re = NULL;
+    if (opts.casing == CASE_INSENSITIVE) {
+        pcre_opts |= PCRE_CASELESS;
+    }
+
     re = pcre_compile(query, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
     if (re == NULL) {
         log_err("pcre_compile failed at position %i. Error: %s", pcre_err_offset, pcre_err);
