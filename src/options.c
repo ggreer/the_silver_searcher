@@ -13,6 +13,9 @@ void parse_options(int argc, char **argv) {
     opts.casing = CASE_SENSITIVE_RETRY_INSENSITIVE;
     opts.ackmate = 0;
 
+    int blah = 0;
+
+    // XXXX: actually obey these options instead of disregarding them
     struct option longopts[] = {
         { "after", required_argument, NULL, 'A' },
         { "before", required_argument, NULL, 'B' },
@@ -21,7 +24,8 @@ void parse_options(int argc, char **argv) {
         { "follow", no_argument, &(opts.follow_symlinks), 1 },
         { "nofollow", no_argument, &(opts.follow_symlinks), 0 },
         { "ignore-case", no_argument, NULL, 'i' },
-        { "nosmart-case", no_argument, NULL, 0 },
+        { "nosmart-case", no_argument, &blah, 0 },
+        { "match", no_argument, &blah, 0 },
         { "ackmate-dir-filter", required_argument, NULL, 0 },
         { NULL, 0, NULL, 0 }
     };
@@ -54,7 +58,7 @@ void parse_options(int argc, char **argv) {
                 if (longopts[opt_index].flag != 0) {
                     break;
                 }
-                log_err("Unknown option %s");
+                log_err("option %s does not take a value", longopts[opt_index].name);
             default:
                 usage();
                 exit(1);

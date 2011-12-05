@@ -13,25 +13,60 @@
 
 const int MAX_SEARCH_DEPTH = 100;
 
+/*
+  Example output of ackmate's ack:
+  ./ackmate_ack --ackmate --literal --context --nofollow --ignore-case --match "test" ../
+  :../Resources/ackmate_ack
+  756:
+  757:That's why ack's behavior of not searching things it doesn't recognize
+  758;18 4:is one of its greatest strengths: the speed you get from only
+  759:searching the things that you want to be looking at.
+  760:
+  --
+  813:issues list at Github: L<http://github.com/petdance/ack/issues>
+  814:
+  815;45 4:Patches are always welcome, but patches with tests get the most
+  816:attention.
+  817:
+  
+  simpler output:
+  :../Resources/ackmate_ack
+  758;18 4:is one of its greatest strengths: the speed you get from only
+  815;45 4:Patches are always welcome, but patches with tests get the most
+ */
 void print_match(const char* path, const char* buf, char* match_start, char* match_end) {
     char *match_bol = match_start;
     char *match_eol = NULL;
+    int line = 0;
+    int column = 0;
     // find start of line
     while (match_bol > buf && *match_bol != '\n') {
         match_bol--;
+        column++;
     }
+
+    // find line number. XXXXX this is extremely ineffecient for files with multiple matches
+    for (char *i = match_bol; i > buf; i--) {
+        if (*i == '\n') {
+            line++;
+        }
+    }
+    printf(":%s\n", path); //TODO: print the path only if this is the first match
+    printf("%i;%i %i:", line, column, (int)(match_end - match_start));
+
     // print context before match line
     for (int i = 0; i < opts.before && match_bol > buf; i++) {
         while (match_bol > buf && *match_bol != '\n') {
             match_bol--;
         }
     }
-    // XXXX this will screw up if the previous line is empty or something
+    // XXXX this will screw up if the previous line is empty or something.
+    // basically this function needs to be more stateful
     if (*match_bol == '\n') {
         match_bol++;
     }
     // MAKE IT RED
-    printf("\e[31m%s\e[0m:", path);
+//    printf("\e[31m%s\e[0m:", path);
     // print line start to start of match
     for (char *j = match_bol; j<match_start; j++) {
         putchar(*j);
@@ -156,8 +191,8 @@ int search_dir(pcre *re, const char* path, const int depth) {
             log_debug("Match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
             match_start = buf + offset_vector[0];
             match_end = buf + offset_vector[1];
-            print_match(dir_full_path, buf, match_start, match_end);
             buf_offset = offset_vector[1];
+            print_match(dir_full_path, buf, match_start, match_end);
         }
 
         free(buf);
@@ -176,6 +211,10 @@ int main(int argc, char **argv) {
     set_log_level(LOG_LEVEL_ERR);
 //    set_log_level(LOG_LEVEL_DEBUG);
 
+/*    for(int i = 0; i < argc; i++) {
+        fprintf(stderr, "%s ", argv[i]);
+    }
+*/
     char *query;
     char *path;
     int pcre_opts = 0;
