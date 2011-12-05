@@ -34,7 +34,7 @@ const int MAX_SEARCH_DEPTH = 100;
   758;18 4:is one of its greatest strengths: the speed you get from only
   815;45 4:Patches are always welcome, but patches with tests get the most
  */
-void print_match(const char* path, const char* buf, char* match_start, char* match_end) {
+void print_match(const char* path, const char* buf, char* match_start, char* match_end, int first_match) {
     char *match_bol = match_start;
     char *match_eol = NULL;
     int line = 1;
@@ -54,8 +54,9 @@ void print_match(const char* path, const char* buf, char* match_start, char* mat
             line++;
         }
     }
-    printf(":%s\n", path); //TODO: print the path only if this is the first match
-    printf("%i;%i %i:", line, column, (int)(match_end - match_start));
+    if (first_match) {
+        printf(":%s\n", path); //print the path only if this is the first match in this file
+    }
 
     // print context before match line
     for (int i = 0; i < opts.before && match_bol > buf; i++) {
@@ -70,6 +71,7 @@ void print_match(const char* path, const char* buf, char* match_start, char* mat
     }
     // MAKE IT RED
 //    printf("\e[31m%s\e[0m:", path);
+    printf("%i;%i %i:", line, column, (int)(match_end - match_start));
     // print line start to start of match
     for (char *j = match_bol; j<match_start; j++) {
         putchar(*j);
@@ -189,13 +191,15 @@ int search_dir(pcre *re, const char* path, const int depth) {
         int rc = 0;
         char *match_start = NULL;
         char *match_end = NULL;
+        int first_match = 1;
         // In my profiling, most of the execution time is spent in this pcre_exec
         while(buf_offset < buf_len && (rc = pcre_exec(re, NULL, buf, r_len, buf_offset, 0, offset_vector, sizeof(offset_vector))) >= 0 ) {
             log_debug("Match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
             match_start = buf + offset_vector[0];
             match_end = buf + offset_vector[1];
             buf_offset = offset_vector[1];
-            print_match(dir_full_path, buf, match_start, match_end);
+            print_match(dir_full_path, buf, match_start, match_end, first_match);
+            first_match = 0;
         }
 
         free(buf);
@@ -214,10 +218,11 @@ int main(int argc, char **argv) {
     set_log_level(LOG_LEVEL_ERR);
 //    set_log_level(LOG_LEVEL_DEBUG);
 
-/*    for(int i = 0; i < argc; i++) {
+///*
+    for(int i = 0; i < argc; i++) {
         fprintf(stderr, "%s ", argv[i]);
     }
-*/
+//*/
     char *query;
     char *path;
     int pcre_opts = 0;
