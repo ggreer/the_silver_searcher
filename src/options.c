@@ -26,6 +26,7 @@ void parse_options(int argc, char **argv) {
         { "ignore-case", no_argument, NULL, 'i' },
         { "nosmart-case", no_argument, &blah, 0 },
         { "match", no_argument, &blah, 0 },
+        { "literal", no_argument, &blah, 0 },
         { "ackmate-dir-filter", required_argument, NULL, 0 },
         { NULL, 0, NULL, 0 }
     };

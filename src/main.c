@@ -12,6 +12,7 @@
 #include "options.h"
 
 const int MAX_SEARCH_DEPTH = 100;
+const int MAX_MATCHES_PER_FILE = 100;
 
 /*
   Example output of ackmate's ack:
@@ -60,6 +61,7 @@ void print_match(const char* path, const char* buf, char* match_start, char* mat
     }
 
     // print context before match line
+
     for (int i = 0; i < opts.before && match_bol > buf; i++) {
         while (match_bol > buf && *match_bol != '\n') {
             match_bol--;
@@ -87,17 +89,22 @@ void print_match(const char* path, const char* buf, char* match_start, char* mat
         putchar(*j);
         match_eol = j;
     }
-    putchar('\n');
 
     // print context after match line
+    char *context_after = match_eol;
     for (int i = 0; i < opts.after; i++) {
-        for (char *j = match_eol; *j != '\n'; j++) {
+        for (char *j = context_after; j != '\0'; j++) {
             putchar(*j);
+            context_after = j;
+            if (*j == '\n') {
+                context_after++;
+                line++;
+                printf("%i:", line);
+                break;
+            }
         }
-        putchar('\n');
-        line++;
-        printf("%i: ", line);
     }
+    putchar('\n');
 }
 
 //TODO: append matches to some data structure instead of just printing them out
@@ -191,7 +198,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
         int buf_len = (int)r_len;
 
         int buf_offset = 0;
-        int offset_vector[100]; //XXXX max number of matches in a file / 2
+        int offset_vector[MAX_MATCHES_PER_FILE * 2]; //XXXX
         int rc = 0;
         char *match_start = NULL;
         char *match_end = NULL;
