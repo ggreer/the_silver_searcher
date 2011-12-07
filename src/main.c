@@ -174,9 +174,10 @@ int search_dir(pcre *re, const char* path, const int depth) {
 
         rv = fseek(fp, 0, SEEK_END);
         if (rv != 0) {
-            log_err("Error fseek()ing file %s", dir_full_path);
-            return(0);
+            log_err("Error fseek()ing file %s. Skipping...", dir_full_path);
+            goto cleanup;
         }
+
         f_len = ftell(fp); //TODO: behave differently if file is HUGE. on 32 bit, anything > 2GB will screw up this program
         if (f_len == 0) {
             log_debug("file is empty. skipping");
