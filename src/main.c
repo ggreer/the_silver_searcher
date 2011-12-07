@@ -224,6 +224,7 @@ int main(int argc, char **argv) {
     set_log_level(LOG_LEVEL_ERR);
 //    set_log_level(LOG_LEVEL_DEBUG);
 
+    // TODO: For debugging ackmate. Remove this eventually
 ///*
     for(int i = 0; i < argc; i++) {
         fprintf(stderr, "%s ", argv[i]);
