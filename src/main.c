@@ -34,6 +34,7 @@ const int MAX_SEARCH_DEPTH = 100;
   758;18 4:is one of its greatest strengths: the speed you get from only
   815;45 4:Patches are always welcome, but patches with tests get the most
  */
+// TODO: this function is hacks upon hacks. rewrite it once behavior is correct
 void print_match(const char* path, const char* buf, char* match_start, char* match_end, int first_match) {
     char *match_bol = match_start;
     char *match_eol = NULL;
@@ -94,6 +95,8 @@ void print_match(const char* path, const char* buf, char* match_start, char* mat
             putchar(*j);
         }
         putchar('\n');
+        line++;
+        printf("%i: ", line);
     }
 }
 
@@ -171,8 +174,8 @@ int search_dir(pcre *re, const char* path, const int depth) {
 
         rv = fseek(fp, 0, SEEK_END);
         if (rv != 0) {
-            log_err("fseek error");
-            exit(1);
+            log_err("Error fseek()ing file %s", dir_full_path);
+            return(0);
         }
         f_len = ftell(fp); //TODO: behave differently if file is HUGE. on 32 bit, anything > 2GB will screw up this program
         if (f_len == 0) {
@@ -205,7 +208,9 @@ int search_dir(pcre *re, const char* path, const int depth) {
         free(buf);
 
         cleanup:
-        fclose(fp); // sometimes fp is null. the manpage says this should segfault but... it works so whatever
+        if (fp != NULL) {
+            fclose(fp);
+        }
         free(dir);
         free(dir_full_path);
     }
