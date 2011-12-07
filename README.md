@@ -11,7 +11,7 @@ It's somewhere between 2 and 3 right now. Although it's much faster than ack in 
 
     ~/code/better_than_ack/bta -i SOLR ~/cloudkick/reach  0.37s user 0.15s system 88% cpu 0.590 total
 
-You can use this with the ackmate plugin by deleting `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and running `ln -s /usr/local/bin/bta "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
+You can use this with the ackmate plugin by moving or deleting `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and running `ln -s /usr/local/bin/bta "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
 
 
 notes:
