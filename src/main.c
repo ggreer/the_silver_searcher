@@ -45,13 +45,19 @@ typedef struct {
 void print_file_matches(const char* path, const char* buf, int buf_len, match matches[]) {
     int line = 1;
     int column = 0;
-    char *prev_line = NULL;
+    int prev_line = 0;
+    char *prev_lines[opts.before];
+    int last_prev_line = 0;
     int prev_line_offset = 0;
     int cur_match = 0;
     int in_a_match = 0;
     int lines_since_last_match = 1000000; // if I initialize this to INT_MAX it'll overflow
 
     printf(":%s\n", path); //print the path
+
+    for (int i = 0; i < opts.before; i++) {
+        prev_lines[i] = NULL;
+    }
 
     for (int i = 0; i < buf_len; i++) {
         if (i == matches[cur_match].start) {
@@ -62,8 +68,11 @@ void print_file_matches(const char* path, const char* buf, int buf_len, match ma
             }
 
             // We found the start of a match. print the previous line(s)
-            if (prev_line) {
-                printf("%i:%s\n", line - 1, prev_line);
+            for (int j = 0; j < opts.before; j++) {
+                prev_line = (last_prev_line + j) % opts.before;
+                if (prev_lines[prev_line]) {
+                    printf("%i:%s\n", line - (opts.before - j), prev_lines[prev_line]);
+                }
             }
 
             // print headers for ackmate to parse
@@ -85,22 +94,24 @@ void print_file_matches(const char* path, const char* buf, int buf_len, match ma
             cur_match++;
         }
 
-        if (in_a_match || lines_since_last_match < opts.after) {
+        if (in_a_match || lines_since_last_match <= opts.after) {
             putchar(buf[i]);
         }
 
         column++;
 
         if (buf[i] == '\n') {
-            free(prev_line);
-            prev_line = strndup(&buf[prev_line_offset], column);
+            free(prev_lines[last_prev_line]);
+            prev_lines[last_prev_line] = strndup(&buf[prev_line_offset], column);
+            last_prev_line = (last_prev_line + 1) % opts.before;
+
             prev_line_offset = i+1; // skip the newline
             line++;
             column = 0;
             lines_since_last_match++;
 
             // Print context after match
-            if (in_a_match || lines_since_last_match < opts.after) {
+            if (in_a_match || lines_since_last_match <= opts.after) {
                 printf("%i:", line);
             }
         }

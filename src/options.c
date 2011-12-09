@@ -19,7 +19,7 @@ void parse_options(int argc, char **argv) {
     struct option longopts[] = {
         { "after", required_argument, NULL, 'A' },
         { "before", required_argument, NULL, 'B' },
-        { "context", optional_argument, &(opts.context), 3 },
+        { "context", optional_argument, &(opts.context), 2 },
         { "ackmate", no_argument, &(opts.ackmate), 1 },
         { "follow", no_argument, &(opts.follow_symlinks), 1 },
         { "nofollow", no_argument, &(opts.follow_symlinks), 0 },
