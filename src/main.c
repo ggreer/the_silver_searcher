@@ -49,7 +49,7 @@ void print_file_matches(const char* path, const char* buf, int buf_len, match ma
     int prev_line_offset = 0;
     int cur_match = 0;
     int in_a_match = 0;
-    int lines_since_last_match = 1000000;
+    int lines_since_last_match = 1000000; // if I initialize this to INT_MAX it'll overflow
 
     printf(":%s\n", path); //print the path
 
@@ -61,21 +61,22 @@ void print_file_matches(const char* path, const char* buf, int buf_len, match ma
                 printf("--\n");
             }
 
-            lines_since_last_match = 0;
             // We found the start of a match. print the previous line(s)
             if (prev_line) {
                 printf("%i:%s\n", line - 1, prev_line);
             }
 
             // print headers for ackmate to parse
-//            if (cur_match > 0 && matches[cur_match-1].end < prev_line_offset) {
+            if (lines_since_last_match > 0) {
                 printf("%i;%i %i:", line, column, (matches[cur_match].end - matches[cur_match].start));
-//            }
+            }
 
             // print up to current char
             for (int j = prev_line_offset; j < i; j++) {
                 putchar(buf[j]);
             }
+
+            lines_since_last_match = 0;
         }
 
         if (i == matches[cur_match].end) {
@@ -97,88 +98,13 @@ void print_file_matches(const char* path, const char* buf, int buf_len, match ma
             line++;
             column = 0;
             lines_since_last_match++;
-//            putchar('\n');
+
+            // Print context after match
             if (in_a_match || lines_since_last_match < opts.after) {
                 printf("%i:", line);
             }
         }
     }
-}
-
-// TODO: this function is hacks upon hacks. rewrite it once behavior is correct
-void print_match(const char* path, const char* buf, char* match_start, char* match_end, int first_match) {
-    char *match_bol = match_start;
-    char *match_eol = NULL;
-    int line = 1;
-    int column = 0;
-    // find start of line
-    while (match_bol > buf && *match_bol != '\n') {
-        match_bol--;
-        column++;
-    }
-    if (*match_bol == '\n') {
-        column--;
-    }
-
-    // find line number. XXXXX this is extremely ineffecient for files with multiple matches
-    for (char *i = match_bol; i > buf; i--) {
-        if (*i == '\n') {
-            line++;
-        }
-    }
-    if (first_match) {
-        printf(":%s\n", path); //print the path only if this is the first match in this file
-    }
-
-    // print context before match line
-
-    for (int i = 0; i < opts.before && match_bol > buf; i++) {
-        while (match_bol > buf && *match_bol != '\n') {
-            match_bol--;
-        }
-    }
-    // XXXX this will screw up if the previous line is empty or something.
-    // basically this function needs to be more stateful
-    if (*match_bol == '\n') {
-        match_bol++;
-    }
-    // MAKE IT RED
-//    printf("\e[31m%s\e[0m:", path);
-    printf("%i;%i %i:", line, column, (int)(match_end - match_start));
-    // print line start to start of match
-    for (char *j = match_bol; j<match_start; j++) {
-        putchar(*j);
-    }
-    // print match
-    for (char *j = match_start; j<match_end; j++) {
-        putchar(*j);
-    }
-    // print end of match to end of line
-    match_eol = match_end;
-    for (char *j = match_end; *j != '\n'; j++) {
-        putchar(*j);
-        match_eol = j;
-    }
-
-    // print context after match line
-    char *context_after = match_eol + 1;
-    int new_line = 0;
-    for (int i = 0; i < opts.after; i++) {
-        if (new_line) {
-            printf("%i:", line);
-        }
-        for (char *j = context_after; j != '\0'; j++) {
-            putchar(*j);
-            context_after = j;
-            if (*j == '\n') {
-                context_after++;
-                line++;
-                new_line = 1;
-                break;
-            }
-        }
-    }
-    putchar('\n');
 }
 
 //TODO: append matches to some data structure instead of just printing them out
@@ -278,17 +204,10 @@ int search_dir(pcre *re, const char* path, const int depth) {
         int buf_offset = 0;
         int offset_vector[MAX_MATCHES_PER_FILE * 2]; //XXXX
         int rc = 0;
-        char *match_start = NULL;
-        char *match_end = NULL;
-        int first_match = 1;
         // In my profiling, most of the execution time is spent in this pcre_exec
         while(buf_offset < buf_len && (rc = pcre_exec(re, NULL, buf, r_len, buf_offset, 0, offset_vector, sizeof(offset_vector))) >= 0 ) {
             log_debug("Match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
-            match_start = buf + offset_vector[0];
-            match_end = buf + offset_vector[1];
             buf_offset = offset_vector[1];
-//            print_match(dir_full_path, buf, match_start, match_end, first_match);
-            first_match = 0;
             matches[matches_len].start = offset_vector[0];
             matches[matches_len].end = offset_vector[1];
             matches_len++;
