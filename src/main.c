@@ -67,22 +67,24 @@ void print_file_matches(const char* path, const char* buf, int buf_len, match ma
                 printf("--\n");
             }
 
-            // We found the start of a match. print the previous line(s)
-            for (int j = 0; j < opts.before; j++) {
-                prev_line = (last_prev_line + j) % opts.before;
-                if (prev_lines[prev_line]) {
-                    printf("%i:%s\n", line - (opts.before - j), prev_lines[prev_line]);
+            if (lines_since_last_match > opts.after) {
+                // We found the start of a match. print the previous line(s)
+                for (int j = 0; j < opts.before; j++) {
+                    prev_line = (last_prev_line + j) % opts.before;
+                    if (prev_lines[prev_line]) {
+                        printf("%i:%s\n", line - (opts.before - j), prev_lines[prev_line]);
+                    }
                 }
             }
 
             // print headers for ackmate to parse
-            if (lines_since_last_match > 0) {
+            if (lines_since_last_match > opts.after) {
                 printf("%i;%i %i:", line, column, (matches[cur_match].end - matches[cur_match].start));
-            }
 
-            // print up to current char
-            for (int j = prev_line_offset; j < i; j++) {
-                putchar(buf[j]);
+                // print up to current char
+                for (int j = prev_line_offset; j < i; j++) {
+                    putchar(buf[j]);
+                }
             }
 
             lines_since_last_match = 0;
