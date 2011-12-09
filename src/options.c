@@ -12,6 +12,7 @@ void parse_options(int argc, char **argv) {
     opts.recurse_dirs = 1;
     opts.casing = CASE_SENSITIVE_RETRY_INSENSITIVE;
     opts.ackmate = 0;
+    opts.context = 2;
 
     int blah = 0;
 

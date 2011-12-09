@@ -42,7 +42,7 @@ typedef struct {
   815;45 4:Patches are always welcome, but patches with tests get the most
  */
 
-void print_file_matches(const char* path, const char* buf, int buf_len, match matches[]) {
+void print_file_matches(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len) {
     int line = 1;
     int column = 0;
     int prev_line = 0;
@@ -59,7 +59,7 @@ void print_file_matches(const char* path, const char* buf, int buf_len, match ma
         prev_lines[i] = NULL;
     }
 
-    for (int i = 0; i < buf_len; i++) {
+    for (int i = 0; i < buf_len && cur_match < matches_len; i++) {
         if (i == matches[cur_match].start) {
             in_a_match = 1;
 
@@ -71,7 +71,7 @@ void print_file_matches(const char* path, const char* buf, int buf_len, match ma
                 // We found the start of a match. print the previous line(s)
                 for (int j = 0; j < opts.before; j++) {
                     prev_line = (last_prev_line + j) % opts.before;
-                    if (prev_lines[prev_line]) {
+                    if (prev_lines[prev_line] != NULL) {
                         printf("%i:%s\n", line - (opts.before - j), prev_lines[prev_line]);
                     }
                 }
@@ -103,11 +103,13 @@ void print_file_matches(const char* path, const char* buf, int buf_len, match ma
         column++;
 
         if (buf[i] == '\n') {
-            free(prev_lines[last_prev_line]);
+            if (prev_lines[last_prev_line] != NULL) {
+                free(prev_lines[last_prev_line]);
+            }
             prev_lines[last_prev_line] = strndup(&buf[prev_line_offset], column);
             last_prev_line = (last_prev_line + 1) % opts.before;
 
-            prev_line_offset = i+1; // skip the newline
+            prev_line_offset = i + 1; // skip the newline
             line++;
             column = 0;
             lines_since_last_match++;
@@ -227,7 +229,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
         }
 
         if (matches_len > 0) {
-            print_file_matches(dir_full_path, buf, buf_len, matches);
+            print_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
         }
 
         free(buf);
