@@ -8,6 +8,8 @@
 #include "log.h"
 #include "options.h"
 
+// TODO: built a huge-ass list of files we want to ignore by default (build cache stuff, pyc files, etc)
+
 const char *evil_hardcoded_ignore_files[] = {
     ".",
     "..",

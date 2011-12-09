@@ -1,4 +1,5 @@
 #include <dirent.h>
+#include <limits.h>
 #include <pcre.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -13,6 +14,11 @@
 
 const int MAX_SEARCH_DEPTH = 100;
 const int MAX_MATCHES_PER_FILE = 100;
+
+typedef struct {
+    int start; // Byte at which the match starts
+    int end; // and where it ends
+} match;
 
 /*
   Example output of ackmate's ack:
@@ -35,6 +41,70 @@ const int MAX_MATCHES_PER_FILE = 100;
   758;18 4:is one of its greatest strengths: the speed you get from only
   815;45 4:Patches are always welcome, but patches with tests get the most
  */
+
+void print_file_matches(const char* path, const char* buf, int buf_len, match matches[]) {
+    int line = 1;
+    int column = 0;
+    char *prev_line = NULL;
+    int prev_line_offset = 0;
+    int cur_match = 0;
+    int in_a_match = 0;
+    int lines_since_last_match = 1000000;
+
+    printf(":%s\n", path); //print the path
+
+    for (int i = 0; i < buf_len; i++) {
+        if (i == matches[cur_match].start) {
+            in_a_match = 1;
+
+            if (cur_match > 0 && lines_since_last_match > (opts.before + opts.after)) {
+                printf("--\n");
+            }
+
+            lines_since_last_match = 0;
+            // We found the start of a match. print the previous line(s)
+            if (prev_line) {
+                printf("%i:%s\n", line - 1, prev_line);
+            }
+
+            // print headers for ackmate to parse
+//            if (cur_match > 0 && matches[cur_match-1].end < prev_line_offset) {
+                printf("%i;%i %i:", line, column, (matches[cur_match].end - matches[cur_match].start));
+//            }
+
+            // print up to current char
+            for (int j = prev_line_offset; j < i; j++) {
+                putchar(buf[j]);
+            }
+        }
+
+        if (i == matches[cur_match].end) {
+            // We found the end of a match.
+            in_a_match = 0;
+            cur_match++;
+        }
+
+        if (in_a_match || lines_since_last_match < opts.after) {
+            putchar(buf[i]);
+        }
+
+        column++;
+
+        if (buf[i] == '\n') {
+            free(prev_line);
+            prev_line = strndup(&buf[prev_line_offset], column);
+            prev_line_offset = i+1; // skip the newline
+            line++;
+            column = 0;
+            lines_since_last_match++;
+//            putchar('\n');
+            if (in_a_match || lines_since_last_match < opts.after) {
+                printf("%i:", line);
+            }
+        }
+    }
+}
+
 // TODO: this function is hacks upon hacks. rewrite it once behavior is correct
 void print_match(const char* path, const char* buf, char* match_start, char* match_end, int first_match) {
     char *match_bol = match_start;
@@ -91,15 +161,19 @@ void print_match(const char* path, const char* buf, char* match_start, char* mat
     }
 
     // print context after match line
-    char *context_after = match_eol;
+    char *context_after = match_eol + 1;
+    int new_line = 0;
     for (int i = 0; i < opts.after; i++) {
+        if (new_line) {
+            printf("%i:", line);
+        }
         for (char *j = context_after; j != '\0'; j++) {
             putchar(*j);
             context_after = j;
             if (*j == '\n') {
                 context_after++;
                 line++;
-                printf("%i:", line);
+                new_line = 1;
                 break;
             }
         }
@@ -155,7 +229,11 @@ int search_dir(pcre *re, const char* path, const int depth) {
         return(0);
     }
 
+    match matches[MAX_MATCHES_PER_FILE];
+    int matches_len = 0;
+
     for (int i=0; i<results; i++) {
+        matches_len = 0;
         dir = dir_list[i];
         // XXX: this is copy-pasted from about 30 lines above
         path_length = (size_t)(strlen(path) + strlen(dir->d_name) + 2); // 2 for slash and null char
@@ -209,8 +287,15 @@ int search_dir(pcre *re, const char* path, const int depth) {
             match_start = buf + offset_vector[0];
             match_end = buf + offset_vector[1];
             buf_offset = offset_vector[1];
-            print_match(dir_full_path, buf, match_start, match_end, first_match);
+//            print_match(dir_full_path, buf, match_start, match_end, first_match);
             first_match = 0;
+            matches[matches_len].start = offset_vector[0];
+            matches[matches_len].end = offset_vector[1];
+            matches_len++;
+        }
+
+        if (matches_len > 0) {
+            print_file_matches(dir_full_path, buf, buf_len, matches);
         }
 
         free(buf);
