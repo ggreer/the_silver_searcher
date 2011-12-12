@@ -4,20 +4,23 @@ My attempt to make something better than ack, which itself is better than grep. 
 
 ## Why use ag? ##
 
-* The binary name 33% shorter than ack!
-* It searches through code about 3x-5x faster.
+* The binary name is 33% shorter than ack!
+* It searches through code about 3x-5x faster than ack.
 * It's written in C instead of perl.
 * It ignores files matched by patterns in your .gitignore and .hgignore.
 * If there are files in your source repo that you don't want to search, just add their patterns to a .agignore file. \*cough\* extern \*cough\*
 
 
 ## Current development status ##
+
+On the continuum of...
+
 1. Make it compile.
 2. Make it run.
 3. Make it behave correctly.
 4. Make it fast.
 
-It's somewhere between 2 and 3 right now. Although it's much faster than ack in my benchmarks.
+...it's somewhere between 2 and 3 right now. Although it's much faster than ack in my benchmarks.
 
     ack -i SOLR ~/cloudkick/reach  2.89s user 0.77s system 97% cpu 3.765 total
 
@@ -32,7 +35,7 @@ You can use this with [my fork](https://github.com/ggreer/AckMate) of the popula
 * colorize output. paths should be green, lines white except for matches which are black with yellow background
 
 
-initial brainstorming notes for myself:
+### initial brainstorming notes for myself ###
 
 * ack annoyances:
   * only uses one core
