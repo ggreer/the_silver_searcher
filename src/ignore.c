@@ -19,7 +19,7 @@ const char *evil_hardcoded_ignore_files[] = {
 const char *ignore_pattern_files[] = {
     ".gitignore",
     ".hgignore",
-    ".btaignore",
+    ".agignore",
     NULL
 };
 
