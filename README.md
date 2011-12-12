@@ -2,6 +2,16 @@
 
 My attempt to make something better than ack, which itself is better than grep. Right now it's nowhere close.
 
+## Why use ag? ##
+
+* The binary name 33% shorter than ack!
+* It searches through code about 3x-5x faster.
+* It's written in C instead of perl.
+* It ignores files matched by patterns in your .gitignore and .hgignore.
+* If there are files in your source repo that you don't want to search, just add their patterns to a .agignore file. \*cough\* extern \*cough\*
+
+
+## Current development status ##
 1. Make it compile.
 2. Make it run.
 3. Make it behave correctly.
