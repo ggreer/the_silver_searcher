@@ -82,7 +82,12 @@ void print_file_matches_with_context(const char* path, const char* buf, const in
                 for (int j = 0; j < opts.before; j++) {
                     prev_line = (last_prev_line + j) % opts.before;
                     if (prev_lines[prev_line] != NULL) {
-                        printf("%i:%s\n", line - (opts.before - j), prev_lines[prev_line]);
+                        if (opts.ackmate) {
+                            printf("%i:%s\n", line - (opts.before - j), prev_lines[prev_line]);
+                        }
+                        else {
+                            printf("%i-%s\n", line - (opts.before - j), prev_lines[prev_line]);
+                        }
                     }
                 }
             }
@@ -131,7 +136,12 @@ void print_file_matches_with_context(const char* path, const char* buf, const in
 
             // Print context after match
             if (in_a_match || lines_since_last_match <= opts.after) {
-                printf("%i:", line);
+                if (opts.ackmate) {
+                    printf("%i:", line);
+                }
+                else {
+                    printf("%i-", line);
+                }
             }
         }
     }
