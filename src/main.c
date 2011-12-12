@@ -42,6 +42,16 @@ typedef struct {
   815;45 4:Patches are always welcome, but patches with tests get the most
  */
 
+void print_path(const char* path) {
+    //print the path
+    if (opts.ackmate) {
+        printf(":%s\n", path);
+    }
+    else {
+        printf("%s\n", path);
+    }
+}
+
 void print_file_matches_with_context(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len) {
     int line = 1;
     int column = 0;
@@ -53,13 +63,7 @@ void print_file_matches_with_context(const char* path, const char* buf, const in
     int in_a_match = 0;
     int lines_since_last_match = 1000000; // if I initialize this to INT_MAX it'll overflow
 
-    //print the path
-    if (opts.ackmate) {
-        printf(":%s\n", path);
-    }
-    else {
-        printf("%s\n", path);
-    }
+    print_path(path);
 
     for (int i = 0; i < opts.before; i++) {
         prev_lines[i] = NULL;
@@ -145,13 +149,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
     int in_a_match = 0;
     int lines_since_last_match = 100000;
 
-    //print the path
-    if (opts.ackmate) {
-        printf(":%s\n", path);
-    }
-    else {
-        printf("%s\n", path);
-    }
+    print_path(path);
 
     for (int i = 0; i < buf_len && cur_match <= matches_len; i++) {
         if (i == matches[cur_match].start) {
