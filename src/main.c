@@ -121,7 +121,7 @@ void print_file_matches_with_context(const char* path, const char* buf, const in
             if (prev_lines[last_prev_line] != NULL) {
                 free(prev_lines[last_prev_line]);
             }
-            prev_lines[last_prev_line] = strndup(&buf[prev_line_offset], column);
+            prev_lines[last_prev_line] = strndup(&buf[prev_line_offset], column - 1); //column will always be at least 1. we don't want to strcpy the \n
             last_prev_line = (last_prev_line + 1) % opts.before;
 
             prev_line_offset = i + 1; // skip the newline
