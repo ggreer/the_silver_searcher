@@ -3,8 +3,8 @@
 .deps
 .dirstamp
 aclocal.m4
+ag
 autom4te.cache
-bta
 callgrind.out.*
 config.log
 config.status

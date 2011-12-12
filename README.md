@@ -1,4 +1,6 @@
-Just kidding. This thing is nowhere close to ack.
+# The Silver Searcher #
+
+My attempt to make something better than ack, which itself is better than grep. Right now it's nowhere close.
 
 1. Make it compile.
 2. Make it run.
@@ -9,9 +11,9 @@ It's somewhere between 2 and 3 right now. Although it's much faster than ack in 
 
     ack -i SOLR ~/cloudkick/reach  2.89s user 0.77s system 97% cpu 3.765 total
 
-    ~/code/better_than_ack/bta -i SOLR ~/cloudkick/reach  0.37s user 0.15s system 88% cpu 0.590 total
+    ag -i SOLR ~/cloudkick/reach  0.37s user 0.15s system 88% cpu 0.590 total
 
-You can use this with [my fork](https://github.com/ggreer/AckMate) of the popular ackmate plugin, which lets you use both ack and bta for searching in textmate. You can also just move or delete `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and run `ln -s /usr/local/bin/bta "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
+You can use this with [my fork](https://github.com/ggreer/AckMate) of the popular ackmate plugin, which lets you use both ack and ag for searching in textmate. You can also just move or delete `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and run `ln -s /usr/local/bin/ag "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
 
 
 ## TODO ##
