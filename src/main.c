@@ -20,6 +20,8 @@ typedef struct {
     int end; // and where it ends
 } match;
 
+int first_file_match = 1;
+
 /*
   Example output of ackmate's ack:
   ./ackmate_ack --ackmate --literal --context --nofollow --ignore-case --match "test" ../
@@ -43,11 +45,11 @@ typedef struct {
  */
 
 void print_path(const char* path) {
-    //print the path
     if (opts.ackmate) {
         printf(":%s\n", path);
     }
     else {
+        // TODO: print bash color thingy here
         printf("%s\n", path);
     }
 }
@@ -62,6 +64,11 @@ void print_file_matches_with_context(const char* path, const char* buf, const in
     int cur_match = 0;
     int in_a_match = 0;
     int lines_since_last_match = 1000000; // if I initialize this to INT_MAX it'll overflow
+
+    if (first_file_match == 0 && opts.ackmate == 0) {
+        printf("\n");
+    }
+    first_file_match = 0;
 
     print_path(path);
 
@@ -105,6 +112,8 @@ void print_file_matches_with_context(const char* path, const char* buf, const in
                 for (int j = prev_line_offset; j < i; j++) {
                     putchar(buf[j]);
                 }
+
+                // TODO: print bash color thingy here
             }
 
             lines_since_last_match = 0;
@@ -114,6 +123,7 @@ void print_file_matches_with_context(const char* path, const char* buf, const in
             // We found the end of a match.
             in_a_match = 0;
             cur_match++;
+            // TODO: print the end of bash color thingy here
         }
 
         if (in_a_match || lines_since_last_match <= opts.after) {
@@ -145,10 +155,6 @@ void print_file_matches_with_context(const char* path, const char* buf, const in
             }
         }
     }
-
-    if (opts.ackmate == 0) {
-        printf("\n");
-    }
 }
 
 void print_file_matches(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len) {
@@ -158,6 +164,11 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
     int cur_match = 0;
     int in_a_match = 0;
     int lines_since_last_match = 100000;
+
+    if (first_file_match == 0 && opts.ackmate == 0) {
+        printf("\n");
+    }
+    first_file_match = 0;
 
     print_path(path);
 
@@ -199,10 +210,6 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
             column = 0;
             lines_since_last_match++;
         }
-    }
-
-    if (opts.ackmate == 0) {
-        printf("\n");
     }
 }
 

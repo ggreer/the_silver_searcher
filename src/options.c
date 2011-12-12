@@ -37,6 +37,7 @@ void parse_options(int argc, char **argv) {
     int opt_index = 0;
 
     // XXX: this is nowhere near done
+    // TODO: check for insane params. nobody is going to want 5000000 lines of context, for example
     while ((ch = getopt_long(argc, argv, "A:B:C:fiv", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
