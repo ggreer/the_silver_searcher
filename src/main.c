@@ -42,7 +42,7 @@ typedef struct {
   815;45 4:Patches are always welcome, but patches with tests get the most
  */
 
-void print_file_matches(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len) {
+void print_file_matches_with_context(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len) {
     int line = 1;
     int column = 0;
     int prev_line = 0;
@@ -77,9 +77,14 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                 }
             }
 
-            // print headers for ackmate to parse
             if (lines_since_last_match > opts.after) {
-                printf("%i;%i %i:", line, column, (matches[cur_match].end - matches[cur_match].start));
+                if (opts.ackmate) {
+                    // print headers for ackmate to parse
+                    printf("%i;%i %i:", line, column, (matches[cur_match].end - matches[cur_match].start));
+                }
+                else {
+                    printf("%i:", line);
+                }
 
                 // print up to current char
                 for (int j = prev_line_offset; j < i; j++) {
@@ -120,6 +125,58 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
             }
         }
     }
+}
+
+void print_file_matches(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len) {
+    int line = 1;
+    int column = 0;
+    int prev_line_offset = 0;
+    int cur_match = 0;
+    int in_a_match = 0;
+    int lines_since_last_match = 100000;
+
+    printf(":%s\n", path); //print the path
+
+    for (int i = 0; i < buf_len && cur_match < matches_len; i++) {
+        if (i == matches[cur_match].start) {
+            in_a_match = 1;
+
+            if (opts.ackmate) {
+                // print headers for ackmate to parse
+                printf("%i;%i %i:", line, column, (matches[cur_match].end - matches[cur_match].start));
+            }
+            else {
+                printf("%i:", line);
+            }
+
+            // print up to current char
+            for (int j = prev_line_offset; j < i; j++) {
+                putchar(buf[j]);
+            }
+
+            lines_since_last_match = 0;
+        }
+
+        if (i == matches[cur_match].end) {
+            // We found the end of a match.
+            in_a_match = 0;
+            cur_match++;
+        }
+
+        if (in_a_match || lines_since_last_match <= 0) {
+            putchar(buf[i]);
+        }
+
+        column++;
+
+        if (buf[i] == '\n') {
+            prev_line_offset = i + 1; // skip the newline
+            line++;
+            column = 0;
+            lines_since_last_match++;
+        }
+    }
+    printf("\n");
 }
 
 //TODO: append matches to some data structure instead of just printing them out
@@ -229,7 +286,12 @@ int search_dir(pcre *re, const char* path, const int depth) {
         }
 
         if (matches_len > 0) {
-            print_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
+            if (opts.context > 0) {
+                print_file_matches_with_context(dir_full_path, buf, buf_len, matches, matches_len);
+            }
+            else {
+                print_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
+            }
         }
 
         free(buf);

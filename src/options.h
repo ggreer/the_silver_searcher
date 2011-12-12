@@ -6,7 +6,7 @@
 enum case_behavior {
     CASE_SENSITIVE,
     CASE_INSENSITIVE,
-    CASE_SENSITIVE_RETRY_INSENSITIVE
+    CASE_SENSITIVE_RETRY_INSENSITIVE // for future use
 };
 
 typedef struct {

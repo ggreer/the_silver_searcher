@@ -10,9 +10,11 @@ void parse_options(int argc, char **argv) {
 
     opts.follow_symlinks = 0;
     opts.recurse_dirs = 1;
-    opts.casing = CASE_SENSITIVE_RETRY_INSENSITIVE;
+    opts.casing = CASE_SENSITIVE;
     opts.ackmate = 0;
-    opts.context = 2;
+    opts.after = 0;
+    opts.before = 0;
+    opts.context = 0;
 
     int blah = 0;
 
@@ -70,6 +72,7 @@ void parse_options(int argc, char **argv) {
         opts.before = opts.context;
         opts.after = opts.context;
     }
+
     argc -= optind;
     argv += optind;
 }
