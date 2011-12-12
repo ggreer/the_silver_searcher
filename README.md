@@ -11,10 +11,15 @@ It's somewhere between 2 and 3 right now. Although it's much faster than ack in 
 
     ~/code/better_than_ack/bta -i SOLR ~/cloudkick/reach  0.37s user 0.15s system 88% cpu 0.590 total
 
-You can use this with the ackmate plugin by moving or deleting `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and running `ln -s /usr/local/bin/bta "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
+You can use this with [my fork](https://github.com/ggreer/AckMate) of the popular ackmate plugin, which lets you use both ack and bta for searching in textmate. You can also just move or delete `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and run `ln -s /usr/local/bin/bta "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
 
 
-notes:
+## TODO ##
+* print out matches in ackmate-compatible format (this is still buggy)
+* parse more ack options correctly (context and --ackmate aren't obeyed right now)
+
+
+initial brainstorming notes for myself:
 
 * ack annoyances:
   * only uses one core
