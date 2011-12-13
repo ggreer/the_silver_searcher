@@ -1,6 +1,8 @@
 #ifndef LOG_H
 #define LOG_H
 
+#include <stdarg.h>
+
 enum log_level {
     LOG_LEVEL_DEBUG = 10,
     LOG_LEVEL_MSG   = 20,
