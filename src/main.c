@@ -357,7 +357,6 @@ int main(int argc, char **argv) {
     char *query;
     char *path;
     int pcre_opts = 0;
-    int rv = 0;
     const char *pcre_err = NULL;
     int pcre_err_offset = 0;
     pcre *re = NULL;
