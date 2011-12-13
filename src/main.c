@@ -55,7 +55,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
     results = scandir(path, &dir_list, &filename_filter, &alphasort);
     if (results == 0)
     {
-        log_debug("No results found");
+        log_debug("No results found in directory %s", path);
         free(dir_list);
         return(0);
     }
@@ -85,11 +85,12 @@ int search_dir(pcre *re, const char* path, const int depth) {
         log_debug("dir %s type %i", dir_full_path, dir->d_type);
         //TODO: scan files in current dir before going deeper
         if (dir->d_type == DT_DIR && opts.recurse_dirs) {
-            log_debug("searching dir %s", dir_full_path);
+            log_debug("Searching dir %s", dir_full_path);
             rv = search_dir(re, dir_full_path, depth + 1);
             goto cleanup;
             continue;
         }
+
         fp = fopen(dir_full_path, "r");
         if (fp == NULL) {
             log_err("Error opening file %s. Skipping...", dir_full_path);
@@ -105,7 +106,11 @@ int search_dir(pcre *re, const char* path, const int depth) {
 
         f_len = ftell(fp); //TODO: behave differently if file is HUGE. on 32 bit, anything > 2GB will screw up this program
         if (f_len == 0) {
-            log_debug("file is empty. skipping");
+            log_debug("File %s is empty, skipping.", dir_full_path);
+            goto cleanup;
+        }
+        else if (f_len > 1024 * 1024 * 1024) {
+            log_err("File %s is too big. Skipping...", dir_full_path);
             goto cleanup;
         }
 
