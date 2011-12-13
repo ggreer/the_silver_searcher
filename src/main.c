@@ -88,9 +88,11 @@ int search_dir(pcre *re, const char* path, const int depth) {
 
         log_debug("dir %s type %i", dir_full_path, dir->d_type);
         //TODO: scan files in current dir before going deeper
-        if (dir->d_type == DT_DIR && opts.recurse_dirs) {
-            log_debug("Searching dir %s", dir_full_path);
-            rv = search_dir(re, dir_full_path, depth + 1);
+        if (dir->d_type == DT_DIR) {
+            if (opts.recurse_dirs) {
+                log_debug("Searching dir %s", dir_full_path);
+                rv = search_dir(re, dir_full_path, depth + 1);
+            }
             goto cleanup;
             continue;
         }
@@ -133,6 +135,10 @@ int search_dir(pcre *re, const char* path, const int depth) {
             matches_len++;
         }
 
+        if (rc == -1) {
+            log_debug("No match in %s", dir_full_path);
+        }
+
         if (matches_len > 0) {
             if (opts.context > 0) {
                 print_file_matches_with_context(dir_full_path, buf, buf_len, matches, matches_len);
@@ -171,6 +177,7 @@ int main(int argc, char **argv) {
     for(int i = 0; i < argc; i++) {
         fprintf(stderr, "%s ", argv[i]);
     }
+    fprintf(stderr, "\n");
 //*/
     char *query;
     char *path;
