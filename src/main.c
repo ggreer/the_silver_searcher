@@ -335,6 +335,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
         cleanup:
         if (fp != NULL) {
             fclose(fp);
+            fp = NULL;
         }
         free(dir);
         free(dir_full_path);
