@@ -64,19 +64,21 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
         if (i == matches[cur_match].start) {
             in_a_match = 1;
 
-            if (opts.ackmate) {
-                // print headers for ackmate to parse
-                printf("%i;%i %i:", line, column, (matches[cur_match].end - matches[cur_match].start));
-            }
-            else {
-                printf("%i:", line);
-            }
+            if (lines_since_last_match > 0) {
+                if (opts.ackmate) {
+                    // print headers for ackmate to parse
+                    printf("%i;%i %i:", line, column, (matches[cur_match].end - matches[cur_match].start));
+                }
+                else {
+                    printf("%i:", line);
+                }
 
-            // print up to current char
-            for (int j = prev_line_offset; j < i; j++) {
-                putchar(buf[j]);
-            }
+                // print up to current char
+                for (int j = prev_line_offset; j < i; j++) {
+                    putchar(buf[j]);
+                }
 
+            }
             lines_since_last_match = 0;
             printf("%s", colors_match);
         }
@@ -88,7 +90,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
             printf("%s", colors_reset);
         }
 
-        if (in_a_match || lines_since_last_match <= 0) {
+        if (in_a_match || lines_since_last_match == 0) {
             putchar(buf[i]);
         }
 
