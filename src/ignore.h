@@ -1,3 +1,6 @@
+#include <sys/dir.h>
+#include <sys/types.h>
+
 #ifndef IGNORE_H
 #define IGNORE_H
 
