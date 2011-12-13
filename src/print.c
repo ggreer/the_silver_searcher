@@ -10,6 +10,10 @@
 
 int first_file_match = 1;
 
+const char *colors_reset = "\e[0m\e[K";
+const char *colors_path = "\e[1;32m"; // bold green
+const char *colors_match = "\e[30;43m"; // black with yellow background
+
 /*
   Example output of ackmate's ack:
   ./ackmate_ack --ackmate --literal --context --nofollow --ignore-case --match "test" ../
@@ -37,8 +41,7 @@ void print_path(const char* path) {
         printf(":%s\n", path);
     }
     else {
-        // TODO: print bash color thingy here
-        printf("%s\n", path);
+        printf("%s%s%s\n", colors_path, path, colors_reset);
     }
 }
 
@@ -75,12 +78,14 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
             }
 
             lines_since_last_match = 0;
+            printf("%s", colors_match);
         }
 
         if (i == matches[cur_match].end) {
             // We found the end of a match.
             in_a_match = 0;
             cur_match++;
+            printf("%s", colors_reset);
         }
 
         if (in_a_match || lines_since_last_match <= 0) {
@@ -157,7 +162,7 @@ void print_file_matches_with_context(const char* path, const char* buf, const in
                     putchar(buf[j]);
                 }
 
-                // TODO: print bash color thingy here
+                printf("%s", colors_match);
             }
 
             lines_since_last_match = 0;
@@ -167,7 +172,7 @@ void print_file_matches_with_context(const char* path, const char* buf, const in
             // We found the end of a match.
             in_a_match = 0;
             cur_match++;
-            // TODO: print the end of bash color thingy here
+            printf("%s", colors_reset);
         }
 
         if (in_a_match || lines_since_last_match <= opts.after) {

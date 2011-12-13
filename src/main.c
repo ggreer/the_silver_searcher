@@ -109,7 +109,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
             log_debug("File %s is empty, skipping.", dir_full_path);
             goto cleanup;
         }
-        else if (f_len > 1024 * 1024 * 1024) {
+        else if (f_len > 1024 * 1024 * 1024) { // 1 GB
             log_err("File %s is too big. Skipping...", dir_full_path);
             goto cleanup;
         }
@@ -175,6 +175,7 @@ int main(int argc, char **argv) {
 
     query = malloc(strlen(argv[argc-2])+1);
     strcpy(query, argv[argc-2]);
+
     path = malloc(strlen(argv[argc-1])+1);
     strcpy(path, argv[argc-1]);
 
