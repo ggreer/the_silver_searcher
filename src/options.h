@@ -12,6 +12,7 @@ enum case_behavior {
 typedef struct {
     int after;
     int before;
+    int color;
     int context;
     int ackmate;
     int recurse_dirs;

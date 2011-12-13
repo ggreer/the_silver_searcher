@@ -15,6 +15,7 @@ void parse_options(int argc, char **argv) {
     opts.after = 0;
     opts.before = 0;
     opts.context = 0;
+    opts.color = 1;
 
     int blah = 0;
 
@@ -24,6 +25,7 @@ void parse_options(int argc, char **argv) {
         { "before", required_argument, NULL, 'B' },
         { "context", optional_argument, &(opts.context), 2 },
         { "ackmate", no_argument, &(opts.ackmate), 1 },
+        { "nocolor", no_argument, &(opts.color), 0 },
         { "follow", no_argument, &(opts.follow_symlinks), 1 },
         { "nofollow", no_argument, &(opts.follow_symlinks), 0 },
         { "ignore-case", no_argument, NULL, 'i' },
@@ -79,11 +81,14 @@ void parse_options(int argc, char **argv) {
         opts.after = opts.context;
     }
 
+    if (opts.ackmate) {
+        opts.color = 0;
+    }
+
     argc -= optind;
     argv += optind;
 }
 
 void usage() {
-    // I am a terrible person
     printf("Usage: omg I hate writing docs just look at the source :P\n");
 }

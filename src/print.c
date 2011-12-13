@@ -41,7 +41,12 @@ void print_path(const char* path) {
         printf(":%s\n", path);
     }
     else {
-        printf("%s%s%s\n", colors_path, path, colors_reset);
+        if (opts.color) {
+            printf("%s%s%s\n", colors_path, path, colors_reset);
+        }
+        else {
+            printf("%s\n", path);
+        }
     }
 }
 
@@ -80,14 +85,18 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
 
             }
             lines_since_last_match = 0;
-            printf("%s", colors_match);
+            if (opts.color) {
+                printf("%s", colors_match);
+            }
         }
 
         if (i == matches[cur_match].end) {
             // We found the end of a match.
             in_a_match = 0;
             cur_match++;
-            printf("%s", colors_reset);
+            if (opts.color) {
+                printf("%s", colors_reset);
+            }
         }
 
         if (in_a_match || lines_since_last_match == 0) {
@@ -164,7 +173,9 @@ void print_file_matches_with_context(const char* path, const char* buf, const in
                     putchar(buf[j]);
                 }
 
-                printf("%s", colors_match);
+                if (opts.color) {
+                    printf("%s", colors_match);
+                }
             }
 
             lines_since_last_match = 0;
@@ -174,7 +185,9 @@ void print_file_matches_with_context(const char* path, const char* buf, const in
             // We found the end of a match.
             in_a_match = 0;
             cur_match++;
-            printf("%s", colors_reset);
+            if (opts.color) {
+                printf("%s", colors_reset);
+            }
         }
 
         if (in_a_match || lines_since_last_match <= opts.after) {
