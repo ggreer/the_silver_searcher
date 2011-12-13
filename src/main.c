@@ -29,8 +29,8 @@ int search_dir(pcre *re, const char* path, const int depth) {
     int results = 0;
 
     FILE *fp = NULL;
-    int f_len;
-    size_t r_len;
+    int f_len = 0;
+    size_t r_len = 0;
     char *buf = NULL;
     int rv = 0;
     char *dir_full_path = NULL;
@@ -47,16 +47,20 @@ int search_dir(pcre *re, const char* path, const int depth) {
             dir_full_path = strncat(dir_full_path, dir->d_name, path_length);
             load_ignore_patterns(dir_full_path);
             free(dir);
+            dir = NULL;
             free(dir_full_path);
+            dir_full_path = NULL;
         }
     }
     free(dir_list);
+    dir_list = NULL;
 
     results = scandir(path, &dir_list, &filename_filter, &alphasort);
     if (results == 0)
     {
         log_debug("No results found in directory %s", path);
         free(dir_list);
+        dir_list = NULL;
         return(0);
     }
     else if (results == -1) {
@@ -134,11 +138,13 @@ int search_dir(pcre *re, const char* path, const int depth) {
                 print_file_matches_with_context(dir_full_path, buf, buf_len, matches, matches_len);
             }
             else {
+                log_debug("calling print_file_matches(%s, buf, %i, matches, %i)", dir_full_path, buf_len, matches_len);
                 print_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
             }
         }
 
         free(buf);
+        buf = NULL;
 
         cleanup:
         if (fp != NULL) {
@@ -146,10 +152,13 @@ int search_dir(pcre *re, const char* path, const int depth) {
             fp = NULL;
         }
         free(dir);
+        dir = NULL;
         free(dir_full_path);
+        dir_full_path = NULL;
     }
 
     free(dir_list);
+    dir_list = NULL;
     return(0);
 }
 

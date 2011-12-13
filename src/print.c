@@ -51,7 +51,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
     int prev_line_offset = 0;
     int cur_match = 0;
     int in_a_match = 0;
-    int lines_since_last_match = 100000;
+    int lines_since_last_match = 1000000;
 
     if (first_file_match == 0 && opts.ackmate == 0) {
         printf("\n");
@@ -60,7 +60,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
 
     print_path(path);
 
-    for (int i = 0; i < buf_len && cur_match <= matches_len; i++) {
+    for (int i = 0; i < buf_len && (cur_match < matches_len || lines_since_last_match == 0); i++) {
         if (i == matches[cur_match].start) {
             in_a_match = 1;
 
