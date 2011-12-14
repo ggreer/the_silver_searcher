@@ -73,11 +73,12 @@ int search_dir(pcre *re, const char* path, const int depth) {
 
     int buf_len = 0;
     int buf_offset = 0;
-    int offset_vector[MAX_MATCHES_PER_FILE * 2]; //XXXX
+    int offset_vector[MAX_MATCHES_PER_FILE * 3]; //XXXX
     int rc = 0;
 
     for (int i=0; i<results; i++) {
         matches_len = 0;
+        buf_offset = 0;
         dir = dir_list[i];
         // XXX: this is copy-pasted from about 30 lines above
         path_length = (size_t)(strlen(path) + strlen(dir->d_name) + 2); // 2 for slash and null char
@@ -127,7 +128,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
         buf_len = (int)r_len;
 
         // In my profiling, most of the execution time is spent in this pcre_exec
-        while(buf_offset < buf_len && (rc = pcre_exec(re, NULL, buf, r_len, buf_offset, 0, offset_vector, sizeof(offset_vector))) >= 0 ) {
+        while(buf_offset < buf_len && (rc = pcre_exec(re, NULL, buf, buf_len, buf_offset, 0, offset_vector, sizeof(offset_vector))) >= 0 ) {
             log_debug("Match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
             buf_offset = offset_vector[1];
             matches[matches_len].start = offset_vector[0];
@@ -181,6 +182,7 @@ int main(int argc, char **argv) {
 //*/
     char *query;
     char *path;
+    int path_len = 0;
     int pcre_opts = 0;
     int rv = 0;
     const char *pcre_err = NULL;
@@ -189,14 +191,19 @@ int main(int argc, char **argv) {
 
     parse_options(argc, argv);
 
-    query = malloc(strlen(argv[argc-2])+1);
-    strcpy(query, argv[argc-2]);
+    query = malloc(strlen(argv[argc - 2]) + 1);
+    strcpy(query, argv[argc - 2]);
 
-    path = malloc(strlen(argv[argc-1])+1);
-    strcpy(path, argv[argc-1]);
+    path_len = strlen(argv[argc - 1]);
+    path = malloc(path_len + 1);
+    strcpy(path, argv[argc - 1]);
+    // kill trailing slash
+    if (path_len > 0 && path[path_len-1] == '/') {
+        path[path_len-1] = '\0';
+    }
 
     if (opts.casing == CASE_INSENSITIVE) {
-        pcre_opts |= PCRE_CASELESS;
+        pcre_opts = pcre_opts | PCRE_CASELESS;
     }
 
     re = pcre_compile(query, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
