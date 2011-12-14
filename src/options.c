@@ -5,6 +5,29 @@
 #include "options.h"
 #include "log.h"
 
+void usage() {
+    printf("Usage: ag [OPTIONS] PATTERN PATH\n");
+    printf("\n");
+    printf("Recursively search for PATTERN in PATH.\n");
+    printf("Like grep or ack, but faster.\n");
+    printf("\n");
+    printf("Example: ag -i foo /bar/\n");
+    printf("\n");
+    printf("Search options:\n");
+    printf("\n");
+    printf("  -i, --ignore-case\n");
+    printf("  --literal\n");
+    printf("\n");
+    printf("Output options:\n");
+    printf("\n");
+    printf("  --ackmate\n");
+    printf("  --after LINES\n");
+    printf("  --before LINES\n");
+    printf("  --context\n");
+    printf("  --[no]color\n");
+    printf("\n");
+}
+
 void parse_options(int argc, char **argv) {
     int ch;
 
@@ -18,21 +41,23 @@ void parse_options(int argc, char **argv) {
     opts.color = 1;
 
     int blah = 0;
+    int help = 0;
 
     // XXXX: actually obey these options instead of disregarding them
     struct option longopts[] = {
+        { "ackmate", no_argument, &(opts.ackmate), 1 },
+        { "ackmate-dir-filter", required_argument, NULL, 0 },
         { "after", required_argument, NULL, 'A' },
         { "before", required_argument, NULL, 'B' },
         { "context", optional_argument, &(opts.context), 2 },
-        { "ackmate", no_argument, &(opts.ackmate), 1 },
-        { "nocolor", no_argument, &(opts.color), 0 },
         { "follow", no_argument, &(opts.follow_symlinks), 1 },
-        { "nofollow", no_argument, &(opts.follow_symlinks), 0 },
+        { "help", no_argument, &help, 1 },
         { "ignore-case", no_argument, NULL, 'i' },
-        { "nosmart-case", no_argument, &blah, 0 },
-        { "match", no_argument, &blah, 0 },
         { "literal", no_argument, &blah, 0 },
-        { "ackmate-dir-filter", required_argument, NULL, 0 },
+        { "match", no_argument, &blah, 0 },
+        { "nocolor", no_argument, &(opts.color), 0 },
+        { "nofollow", no_argument, &(opts.follow_symlinks), 0 },
+        { "nosmart-case", no_argument, &blah, 0 },
         { NULL, 0, NULL, 0 }
     };
 
@@ -43,7 +68,6 @@ void parse_options(int argc, char **argv) {
         exit(1);
     }
 
-    // XXX: this is nowhere near done
     // TODO: check for insane params. nobody is going to want 5000000 lines of context, for example
     while ((ch = getopt_long(argc, argv, "A:B:C:fiv", longopts, &opt_index)) != -1) {
         switch (ch) {
@@ -58,6 +82,9 @@ void parse_options(int argc, char **argv) {
                 break;
             case 'f':
                 opts.follow_symlinks = 1;
+                break;
+            case 'h':
+                help = 1;
                 break;
             case 'i':
                 opts.casing = CASE_INSENSITIVE;
@@ -76,6 +103,12 @@ void parse_options(int argc, char **argv) {
                 exit(1);
         }
     }
+
+    if (help) {
+        usage();
+        exit(0);
+    }
+
     if (opts.context > 0) {
         opts.before = opts.context;
         opts.after = opts.context;
@@ -87,8 +120,4 @@ void parse_options(int argc, char **argv) {
 
     argc -= optind;
     argv += optind;
-}
-
-void usage() {
-    printf("Usage: omg I hate writing docs just look at the source :P\n");
 }
