@@ -70,7 +70,6 @@ int search_dir(pcre *re, const char* path, const int depth) {
 
     match matches[MAX_MATCHES_PER_FILE];
     int matches_len = 0;
-
     int buf_len = 0;
     int buf_offset = 0;
     int offset_vector[MAX_MATCHES_PER_FILE * 3]; //XXXX
@@ -95,14 +94,12 @@ int search_dir(pcre *re, const char* path, const int depth) {
                 rv = search_dir(re, dir_full_path, depth + 1);
             }
             goto cleanup;
-            continue;
         }
 
         fp = fopen(dir_full_path, "r");
         if (fp == NULL) {
             log_err("Error opening file %s. Skipping...", dir_full_path);
             goto cleanup;
-            continue;
         }
 
         rv = fseek(fp, 0, SEEK_END);
