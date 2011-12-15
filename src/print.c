@@ -56,7 +56,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
     int prev_line_offset = 0;
     int cur_match = 0;
     int in_a_match = 0;
-    int lines_since_last_match = 1000000;
+    int lines_since_last_match = 1000000; // super lame, I know
     int last_printed_match = 0;
 
     if (first_file_match == 0 && opts.ackmate == 0) {
