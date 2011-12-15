@@ -125,12 +125,18 @@ int search_dir(pcre *re, const char* path, const int depth) {
         buf_len = (int)r_len;
 
         // In my profiling, most of the execution time is spent in this pcre_exec
-        while(buf_offset < buf_len && (rc = pcre_exec(re, NULL, buf, buf_len, buf_offset, 0, offset_vector, sizeof(offset_vector))) >= 0 ) {
+        while(buf_offset < buf_len &&
+             (rc = pcre_exec(re, NULL, buf, buf_len, buf_offset, 0, offset_vector, MAX_MATCHES_PER_FILE)) >= 0) {
             log_debug("Match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
             buf_offset = offset_vector[1];
             matches[matches_len].start = offset_vector[0];
             matches[matches_len].end = offset_vector[1];
             matches_len++;
+            // Don't segfault. TODO: realloc this array
+            if (matches_len >= MAX_MATCHES_PER_FILE) {
+                log_err("Too many matches in %s. Skipping the rest of this file.");
+                break;
+            }
         }
 
         if (rc == -1) {
