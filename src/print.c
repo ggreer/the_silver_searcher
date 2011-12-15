@@ -57,6 +57,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
     int cur_match = 0;
     int in_a_match = 0;
     int lines_since_last_match = 1000000;
+    int last_printed_match = 0;
 
     if (first_file_match == 0 && opts.ackmate == 0) {
         printf("\n");
@@ -70,20 +71,15 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
             in_a_match = 1;
 
             if (lines_since_last_match > 0) {
-                if (opts.ackmate) {
-                    // print headers for ackmate to parse
-                    printf("%i;%i %i:", line, column, (matches[cur_match].end - matches[cur_match].start));
-                }
-                else {
+                if (opts.ackmate == 0) {
                     printf("%i:", line);
+                    // print up to current char
+                    for (int j = prev_line_offset; j < i; j++) {
+                        putchar(buf[j]);
+                    }
                 }
-
-                // print up to current char
-                for (int j = prev_line_offset; j < i; j++) {
-                    putchar(buf[j]);
-                }
-
             }
+
             lines_since_last_match = 0;
             if (opts.color) {
                 printf("%s", colors_match);
@@ -99,13 +95,34 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
             }
         }
 
-        if (in_a_match || lines_since_last_match == 0) {
+        if ((in_a_match || lines_since_last_match == 0) && opts.ackmate == 0) {
             putchar(buf[i]);
         }
 
         column++;
 
         if (buf[i] == '\n') {
+            if (opts.ackmate && lines_since_last_match == 0) {
+                // print headers for ackmate to parse
+                printf("%i;", line);
+                while (last_printed_match < cur_match) {
+                    printf("%i %i", (matches[last_printed_match].start - prev_line_offset), (matches[last_printed_match].end - matches[last_printed_match].start));
+                    if (last_printed_match == cur_match - 1) {
+                        putchar(':');
+                    }
+                    else {
+                        putchar(',');
+                    }
+
+                    last_printed_match++;
+                }
+                // print up to current char
+                for (int j = prev_line_offset; j < i; j++) {
+                    putchar(buf[j]);
+                }
+                putchar('\n');
+            }
+
             prev_line_offset = i + 1; // skip the newline
             line++;
             column = 0;
