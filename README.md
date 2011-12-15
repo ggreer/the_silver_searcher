@@ -30,10 +30,9 @@ You can use this with [my fork](https://github.com/ggreer/AckMate) of the popula
 
 
 ## TODO ##
-* print out matches in ackmate-compatible format (this is still buggy)
 * parse more ack options correctly (context and --ackmate aren't obeyed right now)
-* colorize output. paths should be green, lines white except for matches which are black with yellow background
-
+* print context correctly
+* better detection and handling of binary files
 
 ### initial brainstorming notes for myself ###
 
