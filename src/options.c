@@ -1,10 +1,13 @@
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <xlocale.h>
 
 #include "options.h"
 #include "log.h"
 
+// TODO: printf()ing this is not going to scale
 void usage() {
     printf("Usage: ag [OPTIONS] PATTERN PATH\n");
     printf("\n");
@@ -28,9 +31,7 @@ void usage() {
     printf("\n");
 }
 
-void parse_options(int argc, char **argv) {
-    int ch;
-
+void init_options() {
     opts.follow_symlinks = 0;
     opts.recurse_dirs = 1;
     opts.casing = CASE_SENSITIVE;
@@ -39,6 +40,19 @@ void parse_options(int argc, char **argv) {
     opts.before = 0;
     opts.context = 0;
     opts.color = 1;
+    opts.ackmate_dir_filter = NULL;
+}
+
+void cleanup_options() {
+    if (opts.ackmate_dir_filter) {
+        free(opts.ackmate_dir_filter);
+    }
+}
+
+void parse_options(int argc, char **argv) {
+    int ch;
+
+    init_options();
 
     int blah = 0;
     int help = 0;
@@ -93,6 +107,11 @@ void parse_options(int argc, char **argv) {
                 set_log_level(LOG_LEVEL_MSG);
                 break;
             case 0: // Long option
+                if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0)
+                {
+                    opts.ackmate_dir_filter = strdup(optarg);
+                    break;
+                }
                 // Continue to usage if we don't recognize the option
                 if (longopts[opt_index].flag != 0) {
                     break;

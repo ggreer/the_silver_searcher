@@ -10,20 +10,23 @@ enum case_behavior {
 };
 
 typedef struct {
+    int ackmate;
+    char *ackmate_dir_filter;
     int after;
     int before;
+    enum case_behavior casing;
     int color;
     int context;
-    int ackmate;
-    int recurse_dirs;
     int follow_symlinks;
-    enum case_behavior casing;
+    int recurse_dirs;
 } cli_options;
 
 // global options. parse_options gives it sane values, everything else reads from it
 cli_options opts;
 
+void init_options();
 void parse_options(int argc, char **argv);
+void cleanup_options();
 
 void usage();
 
