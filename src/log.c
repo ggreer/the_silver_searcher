@@ -43,6 +43,8 @@ void vplog(const int level, const char *fmt, va_list args) {
         return;
     }
 
+    FILE *stream = stdout;
+
     switch(level) {
         case LOG_LEVEL_DEBUG:
             printf("DEBUG: ");
@@ -54,11 +56,13 @@ void vplog(const int level, const char *fmt, va_list args) {
             printf("WARN: ");
         break;
         case LOG_LEVEL_ERR:
-            printf("ERR: ");
+            stream = stderr;
+            fprintf(stream, "ERR: ");
         break;
     }
-    vprintf(fmt, args);
-    printf("\n");
+
+    vfprintf(stream, fmt, args);
+    fprintf(stream, "\n");
 }
 
 void plog(const int level, const char *fmt, ...) {
