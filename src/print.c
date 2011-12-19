@@ -101,7 +101,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
 
         column++;
 
-        if (buf[i] == '\n') {
+        if (buf[i] == '\n' || i == buf_len - 1) {
             if (opts.ackmate && lines_since_last_match == 0) {
                 // print headers for ackmate to parse
                 printf("%i;", line);
