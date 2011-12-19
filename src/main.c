@@ -173,7 +173,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
 }
 
 int main(int argc, char **argv) {
-    set_log_level(LOG_LEVEL_MSG);
+    set_log_level(LOG_LEVEL_WARN);
 //    set_log_level(LOG_LEVEL_DEBUG);
 
     // TODO: For debugging ackmate. Remove this eventually
