@@ -45,12 +45,14 @@ void init_options() {
 
 void cleanup_options() {
     if (opts.ackmate_dir_filter) {
-        free(opts.ackmate_dir_filter);
+        pcre_free(opts.ackmate_dir_filter);
     }
 }
 
 void parse_options(int argc, char **argv) {
     int ch;
+    const char *pcre_err = NULL;
+    int pcre_err_offset = 0;
 
     init_options();
 
@@ -109,7 +111,11 @@ void parse_options(int argc, char **argv) {
             case 0: // Long option
                 if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0)
                 {
-                    opts.ackmate_dir_filter = strdup(optarg);
+                    opts.ackmate_dir_filter = pcre_compile(optarg, 0, &pcre_err, &pcre_err_offset, NULL);
+                    if (opts.ackmate_dir_filter == NULL) {
+                        log_err("pcre_compile of ackmate-dir-filter failed at position %i. Error: %s", pcre_err_offset, pcre_err);
+                        exit(1);
+                    }
                     break;
                 }
                 // Continue to usage if we don't recognize the option

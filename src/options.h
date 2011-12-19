@@ -2,6 +2,7 @@
 #define OPTIONS_H
 
 #include <getopt.h>
+#include <pcre.h>
 
 enum case_behavior {
     CASE_SENSITIVE,
@@ -11,7 +12,7 @@ enum case_behavior {
 
 typedef struct {
     int ackmate;
-    char *ackmate_dir_filter;
+    pcre *ackmate_dir_filter;
     int after;
     int before;
     enum case_behavior casing;

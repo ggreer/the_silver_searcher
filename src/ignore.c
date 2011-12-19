@@ -84,6 +84,7 @@ int filename_filter(struct dirent *dir) {
 
     char *filename = dir->d_name;
     char *pattern = NULL;
+    int rc = 0;
     // TODO: check if opts want to ignore hidden files
     if (filename[0] == '.') {
         return(0);
@@ -100,6 +101,15 @@ int filename_filter(struct dirent *dir) {
         pattern = ignore_patterns[i];
         if (fnmatch(pattern, filename, fnmatch_flags) == 0) {
             log_debug("file %s ignored because name matches pattern %s", dir->d_name, pattern);
+            return(0);
+        }
+    }
+
+    if (opts.ackmate_dir_filter != NULL) {
+        // we just care about the match, not where the matches are
+        rc = pcre_exec(opts.ackmate_dir_filter, NULL, dir->d_name, strlen(dir->d_name), 0, 0, NULL, 0);
+        if (rc >= 0) {
+            log_err("file %s ignored because name ackmate dir filter pattern", dir->d_name);
             return(0);
         }
     }
