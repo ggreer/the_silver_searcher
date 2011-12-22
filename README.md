@@ -68,3 +68,6 @@ You can use this with [my fork](https://github.com/ggreer/AckMate) of the popula
       * instead of printing the context lines (prev/next 5 lines), print everything in the local dom scope
     * track code dependencies (this is almost certainly a different product/program)
   * switch to RE2 http://code.google.com/p/re2/ http://john.freml.in/re2-benchmark
+  * introspection
+    * why did or didn't you search this file? (because of .agignore or hardcoded paths or it's a symlink or what?)
+    * how many files searched in how much time? average MB/sec
