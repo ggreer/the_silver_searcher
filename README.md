@@ -30,9 +30,10 @@ You can use this with [my fork](https://github.com/ggreer/AckMate) of the popula
 
 
 ## TODO ##
-* parse more ack options correctly (context and --ackmate aren't obeyed right now)
+* parse more ack options correctly (--context has bugs right now)
 * print context correctly
 * better detection and handling of binary files
+* actually get textmate dir patterns working
 
 ### initial brainstorming notes for myself ###
 
