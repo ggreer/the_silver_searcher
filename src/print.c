@@ -131,6 +131,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
   815;45 4:Patches are always welcome, but patches with tests get the most
  */
 
+// One day this function will take the place of print_file_matches
 void print_file_matches_with_context(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len) {
     int line = 1;
     int column = 0;
@@ -192,6 +193,15 @@ void print_file_matches_with_context(const char* path, const char* buf, const in
         }
 
         column++;
+
+        if (buf[i] == '\n') {
+            if (context_prev_lines[last_prev_line] != NULL) {
+                free(context_prev_lines[last_prev_line]);
+            }
+            //column will always be at least 1. we don't want to strcpy the \n
+            context_prev_lines[last_prev_line] = strndup(&buf[prev_line_offset], column - 1);
+            last_prev_line = (last_prev_line + 1) % opts.before;
+        }
 
         if (buf[i] == '\n' || i == buf_len - 1) {
             if (opts.ackmate && lines_since_last_match == 0) {
