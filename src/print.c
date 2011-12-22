@@ -14,28 +14,6 @@ const char *colors_reset = "\e[0m\e[K";
 const char *colors_path = "\e[1;32m"; // bold green
 const char *colors_match = "\e[30;43m"; // black with yellow background
 
-/*
-  Example output of ackmate's ack:
-  ./ackmate_ack --ackmate --literal --context --nofollow --ignore-case --match "test" ../
-  :../Resources/ackmate_ack
-  756:
-  757:That's why ack's behavior of not searching things it doesn't recognize
-  758;18 4:is one of its greatest strengths: the speed you get from only
-  759:searching the things that you want to be looking at.
-  760:
-  --
-  813:issues list at Github: L<http://github.com/petdance/ack/issues>
-  814:
-  815;45 4:Patches are always welcome, but patches with tests get the most
-  816:attention.
-  817:
-  
-  simpler output:
-  :../Resources/ackmate_ack
-  758;18 4:is one of its greatest strengths: the speed you get from only
-  815;45 4:Patches are always welcome, but patches with tests get the most
- */
-
 void print_path(const char* path) {
     if (opts.ackmate) {
         printf(":%s\n", path);
@@ -131,11 +109,33 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
     }
 }
 
+/*
+  Example output of ackmate's ack:
+  ./ackmate_ack --ackmate --literal --context --nofollow --ignore-case --match "test" ../
+  :../Resources/ackmate_ack
+  756:
+  757:That's why ack's behavior of not searching things it doesn't recognize
+  758;18 4:is one of its greatest strengths: the speed you get from only
+  759:searching the things that you want to be looking at.
+  760:
+  --
+  813:issues list at Github: L<http://github.com/petdance/ack/issues>
+  814:
+  815;45 4:Patches are always welcome, but patches with tests get the most
+  816:attention.
+  817:
+  
+  simpler output:
+  :../Resources/ackmate_ack
+  758;18 4:is one of its greatest strengths: the speed you get from only
+  815;45 4:Patches are always welcome, but patches with tests get the most
+ */
+
 void print_file_matches_with_context(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len) {
     int line = 1;
     int column = 0;
+    char *context_prev_lines[opts.before];
     int prev_line = 0;
-    char *prev_lines[opts.before];
     int last_prev_line = 0;
     int prev_line_offset = 0;
     int cur_match = 0;
@@ -151,12 +151,16 @@ void print_file_matches_with_context(const char* path, const char* buf, const in
     print_path(path);
 
     for (int i = 0; i < opts.before; i++) {
-        prev_lines[i] = NULL;
+        context_prev_lines[i] = NULL;
     }
 
     for (int i = 0; i < buf_len && (cur_match < matches_len || lines_since_last_match == 0); i++) {
         if (i == matches[cur_match].start) {
             in_a_match = 1;
+
+            if (cur_match > 0 && lines_since_last_match > (opts.before + opts.after) && opts.context) {
+                printf("--\n");
+            }
 
             if (lines_since_last_match > 0) {
                 if (opts.ackmate == 0) {
