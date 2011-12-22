@@ -164,6 +164,21 @@ void print_file_matches_with_context(const char* path, const char* buf, const in
             }
 
             if (lines_since_last_match > 0) {
+                if (lines_since_last_match > opts.after) {
+                    // We found the start of a match. print the previous line(s)
+                    for (int j = 0; j < opts.before; j++) {
+                        prev_line = (last_prev_line + j) % opts.before;
+                        if (context_prev_lines[prev_line] != NULL) {
+                            if (opts.ackmate) {
+                                printf("%i:%s\n", line - (opts.before - j), context_prev_lines[prev_line]);
+                            }
+                            else {
+                                printf("%i-%s\n", line - (opts.before - j), context_prev_lines[prev_line]);
+                            }
+                        }
+                    }
+                }
+
                 if (opts.ackmate == 0) {
                     printf("%i:", line);
                     // print up to current char
