@@ -65,6 +65,7 @@ void parse_options(int argc, char **argv) {
         { "ackmate-dir-filter", required_argument, NULL, 0 },
         { "after", required_argument, NULL, 'A' },
         { "before", required_argument, NULL, 'B' },
+        { "color", no_argument, &(opts.color), 1 },
         { "context", optional_argument, &(opts.context), 2 },
         { "follow", no_argument, &(opts.follow_symlinks), 1 },
         { "help", no_argument, &help, 1 },
