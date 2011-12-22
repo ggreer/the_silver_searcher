@@ -164,6 +164,7 @@ void print_file_matches_with_context(const char* path, const char* buf, const in
             }
 
             if (lines_since_last_match > 0) {
+                // TODO: this is buggy as hell
                 if (lines_since_last_match > opts.after) {
                     // We found the start of a match. print the previous line(s)
                     for (int j = 0; j < opts.before; j++) {
