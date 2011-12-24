@@ -30,7 +30,7 @@ int is_binary(const char* buf, int buf_len) {
 // then there can be sweet summaries of matches/files scanned/time/etc
 int search_dir(pcre *re, const char* path, const int depth) {
     //TODO: don't just die. also make max depth configurable
-    if(depth > MAX_SEARCH_DEPTH) {
+    if (depth > MAX_SEARCH_DEPTH) {
         log_err("Search depth greater than %i, giving up.", depth);
         exit(1);
     }
@@ -135,7 +135,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
         buf_len = (int)r_len;
 
         // In my profiling, most of the execution time is spent in this pcre_exec
-        while(buf_offset < buf_len &&
+        while (buf_offset < buf_len &&
              (rc = pcre_exec(re, NULL, buf, buf_len, buf_offset, 0, offset_vector, MAX_MATCHES_PER_FILE)) >= 0) {
             log_debug("Match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
             buf_offset = offset_vector[1];
@@ -191,7 +191,7 @@ int main(int argc, char **argv) {
 
     // TODO: For debugging ackmate. Remove this eventually
 ///*
-    for(int i = 0; i < argc; i++) {
+    for (int i = 0; i < argc; i++) {
         fprintf(stderr, "%s ", argv[i]);
     }
     fprintf(stderr, "\n");
