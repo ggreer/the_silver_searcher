@@ -134,7 +134,6 @@ int search_dir(pcre *re, const char* path, const int depth) {
             goto cleanup;
         }
 
-        rewind(fp);
         buf = (char*) malloc(sizeof(char) * f_len + 1);
         r_len = fread(buf, 1, f_len, fp);
         buf[r_len] = '\0';
