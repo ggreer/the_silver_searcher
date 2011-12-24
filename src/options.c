@@ -37,15 +37,16 @@ void print_version() {
 }
 
 void init_options() {
-    opts.follow_symlinks = 0;
-    opts.recurse_dirs = 1;
-    opts.casing = CASE_SENSITIVE;
     opts.ackmate = 0;
+    opts.ackmate_dir_filter = NULL;
     opts.after = 0;
     opts.before = 0;
-    opts.context = 0;
+    opts.casing = CASE_SENSITIVE;
     opts.color = 1;
-    opts.ackmate_dir_filter = NULL;
+    opts.context = 0;
+    opts.follow_symlinks = 0;
+    opts.literal = 0;
+    opts.recurse_dirs = 1;
 }
 
 void cleanup_options() {
@@ -61,11 +62,10 @@ void parse_options(int argc, char **argv) {
 
     init_options();
 
-    int blah = 0;
+    int useless = 0;
     int help = 0;
     int version = 0;
 
-    // XXXX: actually obey these options instead of disregarding them
     struct option longopts[] = {
         { "ackmate", no_argument, &(opts.ackmate), 1 },
         { "ackmate-dir-filter", required_argument, NULL, 0 },
@@ -76,11 +76,10 @@ void parse_options(int argc, char **argv) {
         { "follow", no_argument, &(opts.follow_symlinks), 1 },
         { "help", no_argument, &help, 1 },
         { "ignore-case", no_argument, NULL, 'i' },
-        { "literal", no_argument, &blah, 0 },
-        { "match", no_argument, &blah, 0 },
+        { "literal", no_argument, &(opts.literal), 1 },
+        { "match", no_argument, &useless, 0 },
         { "nocolor", no_argument, &(opts.color), 0 },
         { "nofollow", no_argument, &(opts.follow_symlinks), 0 },
-        { "nosmart-case", no_argument, &blah, 0 },
         { "version", no_argument, &version, 1 },
         { NULL, 0, NULL, 0 }
     };

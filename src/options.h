@@ -19,6 +19,7 @@ typedef struct {
     int color;
     int context;
     int follow_symlinks;
+    int literal;
     int recurse_dirs;
 } cli_options;
 
