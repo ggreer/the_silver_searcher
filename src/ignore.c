@@ -65,7 +65,7 @@ void load_ignore_patterns(const char *ignore_filename) {
     fclose(fp);
 }
 
-int ignorefile_filter(struct dirent *dir) {
+int ignorefile_filter(const struct dirent *dir) {
     for (int i = 0; ignore_pattern_files[i] != NULL; i++) {
         if (strcmp(ignore_pattern_files[i], dir->d_name) == 0) {
             log_debug("ignore pattern matched for %s", dir->d_name);
@@ -76,7 +76,7 @@ int ignorefile_filter(struct dirent *dir) {
 }
 
 // this function is REALLY HOT. It gets called for every file
-int filename_filter(struct dirent *dir) {
+int filename_filter(const struct dirent *dir) {
     if (opts.follow_symlinks == 0 && dir->d_type == DT_LNK) {
         log_debug("File %s ignored becaused it's a symlink", dir->d_name);
         return(0);

@@ -17,11 +17,21 @@
 const int MAX_SEARCH_DEPTH = 100;
 const int MAX_MATCHES_PER_FILE = 100;
 
+int is_binary(const char* buf, int buf_len) {
+    for (int i = 0; i < buf_len && i < 1024; i++) {
+        if (buf[i] == '\0') {
+            return(1);
+        }
+    }
+
+    return(0);
+}
+
 //TODO: append matches to some data structure instead of just printing them out
 // then there can be sweet summaries of matches/files scanned/time/etc
 int search_dir(pcre *re, const char* path, const int depth) {
     //TODO: don't just die. also make max depth configurable
-    if(depth > MAX_SEARCH_DEPTH) {
+    if (depth > MAX_SEARCH_DEPTH) {
         log_err("Search depth greater than %i, giving up.", depth);
         exit(1);
     }
@@ -76,10 +86,13 @@ int search_dir(pcre *re, const char* path, const int depth) {
     int offset_vector[MAX_MATCHES_PER_FILE * 3]; //XXXX
     int rc = 0;
     struct stat statbuf;
+    int binary = 0;
+    int max_matches = 0;
 
     for (int i=0; i<results; i++) {
         matches_len = 0;
         buf_offset = 0;
+        binary = 0;
         dir = dir_list[i];
         // XXX: this is copy-pasted from about 30 lines above
         path_length = (size_t)(strlen(path) + strlen(dir->d_name) + 2); // 2 for slash and null char
@@ -127,9 +140,17 @@ int search_dir(pcre *re, const char* path, const int depth) {
         buf[r_len] = '\0';
         buf_len = (int)r_len;
 
+        if (is_binary(buf, buf_len)) {
+            binary = 1;
+            max_matches = 1;
+        }
+        else {
+            max_matches = MAX_MATCHES_PER_FILE;
+        }
+
         // In my profiling, most of the execution time is spent in this pcre_exec
-        while(buf_offset < buf_len &&
-             (rc = pcre_exec(re, NULL, buf, buf_len, buf_offset, 0, offset_vector, MAX_MATCHES_PER_FILE)) >= 0) {
+        while (buf_offset < buf_len &&
+             (rc = pcre_exec(re, NULL, buf, buf_len, buf_offset, 0, offset_vector, max_matches)) >= 0) {
             log_debug("Match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
             buf_offset = offset_vector[1];
             matches[matches_len].start = offset_vector[0];
@@ -147,12 +168,17 @@ int search_dir(pcre *re, const char* path, const int depth) {
         }
 
         if (matches_len > 0) {
-            if (opts.context > 0) {
-                print_file_matches_with_context(dir_full_path, buf, buf_len, matches, matches_len);
+            if (binary) {
+                printf("Binary file %s matches.\n", dir_full_path);
             }
             else {
-                log_debug("calling print_file_matches(%s, buf, %i, matches, %i)", dir_full_path, buf_len, matches_len);
-                print_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
+                if (opts.context > 0) {
+                    print_file_matches_with_context(dir_full_path, buf, buf_len, matches, matches_len);
+                }
+                else {
+                    log_debug("calling print_file_matches(%s, buf, %i, matches, %i)", dir_full_path, buf_len, matches_len);
+                    print_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
+                }
             }
         }
 
@@ -181,7 +207,7 @@ int main(int argc, char **argv) {
 
     // TODO: For debugging ackmate. Remove this eventually
 ///*
-    for(int i = 0; i < argc; i++) {
+    for (int i = 0; i < argc; i++) {
         fprintf(stderr, "%s ", argv[i]);
     }
     fprintf(stderr, "\n");

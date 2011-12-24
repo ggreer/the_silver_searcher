@@ -6,6 +6,7 @@
 
 #include "options.h"
 #include "log.h"
+#include "version.h"
 
 // TODO: printf()ing this is not going to scale
 void usage() {
@@ -31,16 +32,21 @@ void usage() {
     printf("\n");
 }
 
+void print_version() {
+    printf("ag version %s\n", AG_VERSION);
+}
+
 void init_options() {
-    opts.follow_symlinks = 0;
-    opts.recurse_dirs = 1;
-    opts.casing = CASE_SENSITIVE;
     opts.ackmate = 0;
+    opts.ackmate_dir_filter = NULL;
     opts.after = 0;
     opts.before = 0;
-    opts.context = 0;
+    opts.casing = CASE_SENSITIVE;
     opts.color = 1;
-    opts.ackmate_dir_filter = NULL;
+    opts.context = 0;
+    opts.follow_symlinks = 0;
+    opts.literal = 0;
+    opts.recurse_dirs = 1;
 }
 
 void cleanup_options() {
@@ -56,10 +62,10 @@ void parse_options(int argc, char **argv) {
 
     init_options();
 
-    int blah = 0;
+    int useless = 0;
     int help = 0;
+    int version = 0;
 
-    // XXXX: actually obey these options instead of disregarding them
     struct option longopts[] = {
         { "ackmate", no_argument, &(opts.ackmate), 1 },
         { "ackmate-dir-filter", required_argument, NULL, 0 },
@@ -70,11 +76,12 @@ void parse_options(int argc, char **argv) {
         { "follow", no_argument, &(opts.follow_symlinks), 1 },
         { "help", no_argument, &help, 1 },
         { "ignore-case", no_argument, NULL, 'i' },
-        { "literal", no_argument, &blah, 0 },
-        { "match", no_argument, &blah, 0 },
+        { "literal", no_argument, &(opts.literal), 1 },
+        { "match", no_argument, &useless, 0 },
         { "nocolor", no_argument, &(opts.color), 0 },
         { "nofollow", no_argument, &(opts.follow_symlinks), 0 },
-        { "nosmart-case", no_argument, &blah, 0 },
+        { "nosmart-case", no_argument, &useless, 0 },
+        { "version", no_argument, &version, 1 },
         { NULL, 0, NULL, 0 }
     };
 
@@ -86,7 +93,7 @@ void parse_options(int argc, char **argv) {
     }
 
     // TODO: check for insane params. nobody is going to want 5000000 lines of context, for example
-    while ((ch = getopt_long(argc, argv, "A:B:C:fiv", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:B:C:fivV", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 opts.after = atoi(optarg);
@@ -108,6 +115,9 @@ void parse_options(int argc, char **argv) {
                 break;
             case 'v':
                 set_log_level(LOG_LEVEL_MSG);
+                break;
+            case 'V':
+                version = 1;
                 break;
             case 0: // Long option
                 if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0)
@@ -132,6 +142,11 @@ void parse_options(int argc, char **argv) {
 
     if (help) {
         usage();
+        exit(0);
+    }
+
+    if (version) {
+        print_version();
         exit(0);
     }
 
