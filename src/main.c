@@ -16,6 +16,16 @@
 const int MAX_SEARCH_DEPTH = 100;
 const int MAX_MATCHES_PER_FILE = 100;
 
+int is_binary(const char* buf, int buf_len) {
+    for (int i = 0; i < buf_len && i < 1024; i++) {
+        if (buf[i] == '\0') {
+            return(1);
+        }
+    }
+
+    return(0);
+}
+
 //TODO: append matches to some data structure instead of just printing them out
 // then there can be sweet summaries of matches/files scanned/time/etc
 int search_dir(pcre *re, const char* path, const int depth) {
@@ -144,6 +154,9 @@ int search_dir(pcre *re, const char* path, const int depth) {
         }
 
         if (matches_len > 0) {
+            if (is_binary(buf, buf_len)) {
+                printf("Binary file %s matches.\n", dir_full_path);
+            }
             if (opts.context > 0) {
                 print_file_matches_with_context(dir_full_path, buf, buf_len, matches, matches_len);
             }
