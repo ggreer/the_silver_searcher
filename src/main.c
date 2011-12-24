@@ -7,6 +7,7 @@
 #include <string.h>
 #include <sys/dir.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 
 #include "ignore.h"
 #include "log.h"
@@ -29,7 +30,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
     int results = 0;
 
     FILE *fp = NULL;
-    int f_len = 0;
+    off_t f_len = 0;
     size_t r_len = 0;
     char *buf = NULL;
     int rv = 0;
@@ -74,6 +75,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
     int buf_offset = 0;
     int offset_vector[MAX_MATCHES_PER_FILE * 3]; //XXXX
     int rc = 0;
+    struct stat statbuf;
 
     for (int i=0; i<results; i++) {
         matches_len = 0;
@@ -102,13 +104,14 @@ int search_dir(pcre *re, const char* path, const int depth) {
             goto cleanup;
         }
 
-        rv = fseek(fp, 0, SEEK_END);
+        rv = fstat(fileno(fp), &statbuf);
         if (rv != 0) {
-            log_err("Error fseek()ing file %s. Skipping...", dir_full_path);
+            log_err("Error fstat()ing file %s. Skipping...", dir_full_path);
             goto cleanup;
         }
 
-        f_len = ftell(fp); //TODO: behave differently if file is HUGE. on 32 bit, anything > 2GB will screw up this program
+        f_len = statbuf.st_size;
+
         if (f_len == 0) {
             log_debug("File %s is empty, skipping.", dir_full_path);
             goto cleanup;
