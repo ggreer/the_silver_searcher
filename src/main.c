@@ -84,10 +84,13 @@ int search_dir(pcre *re, const char* path, const int depth) {
     int buf_offset = 0;
     int offset_vector[MAX_MATCHES_PER_FILE * 3]; //XXXX
     int rc = 0;
+    int binary = 0;
+    int max_matches = 0;
 
     for (int i=0; i<results; i++) {
         matches_len = 0;
         buf_offset = 0;
+        binary = 0;
         dir = dir_list[i];
         // XXX: this is copy-pasted from about 30 lines above
         path_length = (size_t)(strlen(path) + strlen(dir->d_name) + 2); // 2 for slash and null char
@@ -134,9 +137,17 @@ int search_dir(pcre *re, const char* path, const int depth) {
         buf[r_len] = '\0';
         buf_len = (int)r_len;
 
+        if (is_binary(buf, buf_len)) {
+            binary = 1;
+            max_matches = 1;
+        }
+        else {
+            max_matches = MAX_MATCHES_PER_FILE;
+        }
+
         // In my profiling, most of the execution time is spent in this pcre_exec
         while (buf_offset < buf_len &&
-             (rc = pcre_exec(re, NULL, buf, buf_len, buf_offset, 0, offset_vector, MAX_MATCHES_PER_FILE)) >= 0) {
+             (rc = pcre_exec(re, NULL, buf, buf_len, buf_offset, 0, offset_vector, max_matches)) >= 0) {
             log_debug("Match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
             buf_offset = offset_vector[1];
             matches[matches_len].start = offset_vector[0];
@@ -154,15 +165,17 @@ int search_dir(pcre *re, const char* path, const int depth) {
         }
 
         if (matches_len > 0) {
-            if (is_binary(buf, buf_len)) {
+            if (binary) {
                 printf("Binary file %s matches.\n", dir_full_path);
             }
-            if (opts.context > 0) {
-                print_file_matches_with_context(dir_full_path, buf, buf_len, matches, matches_len);
-            }
             else {
-                log_debug("calling print_file_matches(%s, buf, %i, matches, %i)", dir_full_path, buf_len, matches_len);
-                print_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
+                if (opts.context > 0) {
+                    print_file_matches_with_context(dir_full_path, buf, buf_len, matches, matches_len);
+                }
+                else {
+                    log_debug("calling print_file_matches(%s, buf, %i, matches, %i)", dir_full_path, buf_len, matches_len);
+                    print_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
+                }
             }
         }
 

@@ -80,6 +80,7 @@ void parse_options(int argc, char **argv) {
         { "match", no_argument, &useless, 0 },
         { "nocolor", no_argument, &(opts.color), 0 },
         { "nofollow", no_argument, &(opts.follow_symlinks), 0 },
+        { "nosmart-case", no_argument, &useless, 0 },
         { "version", no_argument, &version, 1 },
         { NULL, 0, NULL, 0 }
     };
