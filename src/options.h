@@ -20,6 +20,9 @@ typedef struct {
     int context;
     int follow_symlinks;
     int literal;
+    int print_heading;
+    int print_break;
+    int print_filename_only;
     int recurse_dirs;
 } cli_options;
 

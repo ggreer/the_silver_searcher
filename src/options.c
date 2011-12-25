@@ -46,6 +46,9 @@ void init_options() {
     opts.context = 0;
     opts.follow_symlinks = 0;
     opts.literal = 0;
+    opts.print_break = 1;
+    opts.print_heading = 1;
+    opts.print_filename_only = 0;
     opts.recurse_dirs = 1;
 }
 
@@ -72,14 +75,17 @@ void parse_options(int argc, char **argv) {
         { "after", required_argument, NULL, 'A' },
         { "before", required_argument, NULL, 'B' },
         { "color", no_argument, &(opts.color), 1 },
+        { "nocolor", no_argument, &(opts.color), 0 },
         { "context", optional_argument, &(opts.context), 2 },
         { "follow", no_argument, &(opts.follow_symlinks), 1 },
+        { "nofollow", no_argument, &(opts.follow_symlinks), 0 },
+        { "heading", no_argument, &(opts.print_heading), 1 },
+        { "noheading", no_argument, &(opts.print_heading), 0 },
         { "help", no_argument, &help, 1 },
         { "ignore-case", no_argument, NULL, 'i' },
         { "literal", no_argument, &(opts.literal), 1 },
         { "match", no_argument, &useless, 0 },
-        { "nocolor", no_argument, &(opts.color), 0 },
-        { "nofollow", no_argument, &(opts.follow_symlinks), 0 },
+        { "smart-case", no_argument, &useless, 0 },
         { "nosmart-case", no_argument, &useless, 0 },
         { "version", no_argument, &version, 1 },
         { NULL, 0, NULL, 0 }
@@ -105,7 +111,7 @@ void parse_options(int argc, char **argv) {
                 opts.context = atoi(optarg);
                 break;
             case 'f':
-                opts.follow_symlinks = 1;
+                opts.print_filename_only = 1;
                 break;
             case 'h':
                 help = 1;
