@@ -82,7 +82,7 @@ int filename_filter(const struct dirent *dir) {
         return(0);
     }
 
-    char *filename = dir->d_name;
+    const char *filename = dir->d_name;
     char *pattern = NULL;
     int rc = 0;
     // TODO: check if opts want to ignore hidden files
