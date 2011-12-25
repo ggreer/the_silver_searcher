@@ -9,6 +9,5 @@ typedef struct {
 void print_path(const char* path);
 
 void print_file_matches(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len);
-void print_file_matches_with_context(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len);
 
 #endif
