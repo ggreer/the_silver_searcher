@@ -47,8 +47,8 @@ void init_options() {
     opts.follow_symlinks = 0;
     opts.literal = 0;
     opts.print_break = 1;
-    opts.print_heading = 1;
     opts.print_filename_only = 0;
+    opts.print_heading = 1;
     opts.recurse_dirs = 1;
 }
 
