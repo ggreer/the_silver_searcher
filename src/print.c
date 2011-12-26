@@ -16,40 +16,19 @@ const char *colors_match = "\e[30;43m"; // black with yellow background
 
 void print_path(const char* path) {
     if (opts.ackmate) {
-        printf(":%s\n", path);
+        printf(":%s", path);
     }
     else {
         if (opts.color) {
-            printf("%s%s%s\n", colors_path, path, colors_reset);
+            printf("%s%s%s", colors_path, path, colors_reset);
         }
         else {
-            printf("%s\n", path);
+            printf("%s", path);
         }
     }
 }
 
-/*
-  Example output of ackmate's ack:
-  ./ackmate_ack --ackmate --literal --context --nofollow --ignore-case --match "test" ../
-  :../Resources/ackmate_ack
-  756:
-  757:That's why ack's behavior of not searching things it doesn't recognize
-  758;18 4:is one of its greatest strengths: the speed you get from only
-  759:searching the things that you want to be looking at.
-  760:
-  --
-  813:issues list at Github: L<http://github.com/petdance/ack/issues>
-  814:
-  815;45 4:Patches are always welcome, but patches with tests get the most
-  816:attention.
-  817:
-  
-  simpler output:
-  :../Resources/ackmate_ack
-  758;18 4:is one of its greatest strengths: the speed you get from only
-  815;45 4:Patches are always welcome, but patches with tests get the most
- */
-
+// TODO: line numbers need to be colorized
 void print_file_matches(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len) {
     int line = 1;
     int column = 0;
@@ -61,16 +40,24 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
     int in_a_match = 0;
     int lines_since_last_match = 1000000; // if I initialize this to INT_MAX it'll overflow
     int last_printed_match = 0;
+    char sep = '-';
 
-    if (first_file_match == 0 && opts.ackmate == 0) {
+    if (first_file_match == 0 && opts.print_break) {
         printf("\n");
     }
     first_file_match = 0;
 
-    print_path(path);
+    if (opts.print_heading) {
+        print_path(path);
+        printf("\n");
+    }
 
     for (int i = 0; i < opts.before; i++) {
         context_prev_lines[i] = NULL;
+    }
+
+    if (opts.ackmate) {
+        sep = ':';
     }
 
     for (int i = 0; i < buf_len && (cur_match < matches_len || lines_since_last_match == 0); i++) {
@@ -88,17 +75,20 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                     for (int j = 0; j < opts.before; j++) {
                         prev_line = (last_prev_line + j) % opts.before;
                         if (context_prev_lines[prev_line] != NULL) {
-                            if (opts.ackmate) {
-                                printf("%i:%s\n", line - (opts.before - j), context_prev_lines[prev_line]);
+                            if (opts.print_heading == 0) {
+                                print_path(path);
+                                printf(":");
                             }
-                            else {
-                                printf("%i-%s\n", line - (opts.before - j), context_prev_lines[prev_line]);
-                            }
+                            printf("%i%c%s\n", line - (opts.before - j), sep, context_prev_lines[prev_line]);
                         }
                     }
                 }
 
                 if (opts.ackmate == 0) {
+                    if (opts.print_heading == 0) {
+                        print_path(path);
+                        printf(":");
+                    }
                     printf("%i:", line);
                     // print up to current char
                     for (int j = prev_line_offset; j < i; j++) {

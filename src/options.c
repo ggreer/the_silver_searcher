@@ -167,6 +167,7 @@ void parse_options(int argc, char **argv) {
 
     if (opts.ackmate) {
         opts.color = 0;
+        opts.print_break = 1;
     }
 
     argc -= optind;
