@@ -19,6 +19,7 @@ typedef struct {
     int color;
     int context;
     int follow_symlinks;
+    int invert_match;
     int literal;
     int print_break;
     int print_filename_only;

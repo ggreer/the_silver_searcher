@@ -45,6 +45,7 @@ void init_options() {
     opts.color = 1;
     opts.context = 0;
     opts.follow_symlinks = 0;
+    opts.invert_match = 0;
     opts.literal = 0;
     opts.print_break = 1;
     opts.print_filename_only = 0;
@@ -80,6 +81,7 @@ void parse_options(int argc, char **argv) {
         { "nocolor", no_argument, &(opts.color), 0 },
         { "context", optional_argument, &(opts.context), 2 },
         { "follow", no_argument, &(opts.follow_symlinks), 1 },
+        { "invert-match", no_argument, &(opts.invert_match), 1 },
         { "nofollow", no_argument, &(opts.follow_symlinks), 0 },
         { "heading", no_argument, &(opts.print_heading), 1 },
         { "noheading", no_argument, &(opts.print_heading), 0 },
@@ -122,7 +124,7 @@ void parse_options(int argc, char **argv) {
                 opts.casing = CASE_INSENSITIVE;
                 break;
             case 'v':
-                set_log_level(LOG_LEVEL_MSG);
+                opts.invert_match = 1;
                 break;
             case 'V':
                 version = 1;

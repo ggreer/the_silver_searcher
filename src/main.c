@@ -167,11 +167,16 @@ int search_dir(pcre *re, const char* path, const int depth) {
         }
 
         if (matches_len > 0) {
-            if (binary) {
-                printf("Binary file %s matches.\n", dir_full_path);
+            if (opts.print_filename_only) {
+                print_path(dir_full_path);
             }
             else {
-                print_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
+                if (binary) {
+                    printf("Binary file %s matches.\n", dir_full_path);
+                }
+                else {
+                    print_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
+                }
             }
         }
 
