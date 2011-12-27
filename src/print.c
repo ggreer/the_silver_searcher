@@ -123,7 +123,8 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                 if (context_prev_lines[last_prev_line] != NULL) {
                     free(context_prev_lines[last_prev_line]);
                 }
-                //column will always be at least 1. we don't want to strcpy the \n
+                // We just incremented column so it will always be at least 1.
+                // We don't want to strcpy the \n
                 context_prev_lines[last_prev_line] = strndup(&buf[prev_line_offset], column - 1);
                 last_prev_line = (last_prev_line + 1) % opts.before;
             }
