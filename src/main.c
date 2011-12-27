@@ -225,8 +225,8 @@ int main(int argc, char **argv) {
     fprintf(stderr, "\n");
 #endif
 
-    char *query;
-    char *path;
+    char *query = NULL;
+    char *path = NULL;
     int pcre_opts = 0;
     int rv = 0;
     const char *pcre_err = NULL;
