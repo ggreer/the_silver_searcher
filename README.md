@@ -15,10 +15,10 @@ My attempt to make something better than ack, which itself is better than grep. 
 
 On the continuum of...
 
-1. Make it compile.
-2. Make it run.
-3. Make it behave correctly.
-4. Make it fast.
+1. Compiles
+2. Runs
+3. Behaves correctly
+4. Behaves correctly and runs fast
 
 ...it's somewhere between 2 and 3 right now. Although it's much faster than ack in my benchmarks.
 
@@ -30,10 +30,16 @@ You can use this with [my fork](https://github.com/ggreer/AckMate) of the popula
 
 
 ## TODO ##
-* parse more ack options correctly (--context has bugs right now)
-* print context correctly
-* better detection and handling of binary files
+* parse more ack options correctly
 * actually get textmate dir patterns working
+* support inverted matching
+* support piping in stuff
+* docs/manpages
+
+## Other stuff you might like ##
+* [AckMate](https://github.com/protocool/AckMate)
+* [Exuberant Ctags](http://ctags.sourceforge.net/)
+* [Git-grep](http://book.git-scm.com/4_finding_with_git_grep.html)
 
 ### initial brainstorming notes for myself ###
 
