@@ -182,16 +182,15 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         opts.color = 0;
     }
 
-    *query = malloc(strlen(argv[optind - 1]) + 1);
-    strcpy(*query, argv[optind - 1]);
+    *query = strdup(argv[0]);
 
-    if (optind < argc) {
-      path_len = strlen(argv[optind]);
+    if (argc > 1) {
+      path_len = strlen(argv[1]);
       *path = malloc(path_len);
-      strcpy(*path, argv[optind]);
+      strcpy(*path, argv[1]);
       // kill trailing slash
-      if (path_len > 0 && path[path_len-1] == '/') {
-        *path[path_len-1] = '\0';
+      if (path_len > 0 && path[path_len - 1] == '/') {
+        *path[path_len - 1] = '\0';
       }
     }
     else {
