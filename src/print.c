@@ -62,7 +62,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
         context_prev_lines[i] = NULL;
     }
 
-    for (int i = 0; i < buf_len && (cur_match < matches_len || lines_since_last_match == 0); i++) {
+    for (int i = 0; i < buf_len && (cur_match < matches_len || lines_since_last_match <= opts.after); i++) {
         if (i == matches[cur_match].start) {
             in_a_match = 1;
 
