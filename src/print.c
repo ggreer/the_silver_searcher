@@ -28,6 +28,8 @@ void print_path(const char* path) {
     }
 }
 
+// TODO: make print_matching_line()
+
 // TODO: line numbers need to be colorized
 void print_file_matches(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len) {
     int line = 1;
@@ -146,12 +148,16 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
 
                         last_printed_match++;
                     }
+                    // print up to current char
+                    for (int j = prev_line_offset; j < i; j++) {
+                        putchar(buf[j]);
+                    }
+                    putchar('\n');
                 }
-                // print up to current char
-                for (int j = prev_line_offset; j < i; j++) {
-                    putchar(buf[j]);
-                }
-                putchar('\n');
+            }
+            else if (lines_since_last_match < opts.after) {
+                //print context after matching line
+                
             }
 
             prev_line_offset = i + 1; // skip the newline
