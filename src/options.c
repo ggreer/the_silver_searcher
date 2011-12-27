@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <xlocale.h>
 
 #include "options.h"
@@ -172,6 +173,10 @@ void parse_options(int argc, char **argv) {
     if (opts.ackmate) {
         opts.color = 0;
         opts.print_break = 1;
+    }
+
+    if (!isatty(fileno(stdout))) {
+        opts.color = 0;
     }
 
     argc -= optind;
