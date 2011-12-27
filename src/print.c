@@ -157,7 +157,10 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
             }
             else if (lines_since_last_match < opts.after) {
                 //print context after matching line
-                
+                for (int j = prev_line_offset; j < i; j++) {
+                    putchar(buf[j]);
+                }
+                putchar('\n');
             }
 
             prev_line_offset = i + 1; // skip the newline
