@@ -155,8 +155,14 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                     putchar('\n');
                 }
             }
-            else if (lines_since_last_match < opts.after) {
+            else if (lines_since_last_match <= opts.after) {
                 //print context after matching line
+                if (opts.print_heading == 0) {
+                    print_path(path);
+                    printf(":");
+                }
+                printf("%i%c", line, sep);
+
                 for (int j = prev_line_offset; j < i; j++) {
                     putchar(buf[j]);
                 }
