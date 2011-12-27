@@ -64,7 +64,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
         if (i == matches[cur_match].start) {
             in_a_match = 1;
 
-            if (cur_match > 0 && lines_since_last_match > (opts.before + opts.after) && opts.context) {
+            if (cur_match > 0 && opts.context && lines_since_last_match > (opts.before + opts.after)) {
                 printf("--\n");
             }
 
