@@ -19,11 +19,23 @@
 const int MAX_SEARCH_DEPTH = 100;
 const int MAX_MATCHES_PER_FILE = 100;
 
-int is_binary(const char* buf, int buf_len) {
+int is_binary(const void* buf, const int buf_len) {
+    int suspicious_bytes = 0;
+    int total_bytes = buf_len > 1024 ? 1024 : buf_len;
+    const unsigned char *buf_c = buf;
+
     for (int i = 0; i < buf_len && i < 1024; i++) {
-        if (buf[i] == '\0') {
+        if (buf_c[i] == '\0') {
             return(1);
         }
+        else if (buf_c[i] < 32 || buf_c[i] > 128) {
+            suspicious_bytes++;
+        }
+    }
+
+    // If > 10% of bytes are suspicious, assume it's binary
+    if ((suspicious_bytes * 100) / total_bytes > 10) {
+        return(1);
     }
 
     return(0);
@@ -141,7 +153,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
         buf[r_len] = '\0';
         buf_len = (int)r_len;
 
-        if (is_binary(buf, buf_len)) {
+        if (is_binary((void*)buf, buf_len)) { // Who needs duck typing when you have void cast? :)
             binary = 1;
             max_matches = 1;
         }
