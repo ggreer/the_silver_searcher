@@ -42,6 +42,10 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
     int last_printed_match = 0;
     char sep = '-';
 
+    if (opts.ackmate) {
+        sep = ':';
+    }
+
     if (first_file_match == 0 && opts.print_break) {
         printf("\n");
     }
@@ -54,10 +58,6 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
 
     for (int i = 0; i < opts.before; i++) {
         context_prev_lines[i] = NULL;
-    }
-
-    if (opts.ackmate) {
-        sep = ':';
     }
 
     for (int i = 0; i < buf_len && (cur_match < matches_len || lines_since_last_match == 0); i++) {
