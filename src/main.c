@@ -16,8 +16,8 @@
 
 //#define AG_DEBUG
 
-const int MAX_SEARCH_DEPTH = 100;
-const int MAX_MATCHES_PER_FILE = 100;
+const int MAX_SEARCH_DEPTH = 25;
+const int MAX_MATCHES_PER_FILE = 1000;
 
 int is_binary(const void* buf, const int buf_len) {
     int suspicious_bytes = 0;
