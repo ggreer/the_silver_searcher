@@ -80,6 +80,7 @@ void parse_options(int argc, char **argv) {
         { "color", no_argument, &(opts.color), 1 },
         { "nocolor", no_argument, &(opts.color), 0 },
         { "context", optional_argument, &(opts.context), 2 },
+        { "debug", no_argument, NULL, 'D' },
         { "follow", no_argument, &(opts.follow_symlinks), 1 },
         { "invert-match", no_argument, &(opts.invert_match), 1 },
         { "nofollow", no_argument, &(opts.follow_symlinks), 0 },
@@ -103,7 +104,7 @@ void parse_options(int argc, char **argv) {
     }
 
     // TODO: check for insane params. nobody is going to want 5000000 lines of context, for example
-    while ((ch = getopt_long(argc, argv, "A:B:C:fivV", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:B:C:DfivV", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 opts.after = atoi(optarg);
@@ -113,6 +114,9 @@ void parse_options(int argc, char **argv) {
                 break;
             case 'C':
                 opts.context = atoi(optarg);
+                break;
+            case 'D':
+                set_log_level(LOG_LEVEL_DEBUG);
                 break;
             case 'f':
                 opts.print_filename_only = 1;
