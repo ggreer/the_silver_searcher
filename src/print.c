@@ -131,19 +131,21 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
         }
 
         if (buf[i] == '\n' || i == buf_len - 1) {
-            if (opts.ackmate && lines_since_last_match == 0) {
-                // print headers for ackmate to parse
-                printf("%i;", line);
-                while (last_printed_match < cur_match) {
-                    printf("%i %i", (matches[last_printed_match].start - prev_line_offset), (matches[last_printed_match].end - matches[last_printed_match].start));
-                    if (last_printed_match == cur_match - 1) {
-                        putchar(':');
-                    }
-                    else {
-                        putchar(',');
-                    }
+            if (lines_since_last_match == 0) {
+                if (opts.ackmate) {
+                    // print headers for ackmate to parse
+                    printf("%i;", line);
+                    while (last_printed_match < cur_match) {
+                        printf("%i %i", (matches[last_printed_match].start - prev_line_offset), (matches[last_printed_match].end - matches[last_printed_match].start));
+                        if (last_printed_match == cur_match - 1) {
+                            putchar(':');
+                        }
+                        else {
+                            putchar(',');
+                        }
 
-                    last_printed_match++;
+                        last_printed_match++;
+                    }
                 }
                 // print up to current char
                 for (int j = prev_line_offset; j < i; j++) {
