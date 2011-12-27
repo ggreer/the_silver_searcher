@@ -60,16 +60,16 @@ void cleanup_options() {
     }
 }
 
-void parse_options(int argc, char **argv) {
+void parse_options(int argc, char **argv, char **query, char **path) {
     int ch;
     const char *pcre_err = NULL;
     int pcre_err_offset = 0;
-
-    init_options();
-
+    int path_len = 0;
     int useless = 0;
     int help = 0;
     int version = 0;
+
+    init_options();
 
     struct option longopts[] = {
         { "ackmate", no_argument, &(opts.ackmate), 1 },
@@ -155,6 +155,9 @@ void parse_options(int argc, char **argv) {
         }
     }
 
+    argc -= optind;
+    argv += optind;
+
     if (help) {
         usage();
         exit(0);
@@ -179,6 +182,19 @@ void parse_options(int argc, char **argv) {
         opts.color = 0;
     }
 
-    argc -= optind;
-    argv += optind;
+    *query = malloc(strlen(argv[optind - 1]) + 1);
+    strcpy(*query, argv[optind - 1]);
+
+    if (optind < argc) {
+      path_len = strlen(argv[optind]);
+      *path = malloc(path_len);
+      strcpy(*path, argv[optind]);
+      // kill trailing slash
+      if (path_len > 0 && path[path_len-1] == '/') {
+        *path[path_len-1] = '\0';
+      }
+    }
+    else {
+      *path = strdup(".");
+    }
 }

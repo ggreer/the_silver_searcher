@@ -227,25 +227,13 @@ int main(int argc, char **argv) {
 
     char *query;
     char *path;
-    int path_len = 0;
     int pcre_opts = 0;
     int rv = 0;
     const char *pcre_err = NULL;
     int pcre_err_offset = 0;
     pcre *re = NULL;
 
-    parse_options(argc, argv);
-
-    query = malloc(strlen(argv[argc - 2]) + 1);
-    strcpy(query, argv[argc - 2]);
-
-    path_len = strlen(argv[argc - 1]);
-    path = malloc(path_len + 1);
-    strcpy(path, argv[argc - 1]);
-    // kill trailing slash
-    if (path_len > 0 && path[path_len-1] == '/') {
-        path[path_len-1] = '\0';
-    }
+    parse_options(argc, argv, &query, &path);
 
     if (opts.casing == CASE_INSENSITIVE) {
         pcre_opts = pcre_opts | PCRE_CASELESS;
