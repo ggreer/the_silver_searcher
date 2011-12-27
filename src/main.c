@@ -85,7 +85,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
     int matches_len = 0;
     int buf_len = 0;
     int buf_offset = 0;
-    int offset_vector[MAX_MATCHES_PER_FILE * 3]; //XXXX
+    int offset_vector[MAX_MATCHES_PER_FILE * 3]; //TODO
     int rc = 0;
     struct stat statbuf;
     int binary = 0;
@@ -96,7 +96,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
         buf_offset = 0;
         binary = 0;
         dir = dir_list[i];
-        // XXX: this is copy-pasted from about 30 lines above
+        // TODO: this is copy-pasted from about 30 lines above
         path_length = (size_t)(strlen(path) + strlen(dir->d_name) + 2); // 2 for slash and null char
         dir_full_path = malloc(path_length);
         dir_full_path = strncpy(dir_full_path, path, path_length);
