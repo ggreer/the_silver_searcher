@@ -31,7 +31,7 @@ typedef struct {
 cli_options opts;
 
 void init_options();
-void parse_options(int argc, char **argv);
+void parse_options(int argc, char **argv, char **query, char **path);
 void cleanup_options();
 
 void usage();
