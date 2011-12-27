@@ -14,6 +14,8 @@
 #include "options.h"
 #include "print.h"
 
+//#define AG_DEBUG
+
 const int MAX_SEARCH_DEPTH = 100;
 const int MAX_MATCHES_PER_FILE = 100;
 
@@ -201,15 +203,16 @@ int search_dir(pcre *re, const char* path, const int depth) {
 
 int main(int argc, char **argv) {
     set_log_level(LOG_LEVEL_WARN);
-//    set_log_level(LOG_LEVEL_DEBUG);
 
-    // TODO: For debugging ackmate. Remove this eventually
-/*
+#ifdef AG_DEBUG
+    set_log_level(LOG_LEVEL_DEBUG);
+
     for (int i = 0; i < argc; i++) {
         fprintf(stderr, "%s ", argv[i]);
     }
     fprintf(stderr, "\n");
-*/
+#endif
+
     char *query;
     char *path;
     int path_len = 0;
