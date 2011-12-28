@@ -4,6 +4,14 @@
 #include <getopt.h>
 #include <pcre.h>
 
+#ifndef TRUE
+#define TRUE 1
+#endif
+
+#ifndef FALSE
+#define FALSE 0
+#endif
+
 enum case_behavior {
     CASE_SENSITIVE,
     CASE_INSENSITIVE,
@@ -16,6 +24,8 @@ typedef struct {
     int after;
     int before;
     enum case_behavior casing;
+    const char *file_search_string;
+    pcre *file_search_regex;
     int color;
     int column;
     int context;
