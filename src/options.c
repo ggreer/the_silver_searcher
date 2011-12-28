@@ -66,6 +66,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
     int pcre_err_offset = 0;
     int path_len = 0;
     int useless = 0;
+    int group = 1;
     int help = 0;
     int version = 0;
 
@@ -83,6 +84,8 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         { "context", optional_argument, &(opts.context), 2 },
         { "debug", no_argument, NULL, 'D' },
         { "follow", no_argument, &(opts.follow_symlinks), 1 },
+        { "group", no_argument, &(group), 1 },
+        { "nogroup", no_argument, &(group), 0 },
         { "invert-match", no_argument, &(opts.invert_match), 1 },
         { "nofollow", no_argument, &(opts.follow_symlinks), 0 },
         { "heading", no_argument, &(opts.print_heading), 1 },
@@ -157,6 +160,15 @@ void parse_options(int argc, char **argv, char **query, char **path) {
 
     argc -= optind;
     argv += optind;
+
+    if (group) {
+        opts.print_heading = 1;
+        opts.print_break = 1;
+    }
+    else {
+        opts.print_heading = 0;
+        opts.print_break = 0;
+    }
 
     if (help) {
         usage();
