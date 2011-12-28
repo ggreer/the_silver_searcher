@@ -131,6 +131,15 @@ int search_dir(const pcre *re, const char* path, const int depth) {
             goto cleanup;
         }
 
+        if (opts.file_search_regex) {
+          rc = pcre_exec(opts.file_search_regex, NULL, dir_full_path, strlen(dir_full_path),
+                         buf_offset, 0, offset_vector, max_matches * 3);
+          if (rc < 0) { /* no match */
+            log_debug("Skipping %s due to file_search_regex.", dir_full_path);
+            goto cleanup;
+          }
+        }
+
         fd = open(dir_full_path, O_RDONLY);
         if (fd < 0) {
             log_err("Error opening file %s. Skipping...", dir_full_path);

@@ -21,6 +21,7 @@ void usage() {
     printf("Search options:\n");
     printf("\n");
     printf("  -i, --ignore-case\n");
+    printf("  -G, --file-search-regex\n");
     printf("  --literal\n");
     printf("\n");
     printf("Output options:\n");
@@ -40,22 +41,12 @@ void print_version() {
 }
 
 void init_options() {
-    opts.ackmate = 0;
-    opts.ackmate_dir_filter = NULL;
-    opts.after = 0;
-    opts.before = 0;
+    memset(&opts, 0, sizeof(&opts));
     opts.casing = CASE_SENSITIVE;
-    opts.color = 1;
-    opts.column = 0;
-    opts.context = 0;
-    opts.follow_symlinks = 0;
-    opts.invert_match = 0;
-    opts.literal = 0;
-    opts.print_break = 1;
-    opts.print_filename_only = 0;
-    opts.print_heading = 1;
-    opts.recurse_dirs = 1;
-    opts.stats = 0;
+    opts.color = TRUE;
+    opts.print_break = TRUE;
+    opts.print_heading = TRUE;
+    opts.recurse_dirs = TRUE;
 }
 
 void cleanup_options() {
@@ -89,6 +80,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         { "context", optional_argument, &(opts.context), 2 },
         { "debug", no_argument, NULL, 'D' },
         { "follow", no_argument, &(opts.follow_symlinks), 1 },
+        { "file-search-regex", required_argument, &(opts.file_search_string), 'G' },
         { "group", no_argument, &(group), 1 },
         { "nogroup", no_argument, &(group), 0 },
         { "invert-match", no_argument, &(opts.invert_match), 1 },
@@ -114,7 +106,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
     }
 
     // TODO: check for insane params. nobody is going to want 5000000 lines of context, for example
-    while ((ch = getopt_long(argc, argv, "A:B:C:DfivV", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:B:C:G:DfivV", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 opts.after = atoi(optarg);
@@ -130,6 +122,13 @@ void parse_options(int argc, char **argv, char **query, char **path) {
                 break;
             case 'f':
                 opts.print_filename_only = 1;
+                break;
+            case 'G':
+                opts.file_search_regex = pcre_compile(optarg, 0, &pcre_err, &pcre_err_offset, NULL);
+                if (opts.file_search_regex == NULL) {
+                  log_err("pcre_compile of file-search-regex failed at position %i. Error: %s", pcre_err_offset, pcre_err);
+                  exit(1);
+                }
                 break;
             case 'h':
                 help = 1;
