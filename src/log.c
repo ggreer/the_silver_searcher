@@ -38,7 +38,7 @@ void log_err(const char *fmt, ...) {
     va_end(args);
 }
 
-void vplog(const int level, const char *fmt, va_list args) {
+void vplog(const unsigned int level, const char *fmt, va_list args) {
     if (level < log_threshold) {
         return;
     }
@@ -65,7 +65,7 @@ void vplog(const int level, const char *fmt, va_list args) {
     fprintf(stream, "\n");
 }
 
-void plog(const int level, const char *fmt, ...) {
+void plog(const unsigned int level, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     vplog(level, fmt, args);
