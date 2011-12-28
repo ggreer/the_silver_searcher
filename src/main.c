@@ -11,6 +11,7 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "ignore.h"
 #include "log.h"
@@ -58,7 +59,6 @@ int search_dir(const pcre *re, const char* path, const int depth) {
 
     int fd = -1;
     off_t f_len = 0;
-    size_t r_len = 0;
     char *buf = NULL;
     int rv = 0;
     char *dir_full_path = NULL;
