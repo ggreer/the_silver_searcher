@@ -28,8 +28,10 @@ void usage() {
     printf("  --ackmate\n");
     printf("  --after LINES\n");
     printf("  --before LINES\n");
+    printf("  --column\n");
     printf("  --context\n");
     printf("  --[no]color\n");
+    printf("  --[no]group\n");
     printf("\n");
 }
 
