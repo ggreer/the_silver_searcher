@@ -23,6 +23,9 @@
 const int MAX_SEARCH_DEPTH = 25;
 const int MAX_MATCHES_PER_FILE = 1000;
 
+int total_file_count = 0;
+long total_byte_count = 0;
+
 int is_binary(const void* buf, const int buf_len) {
     int suspicious_bytes = 0;
     int total_bytes = buf_len > 1024 ? 1024 : buf_len;
@@ -182,6 +185,11 @@ int search_dir(const pcre *re, const char* path, const int depth) {
             }
         }
 
+        if (opts.stats) {
+            total_file_count++;
+            total_byte_count += buf_len;
+        }
+
         if (rc == -1) {
             log_debug("No match in %s", dir_full_path);
         }
@@ -206,6 +214,7 @@ int search_dir(const pcre *re, const char* path, const int depth) {
             close(fd);
             fd = -1;
         }
+
         free(dir);
         dir = NULL;
         free(dir_full_path);
@@ -250,6 +259,10 @@ int main(int argc, char **argv) {
     }
 
     rv = search_dir(re, path, 0);
+
+    if (opts.stats) {
+        printf("%i files scanned\n%ld bytes\n", total_file_count, total_byte_count);
+    }
 
     pcre_free(re);
     free(query);

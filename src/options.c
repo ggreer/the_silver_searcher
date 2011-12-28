@@ -53,6 +53,7 @@ void init_options() {
     opts.print_filename_only = 0;
     opts.print_heading = 1;
     opts.recurse_dirs = 1;
+    opts.stats = 0;
 }
 
 void cleanup_options() {
@@ -97,6 +98,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         { "literal", no_argument, &(opts.literal), 1 },
         { "match", no_argument, &useless, 0 },
         { "smart-case", no_argument, &useless, 0 },
+        { "stats", no_argument, &(opts.stats), 1 },
         { "nosmart-case", no_argument, &useless, 0 },
         { "version", no_argument, &version, 1 },
         { NULL, 0, NULL, 0 }

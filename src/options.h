@@ -26,6 +26,7 @@ typedef struct {
     int print_filename_only;
     int print_heading;
     int recurse_dirs;
+    int stats;
 } cli_options;
 
 // global options. parse_options gives it sane values, everything else reads from it
