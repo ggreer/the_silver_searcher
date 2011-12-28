@@ -10,6 +10,12 @@ My attempt to make something better than ack, which itself is better than grep. 
 * It ignores files matched by patterns in your .gitignore and .hgignore.
 * If there are files in your source repo that you don't want to search, just add their patterns to a .agignore file. \*cough\* extern \*cough\*
 
+## Installation ##
+
+1. Install PCRE development libraries:
+   * Ubuntu: `apt-get install -y libpcre3-dev`
+2. Run the build script:
+   * `./build.sh`
 
 ## Current development status ##
 
