@@ -163,7 +163,7 @@ int search_dir(pcre *re, const char* path, const int depth) {
 
         // In my profiling, most of the execution time is spent in this pcre_exec
         while (buf_offset < buf_len &&
-             (rc = pcre_exec(re, NULL, buf, buf_len, buf_offset, 0, offset_vector, max_matches)) >= 0) {
+             (rc = pcre_exec(re, NULL, buf, buf_len, buf_offset, 0, offset_vector, max_matches * 3)) >= 0) {
             log_debug("Match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
             buf_offset = offset_vector[1];
             matches[matches_len].start = offset_vector[0];
