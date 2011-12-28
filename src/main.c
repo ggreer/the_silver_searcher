@@ -1,11 +1,14 @@
 #include <dirent.h>
+#include <errno.h>
 #include <limits.h>
+#include <fcntl.h>
 #include <pcre.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/dir.h>
+#include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -53,7 +56,7 @@ int search_dir(const pcre *re, const char* path, const int depth) {
     struct dirent *dir = NULL;
     int results = 0;
 
-    FILE *fp = NULL;
+    int fd = -1;
     off_t f_len = 0;
     size_t r_len = 0;
     char *buf = NULL;
@@ -125,13 +128,13 @@ int search_dir(const pcre *re, const char* path, const int depth) {
             goto cleanup;
         }
 
-        fp = fopen(dir_full_path, "r");
-        if (fp == NULL) {
+        fd = open(dir_full_path, O_RDONLY);
+        if (fd < 0) {
             log_err("Error opening file %s. Skipping...", dir_full_path);
             goto cleanup;
         }
 
-        rv = fstat(fileno(fp), &statbuf);
+        rv = fstat(fd, &statbuf);
         if (rv != 0) {
             log_err("Error fstat()ing file %s. Skipping...", dir_full_path);
             goto cleanup;
@@ -148,10 +151,13 @@ int search_dir(const pcre *re, const char* path, const int depth) {
             goto cleanup;
         }
 
-        buf = (char*) malloc(sizeof(char) * f_len + 1);
-        r_len = fread(buf, 1, f_len, fp);
-        buf[r_len] = '\0';
-        buf_len = (int)r_len;
+        buf = mmap(0, f_len, PROT_READ, MAP_SHARED, fd, 0);
+        if (buf == MAP_FAILED) {
+            log_err("File %s failed to load: %s.", dir_full_path, strerror(errno));
+            goto cleanup;
+        }
+
+        buf_len = f_len;
 
         if (is_binary((void*)buf, buf_len)) { // Who needs duck typing when you have void cast? :)
             binary = 1;
@@ -194,13 +200,11 @@ int search_dir(const pcre *re, const char* path, const int depth) {
             }
         }
 
-        free(buf);
-        buf = NULL;
-
         cleanup:
-        if (fp != NULL) {
-            fclose(fp);
-            fp = NULL;
+        if (fd != -1) {
+            munmap(buf, f_len);
+            close(fd);
+            fd = -1;
         }
         free(dir);
         dir = NULL;
