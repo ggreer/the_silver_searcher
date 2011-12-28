@@ -34,7 +34,7 @@ void print_path(const char* path) {
 void print_file_matches(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len) {
     int line = 1;
     int column = 0;
-    char *context_prev_lines[opts.before || 1];
+    char **context_prev_lines = NULL;
     int prev_line = 0;
     int last_prev_line = 0;
     int prev_line_offset = 0;
@@ -57,6 +57,8 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
         print_path(path);
         printf("\n");
     }
+
+    context_prev_lines = malloc(sizeof(char*) * (opts.before + 1));
 
     for (int i = 0; i < opts.before; i++) {
         context_prev_lines[i] = NULL;
@@ -130,7 +132,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                 }
                 // We just incremented column so it will always be at least 1.
                 // We don't want to strcpy the \n
-                context_prev_lines[last_prev_line] = strndup(&buf[prev_line_offset], column - 1);
+                context_prev_lines[last_prev_line] = strndup(&buf[prev_line_offset], i - prev_line_offset);
                 last_prev_line = (last_prev_line + 1) % opts.before;
             }
         }
@@ -178,4 +180,6 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
             lines_since_last_match++;
         }
     }
+
+    free(context_prev_lines);
 }
