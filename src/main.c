@@ -43,7 +43,7 @@ int is_binary(const void* buf, const int buf_len) {
 
 //TODO: append matches to some data structure instead of just printing them out
 // then there can be sweet summaries of matches/files scanned/time/etc
-int search_dir(pcre *re, const char* path, const int depth) {
+int search_dir(const pcre *re, const char* path, const int depth) {
     //TODO: don't just die. also make max depth configurable
     if (depth > MAX_SEARCH_DEPTH) {
         log_err("Search depth greater than %i, giving up.", depth);
