@@ -92,6 +92,9 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                         printf(":");
                     }
                     printf("%i:", line);
+                    if (opts.column) {
+                        printf("%i:", column + 1);
+                    }
                     // print up to current char
                     for (int j = prev_line_offset; j < i; j++) {
                         putchar(buf[j]);

@@ -17,6 +17,7 @@ typedef struct {
     int before;
     enum case_behavior casing;
     int color;
+    int column;
     int context;
     int follow_symlinks;
     int invert_match;

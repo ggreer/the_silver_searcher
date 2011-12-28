@@ -44,6 +44,7 @@ void init_options() {
     opts.before = 0;
     opts.casing = CASE_SENSITIVE;
     opts.color = 1;
+    opts.column = 0;
     opts.context = 0;
     opts.follow_symlinks = 0;
     opts.invert_match = 0;
@@ -80,6 +81,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         { "break", no_argument, &(opts.print_break), 1 },
         { "nobreak", no_argument, &(opts.print_break), 0 },
         { "color", no_argument, &(opts.color), 1 },
+        { "column", no_argument, &(opts.column), 1 },
         { "nocolor", no_argument, &(opts.color), 0 },
         { "context", optional_argument, &(opts.context), 2 },
         { "debug", no_argument, NULL, 'D' },
