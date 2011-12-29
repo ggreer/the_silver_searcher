@@ -53,6 +53,9 @@ void cleanup_options() {
     if (opts.ackmate_dir_filter) {
         pcre_free(opts.ackmate_dir_filter);
     }
+    if (opts.file_search_regex) {
+        pcre_free(opts.file_search_regex);
+    }
 }
 
 void parse_options(int argc, char **argv, char **query, char **path) {
@@ -80,7 +83,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         { "context", optional_argument, &(opts.context), 2 },
         { "debug", no_argument, NULL, 'D' },
         { "follow", no_argument, &(opts.follow_symlinks), 1 },
-        { "file-search-regex", required_argument, &(opts.file_search_string), 'G' },
+        { "file-search-regex", required_argument, NULL, 'G' },
         { "group", no_argument, &(group), 1 },
         { "nogroup", no_argument, &(group), 0 },
         { "invert-match", no_argument, &(opts.invert_match), 1 },
