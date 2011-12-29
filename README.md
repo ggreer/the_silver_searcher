@@ -1,6 +1,6 @@
 # The Silver Searcher #
 
-My attempt to make something better than ack, which itself is better than grep. Right now it's nowhere close.
+My attempt to make something better than ack, which itself is better than grep. Right now, it's not.
 
 ## Why use ag? ##
 
