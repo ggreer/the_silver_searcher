@@ -250,7 +250,6 @@ int main(int argc, char **argv) {
     char *query = NULL;
     char *path = NULL;
     int pcre_opts = 0;
-    int rv = 0;
     const char *pcre_err = NULL;
     int pcre_err_offset = 0;
     pcre *re = NULL;
@@ -267,7 +266,7 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    rv = search_dir(re, path, 0);
+    search_dir(re, path, 0);
 
     if (opts.stats) {
         printf("%i files scanned\n%ld bytes\n", total_file_count, total_byte_count);
