@@ -208,8 +208,8 @@ void parse_options(int argc, char **argv, char **query, char **path) {
       *path = strdup(argv[1]);
       path_len = strlen(*path);
       // kill trailing slash
-      if (path_len > 0 && path[path_len - 1] == '/') {
-        *path[path_len - 1] = '\0';
+      if (path_len > 0 && (*path)[path_len - 1] == '/') {
+        (*path)[path_len - 1] = '\0';
       }
     }
     else {
