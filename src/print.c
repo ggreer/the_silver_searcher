@@ -65,7 +65,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
     }
 
     for (int i = 0; i < buf_len && (cur_match < matches_len || lines_since_last_match <= opts.after); i++) {
-        if (i == matches[cur_match].start) {
+        if (cur_match < matches_len && i == matches[cur_match].start) {
             in_a_match = 1;
 
             if (cur_match > 0 && opts.context && lines_since_last_match > (opts.before + opts.after)) {
@@ -110,7 +110,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
             }
         }
 
-        if (i == matches[cur_match].end) {
+        if (cur_match < matches_len && i == matches[cur_match].end) {
             // We found the end of a match.
             in_a_match = 0;
             cur_match++;
