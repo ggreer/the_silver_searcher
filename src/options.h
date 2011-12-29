@@ -15,7 +15,7 @@
 enum case_behavior {
     CASE_SENSITIVE,
     CASE_INSENSITIVE,
-    CASE_SENSITIVE_RETRY_INSENSITIVE // for future use
+    CASE_SENSITIVE_RETRY_INSENSITIVE /* for future use */
 };
 
 typedef struct {
@@ -39,7 +39,7 @@ typedef struct {
     int stats;
 } cli_options;
 
-// global options. parse_options gives it sane values, everything else reads from it
+/* global options. parse_options gives it sane values, everything else reads from it */
 cli_options opts;
 
 void init_options();

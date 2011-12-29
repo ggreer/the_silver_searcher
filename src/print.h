@@ -2,8 +2,8 @@
 #define PRINT_H
 
 typedef struct {
-    int start; // Byte at which the match starts
-    int end; // and where it ends
+    int start; /* Byte at which the match starts */
+    int end; /* and where it ends */
 } match;
 
 void print_path(const char* path);

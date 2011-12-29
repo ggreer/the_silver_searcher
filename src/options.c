@@ -9,7 +9,7 @@
 #include "log.h"
 #include "version.h"
 
-// TODO: printf()ing this is not going to scale
+/* TODO: printf()ing this is not going to scale */
 void usage() {
     printf("Usage: ag [OPTIONS] PATTERN PATH\n");
     printf("\n");
@@ -67,6 +67,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
     int group = 1;
     int help = 0;
     int version = 0;
+    int opt_index = 0;
 
     init_options();
 
@@ -101,14 +102,12 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         { NULL, 0, NULL, 0 }
     };
 
-    int opt_index = 0;
-
     if (argc < 2) {
         usage();
         exit(1);
     }
 
-    // TODO: check for insane params. nobody is going to want 5000000 lines of context, for example
+    /* TODO: check for insane params. nobody is going to want 5000000 lines of context, for example */
     while ((ch = getopt_long(argc, argv, "A:B:C:G:DfivV", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
@@ -145,7 +144,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
             case 'V':
                 version = 1;
                 break;
-            case 0: // Long option
+            case 0: /* Long option */
                 if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0)
                 {
                     opts.ackmate_dir_filter = pcre_compile(optarg, 0, &pcre_err, &pcre_err_offset, NULL);
@@ -155,7 +154,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
                     }
                     break;
                 }
-                // Continue to usage if we don't recognize the option
+                /* Continue to usage if we don't recognize the option */
                 if (longopts[opt_index].flag != 0) {
                     break;
                 }
@@ -207,7 +206,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
     if (argc > 1) {
       *path = strdup(argv[1]);
       path_len = strlen(*path);
-      // kill trailing slash
+      /* kill trailing slash */
       if (path_len > 0 && (*path)[path_len - 1] == '/') {
         (*path)[path_len - 1] = '\0';
       }
