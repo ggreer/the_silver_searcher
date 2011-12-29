@@ -8,7 +8,7 @@
 #include "log.h"
 #include "options.h"
 
-// TODO: built a huge-ass list of files we want to ignore by default (build cache stuff, pyc files, etc)
+/* TODO: built a huge-ass list of files we want to ignore by default (build cache stuff, pyc files, etc) */
 
 const char *evil_hardcoded_ignore_files[] = {
     ".",
@@ -23,7 +23,7 @@ const char *ignore_pattern_files[] = {
     NULL
 };
 
-// TODO: make this a sorted array so filtering is O(log(n)) instead of O(n)
+/* TODO: make this a sorted array so filtering is O(log(n)) instead of O(n) */
 char **ignore_patterns = NULL;
 int ignore_patterns_len = 0;
 
@@ -37,13 +37,14 @@ void add_ignore_pattern(const char* pattern) {
 }
 
 void cleanup_ignore_patterns() {
-    for(int i = 0; i<ignore_patterns_len; i++) {
+    int i;
+    for(i = 0; i<ignore_patterns_len; i++) {
         free(ignore_patterns[i]);
     }
     free(ignore_patterns);
 }
 
-// For loading git/svn/hg ignore patterns
+/* For loading git/svn/hg ignore patterns */
 void load_ignore_patterns(const char *ignore_filename) {
     FILE *fp = NULL;
     fp = fopen(ignore_filename, "r");
@@ -57,7 +58,7 @@ void load_ignore_patterns(const char *ignore_filename) {
     size_t line_cap = 0;
 
     while((line_length = getline(&line, &line_cap, fp)) > 0) {
-        line[line_length-1] = '\0'; //kill the \n
+        line[line_length-1] = '\0'; /* kill the \n */
         add_ignore_pattern(line);
     }
 
@@ -65,8 +66,9 @@ void load_ignore_patterns(const char *ignore_filename) {
     fclose(fp);
 }
 
-int ignorefile_filter(const struct dirent *dir) {
-    for (int i = 0; ignore_pattern_files[i] != NULL; i++) {
+int ignorefile_filter(struct dirent *dir) {
+    int i;
+    for (i = 0; ignore_pattern_files[i] != NULL; i++) {
         if (strcmp(ignore_pattern_files[i], dir->d_name) == 0) {
             log_debug("ignore pattern matched for %s", dir->d_name);
             return(1);
@@ -75,29 +77,31 @@ int ignorefile_filter(const struct dirent *dir) {
     return(0);
 }
 
-// this function is REALLY HOT. It gets called for every file
-int filename_filter(const struct dirent *dir) {
+/* this function is REALLY HOT. It gets called for every file */
+int filename_filter(struct dirent *dir) {
+    const char *filename = dir->d_name;
+    char *pattern = NULL;
+    int rc = 0;
+    int i;
+
     if (opts.follow_symlinks == 0 && dir->d_type == DT_LNK) {
         log_debug("File %s ignored becaused it's a symlink", dir->d_name);
         return(0);
     }
 
-    const char *filename = dir->d_name;
-    char *pattern = NULL;
-    int rc = 0;
-    // TODO: check if opts want to ignore hidden files
+    /* TODO: check if opts want to ignore hidden files */
     if (filename[0] == '.') {
         return(0);
     }
 
-    for (int i = 0; evil_hardcoded_ignore_files[i] != NULL; i++) {
+    for (i = 0; evil_hardcoded_ignore_files[i] != NULL; i++) {
         if (strcmp(filename, evil_hardcoded_ignore_files[i]) == 0) {
             log_err("file %s ignored because of name", filename);
             return(0);
         }
     }
 
-    for (int i = 0; i<ignore_patterns_len; i++) {
+    for (i = 0; i<ignore_patterns_len; i++) {
         pattern = ignore_patterns[i];
         if (fnmatch(pattern, filename, fnmatch_flags) == 0) {
             log_debug("file %s ignored because name matches pattern %s", dir->d_name, pattern);
@@ -106,7 +110,7 @@ int filename_filter(const struct dirent *dir) {
     }
 
     if (opts.ackmate_dir_filter != NULL) {
-        // we just care about the match, not where the matches are
+        /* we just care about the match, not where the matches are */
         rc = pcre_exec(opts.ackmate_dir_filter, NULL, dir->d_name, strlen(dir->d_name), 0, 0, NULL, 0);
         if (rc >= 0) {
             log_err("file %s ignored because name ackmate dir filter pattern", dir->d_name);

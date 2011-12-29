@@ -18,7 +18,7 @@
 #include "options.h"
 #include "print.h"
 
-//#define AG_DEBUG
+/* #define AG_DEBUG */
 
 const int MAX_SEARCH_DEPTH = 25;
 const int MAX_MATCHES_PER_FILE = 1000;
@@ -30,8 +30,9 @@ int is_binary(const void* buf, const int buf_len) {
     int suspicious_bytes = 0;
     int total_bytes = buf_len > 1024 ? 1024 : buf_len;
     const unsigned char *buf_c = buf;
+    int i;
 
-    for (int i = 0; i < buf_len && i < 1024; i++) {
+    for (i = 0; i < buf_len && i < 1024; i++) {
         if (buf_c[i] == '\0') {
             return(1);
         }
@@ -40,7 +41,7 @@ int is_binary(const void* buf, const int buf_len) {
         }
     }
 
-    // If > 10% of bytes are suspicious, assume it's binary
+    /* If > 10% of bytes are suspicious, assume it's binary */
     if ((suspicious_bytes * 100) / total_bytes > 10) {
         return(1);
     }
@@ -48,10 +49,11 @@ int is_binary(const void* buf, const int buf_len) {
     return(0);
 }
 
-//TODO: append matches to some data structure instead of just printing them out
-// then there can be sweet summaries of matches/files scanned/time/etc
+/* TODO: append matches to some data structure instead of just printing them out
+ * then there can be sweet summaries of matches/files scanned/time/etc
+ */
 int search_dir(const pcre *re, const char* path, const int depth) {
-    //TODO: don't just die. also make max depth configurable
+    /* TODO: don't just die. also make max depth configurable */
     if (depth > MAX_SEARCH_DEPTH) {
         log_err("Search depth greater than %i, giving up.", depth);
         exit(1);
@@ -66,12 +68,13 @@ int search_dir(const pcre *re, const char* path, const int depth) {
     int rv = 0;
     char *dir_full_path = NULL;
     size_t path_length = 0;
+    int i;
 
     results = scandir(path, &dir_list, &ignorefile_filter, &alphasort);
     if (results > 0) {
-        for (int i = 0; i < results; i++) {
+        for (i = 0; i < results; i++) {
             dir = dir_list[i];
-            path_length = (size_t)(strlen(path) + strlen(dir->d_name) + 2); // 2 for slash and null char
+            path_length = (size_t)(strlen(path) + strlen(dir->d_name) + 2); /* 2 for slash and null char */
             dir_full_path = malloc(path_length);
             dir_full_path = strncpy(dir_full_path, path, path_length);
             dir_full_path = strncat(dir_full_path, "/", path_length);
@@ -103,26 +106,26 @@ int search_dir(const pcre *re, const char* path, const int depth) {
     int matches_len = 0;
     int buf_len = 0;
     int buf_offset = 0;
-    int offset_vector[MAX_MATCHES_PER_FILE * 3]; //TODO
+    int offset_vector[MAX_MATCHES_PER_FILE * 3]; /* TODO */
     int rc = 0;
     struct stat statbuf;
     int binary = 0;
     int max_matches = 0;
 
-    for (int i=0; i<results; i++) {
+    for (i=0; i<results; i++) {
         matches_len = 0;
         buf_offset = 0;
         binary = 0;
         dir = dir_list[i];
-        // TODO: this is copy-pasted from about 30 lines above
-        path_length = (size_t)(strlen(path) + strlen(dir->d_name) + 2); // 2 for slash and null char
+        /* TODO: this is copy-pasted from about 30 lines above */
+        path_length = (size_t)(strlen(path) + strlen(dir->d_name) + 2); /* 2 for slash and null char */
         dir_full_path = malloc(path_length);
         dir_full_path = strncpy(dir_full_path, path, path_length);
         dir_full_path = strncat(dir_full_path, "/", path_length);
         dir_full_path = strncat(dir_full_path, dir->d_name, path_length);
 
         log_debug("dir %s type %i", dir_full_path, dir->d_type);
-        //TODO: scan files in current dir before going deeper
+        /* TODO: scan files in current dir before going deeper */
         if (dir->d_type == DT_DIR) {
             if (opts.recurse_dirs) {
                 log_debug("Searching dir %s", dir_full_path);
@@ -158,7 +161,7 @@ int search_dir(const pcre *re, const char* path, const int depth) {
             log_debug("File %s is empty, skipping.", dir_full_path);
             goto cleanup;
         }
-        else if (f_len > 1024 * 1024 * 1024) { // 1 GB
+        else if (f_len > 1024 * 1024 * 1024) { /* 1 GB */
             log_err("File %s is too big. Skipping...", dir_full_path);
             goto cleanup;
         }
@@ -171,7 +174,7 @@ int search_dir(const pcre *re, const char* path, const int depth) {
 
         buf_len = f_len;
 
-        if (is_binary((void*)buf, buf_len)) { // Who needs duck typing when you have void cast? :)
+        if (is_binary((void*)buf, buf_len)) { /* Who needs duck typing when you have void cast? :) */
             binary = 1;
             max_matches = 1;
         }
@@ -179,7 +182,7 @@ int search_dir(const pcre *re, const char* path, const int depth) {
             max_matches = MAX_MATCHES_PER_FILE;
         }
 
-        // In my profiling, most of the execution time is spent in this pcre_exec
+        /* In my profiling, most of the execution time is spent in this pcre_exec */
         while (buf_offset < buf_len &&
              (rc = pcre_exec(re, NULL, buf, buf_len, buf_offset, 0, offset_vector, max_matches * 3)) >= 0) {
             log_debug("Match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
@@ -187,7 +190,7 @@ int search_dir(const pcre *re, const char* path, const int depth) {
             matches[matches_len].start = offset_vector[0];
             matches[matches_len].end = offset_vector[1];
             matches_len++;
-            // Don't segfault. TODO: realloc this array
+            /* Don't segfault. TODO: realloc this array */
             if (matches_len >= MAX_MATCHES_PER_FILE) {
                 log_err("Too many matches in %s. Skipping the rest of this file.");
                 break;

@@ -11,8 +11,8 @@
 int first_file_match = 1;
 
 const char *colors_reset = "\e[0m\e[K";
-const char *colors_path = "\e[1;32m"; // bold green
-const char *colors_match = "\e[30;43m"; // black with yellow background
+const char *colors_path = "\e[1;32m";   /* bold green */
+const char *colors_match = "\e[30;43m"; /* black with yellow background */
 
 void print_path(const char* path) {
     if (opts.ackmate) {
@@ -28,9 +28,9 @@ void print_path(const char* path) {
     }
 }
 
-// TODO: make print_matching_line()
+/* TODO: make print_matching_line() */
 
-// TODO: line numbers need to be colorized
+/* TODO: line numbers need to be colorized */
 void print_file_matches(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len) {
     int line = 1;
     int column = 0;
@@ -40,9 +40,10 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
     int prev_line_offset = 0;
     int cur_match = 0;
     int in_a_match = 0;
-    int lines_since_last_match = 1000000; // if I initialize this to INT_MAX it'll overflow
+    int lines_since_last_match = 1000000; /* if I initialize this to INT_MAX it'll overflow */
     int last_printed_match = 0;
     char sep = '-';
+    int i, j;
 
     if (opts.ackmate) {
         sep = ':';
@@ -60,11 +61,11 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
 
     context_prev_lines = malloc(sizeof(char*) * (opts.before + 1));
 
-    for (int i = 0; i < opts.before; i++) {
+    for (i = 0; i < opts.before; i++) {
         context_prev_lines[i] = NULL;
     }
 
-    for (int i = 0; i < buf_len && (cur_match < matches_len || lines_since_last_match <= opts.after); i++) {
+    for (i = 0; i < buf_len && (cur_match < matches_len || lines_since_last_match <= opts.after); i++) {
         if (cur_match < matches_len && i == matches[cur_match].start) {
             in_a_match = 1;
 
@@ -73,10 +74,10 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
             }
 
             if (lines_since_last_match > 0) {
-                // TODO: this is buggy as hell
+                /* TODO: this is buggy as hell */
                 if (opts.before > 0 && lines_since_last_match > opts.after) {
-                    // We found the start of a match. print the previous line(s)
-                    for (int j = 0; j < opts.before; j++) {
+                    /* We found the start of a match. print the previous line(s) */
+                    for (j = 0; j < opts.before; j++) {
                         prev_line = (last_prev_line + j) % opts.before;
                         if (context_prev_lines[prev_line] != NULL) {
                             if (opts.print_heading == 0) {
@@ -97,8 +98,8 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                     if (opts.column) {
                         printf("%i:", column + 1);
                     }
-                    // print up to current char
-                    for (int j = prev_line_offset; j < i; j++) {
+                    /* print up to current char */
+                    for (j = prev_line_offset; j < i; j++) {
                         putchar(buf[j]);
                     }
                 }
@@ -111,7 +112,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
         }
 
         if (cur_match < matches_len && i == matches[cur_match].end) {
-            // We found the end of a match.
+            /* We found the end of a match. */
             in_a_match = 0;
             cur_match++;
             if (opts.color) {
@@ -130,8 +131,9 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                 if (context_prev_lines[last_prev_line] != NULL) {
                     free(context_prev_lines[last_prev_line]);
                 }
-                // We just incremented column so it will always be at least 1.
-                // We don't want to strcpy the \n
+                /* We just incremented column so it will always be at least 1.
+                 * We don't want to strcpy the \n
+                 */
                 context_prev_lines[last_prev_line] = strndup(&buf[prev_line_offset], i - prev_line_offset);
                 last_prev_line = (last_prev_line + 1) % opts.before;
             }
@@ -140,7 +142,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
         if (buf[i] == '\n' || i == buf_len - 1) {
             if (lines_since_last_match == 0) {
                 if (opts.ackmate) {
-                    // print headers for ackmate to parse
+                    /* print headers for ackmate to parse */
                     printf("%i;", line);
                     while (last_printed_match < cur_match) {
                         printf("%i %i", (matches[last_printed_match].start - prev_line_offset), (matches[last_printed_match].end - matches[last_printed_match].start));
@@ -153,28 +155,28 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
 
                         last_printed_match++;
                     }
-                    // print up to current char
-                    for (int j = prev_line_offset; j < i; j++) {
+                    /* print up to current char */
+                    for (j = prev_line_offset; j < i; j++) {
                         putchar(buf[j]);
                     }
                     putchar('\n');
                 }
             }
             else if (lines_since_last_match <= opts.after) {
-                //print context after matching line
+                /* print context after matching line */
                 if (opts.print_heading == 0) {
                     print_path(path);
                     printf(":");
                 }
                 printf("%i%c", line, sep);
 
-                for (int j = prev_line_offset; j < i; j++) {
+                for (j = prev_line_offset; j < i; j++) {
                     putchar(buf[j]);
                 }
                 putchar('\n');
             }
 
-            prev_line_offset = i + 1; // skip the newline
+            prev_line_offset = i + 1; /* skip the newline */
             line++;
             column = 0;
             lines_since_last_match++;
