@@ -9,7 +9,7 @@ void set_log_level(enum log_level threshold) {
     log_threshold = threshold;
 }
 
-// Maybe these should be macros?
+/* Maybe these should be macros? */
 void log_debug(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
