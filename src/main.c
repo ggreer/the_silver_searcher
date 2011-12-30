@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <xlocale.h>
 
 #include "ignore.h"
 #include "log.h"
