@@ -21,11 +21,13 @@ enum case_behavior {
 typedef struct {
     int ackmate;
     pcre *ackmate_dir_filter;
+    pcre_extra *ackmate_dir_filter_extra;
     int after;
     int before;
     enum case_behavior casing;
     const char *file_search_string;
     pcre *file_search_regex;
+    pcre_extra *file_search_regex_extra;
     int color;
     int column;
     int context;

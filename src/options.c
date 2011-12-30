@@ -52,9 +52,11 @@ void init_options() {
 void cleanup_options() {
     if (opts.ackmate_dir_filter) {
         pcre_free(opts.ackmate_dir_filter);
+        pcre_free(opts.ackmate_dir_filter_extra);
     }
     if (opts.file_search_regex) {
         pcre_free(opts.file_search_regex);
+        pcre_free(opts.file_search_regex_extra);
     }
 }
 
@@ -132,6 +134,12 @@ void parse_options(int argc, char **argv, char **query, char **path) {
                   log_err("pcre_compile of file-search-regex failed at position %i. Error: %s", pcre_err_offset, pcre_err);
                   exit(1);
                 }
+
+                opts.file_search_regex_extra = pcre_study(opts.file_search_regex, 0, &pcre_err);
+                if (opts.file_search_regex_extra == NULL) {
+                  log_err("pcre_study of file-search-regex failed. Error: %s", pcre_err);
+                  exit(1);
+                }
                 break;
             case 'h':
                 help = 1;
@@ -152,6 +160,11 @@ void parse_options(int argc, char **argv, char **query, char **path) {
                     if (opts.ackmate_dir_filter == NULL) {
                         log_err("pcre_compile of ackmate-dir-filter failed at position %i. Error: %s", pcre_err_offset, pcre_err);
                         exit(1);
+                    }
+                    opts.ackmate_dir_filter_extra = pcre_study(opts.ackmate_dir_filter, 0, &pcre_err);
+                    if (opts.ackmate_dir_filter_extra == NULL) {
+                      log_err("pcre_study of ackmate-dir-filter failed. Error: %s", pcre_err);
+                      exit(1);
                     }
                     break;
                 }
