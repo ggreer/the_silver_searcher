@@ -215,6 +215,11 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         opts.color = 0;
     }
 
+    if (argc == 0) {
+        log_err("What do you want to search for?");
+        exit(1);
+    }
+
     opts.query = strdup(argv[0]);
     opts.query_len = strlen(opts.query);
     *query = opts.query;
