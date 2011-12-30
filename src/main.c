@@ -12,7 +12,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <xlocale.h>
 
 #include "ignore.h"
 #include "log.h"
@@ -193,7 +192,7 @@ int search_dir(const pcre *re, const char* path, const int depth) {
             /* TODO: support case-insensitive */
             char *match_ptr = buf;
             while (buf_offset < buf_len) {
-                match_ptr = strnstr(match_ptr, opts.query, buf_len);
+                match_ptr = strstr(match_ptr, opts.query);
                 if (match_ptr == NULL) {
                     break;
                 }
