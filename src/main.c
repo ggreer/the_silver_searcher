@@ -189,10 +189,16 @@ int search_dir(const pcre *re, const char* path, const int depth) {
         }
 
         if (opts.literal) {
-            /* TODO: support case-insensitive */
             char *match_ptr = buf;
+            char *(*strstr_fp)(const char*, const char*) = NULL;
+            if (opts.casing == CASE_SENSITIVE) {
+                strstr_fp = &strstr;
+            }
+            else {
+                strstr_fp = &strcasestr;
+            }
             while (buf_offset < buf_len) {
-                match_ptr = strstr(match_ptr, opts.query);
+                match_ptr = strstr_fp(match_ptr, opts.query);
                 if (match_ptr == NULL) {
                     break;
                 }
