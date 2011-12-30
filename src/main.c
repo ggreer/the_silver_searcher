@@ -17,6 +17,7 @@
 #include "log.h"
 #include "options.h"
 #include "print.h"
+#include "util.h"
 
 /* #define AG_DEBUG */
 
@@ -26,33 +27,10 @@ const int MAX_MATCHES_PER_FILE = 1000;
 int total_file_count = 0;
 long total_byte_count = 0;
 
-int is_binary(const void* buf, const int buf_len) {
-    int suspicious_bytes = 0;
-    int total_bytes = buf_len > 1024 ? 1024 : buf_len;
-    const unsigned char *buf_c = buf;
-    int i;
-
-    for (i = 0; i < buf_len && i < 1024; i++) {
-        if (buf_c[i] == '\0') {
-            return(1);
-        }
-        else if (buf_c[i] < 32 || buf_c[i] > 128) {
-            suspicious_bytes++;
-        }
-    }
-
-    /* If > 10% of bytes are suspicious, assume it's binary */
-    if ((suspicious_bytes * 100) / total_bytes > 10) {
-        return(1);
-    }
-
-    return(0);
-}
-
 /* TODO: append matches to some data structure instead of just printing them out
  * then there can be sweet summaries of matches/files scanned/time/etc
  */
-int search_dir(const pcre *re, const char* path, const int depth) {
+int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, const int depth) {
     /* TODO: don't just die. also make max depth configurable */
     if (depth > MAX_SEARCH_DEPTH) {
         log_err("Search depth greater than %i, giving up.", depth);
@@ -129,7 +107,7 @@ int search_dir(const pcre *re, const char* path, const int depth) {
         if (dir->d_type == DT_DIR) {
             if (opts.recurse_dirs) {
                 log_debug("Searching dir %s", dir_full_path);
-                rv = search_dir(re, dir_full_path, depth + 1);
+                rv = search_dir(re, re_extra, dir_full_path, depth + 1);
             }
             goto cleanup;
         }
@@ -190,15 +168,12 @@ int search_dir(const pcre *re, const char* path, const int depth) {
 
         if (opts.literal) {
             char *match_ptr = buf;
-            char *(*strstr_fp)(const char*, const char*) = NULL;
-            if (opts.casing == CASE_SENSITIVE) {
-                strstr_fp = &strstr;
-            }
-            else {
-                strstr_fp = &strcasestr;
+            int (*strncmp_fp)(const char*, const char*, size_t) = &strncmp;
+            if (opts.casing == CASE_INSENSITIVE) {
+                strncmp_fp = &strncasecmp;
             }
             while (buf_offset < buf_len) {
-                match_ptr = strstr_fp(match_ptr, opts.query);
+                match_ptr = ag_strnstr(match_ptr, opts.query, buf_len - buf_offset, strncmp_fp);
                 if (match_ptr == NULL) {
                     break;
                 }
@@ -217,7 +192,7 @@ int search_dir(const pcre *re, const char* path, const int depth) {
         else {
             /* In my profiling, most of the execution time is spent in this pcre_exec */
             while (buf_offset < buf_len &&
-                 (rc = pcre_exec(re, NULL, buf, buf_len, buf_offset, 0, offset_vector, max_matches * 3)) >= 0) {
+                 (rc = pcre_exec(re, re_extra, buf, buf_len, buf_offset, 0, offset_vector, max_matches * 3)) >= 0) {
                 log_debug("Match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
                 buf_offset = offset_vector[1];
                 matches[matches_len].start = offset_vector[0];
@@ -288,9 +263,11 @@ int main(int argc, char **argv) {
     char *query = NULL;
     char *path = NULL;
     int pcre_opts = 0;
+    int study_opts = 0;
     const char *pcre_err = NULL;
     int pcre_err_offset = 0;
     pcre *re = NULL;
+    pcre_extra *re_extra = NULL;
 
     parse_options(argc, argv, &query, &path);
 
@@ -298,19 +275,28 @@ int main(int argc, char **argv) {
         pcre_opts = pcre_opts | PCRE_CASELESS;
     }
 
+    log_debug("PCRE Version: %s", pcre_version());
+
     re = pcre_compile(query, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
     if (re == NULL) {
         log_err("pcre_compile failed at position %i. Error: %s", pcre_err_offset, pcre_err);
         exit(1);
     }
 
-    search_dir(re, path, 0);
+    re_extra = pcre_study(re, study_opts, &pcre_err);
+    if (re_extra == NULL) {
+        log_err("pcre_study failed. Error: %s", pcre_err);
+        exit(1);
+    }
+
+    search_dir(re, re_extra, path, 0);
 
     if (opts.stats) {
         printf("%i files scanned\n%ld bytes\n", total_file_count, total_byte_count);
     }
 
     pcre_free(re);
+    pcre_free(re_extra);
     free(query);
     free(path);
     cleanup_ignore_patterns();
