@@ -202,7 +202,9 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         opts.color = 0;
     }
 
-    *query = strdup(argv[0]);
+    opts.query = strdup(argv[0]);
+    opts.query_len = strlen(opts.query);
+    *query = opts.query;
 
     if (argc > 1) {
       *path = strdup(argv[1]);

@@ -188,20 +188,43 @@ int search_dir(const pcre *re, const char* path, const int depth) {
             max_matches = MAX_MATCHES_PER_FILE;
         }
 
-        /* In my profiling, most of the execution time is spent in this pcre_exec */
-        while (buf_offset < buf_len &&
-             (rc = pcre_exec(re, NULL, buf, buf_len, buf_offset, 0, offset_vector, max_matches * 3)) >= 0) {
-            log_debug("Match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
-            buf_offset = offset_vector[1];
-            matches[matches_len].start = offset_vector[0];
-            matches[matches_len].end = offset_vector[1];
-            matches_len++;
-            /* Don't segfault. TODO: realloc this array */
-            if (matches_len >= MAX_MATCHES_PER_FILE) {
-                log_err("Too many matches in %s. Skipping the rest of this file.");
-                break;
+        if (opts.literal) {
+            /* TODO: support case-insensitive */
+            char *match_ptr = buf;
+            while (buf_offset < buf_len) {
+                match_ptr = strnstr(match_ptr, opts.query, buf_len);
+                if (match_ptr == NULL) {
+                    break;
+                }
+                matches[matches_len].start = match_ptr - buf;
+                matches[matches_len].end = matches[matches_len].start + opts.query_len;
+                buf_offset = matches[matches_len].end;
+                matches_len++;
+                match_ptr++;
+                /* Don't segfault. TODO: realloc this array */
+                if (matches_len >= MAX_MATCHES_PER_FILE) {
+                    log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
+                    break;
+                }
             }
         }
+        else {
+            /* In my profiling, most of the execution time is spent in this pcre_exec */
+            while (buf_offset < buf_len &&
+                 (rc = pcre_exec(re, NULL, buf, buf_len, buf_offset, 0, offset_vector, max_matches * 3)) >= 0) {
+                log_debug("Match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
+                buf_offset = offset_vector[1];
+                matches[matches_len].start = offset_vector[0];
+                matches[matches_len].end = offset_vector[1];
+                matches_len++;
+                /* Don't segfault. TODO: realloc this array */
+                if (matches_len >= MAX_MATCHES_PER_FILE) {
+                    log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
+                    break;
+                }
+            }
+        }
+
 
         if (opts.stats) {
             total_file_count++;

@@ -38,6 +38,8 @@ typedef struct {
     int recurse_dirs;
     int search_binary_files;
     int stats;
+    char *query;
+    int query_len;
 } cli_options;
 
 /* global options. parse_options gives it sane values, everything else reads from it */
