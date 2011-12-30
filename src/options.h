@@ -36,6 +36,7 @@ typedef struct {
     int print_filename_only;
     int print_heading;
     int recurse_dirs;
+    int search_binary_files;
     int stats;
 } cli_options;
 

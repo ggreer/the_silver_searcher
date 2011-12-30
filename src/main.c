@@ -175,8 +175,14 @@ int search_dir(const pcre *re, const char* path, const int depth) {
         buf_len = f_len;
 
         if (is_binary((void*)buf, buf_len)) { /* Who needs duck typing when you have void cast? :) */
-            binary = 1;
-            max_matches = 1;
+            if (opts.search_binary_files) {
+                binary = 1;
+                max_matches = 1;
+            }
+            else {
+                log_debug("File %s is binary. Skipping...", dir_full_path);
+                goto cleanup;
+            }
         }
         else {
             max_matches = MAX_MATCHES_PER_FILE;

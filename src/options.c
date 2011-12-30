@@ -95,9 +95,10 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         { "ignore-case", no_argument, NULL, 'i' },
         { "literal", no_argument, &(opts.literal), 1 },
         { "match", no_argument, &useless, 0 },
+        { "search-binary", no_argument, &(opts.search_binary_files), 1 },
         { "smart-case", no_argument, &useless, 0 },
-        { "stats", no_argument, &(opts.stats), 1 },
         { "nosmart-case", no_argument, &useless, 0 },
+        { "stats", no_argument, &(opts.stats), 1 },
         { "version", no_argument, &version, 1 },
         { NULL, 0, NULL, 0 }
     };
