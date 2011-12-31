@@ -115,7 +115,7 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
 
         if (opts.file_search_regex) {
           rc = pcre_exec(opts.file_search_regex, NULL, dir_full_path, strlen(dir_full_path),
-                         buf_offset, 0, offset_vector, max_matches * 3);
+                         buf_offset, 0, offset_vector, 3);
           if (rc < 0) { /* no match */
             log_debug("Skipping %s due to file_search_regex.", dir_full_path);
             goto cleanup;
@@ -193,7 +193,7 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
         else {
             /* In my profiling, most of the execution time is spent in this pcre_exec */
             while (buf_offset < buf_len &&
-                 (rc = pcre_exec(re, re_extra, buf, buf_len, buf_offset, 0, offset_vector, max_matches * 3)) >= 0) {
+                 (rc = pcre_exec(re, re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
                 log_debug("Match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
                 buf_offset = offset_vector[1];
                 matches[matches_len].start = offset_vector[0];
