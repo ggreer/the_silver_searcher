@@ -20,7 +20,7 @@
 #include "util.h"
 
 /* #define AG_DEBUG */
-#define USE_PRCE_JIT
+/* #define USE_PRCE_JIT */
 
 const int MAX_SEARCH_DEPTH = 25;
 const int MAX_MATCHES_PER_FILE = 1000;
