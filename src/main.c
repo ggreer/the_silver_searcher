@@ -299,7 +299,7 @@ int main(int argc, char **argv) {
     }
 
     pcre_free(re);
-    pcre_free(re_extra);
+    pcre_free(re_extra); /* TODO I'm pretty sure I should call pcre_free_study() here */
     free(query);
     free(path);
     cleanup_ignore_patterns();
