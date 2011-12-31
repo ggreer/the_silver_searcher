@@ -263,6 +263,7 @@ int main(int argc, char **argv) {
 
     char *query = NULL;
     char *path = NULL;
+    int has_jit = 0;
     int pcre_opts = 0;
     int study_opts = 0;
     const char *pcre_err = NULL;
@@ -285,17 +286,16 @@ int main(int argc, char **argv) {
     }
 
 #ifdef USE_PRCE_JIT
-    int has_jit;
     pcre_config(PCRE_CONFIG_JIT, &has_jit);
     if (has_jit) {
         study_opts = study_opts | PCRE_STUDY_JIT_COMPILE;
     }
+#endif
     re_extra = pcre_study(re, study_opts, &pcre_err);
     if (re_extra == NULL) {
         log_err("pcre_study failed. Error: %s", pcre_err);
         exit(1);
     }
-#endif
 
     search_dir(re, re_extra, path, 0);
 
