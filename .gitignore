@@ -6,7 +6,7 @@ aclocal.m4
 ag
 autom4te.cache
 callgrind.out.*
-config.h
+config.h*
 config.log
 config.status
 configure
