@@ -1,0 +1,2 @@
+/* Use PCRE JIT */
+#undef USE_PRCE_JIT
