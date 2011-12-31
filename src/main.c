@@ -20,6 +20,7 @@
 #include "util.h"
 
 /* #define AG_DEBUG */
+#define USE_PRCE_JIT
 
 const int MAX_SEARCH_DEPTH = 25;
 const int MAX_MATCHES_PER_FILE = 1000;
@@ -283,11 +284,18 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
+#ifdef USE_PRCE_JIT
+    int has_jit;
+    pcre_config(PCRE_CONFIG_JIT, &has_jit);
+    if (has_jit) {
+        study_opts = study_opts | PCRE_STUDY_JIT_COMPILE;
+    }
     re_extra = pcre_study(re, study_opts, &pcre_err);
     if (re_extra == NULL) {
         log_err("pcre_study failed. Error: %s", pcre_err);
         exit(1);
     }
+#endif
 
     search_dir(re, re_extra, path, 0);
 
