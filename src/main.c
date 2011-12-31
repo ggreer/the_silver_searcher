@@ -89,7 +89,6 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
     int rc = 0;
     struct stat statbuf;
     int binary = 0;
-    int max_matches = 0;
 
     for (i=0; i<results; i++) {
         matches_len = 0;
@@ -156,15 +155,11 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
         if (is_binary((void*)buf, buf_len)) { /* Who needs duck typing when you have void cast? :) */
             if (opts.search_binary_files) {
                 binary = 1;
-                max_matches = 1;
             }
             else {
                 log_debug("File %s is binary. Skipping...", dir_full_path);
                 goto cleanup;
             }
-        }
-        else {
-            max_matches = MAX_MATCHES_PER_FILE;
         }
 
         if (opts.literal) {
