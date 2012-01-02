@@ -258,7 +258,6 @@ int main(int argc, char **argv) {
 
     char *query = NULL;
     char *path = NULL;
-    int has_jit = 0;
     int pcre_opts = 0;
     int study_opts = 0;
     const char *pcre_err = NULL;
@@ -281,6 +280,7 @@ int main(int argc, char **argv) {
     }
 
 #ifdef USE_PRCE_JIT
+    int has_jit = 0;
     pcre_config(PCRE_CONFIG_JIT, &has_jit);
     if (has_jit) {
         study_opts = study_opts | PCRE_STUDY_JIT_COMPILE;
