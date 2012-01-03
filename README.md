@@ -4,10 +4,10 @@ My attempt to make something better than ack, which itself is better than grep. 
 
 ## Why use ag? ##
 
-* The binary name is 33% shorter than ack!
 * It searches through code about 3x-5x faster than ack.
-* It's written in C instead of perl.
 * It ignores files matched by patterns in your .gitignore and .hgignore.
+* The binary name is 33% shorter than ack!
+* It's written in C instead of perl, the lesser of two evils :)
 * If there are files in your source repo that you don't want to search, just add their patterns to a .agignore file. \*cough\* extern \*cough\*
 
 ## Installation ##
@@ -47,7 +47,7 @@ You can use this with [my fork](https://github.com/ggreer/AckMate) of the popula
 
 ### Other stuff you might like ###
 * [Ack](https://github.com/petdance/ack)
-* [AckMate](https://github.com/protocool/AckMate)
-* [Exuberant Ctags](http://ctags.sourceforge.net/)
-* [Git-grep](http://book.git-scm.com/4_finding_with_git_grep.html)
-
+* [AckMate](https://github.com/protocool/AckMate) - An ack-powered replacement for TextMate's slow built-in search.
+* [ack.vim](https://github.com/mileszs/ack.vim)
+* [Exuberant Ctags](http://ctags.sourceforge.net/) - Faster than Ag, but it builds an index beforehand. Good for *really* big codebases.
+* [Git-grep](http://book.git-scm.com/4_finding_with_git_grep.html) - As fast as Ag but only works on git repos.
