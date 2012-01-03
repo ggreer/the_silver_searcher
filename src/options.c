@@ -5,9 +5,9 @@
 #include <unistd.h>
 #include <xlocale.h>
 
+#include "config.h"
 #include "options.h"
 #include "log.h"
-#include "version.h"
 
 /* TODO: printf()ing this is not going to scale */
 void usage() {

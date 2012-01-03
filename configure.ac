@@ -9,6 +9,8 @@ AC_CHECK_LIB([pcre], [pcre_exec])
 
 AC_CHECK_DECL([PCRE_CONFIG_JIT], [AC_DEFINE([USE_PRCE_JIT], [], [Use PCRE JIT])], [], [#include <pcre.h>])
 
+AC_DEFINE([AG_VERSION], ["0.1.1"], [Ag Version])
+
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_HEADERS([src/config.h])
 
