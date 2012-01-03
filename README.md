@@ -43,6 +43,7 @@ You can use this with [my fork](https://github.com/ggreer/AckMate) of the popula
 * support inverted matching
 * support piping in stuff
 * docs/manpages
+* pthreads. these days it's silly to use only one core
 
 ### Other stuff you might like ###
 * [Ack](https://github.com/petdance/ack)
