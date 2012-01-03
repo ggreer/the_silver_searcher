@@ -75,7 +75,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
 
             if (lines_since_last_match > 0) {
                 /* TODO: this is buggy as hell */
-                if (opts.before > 0 && lines_since_last_match > opts.after) {
+                if (opts.before > 0 && lines_since_last_match > opts.after + opts.before) {
                     /* We found the start of a match. print the previous line(s) */
                     for (j = 0; j < opts.before; j++) {
                         prev_line = (last_prev_line + j) % opts.before;
