@@ -164,12 +164,12 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
 
         if (opts.literal) {
             char *match_ptr = buf;
-            int (*strncmp_fp)(const char*, const char*, size_t) = &strncmp;
+            char *(*ag_strncmp_fp)(const char*, const char*, size_t) = &ag_strnstr;
             if (opts.casing == CASE_INSENSITIVE) {
-                strncmp_fp = &strncasecmp;
+                ag_strncmp_fp = &ag_strncasestr;
             }
             while (buf_offset < buf_len) {
-                match_ptr = ag_strnstr(match_ptr, opts.query, buf_len - buf_offset, strncmp_fp);
+                match_ptr = ag_strncmp_fp(match_ptr, opts.query, buf_len - buf_offset);
                 if (match_ptr == NULL) {
                     break;
                 }
