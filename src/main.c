@@ -273,23 +273,25 @@ int main(int argc, char **argv) {
 
     log_debug("PCRE Version: %s", pcre_version());
 
-    re = pcre_compile(query, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
-    if (re == NULL) {
-        log_err("pcre_compile failed at position %i. Error: %s", pcre_err_offset, pcre_err);
-        exit(1);
-    }
+    if (!opts.literal) {
+        re = pcre_compile(query, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
+        if (re == NULL) {
+            log_err("pcre_compile failed at position %i. Error: %s", pcre_err_offset, pcre_err);
+            exit(1);
+        }
 
 #ifdef USE_PRCE_JIT
-    int has_jit = 0;
-    pcre_config(PCRE_CONFIG_JIT, &has_jit);
-    if (has_jit) {
-        study_opts = study_opts | PCRE_STUDY_JIT_COMPILE;
-    }
+        int has_jit = 0;
+        pcre_config(PCRE_CONFIG_JIT, &has_jit);
+        if (has_jit) {
+            study_opts = study_opts | PCRE_STUDY_JIT_COMPILE;
+        }
 #endif
-    re_extra = pcre_study(re, study_opts, &pcre_err);
-    if (re_extra == NULL) {
-        log_err("pcre_study failed. Error: %s", pcre_err);
-        exit(1);
+        re_extra = pcre_study(re, study_opts, &pcre_err);
+        if (re_extra == NULL) {
+            log_err("pcre_study failed. Error: %s", pcre_err);
+            exit(1);
+        }
     }
 
     search_dir(re, re_extra, path, 0);
