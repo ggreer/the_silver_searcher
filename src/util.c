@@ -44,6 +44,7 @@ char* ag_strncasestr(const char *s, const char *find, size_t slen)
     }
     return ((char *)s);
 }
+
 int is_binary(const void* buf, const int buf_len) {
     int suspicious_bytes = 0;
     int total_bytes = buf_len > 1024 ? 1024 : buf_len;

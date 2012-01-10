@@ -22,10 +22,11 @@
 #include "config.h"
 /* #define AG_DEBUG */
 
+/* TODO: make these configurable */
 const int MAX_SEARCH_DEPTH = 25;
 const int MAX_MATCHES_PER_FILE = 1000;
 
-int total_file_count = 0;
+long total_file_count = 0;
 long total_byte_count = 0;
 
 /* TODO: append matches to some data structure instead of just printing them out
@@ -297,7 +298,7 @@ int main(int argc, char **argv) {
     search_dir(re, re_extra, path, 0);
 
     if (opts.stats) {
-        printf("%i files scanned\n%ld bytes\n", total_file_count, total_byte_count);
+        printf("%ld files scanned\n%ld bytes\n", total_file_count, total_byte_count);
     }
 
     pcre_free(re);
