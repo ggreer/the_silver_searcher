@@ -9,8 +9,9 @@
 #include <string.h>
 #include <sys/dir.h>
 #include <sys/mman.h>
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include "ignore.h"
@@ -265,6 +266,10 @@ int main(int argc, char **argv) {
     int pcre_err_offset = 0;
     pcre *re = NULL;
     pcre_extra *re_extra = NULL;
+    struct timeval time_start, time_end;
+    double time_diff = 0.0;
+
+    gettimeofday(&time_start, NULL);
 
     parse_options(argc, argv, &query, &path);
 
@@ -298,7 +303,11 @@ int main(int argc, char **argv) {
     search_dir(re, re_extra, path, 0);
 
     if (opts.stats) {
-        printf("%ld files scanned\n%ld bytes\n", total_file_count, total_byte_count);
+        gettimeofday(&time_end, NULL);
+        time_diff = ((long)time_end.tv_sec * 1000000 + time_end.tv_usec) - ((long)time_start.tv_sec * 1000000 + time_start.tv_usec);
+        time_diff = time_diff / 1000000;
+
+        printf("%ld files\n%ld bytes\n%f seconds\n", total_file_count, total_byte_count, time_diff);
     }
 
     pcre_free(re);
