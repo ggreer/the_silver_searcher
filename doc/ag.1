@@ -15,28 +15,34 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 .SH "OPTIONS"
 .
 .IP "\(bu" 4
-\fB\-\-ackmate\fR
+\fB\-\-ackmate\fR: Output results in a format parseable by AckMate\.
 .
 .IP "\(bu" 4
-\fB\-\-after\fR [LINES]
+\fB\-A \-\-after\fR [LINES]: Print lines before match\.
 .
 .IP "\(bu" 4
-\fB\-\-before\fR [LINES]
+\fB\-B \-\-before\fR [LINES]: Print lines after match\.
 .
 .IP "\(bu" 4
-\fB\-\-[no]color\fR
+\fB\-\-[no]break\fR: Print a newline between matches in different files\. Enabled by default\.
 .
 .IP "\(bu" 4
-\fB\-\-column\fR
+\fB\-\-[no]color\fR: Print color codes in results\. Enabled by default\.
 .
 .IP "\(bu" 4
-\fB\-\-context\fR [LINES]
+\fB\-\-column\fR: Print column numbers in results\.
 .
 .IP "\(bu" 4
-\fB\-\-[no]group\fR
+\fB\-C \-\-context\fR [LINES]: Print lines before and after matches\.
 .
 .IP "\(bu" 4
-\fB\-\-literal\fR
+\fB\-D \-\-debug\fR: Ridiculous debugging\. Probably not useful\.
+.
+.IP "\(bu" 4
+\fB\-f \-\-follow\fR: Follow symlinks\.
+.
+.IP "\(bu" 4
+\fB\-\-[no]group\fR:
 .
 .IP "\(bu" 4
 \fB\-G\fR, \fB\-\-file\-search\-regex\fR
@@ -44,10 +50,28 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 .IP "\(bu" 4
 \fB\-i\fR, \fB\-\-ignore\-case\fR
 .
+.IP "\(bu" 4
+\fB\-\-invert\-match\fR
+.
+.IP "\(bu" 4
+\fB\-\-[no]heading\fR
+.
+.IP "\(bu" 4
+\fB\-\-literal\fR: Do not parse PATTERN as a regular expression\. Try to match it literally\.
+.
+.IP "\(bu" 4
+\fB\-\-search\-binary\fR: Search binary files for matches\.
+.
+.IP "\(bu" 4
+\fB\-\-stats\fR: Print stats (files scanned, time taken, etc)
+.
 .IP "" 0
 .
+.SH "IGNORING FILES"
+Ag will ignore files matched by patterns in \.gitignore, \.hgignore, or \.aginore\. Ag also ignores binary files by default\.
+.
 .SH "EXAMPLES"
-ag \-i foo /bar/
+\fBag \-i foo /bar/\fR: Find matches for "foo" in path /bar/\.
 .
 .SH "SEE ALSO"
 grep(1)
