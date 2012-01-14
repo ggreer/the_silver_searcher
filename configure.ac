@@ -3,7 +3,11 @@ AC_PROG_CC
 AC_PREREQ([2.59])
 
 AM_INIT_AUTOMAKE([no-define foreign subdir-objects])
-AM_SILENT_RULES([yes])
+
+m4_ifdef(
+    [AM_SILENT_RULES],
+    [AM_SILENT_RULES([yes])]
+)
 
 PKG_CHECK_MODULES([PCRE], [libpcre])
 
