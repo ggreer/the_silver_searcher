@@ -2,7 +2,7 @@ AC_INIT([the_silver_searcher], [0.1.1])
 AC_PROG_CC
 AC_PREREQ([2.59])
 
-AM_INIT_AUTOMAKE([no-define foreign])
+AM_INIT_AUTOMAKE([no-define foreign subdir-objects])
 AM_SILENT_RULES([yes])
 
 AC_CHECK_HEADERS([pcre.h], [], [AC_MSG_ERROR("pcre.h not found")],[])
