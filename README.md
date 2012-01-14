@@ -1,6 +1,6 @@
 # The Silver Searcher #
 
-My attempt to make something better than ack, which itself is better than grep. Right now, it's not.
+My attempt to make something better than ack, which itself is better than grep.
 
 ## Why use ag? ##
 
@@ -14,7 +14,8 @@ My attempt to make something better than ack, which itself is better than grep. 
 
 1. Install PCRE development libraries:
     * Ubuntu: `apt-get install -y libpcre3-dev`
-2. Run the build script:
+    * OS X: Install [homebrew](http://mxcl.github.com/homebrew/), then `brew install pcre`
+2. Run the build script (which just runs aclocal, automake, etc):
     * `./build.sh`
 3. Make install:
     * `sudo make install`
@@ -42,7 +43,6 @@ You can use this with [my fork](https://github.com/ggreer/AckMate) of the popula
 * actually get textmate dir patterns working
 * support inverted matching
 * support piping in stuff
-* docs/manpages
 * pthreads. these days it's silly to use only one core
 
 ### Other stuff you might like ###
