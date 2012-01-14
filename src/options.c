@@ -37,7 +37,7 @@ void usage() {
 }
 
 void print_version() {
-    printf("ag version %s\n", AG_VERSION);
+    printf("ag version %s\n", PACKAGE_VERSION);
 }
 
 void init_options() {
