@@ -5,10 +5,9 @@ AC_PREREQ([2.59])
 AM_INIT_AUTOMAKE([no-define foreign subdir-objects])
 AM_SILENT_RULES([yes])
 
-AC_CHECK_HEADERS([pcre.h], [], [AC_MSG_ERROR("pcre.h not found")],[])
-AC_CHECK_LIB([pcre], [pcre_exec])
+PKG_CHECK_MODULES([PCRE], [libpcre])
 
-CFLAGS="$CFLAGS -Wall -Wextra -std=c89 -D_GNU_SOURCE -g"
+CFLAGS="$CFLAGS $PCRE_CFLAGS -Wall -Wextra -std=c89 -D_GNU_SOURCE -g"
 LDFLAGS="$LDFLAGS"
 
 AC_CHECK_DECL([PCRE_CONFIG_JIT], [AC_DEFINE([USE_PRCE_JIT], [], [Use PCRE JIT])], [], [#include <pcre.h>])
