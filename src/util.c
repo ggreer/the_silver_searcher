@@ -1,5 +1,9 @@
 #include <ctype.h>
 #include <string.h>
+#include <stdio.h>
+#include <xlocale.h>
+#include <stdarg.h>
+#include <strings.h>
 #include "util.h"
 
 /* Blatantly stolen from darwin source code and modified for my own purposes
@@ -45,6 +49,42 @@ char* ag_strncasestr(const char *s, const char *find, size_t slen)
     return ((char *)s);
 }
 
+/* Boyer-Moore-Horspool strstr */
+char* ag_boyer_moore_strnstr(const char *s, const char *find, size_t s_len, size_t f_len) {
+    int i;
+    size_t skip_lookup[256];
+    char *haystack = s;
+
+    if (f_len > s_len) {
+        return(NULL);
+    }
+
+    for (i = 0; i < 256; i++) {
+        skip_lookup[i] = f_len - 1;
+    }
+
+    /* TODO: move the lookup generation outside this function */
+    for (i = f_len - 1; i >= 0; i--) {
+        skip_lookup[find[i]] = f_len - i;
+        printf("skip_lookup[%c] = %i\n", find[i], (int)(f_len - i));
+    }
+
+    while (s_len > f_len) {
+        for (i = 0; haystack[i] == find[i]; i++) {
+            printf("haystack %c find %c", haystack[i], find[i]);
+            if (i == (int)f_len - 1) {
+                printf("match found at position %i, returning\n", i);
+                return haystack;
+            }
+        }
+
+        haystack += skip_lookup[(int)*haystack];
+        s_len -= skip_lookup[(int)*s];
+    }
+
+    return(NULL);
+}
+
 int is_binary(const void* buf, const int buf_len) {
     int suspicious_bytes = 0;
     int total_bytes = buf_len > 1024 ? 1024 : buf_len;
@@ -53,6 +93,7 @@ int is_binary(const void* buf, const int buf_len) {
 
     for (i = 0; i < buf_len && i < 1024; i++) {
         if (buf_c[i] == '\0') {
+            /* NULL char. It's binary */
             return(1);
         }
         else if (buf_c[i] < 32 || buf_c[i] > 128) {
