@@ -286,7 +286,7 @@ int main(int argc, char **argv) {
             exit(1);
         }
 
-#ifdef USE_PRCE_JIT
+#ifdef USE_PCRE_JIT
         int has_jit = 0;
         pcre_config(PCRE_CONFIG_JIT, &has_jit);
         if (has_jit) {
