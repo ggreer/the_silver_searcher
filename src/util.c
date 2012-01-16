@@ -7,48 +7,6 @@
 #include <stdlib.h>
 #include "util.h"
 
-/* Blatantly stolen from darwin source code and modified for my own purposes
-   TODO: take a look at boyer-moore string searching
- */
-char* ag_strnstr(const char *s, const char *find, size_t slen)
-{
-    char c, sc;
-    size_t len;
-
-    if ((c = *find++) != '\0') {
-        len = strlen(find);
-        do {
-            do {
-                if (slen-- < 1 || (sc = *s++) == '\0')
-                    return(NULL);
-            } while (sc != c);
-            if (len > slen)
-                return(NULL);
-        } while (strncmp(s, find, len) != 0);
-        s--;
-    }
-    return((char *)s);
-}
-
-char* ag_strncasestr(const char *s, const char *find, size_t slen)
-{
-    char c, sc;
-    size_t len;
-
-    if ((c = *find++) != '\0') {
-        len = strlen(find);
-        do {
-            do {
-                if (slen-- < 1 || (sc = *s++) == '\0')
-                    return(NULL);
-            } while (tolower(sc) != tolower(c));
-            if (len > slen)
-                return(NULL);
-        } while (strncasecmp(s, find, len) != 0);
-        s--;
-    }
-    return((char *)s);
-}
 
 void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[]) {
     size_t i = 0;
@@ -63,7 +21,7 @@ void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[]) 
 }
 
 /* Boyer-Moore-Horspool strstr */
-char* ag_boyer_moore_strnstr(const char *s, const char *find, size_t s_len, size_t f_len, size_t skip_lookup[]) {
+char* boyer_moore_strnstr(const char *s, const char *find, size_t s_len, size_t f_len, size_t skip_lookup[]) {
     size_t i;
     size_t pos = 0;
 
