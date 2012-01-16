@@ -52,11 +52,12 @@ char* ag_strncasestr(const char *s, const char *find, size_t slen)
 
 void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[]) {
     int i = 0;
+
     for (i = 0; i < 256; i++) {
         skip_lookup[i] = f_len - 1;
     }
 
-    for (i = f_len - 1; i >= 0; i--) {
+    for (i = 0; i < f_len; i++) {
         skip_lookup[(unsigned char)find[i]] = f_len - i;
     }
 }
