@@ -57,8 +57,8 @@ void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[]) 
         skip_lookup[i] = f_len - 1;
     }
 
-    for (i = 0; i < f_len; i++) {
-        skip_lookup[(unsigned char)find[i]] = f_len - i;
+    for (i = 0; i < (int)f_len - 1; i++) {
+        skip_lookup[(unsigned char)find[i]] = f_len - i - 1;
     }
 }
 
@@ -67,6 +67,8 @@ char* ag_boyer_moore_strnstr(const char *s, const char *find, size_t s_len, size
     int i;
     int pos = 0;
     int skip_chars;
+
+    /* It's impossible to match a larger string */
     if (f_len > s_len) {
         return(NULL);
     }
@@ -78,9 +80,7 @@ char* ag_boyer_moore_strnstr(const char *s, const char *find, size_t s_len, size
                 return((char *)(&(s[pos])));
             }
         }
-        pos += i;
-
-        skip_chars = skip_lookup[(int)(unsigned char)s[pos]];
+        skip_chars = skip_lookup[(int)(unsigned char)s[pos + i]];
         pos += skip_chars;
     }
 /*    printf("nothing found, returning\n"); */
