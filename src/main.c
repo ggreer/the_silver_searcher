@@ -30,6 +30,8 @@ const int MAX_MATCHES_PER_FILE = 1000;
 long total_file_count = 0;
 long total_byte_count = 0;
 
+size_t skip_lookup[256];
+
 /* TODO: append matches to some data structure instead of just printing them out
  * then there can be sweet summaries of matches/files scanned/time/etc
  */
@@ -166,13 +168,14 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
 
         if (opts.literal) {
             char *match_ptr = buf;
-            char *(*ag_strncmp_fp)(const char*, const char*, size_t, size_t) = &ag_boyer_moore_strnstr;
+            char *(*ag_strncmp_fp)(const char*, const char*, size_t, size_t, size_t[]) = &ag_boyer_moore_strnstr;
+
             if (opts.casing == CASE_INSENSITIVE) {
                 /* TODO: case-insensitive matching */
                 ag_strncmp_fp = &ag_boyer_moore_strnstr;
             }
             while (buf_offset < buf_len) {
-                match_ptr = ag_strncmp_fp(match_ptr, opts.query, buf_len - buf_offset, opts.query_len);
+                match_ptr = ag_strncmp_fp(match_ptr, opts.query, buf_len - buf_offset, opts.query_len, skip_lookup);
                 if (match_ptr == NULL) {
                     break;
                 }
@@ -280,7 +283,10 @@ int main(int argc, char **argv) {
 
     log_debug("PCRE Version: %s", pcre_version());
 
-    if (!opts.literal) {
+    if (opts.literal) {
+        generate_skip_lookup(opts.query, opts.query_len, skip_lookup);
+    }
+    else {
         re = pcre_compile(query, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
         if (re == NULL) {
             log_err("pcre_compile failed at position %i. Error: %s", pcre_err_offset, pcre_err);

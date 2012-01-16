@@ -27,7 +27,7 @@ char* ag_strnstr(const char *s, const char *find, size_t slen)
         } while (strncmp(s, find, len) != 0);
         s--;
     }
-    return ((char *)s);
+    return((char *)s);
 }
 
 char* ag_strncasestr(const char *s, const char *find, size_t slen)
@@ -50,13 +50,22 @@ char* ag_strncasestr(const char *s, const char *find, size_t slen)
     return((char *)s);
 }
 
+void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[]) {
+    int i = 0;
+    for (i = 0; i < 256; i++) {
+        skip_lookup[i] = f_len - 1;
+    }
+
+    for (i = f_len - 1; i >= 0; i--) {
+        skip_lookup[(unsigned char)find[i]] = f_len - i;
+    }
+}
+
 /* Boyer-Moore-Horspool strstr */
-char* ag_boyer_moore_strnstr(const unsigned char *s, const unsigned char *find, size_t s_len, size_t f_len) {
+char* ag_boyer_moore_strnstr(const char *s, const char *find, size_t s_len, size_t f_len, size_t skip_lookup[]) {
     int i;
     int pos = 0;
     int skip_chars;
-    size_t skip_lookup[256];
-
     if (f_len > s_len) {
         return(NULL);
     }
@@ -71,25 +80,17 @@ char* ag_boyer_moore_strnstr(const unsigned char *s, const unsigned char *find, 
 /*        printf("skip_lookup[%c] = %i\n", find[i], (int)(f_len - i)); */
     }
 
-    while (pos < (s_len - f_len)) {
+    while (pos < (int)(s_len - f_len)) {
         for (i = 0; s[pos] == find[i]; pos++) {
             if (i == (int)f_len - 1) {
 /*                printf("match found at position %i, returning\n", pos); */
-                return (char *)(&(s[pos-i]));
+                return((char *)(&(s[pos-i])));
             }
             i++;
         }
         pos += i;
 
-        if (s[pos] < 0 || s[pos] > 255) {
-            printf("pos %i haystack %i\n", pos, s[pos], find[i]);
-            exit(1);
-        }
-        skip_chars = skip_lookup[(unsigned int)s[pos]];
-        if (skip_chars == 0){
-            printf("pos %i haystack %c find %c\n", pos, s[pos], find[i]);
-            exit(1);
-        }
+        skip_chars = skip_lookup[(int)(unsigned char)s[pos]];
         pos += skip_chars;
     }
 /*    printf("nothing found, returning\n"); */
