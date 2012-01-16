@@ -59,9 +59,9 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
             dir = dir_list[i];
             path_length = (size_t)(strlen(path) + strlen(dir->d_name) + 2); /* 2 for slash and null char */
             dir_full_path = malloc(path_length);
-            ag_strlcpy(dir_full_path, path, path_length);
-            ag_strlcat(dir_full_path, "/", path_length);
-            ag_strlcat(dir_full_path, dir->d_name, path_length);
+            strlcpy(dir_full_path, path, path_length);
+            strlcat(dir_full_path, "/", path_length);
+            strlcat(dir_full_path, dir->d_name, path_length);
             load_ignore_patterns(dir_full_path);
             free(dir);
             dir = NULL;
@@ -102,9 +102,9 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
         /* TODO: this is copy-pasted from about 30 lines above */
         path_length = (size_t)(strlen(path) + strlen(dir->d_name) + 2); /* 2 for slash and null char */
         dir_full_path = malloc(path_length);
-        ag_strlcpy(dir_full_path, path, path_length);
-        ag_strlcat(dir_full_path, "/", path_length);
-        ag_strlcat(dir_full_path, dir->d_name, path_length);
+        strlcpy(dir_full_path, path, path_length);
+        strlcat(dir_full_path, "/", path_length);
+        strlcat(dir_full_path, dir->d_name, path_length);
 
         log_debug("dir %s type %i", dir_full_path, dir->d_type);
         /* TODO: scan files in current dir before going deeper */

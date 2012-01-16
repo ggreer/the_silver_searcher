@@ -67,11 +67,11 @@ int is_binary(const void* buf, const int buf_len) {
     return(0);
 }
 
+#ifndef HAVE_STRLCAT
 /*
- * These functions are taken from Linux. Renamed so there's no
- * possible function name conflicts.
+ * strlcat and strlcpy, taken from linux kernel
  */
-size_t ag_strlcat(char *dest, const char *src, size_t count)
+size_t strlcat(char *dest, const char *src, size_t count)
 {
     size_t dsize = strlen(dest);
     size_t len = strlen(src);
@@ -89,8 +89,10 @@ size_t ag_strlcat(char *dest, const char *src, size_t count)
 
     return res;
 }
+#endif
 
-size_t ag_strlcpy(char *dest, const char *src, size_t size)
+#ifndef HAVE_STRLCPY
+size_t strlcpy(char *dest, const char *src, size_t size)
 {
     size_t ret = strlen(src);
 
@@ -103,3 +105,4 @@ size_t ag_strlcpy(char *dest, const char *src, size_t size)
 
     return ret;
 }
+#endif
