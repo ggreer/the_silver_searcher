@@ -67,7 +67,6 @@ int is_binary(const void* buf, const int buf_len) {
     return(0);
 }
 
-#ifndef HAVE_STRLCAT
 /*
  * strlcat and strlcpy, taken from linux kernel
  */
@@ -89,9 +88,7 @@ size_t strlcat(char *dest, const char *src, size_t count)
 
     return res;
 }
-#endif
 
-#ifndef HAVE_STRLCPY
 size_t strlcpy(char *dest, const char *src, size_t size)
 {
     size_t ret = strlen(src);
@@ -105,4 +102,3 @@ size_t strlcpy(char *dest, const char *src, size_t size)
 
     return ret;
 }
-#endif
