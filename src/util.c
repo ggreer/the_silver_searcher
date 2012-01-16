@@ -64,26 +64,24 @@ void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[]) 
 
 /* Boyer-Moore-Horspool strstr */
 char* ag_boyer_moore_strnstr(const char *s, const char *find, size_t s_len, size_t f_len, size_t skip_lookup[]) {
-    int i;
-    int pos = 0;
-    int skip_chars;
+    size_t i;
+    size_t pos = 0;
 
     /* It's impossible to match a larger string */
     if (f_len > s_len) {
         return(NULL);
     }
 
-    while (pos < (int)(s_len - f_len)) {
+    while (pos < (s_len - f_len)) {
         for (i = f_len - 1; s[pos + i] == find[i]; i--) {
             if (i == 0) {
-/*                printf("match found at position %i, returning\n", pos); */
                 return((char *)(&(s[pos])));
             }
         }
-        skip_chars = skip_lookup[(int)(unsigned char)s[pos + i]];
-        pos += skip_chars;
+
+        pos += skip_lookup[(unsigned char)s[pos + i]];
     }
-/*    printf("nothing found, returning\n"); */
+
     return(NULL);
 }
 
