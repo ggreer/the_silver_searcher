@@ -70,23 +70,12 @@ char* ag_boyer_moore_strnstr(const char *s, const char *find, size_t s_len, size
         return(NULL);
     }
 
-    for (i = 0; i < 256; i++) {
-        skip_lookup[i] = f_len - 1;
-    }
-
-    /* TODO: move the lookup generation outside this function */
-    for (i = f_len - 1; i >= 0; i--) {
-        skip_lookup[(int)find[i]] = f_len - i;
-/*        printf("skip_lookup[%c] = %i\n", find[i], (int)(f_len - i)); */
-    }
-
     while (pos < (int)(s_len - f_len)) {
-        for (i = 0; s[pos] == find[i]; pos++) {
-            if (i == (int)f_len - 1) {
+        for (i = f_len - 1; s[pos + i] == find[i]; i--) {
+            if (i == 0) {
 /*                printf("match found at position %i, returning\n", pos); */
-                return((char *)(&(s[pos-i])));
+                return((char *)(&(s[pos])));
             }
-            i++;
         }
         pos += i;
 
