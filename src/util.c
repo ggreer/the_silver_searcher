@@ -4,6 +4,7 @@
 #include <xlocale.h>
 #include <stdarg.h>
 #include <strings.h>
+#include <stdlib.h>
 #include "util.h"
 
 /* Blatantly stolen from darwin source code and modified for my own purposes
@@ -19,10 +20,10 @@ char* ag_strnstr(const char *s, const char *find, size_t slen)
         do {
             do {
                 if (slen-- < 1 || (sc = *s++) == '\0')
-                    return (NULL);
+                    return(NULL);
             } while (sc != c);
             if (len > slen)
-                return (NULL);
+                return(NULL);
         } while (strncmp(s, find, len) != 0);
         s--;
     }
@@ -39,21 +40,22 @@ char* ag_strncasestr(const char *s, const char *find, size_t slen)
         do {
             do {
                 if (slen-- < 1 || (sc = *s++) == '\0')
-                    return (NULL);
+                    return(NULL);
             } while (tolower(sc) != tolower(c));
             if (len > slen)
-                return (NULL);
+                return(NULL);
         } while (strncasecmp(s, find, len) != 0);
         s--;
     }
-    return ((char *)s);
+    return((char *)s);
 }
 
 /* Boyer-Moore-Horspool strstr */
-char* ag_boyer_moore_strnstr(const char *s, const char *find, size_t s_len, size_t f_len) {
+char* ag_boyer_moore_strnstr(const unsigned char *s, const unsigned char *find, size_t s_len, size_t f_len) {
     int i;
+    int pos = 0;
+    int skip_chars;
     size_t skip_lookup[256];
-    char *haystack = s;
 
     if (f_len > s_len) {
         return(NULL);
@@ -65,23 +67,32 @@ char* ag_boyer_moore_strnstr(const char *s, const char *find, size_t s_len, size
 
     /* TODO: move the lookup generation outside this function */
     for (i = f_len - 1; i >= 0; i--) {
-        skip_lookup[find[i]] = f_len - i;
-        printf("skip_lookup[%c] = %i\n", find[i], (int)(f_len - i));
+        skip_lookup[(int)find[i]] = f_len - i;
+/*        printf("skip_lookup[%c] = %i\n", find[i], (int)(f_len - i)); */
     }
 
-    while (s_len > f_len) {
-        for (i = 0; haystack[i] == find[i]; i++) {
-            printf("haystack %c find %c", haystack[i], find[i]);
+    while (pos < (s_len - f_len)) {
+        for (i = 0; s[pos] == find[i]; pos++) {
             if (i == (int)f_len - 1) {
-                printf("match found at position %i, returning\n", i);
-                return haystack;
+/*                printf("match found at position %i, returning\n", pos); */
+                return (char *)(&(s[pos-i]));
             }
+            i++;
         }
+        pos += i;
 
-        haystack += skip_lookup[(int)*haystack];
-        s_len -= skip_lookup[(int)*s];
+        if (s[pos] < 0 || s[pos] > 255) {
+            printf("pos %i haystack %i\n", pos, s[pos], find[i]);
+            exit(1);
+        }
+        skip_chars = skip_lookup[(unsigned int)s[pos]];
+        if (skip_chars == 0){
+            printf("pos %i haystack %c find %c\n", pos, s[pos], find[i]);
+            exit(1);
+        }
+        pos += skip_chars;
     }
-
+/*    printf("nothing found, returning\n"); */
     return(NULL);
 }
 
@@ -96,7 +107,7 @@ int is_binary(const void* buf, const int buf_len) {
             /* NULL char. It's binary */
             return(1);
         }
-        else if (buf_c[i] < 32 || buf_c[i] > 128) {
+        else if (buf_c[i] < 32 || buf_c[i] > 127) {
             suspicious_bytes++;
         }
     }
