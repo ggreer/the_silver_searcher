@@ -37,7 +37,7 @@ char* boyer_moore_strnstr(const char *s, const char *find, size_t s_len, size_t 
             }
         }
 
-        pos += skip_lookup[(unsigned char)s[pos + i]];
+        pos += skip_lookup[(unsigned char)s[pos + f_len - 1]];
     }
 
     return(NULL);
