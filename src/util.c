@@ -43,6 +43,29 @@ char* boyer_moore_strnstr(const char *s, const char *find, size_t s_len, size_t 
     return(NULL);
 }
 
+/* Copy-pasted from above. Yes I know this is bad. One day I might even fix it. */
+char* boyer_moore_strncasestr(const char *s, const char *find, size_t s_len, size_t f_len, size_t skip_lookup[]) {
+    size_t i;
+    size_t pos = 0;
+
+    /* It's impossible to match a larger string */
+    if (f_len > s_len) {
+        return(NULL);
+    }
+
+    while (pos < (s_len - f_len)) {
+        for (i = f_len - 1; tolower(s[pos + i]) == tolower(find[i]); i--) {
+            if (i == 0) {
+                return((char *)(&(s[pos])));
+            }
+        }
+
+        pos += skip_lookup[(unsigned char)tolower(s[pos + f_len - 1])];
+    }
+
+    return(NULL);
+}
+
 int is_binary(const void* buf, const int buf_len) {
     int suspicious_bytes = 0;
     int total_bytes = buf_len > 1024 ? 1024 : buf_len;

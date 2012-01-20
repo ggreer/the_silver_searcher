@@ -171,8 +171,7 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
             char *(*ag_strncmp_fp)(const char*, const char*, size_t, size_t, size_t[]) = &boyer_moore_strnstr;
 
             if (opts.casing == CASE_INSENSITIVE) {
-                /* TODO: case-insensitive matching */
-                ag_strncmp_fp = &boyer_moore_strnstr;
+                ag_strncmp_fp = &boyer_moore_strncasestr;
             }
             while (buf_offset < buf_len) {
                 match_ptr = ag_strncmp_fp(match_ptr, opts.query, buf_len - buf_offset, opts.query_len, skip_lookup);
