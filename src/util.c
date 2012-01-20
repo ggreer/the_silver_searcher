@@ -4,82 +4,40 @@
 #include <xlocale.h>
 #include <stdarg.h>
 #include <strings.h>
+#include <stdlib.h>
 #include "util.h"
 
-/* Blatantly stolen from darwin source code and modified for my own purposes
-   TODO: take a look at boyer-moore string searching
- */
-char* ag_strnstr(const char *s, const char *find, size_t slen)
-{
-    char c, sc;
-    size_t len;
 
-    if ((c = *find++) != '\0') {
-        len = strlen(find);
-        do {
-            do {
-                if (slen-- < 1 || (sc = *s++) == '\0')
-                    return (NULL);
-            } while (sc != c);
-            if (len > slen)
-                return (NULL);
-        } while (strncmp(s, find, len) != 0);
-        s--;
-    }
-    return ((char *)s);
-}
-
-char* ag_strncasestr(const char *s, const char *find, size_t slen)
-{
-    char c, sc;
-    size_t len;
-
-    if ((c = *find++) != '\0') {
-        len = strlen(find);
-        do {
-            do {
-                if (slen-- < 1 || (sc = *s++) == '\0')
-                    return (NULL);
-            } while (tolower(sc) != tolower(c));
-            if (len > slen)
-                return (NULL);
-        } while (strncasecmp(s, find, len) != 0);
-        s--;
-    }
-    return ((char *)s);
-}
-
-/* Boyer-Moore-Horspool strstr */
-char* ag_boyer_moore_strnstr(const char *s, const char *find, size_t s_len, size_t f_len) {
-    int i;
-    size_t skip_lookup[256];
-    char *haystack = s;
-
-    if (f_len > s_len) {
-        return(NULL);
-    }
+void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[]) {
+    size_t i = 0;
 
     for (i = 0; i < 256; i++) {
         skip_lookup[i] = f_len - 1;
     }
 
-    /* TODO: move the lookup generation outside this function */
-    for (i = f_len - 1; i >= 0; i--) {
-        skip_lookup[find[i]] = f_len - i;
-        printf("skip_lookup[%c] = %i\n", find[i], (int)(f_len - i));
+    for (i = 0; i < f_len - 1; i++) {
+        skip_lookup[(unsigned char)find[i]] = f_len - i - 1;
+    }
+}
+
+/* Boyer-Moore-Horspool strstr */
+char* boyer_moore_strnstr(const char *s, const char *find, size_t s_len, size_t f_len, size_t skip_lookup[]) {
+    size_t i;
+    size_t pos = 0;
+
+    /* It's impossible to match a larger string */
+    if (f_len > s_len) {
+        return(NULL);
     }
 
-    while (s_len > f_len) {
-        for (i = 0; haystack[i] == find[i]; i++) {
-            printf("haystack %c find %c", haystack[i], find[i]);
-            if (i == (int)f_len - 1) {
-                printf("match found at position %i, returning\n", i);
-                return haystack;
+    while (pos < (s_len - f_len)) {
+        for (i = f_len - 1; s[pos + i] == find[i]; i--) {
+            if (i == 0) {
+                return((char *)(&(s[pos])));
             }
         }
 
-        haystack += skip_lookup[(int)*haystack];
-        s_len -= skip_lookup[(int)*s];
+        pos += skip_lookup[(unsigned char)s[pos + f_len - 1]];
     }
 
     return(NULL);
@@ -96,7 +54,7 @@ int is_binary(const void* buf, const int buf_len) {
             /* NULL char. It's binary */
             return(1);
         }
-        else if (buf_c[i] < 32 || buf_c[i] > 128) {
+        else if (buf_c[i] < 32 || buf_c[i] > 127) {
             suspicious_bytes++;
         }
     }
@@ -110,10 +68,9 @@ int is_binary(const void* buf, const int buf_len) {
 }
 
 /*
- * These functions are taken from Linux. Renamed so there's no
- * possible function name conflicts.
+ * strlcat and strlcpy, taken from linux kernel
  */
-size_t ag_strlcat(char *dest, const char *src, size_t count)
+size_t strlcat(char *dest, const char *src, size_t count)
 {
     size_t dsize = strlen(dest);
     size_t len = strlen(src);
@@ -132,7 +89,7 @@ size_t ag_strlcat(char *dest, const char *src, size_t count)
     return res;
 }
 
-size_t ag_strlcpy(char *dest, const char *src, size_t size)
+size_t strlcpy(char *dest, const char *src, size_t size)
 {
     size_t ret = strlen(src);
 
