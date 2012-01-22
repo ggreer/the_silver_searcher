@@ -276,11 +276,11 @@ int main(int argc, char **argv) {
 
     parse_options(argc, argv, &query, &path);
 
+    log_debug("PCRE Version: %s", pcre_version());
+
     if (opts.casing == CASE_INSENSITIVE) {
         pcre_opts = pcre_opts | PCRE_CASELESS;
     }
-
-    log_debug("PCRE Version: %s", pcre_version());
 
     if (!is_regex(opts.query, opts.query_len)) {
         /* No special chars. Do a literal match */
