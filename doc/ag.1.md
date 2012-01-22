@@ -36,6 +36,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `--[no]heading`
   * `--literal`:
     Do not parse PATTERN as a regular expression. Try to match it literally.
+  * `--print-long-lines`
+    Print matches on very long lines (> 2k characters by default)
   * `--search-binary`:
     Search binary files for matches.
   * `--stats`:

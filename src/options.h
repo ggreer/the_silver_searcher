@@ -37,6 +37,7 @@ typedef struct {
     int print_break;
     int print_filename_only;
     int print_heading;
+    int print_long_lines;
     int recurse_dirs;
     int search_binary_files;
     int stats;
