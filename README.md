@@ -39,6 +39,8 @@ You can use this with [my fork](https://github.com/ggreer/AckMate) of the popula
 
 
 ### TODO ###
+* behave better when matching in files with really long lines
+  * maybe say "match found at position X of line N" if line is > 10k chars
 * parse more ack options correctly
 * actually get textmate dir patterns working
 * support inverted matching
@@ -46,7 +48,7 @@ You can use this with [my fork](https://github.com/ggreer/AckMate) of the popula
 * allow searching files > 1GB in size
 * optimizations
   * parse query string, figure out if it's a regex or literal string. if it's literal, do a strstr match (which is faster than a pcre exec)
-* pthreads. these days it's silly to use only one core
+  * pthreads. these days it's silly to use only one core
 
 ### Other stuff you might like ###
 * [Ack](https://github.com/petdance/ack) - Better than grep
