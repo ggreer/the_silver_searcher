@@ -33,7 +33,7 @@ On the continuum of...
 
     ack -i SOLR ~/cloudkick/reach  2.89s user 0.77s system 97% cpu 3.765 total
 
-    ag -i SOLR ~/cloudkick/reach  0.37s user 0.15s system 88% cpu 0.590 total
+    ag -i SOLR ~/cloudkick/reach  0.25s user 0.13s system 94% cpu 0.404 total
 
 You can use this with [my fork](https://github.com/ggreer/AckMate) of the popular ackmate plugin, which lets you use both ack and ag for searching in textmate. You can also just move or delete `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and run `ln -s /usr/local/bin/ag "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
 
