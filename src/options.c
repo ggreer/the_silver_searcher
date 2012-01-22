@@ -111,6 +111,10 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         exit(1);
     }
 
+    if (!isatty(fileno(stdin))) {
+        opts.search_stdin = 1;
+    }
+
     /* TODO: check for insane params. nobody is going to want 5000000 lines of context, for example */
     while ((ch = getopt_long(argc, argv, "A:B:C:G:DfivV", longopts, &opt_index)) != -1) {
         switch (ch) {
