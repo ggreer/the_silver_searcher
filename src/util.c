@@ -90,6 +90,10 @@ int is_binary(const void* buf, const int buf_len) {
     return(0);
 }
 
+int is_regex(const char* query, const int query_len) {
+    return 1;
+}
+
 /*
  * strlcat and strlcpy, taken from linux kernel
  */
