@@ -102,8 +102,9 @@ size_t strlcat(char *dest, const char *src, size_t count)
     dest += dsize;
     count -= dsize;
 
-    if (len >= count)
+    if (len >= count) {
         len = count - 1;
+    }
 
     memcpy(dest, src, len);
 
