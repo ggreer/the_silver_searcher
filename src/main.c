@@ -282,8 +282,13 @@ int main(int argc, char **argv) {
 
     log_debug("PCRE Version: %s", pcre_version());
 
+    if (!is_regex(opts.query, opts.query_len)) {
+        /* No special chars. Do a literal match */
+        opts.literal = 1;
+    }
+
     if (opts.literal) {
-        generate_skip_lookup(opts.query, opts.query_len, skip_lookup);
+        generate_skip_lookup(opts.query, opts.query_len, skip_lookup, opts.casing == CASE_SENSITIVE);
     }
     else {
         re = pcre_compile(query, pcre_opts, &pcre_err, &pcre_err_offset, NULL);

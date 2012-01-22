@@ -8,7 +8,7 @@
 #include "util.h"
 
 
-void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[]) {
+void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], int case_sensitive) {
     size_t i = 0;
 
     for (i = 0; i < 256; i++) {
@@ -16,7 +16,12 @@ void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[]) 
     }
 
     for (i = 0; i < f_len - 1; i++) {
-        skip_lookup[(unsigned char)find[i]] = f_len - i - 1;
+        if (case_sensitive) {
+            skip_lookup[(unsigned char)find[i]] = f_len - i - 1;
+        }
+        else {
+            skip_lookup[(unsigned char)tolower(find[i])] = f_len - i - 1;
+        }
     }
 }
 
@@ -91,7 +96,32 @@ int is_binary(const void* buf, const int buf_len) {
 }
 
 int is_regex(const char* query, const int query_len) {
-    return 1;
+    int i, j;
+    char regex_chars[] = {
+        '\\',
+        '^',
+        '$',
+        '.',
+        '[',
+        '|',
+        '(',
+        ')',
+        '?',
+        '*',
+        '+',
+        '{',
+        '\0'
+    };
+
+    for (i = 0; i < query_len; i++) {
+        for (j = 0; regex_chars[j] != '\0'; j++) {
+            if (query[i] == regex_chars[j]) {
+                return(1);
+            }
+        }
+    }
+
+    return(0);
 }
 
 /*

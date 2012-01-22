@@ -1,7 +1,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[]);
+void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], int case_sensitive);
 char* boyer_moore_strnstr(const char *s, const char *find, size_t s_len, size_t f_len, size_t skip_lookup[]);
 char* boyer_moore_strncasestr(const char *s, const char *find, size_t s_len, size_t f_len, size_t skip_lookup[]);
 
