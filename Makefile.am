@@ -7,4 +7,4 @@ ag_LDADD = ${PCRE_LIBS}
 man_MANS = doc/ag.1
 
 # Uncomment this line to output gprof profiling info. This hurts performance.
-#CFLAGS+=-pg
+#CFLAGS=-pg
