@@ -52,11 +52,11 @@ void init_options() {
 void cleanup_options() {
     if (opts.ackmate_dir_filter) {
         pcre_free(opts.ackmate_dir_filter);
-        pcre_free_study(opts.ackmate_dir_filter_extra);
+        pcre_free(opts.ackmate_dir_filter_extra);
     }
     if (opts.file_search_regex) {
         pcre_free(opts.file_search_regex);
-        pcre_free_study(opts.file_search_regex_extra);
+        pcre_free(opts.file_search_regex_extra);
     }
 }
 
