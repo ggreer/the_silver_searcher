@@ -13,6 +13,7 @@ int first_file_match = 1;
 const char *colors_reset = "\e[0m\e[K";
 const char *colors_path = "\e[1;32m";   /* bold green */
 const char *colors_match = "\e[30;43m"; /* black with yellow background */
+const char *colors_line_number = "\e[1;33m"; /* yellow with black background */
 
 void print_path(const char* path) {
     if (opts.ackmate) {
@@ -84,7 +85,12 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                                 print_path(path);
                                 printf(":");
                             }
-                            printf("%i%c%s\n", line - (opts.before - j), sep, context_prev_lines[prev_line]);
+                            if (opts.color) {
+                                printf("%s%i%s%c%s\n", colors_line_number, line - (opts.before - j), colors_reset, sep, context_prev_lines[prev_line]);
+                            }
+                            else {
+                                printf("%i%c%s\n", line - (opts.before - j), sep, context_prev_lines[prev_line]);
+                            }
                         }
                     }
                 }
@@ -94,7 +100,13 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                         print_path(path);
                         printf(":");
                     }
-                    printf("%i:", line);
+                    if (opts.color) {
+                        printf("%s%i%s:", colors_line_number, line, colors_reset);
+                    }
+                    else {
+                        printf("%i:", line);
+                    }
+
                     if (opts.column) {
                         printf("%i:", column + 1);
                     }
@@ -168,7 +180,12 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                     print_path(path);
                     printf(":");
                 }
-                printf("%i%c", line, sep);
+                if (opts.color) {
+                    printf("%s%i%s%c", colors_line_number, line, colors_reset, sep);
+                }
+                else {
+                    printf("%i%c", line, sep);
+                }
 
                 for (j = prev_line_offset; j < i; j++) {
                     putchar(buf[j]);
