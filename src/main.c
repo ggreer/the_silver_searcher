@@ -254,11 +254,6 @@ int main(int argc, char **argv) {
 
 #ifdef AG_DEBUG
     set_log_level(LOG_LEVEL_DEBUG);
-    int i = 0;
-    for (i = 0; i < argc; i++) {
-        fprintf(stderr, "%s ", argv[i]);
-    }
-    fprintf(stderr, "\n");
 #endif
 
     char *query = NULL;
