@@ -219,6 +219,7 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
         if (matches_len > 0) {
             if (opts.print_filename_only) {
                 print_path(dir_full_path);
+                putchar('\n');
             }
             else {
                 if (binary) {
