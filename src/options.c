@@ -11,7 +11,7 @@
 
 /* TODO: printf()ing this is not going to scale */
 void usage() {
-    printf("Usage: ag [OPTIONS] PATTERN PATH\n\
+    printf("Usage: ag [OPTIONS] PATTERN [PATH]\n\
 \n\
 Recursively search for PATTERN in PATH.\n\
 Like grep or ack, but faster.\n\
@@ -20,19 +20,26 @@ Example: ag -i foo /bar/\n\
 \n\
 Search options:\n\
 \n\
-  -i, --ignore-case\n\
-  -G, --file-search-regex\n\
-  --literal\n\
-\n\
-Output options:\n\
-\n\
-  --ackmate\n\
-  --after LINES\n\
-  --before LINES\n\
-  --column\n\
-  --context\n\
-  --[no]color\n\
-  --[no]group\n\
+--ackmate: Output results in a format parseable by AckMate.\n\
+-A --after [LINES]: Print lines before match. Defaults to 2.\n\
+-B --before [LINES]: Print lines after match. Defaults to 2.\n\
+--[no]break: Print a newline between matches in different files. Enabled by default.\n\
+--[no]color: Print color codes in results. Enabled by default.\n\
+--column: Print column numbers in results.\n\
+-C --context [LINES]: Print lines before and after matches. Defaults to 2.\n\
+-D --debug: Ridiculous debugging. Probably not useful.\n\
+-f --follow: Follow symlinks.\n\
+--[no]group: Same as --[no]break --[no]heading\n\
+-G, --file-search-regex\n\
+-i, --ignore-case\n\
+--invert-match\n\
+--[no]heading\n\
+-l --files-with-matches: Only print filenames containing matches, not matching lines.\n\
+--literal: Do not parse PATTERN as a regular expression. Try to match it literally.\n\
+-m --max-count NUM: Stop searching files after NUM matches.\n\
+--print-long-lines: Print matches on very long lines (> 2k characters by default)\n\
+--search-binary: Search binary files for matches.\n\
+--stats: Print stats (files scanned, time taken, etc)\n\
 \n");
 }
 
