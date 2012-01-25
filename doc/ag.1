@@ -18,10 +18,10 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 \fB\-\-ackmate\fR: Output results in a format parseable by AckMate\.
 .
 .IP "\(bu" 4
-\fB\-A \-\-after\fR [LINES]: Print lines before match\.
+\fB\-A \-\-after\fR [LINES]: Print lines before match\. Defaults to 2\.
 .
 .IP "\(bu" 4
-\fB\-B \-\-before\fR [LINES]: Print lines after match\.
+\fB\-B \-\-before\fR [LINES]: Print lines after match\. Defaults to 2\.
 .
 .IP "\(bu" 4
 \fB\-\-[no]break\fR: Print a newline between matches in different files\. Enabled by default\.
@@ -33,7 +33,7 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 \fB\-\-column\fR: Print column numbers in results\.
 .
 .IP "\(bu" 4
-\fB\-C \-\-context\fR [LINES]: Print lines before and after matches\.
+\fB\-C \-\-context\fR [LINES]: Print lines before and after matches\. Defaults to 2\.
 .
 .IP "\(bu" 4
 \fB\-D \-\-debug\fR: Ridiculous debugging\. Probably not useful\.
@@ -57,7 +57,16 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 \fB\-\-[no]heading\fR
 .
 .IP "\(bu" 4
+\fB\-l \-\-files\-with\-matches\fR Only print filenames containing matches, not matching lines\.
+.
+.IP "\(bu" 4
 \fB\-\-literal\fR: Do not parse PATTERN as a regular expression\. Try to match it literally\.
+.
+.IP "\(bu" 4
+\fB\-m \-\-max\-count\fR NUM Stop searching files after NUM matches\.
+.
+.IP "\(bu" 4
+\fB\-\-print\-long\-lines\fR Print matches on very long lines (> 2k characters by default)
 .
 .IP "\(bu" 4
 \fB\-\-search\-binary\fR: Search binary files for matches\.
