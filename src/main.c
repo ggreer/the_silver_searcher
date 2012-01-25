@@ -206,7 +206,6 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
             }
         }
 
-
         if (opts.stats) {
             stats.total_bytes += buf_len;
             stats.total_files++;
