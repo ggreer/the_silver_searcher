@@ -27,8 +27,7 @@
 const int MAX_SEARCH_DEPTH = 25;
 const int MAX_MATCHES_PER_FILE = 1000;
 
-long total_file_count = 0;
-long total_byte_count = 0;
+ag_stats stats;
 
 size_t skip_lookup[256];
 
@@ -209,8 +208,8 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
 
 
         if (opts.stats) {
-            total_file_count++;
-            total_byte_count += buf_len;
+            stats.total_files++;
+            stats.total_bytes += buf_len;
         }
 
         if (rc == -1) {
@@ -264,10 +263,11 @@ int main(int argc, char **argv) {
     int pcre_err_offset = 0;
     pcre *re = NULL;
     pcre_extra *re_extra = NULL;
-    struct timeval time_start, time_end;
     double time_diff = 0.0;
 
-    gettimeofday(&time_start, NULL);
+    memset(&stats, 0, sizeof(&stats)); /* What's the point of an init function if it's going to be this one-liner? */
+
+    gettimeofday(&(stats.time_start), NULL);
 
     parse_options(argc, argv, &query, &path);
 
@@ -309,11 +309,12 @@ int main(int argc, char **argv) {
     search_dir(re, re_extra, path, 0);
 
     if (opts.stats) {
-        gettimeofday(&time_end, NULL);
-        time_diff = ((long)time_end.tv_sec * 1000000 + time_end.tv_usec) - ((long)time_start.tv_sec * 1000000 + time_start.tv_usec);
+        gettimeofday(&(stats.time_end), NULL);
+        time_diff = ((long)stats.time_end.tv_sec * 1000000 + stats.time_end.tv_usec) -
+                    ((long)stats.time_start.tv_sec * 1000000 + stats.time_start.tv_usec);
         time_diff = time_diff / 1000000;
 
-        printf("%ld files\n%ld bytes\n%f seconds\n", total_file_count, total_byte_count, time_diff);
+        printf("%ld matches\n%ld files searched\n%ld bytes searched\n%f seconds\n", stats.total_matches, stats.total_files, stats.total_bytes, time_diff);
     }
 
     pcre_free(re);
