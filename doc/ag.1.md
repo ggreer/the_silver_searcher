@@ -14,9 +14,9 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `--ackmate`:
     Output results in a format parseable by AckMate.
   * `-A --after` [LINES]:
-    Print lines before match.
+    Print lines before match. Defaults to 2.
   * `-B --before` [LINES]:
-    Print lines after match.
+    Print lines after match. Defaults to 2.
   * `--[no]break`:
     Print a newline between matches in different files. Enabled by default.
   * `--[no]color`:
@@ -24,7 +24,7 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `--column`:
     Print column numbers in results.
   * `-C --context` [LINES]:
-    Print lines before and after matches.
+    Print lines before and after matches. Defaults to 2.
   * `-D --debug`:
     Ridiculous debugging. Probably not useful.
   * `-f --follow`:
@@ -34,8 +34,12 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `-i`, `--ignore-case`
   * `--invert-match`
   * `--[no]heading`
+  * `-l --files-with-matches`
+    Only print filenames containing matches, not matching lines.
   * `--literal`:
     Do not parse PATTERN as a regular expression. Try to match it literally.
+  * `-m --max-count` NUM
+    Stop searching files after NUM matches.
   * `--print-long-lines`
     Print matches on very long lines (> 2k characters by default)
   * `--search-binary`:
