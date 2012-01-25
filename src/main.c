@@ -25,7 +25,7 @@
 
 /* TODO: make these configurable */
 const int MAX_SEARCH_DEPTH = 25;
-const int MAX_MATCHES_PER_FILE = 1000;
+const int MAX_MATCHES_PER_FILE = 10000;
 
 ag_stats stats;
 
