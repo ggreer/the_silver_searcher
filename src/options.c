@@ -46,7 +46,6 @@ void init_options() {
     opts.color = TRUE;
     opts.print_break = TRUE;
     opts.print_heading = TRUE;
-    opts.print_matches = TRUE;
     opts.recurse_dirs = TRUE;
 }
 
@@ -96,6 +95,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         { "noheading", no_argument, &(opts.print_heading), 0 },
         { "help", no_argument, &help, 1 },
         { "ignore-case", no_argument, NULL, 'i' },
+        { "files-with-matches", no_argument, NULL, 'l' },
         { "literal", no_argument, &(opts.literal), 1 },
         { "match", no_argument, &useless, 0 },
         { "print-long-lines", no_argument, &(opts.print_long_lines), 1 },
@@ -117,7 +117,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
     }
 
     /* TODO: check for insane params. nobody is going to want 5000000 lines of context, for example */
-    while ((ch = getopt_long(argc, argv, "A:B:C:G:DfivV", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:B:C:G:DfilvV", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 opts.after = atoi(optarg);
@@ -152,6 +152,9 @@ void parse_options(int argc, char **argv, char **query, char **path) {
                 break;
             case 'i':
                 opts.casing = CASE_INSENSITIVE;
+                break;
+            case 'l':
+                opts.print_filename_only = 1;
                 break;
             case 'v':
                 opts.invert_match = 1;
