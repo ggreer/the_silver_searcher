@@ -11,29 +11,29 @@
 
 /* TODO: printf()ing this is not going to scale */
 void usage() {
-    printf("Usage: ag [OPTIONS] PATTERN PATH\n");
-    printf("\n");
-    printf("Recursively search for PATTERN in PATH.\n");
-    printf("Like grep or ack, but faster.\n");
-    printf("\n");
-    printf("Example: ag -i foo /bar/\n");
-    printf("\n");
-    printf("Search options:\n");
-    printf("\n");
-    printf("  -i, --ignore-case\n");
-    printf("  -G, --file-search-regex\n");
-    printf("  --literal\n");
-    printf("\n");
-    printf("Output options:\n");
-    printf("\n");
-    printf("  --ackmate\n");
-    printf("  --after LINES\n");
-    printf("  --before LINES\n");
-    printf("  --column\n");
-    printf("  --context\n");
-    printf("  --[no]color\n");
-    printf("  --[no]group\n");
-    printf("\n");
+    printf("Usage: ag [OPTIONS] PATTERN PATH\n\
+\n\
+Recursively search for PATTERN in PATH.\n\
+Like grep or ack, but faster.\n\
+\n\
+Example: ag -i foo /bar/\n\
+\n\
+Search options:\n\
+\n\
+  -i, --ignore-case\n\
+  -G, --file-search-regex\n\
+  --literal\n\
+\n\
+Output options:\n\
+\n\
+  --ackmate\n\
+  --after LINES\n\
+  --before LINES\n\
+  --column\n\
+  --context\n\
+  --[no]color\n\
+  --[no]group\n\
+\n");
 }
 
 void print_version() {
@@ -46,6 +46,7 @@ void init_options() {
     opts.color = TRUE;
     opts.print_break = TRUE;
     opts.print_heading = TRUE;
+    opts.print_matches = TRUE;
     opts.recurse_dirs = TRUE;
 }
 
@@ -81,8 +82,8 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         { "break", no_argument, &(opts.print_break), 1 },
         { "nobreak", no_argument, &(opts.print_break), 0 },
         { "color", no_argument, &(opts.color), 1 },
-        { "column", no_argument, &(opts.column), 1 },
         { "nocolor", no_argument, &(opts.color), 0 },
+        { "column", no_argument, &(opts.column), 1 },
         { "context", optional_argument, &(opts.context), 2 },
         { "debug", no_argument, NULL, 'D' },
         { "follow", no_argument, &(opts.follow_symlinks), 1 },
