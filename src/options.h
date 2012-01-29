@@ -39,8 +39,10 @@ typedef struct {
     int print_heading;
     int print_long_lines; /* TODO: support this in print.c */
     int recurse_dirs;
+    int search_all_files;
     int search_binary_files;
     int search_stdin; /* true if tail -F blah | ag */
+    int search_unrestricted;
     int stats;
     char *query;
     int query_len;

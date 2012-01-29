@@ -68,6 +68,11 @@ void load_ignore_patterns(const char *ignore_filename) {
 
 int ignorefile_filter(struct dirent *dir) {
     int i;
+
+    if (opts.search_all_files || opts.search_unrestricted) {
+        return(0);
+    }
+
     for (i = 0; ignore_pattern_files[i] != NULL; i++) {
         if (strcmp(ignore_pattern_files[i], dir->d_name) == 0) {
             log_debug("ignore pattern matched for %s", dir->d_name);
@@ -89,9 +94,12 @@ int filename_filter(struct dirent *dir) {
         return(0);
     }
 
-    /* TODO: check if opts want to ignore hidden files */
-    if (filename[0] == '.') {
+    if (!opts.search_unrestricted && filename[0] == '.') {
         return(0);
+    }
+
+    if (opts.search_all_files) {
+        return(1);
     }
 
     for (i = 0; evil_hardcoded_ignore_files[i] != NULL; i++) {

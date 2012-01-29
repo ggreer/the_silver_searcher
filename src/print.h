@@ -7,7 +7,8 @@ typedef struct {
 } match;
 
 void print_path(const char* path);
-
+void print_binary_file_matches(const char* path);
 void print_file_matches(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len);
+void print_file_separator();
 
 #endif

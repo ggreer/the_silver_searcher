@@ -85,6 +85,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         { "ackmate", no_argument, &(opts.ackmate), 1 },
         { "ackmate-dir-filter", required_argument, NULL, 0 },
         { "after", required_argument, NULL, 'A' },
+        { "all-types", no_argument, NULL, 'a' },
         { "before", required_argument, NULL, 'B' },
         { "break", no_argument, &(opts.print_break), 1 },
         { "nobreak", no_argument, &(opts.print_break), 0 },
@@ -111,6 +112,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         { "smart-case", no_argument, &useless, 0 },
         { "nosmart-case", no_argument, &useless, 0 },
         { "stats", no_argument, &(opts.stats), 1 },
+        { "unrestricted", no_argument, NULL, 'u' },
         { "version", no_argument, &version, 1 },
         { NULL, 0, NULL, 0 }
     };
@@ -134,10 +136,14 @@ void parse_options(int argc, char **argv, char **query, char **path) {
     }
 
     /* TODO: check for insane params. nobody is going to want 5000000 lines of context, for example (on second thought, somebody might?) */
-    while ((ch = getopt_long(argc, argv, "A:B:C:G:DfilvV", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:G:DfilvVu", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 opts.after = atoi(optarg);
+                break;
+            case 'a':
+                opts.search_all_files = 1;
+                opts.search_binary_files = 1;
                 break;
             case 'B':
                 opts.before = atoi(optarg);
@@ -172,6 +178,10 @@ void parse_options(int argc, char **argv, char **query, char **path) {
                 break;
             case 'l':
                 opts.print_filename_only = 1;
+                break;
+            case 'u':
+                opts.search_binary_files = 1;
+                opts.search_unrestricted = 1;
                 break;
             case 'v':
                 opts.invert_match = 1;

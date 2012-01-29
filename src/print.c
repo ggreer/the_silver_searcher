@@ -29,6 +29,11 @@ void print_path(const char* path) {
     }
 }
 
+void print_binary_file_matches(const char* path) {
+    print_file_separator();
+    printf("Binary file %s matches.\n", path);
+}
+
 /* TODO: make print_matching_line() */
 
 void print_file_matches(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len) {
@@ -49,10 +54,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
         sep = ':';
     }
 
-    if (first_file_match == 0 && opts.print_break) {
-        printf("\n");
-    }
-    first_file_match = 0;
+    print_file_separator();
 
     if (opts.print_heading) {
         print_path(path);
@@ -200,4 +202,11 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
     }
 
     free(context_prev_lines);
+}
+
+void print_file_separator() {
+    if (first_file_match == 0 && opts.print_break) {
+        printf("\n");
+    }
+    first_file_match = 0;
 }

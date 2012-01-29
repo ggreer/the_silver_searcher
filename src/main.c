@@ -223,7 +223,7 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
             }
             else {
                 if (binary) {
-                    printf("Binary file %s matches.\n", dir_full_path);
+                    print_binary_file_matches(dir_full_path);
                 }
                 else {
                     print_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
