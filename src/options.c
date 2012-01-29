@@ -61,6 +61,7 @@ void cleanup_options() {
         pcre_free(opts.ackmate_dir_filter);
         pcre_free(opts.ackmate_dir_filter_extra); /* Using pcre_free_study here segfaults on some versions of PCRE */
     }
+
     if (opts.file_search_regex) {
         pcre_free(opts.file_search_regex);
         pcre_free(opts.file_search_regex_extra); /* Using pcre_free_study here segfaults on some versions of PCRE */
@@ -123,7 +124,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         opts.search_stdin = 1;
     }
 
-    /* TODO: check for insane params. nobody is going to want 5000000 lines of context, for example */
+    /* TODO: check for insane params. nobody is going to want 5000000 lines of context, for example (on second thought, somebody might?) */
     while ((ch = getopt_long(argc, argv, "A:B:C:G:DfilvV", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
@@ -198,15 +199,6 @@ void parse_options(int argc, char **argv, char **query, char **path) {
     argc -= optind;
     argv += optind;
 
-    if (group) {
-        opts.print_heading = 1;
-        opts.print_break = 1;
-    }
-    else {
-        opts.print_heading = 0;
-        opts.print_break = 0;
-    }
-
     if (help) {
         usage();
         exit(0);
@@ -215,6 +207,20 @@ void parse_options(int argc, char **argv, char **query, char **path) {
     if (version) {
         print_version();
         exit(0);
+    }
+
+    if (argc == 0) {
+        log_err("What do you want to search for?");
+        exit(1);
+    }
+
+    if (group) {
+        opts.print_heading = 1;
+        opts.print_break = 1;
+    }
+    else {
+        opts.print_heading = 0;
+        opts.print_break = 0;
     }
 
     if (opts.context > 0) {
@@ -227,13 +233,9 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         opts.print_break = 1;
     }
 
+    /* If we're not outputting to a terminal, turn off colors */
     if (!isatty(fileno(stdout))) {
         opts.color = 0;
-    }
-
-    if (argc == 0) {
-        log_err("What do you want to search for?");
-        exit(1);
     }
 
     opts.query = strdup(argv[0]);
