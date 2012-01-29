@@ -144,7 +144,7 @@ size_t strlcat(char *dest, const char *src, size_t count)
 
     dest[len] = 0;
 
-    return res;
+    return(res);
 }
 
 size_t strlcpy(char *dest, const char *src, size_t size)
@@ -158,5 +158,5 @@ size_t strlcpy(char *dest, const char *src, size_t size)
         dest[len] = '\0';
     }
 
-    return ret;
+    return(ret);
 }
