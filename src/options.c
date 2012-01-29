@@ -124,6 +124,11 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         opts.search_stdin = 1;
     }
 
+    /* If we're not outputting to a terminal, turn off colors */
+    if (!isatty(fileno(stdout))) {
+        opts.color = 0;
+    }
+
     /* TODO: check for insane params. nobody is going to want 5000000 lines of context, for example (on second thought, somebody might?) */
     while ((ch = getopt_long(argc, argv, "A:B:C:G:DfilvV", longopts, &opt_index)) != -1) {
         switch (ch) {
@@ -231,11 +236,6 @@ void parse_options(int argc, char **argv, char **query, char **path) {
     if (opts.ackmate) {
         opts.color = 0;
         opts.print_break = 1;
-    }
-
-    /* If we're not outputting to a terminal, turn off colors */
-    if (!isatty(fileno(stdout))) {
-        opts.color = 0;
     }
 
     opts.query = strdup(argv[0]);
