@@ -223,15 +223,6 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         exit(1);
     }
 
-    if (group) {
-        opts.print_heading = 1;
-        opts.print_break = 1;
-    }
-    else {
-        opts.print_heading = 0;
-        opts.print_break = 0;
-    }
-
     if (opts.context > 0) {
         opts.before = opts.context;
         opts.after = opts.context;
@@ -240,6 +231,16 @@ void parse_options(int argc, char **argv, char **query, char **path) {
     if (opts.ackmate) {
         opts.color = 0;
         opts.print_break = 1;
+        group = 1;
+    }
+
+    if (group) {
+        opts.print_heading = 1;
+        opts.print_break = 1;
+    }
+    else {
+        opts.print_heading = 0;
+        opts.print_break = 0;
     }
 
     opts.query = strdup(argv[0]);
