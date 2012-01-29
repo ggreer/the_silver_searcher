@@ -124,9 +124,13 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         opts.search_stdin = 1;
     }
 
-    /* If we're not outputting to a terminal, turn off colors */
+    /* If we're not outputting to a terminal. change output to:
+        * turn off colors
+        * print filenames on every line
+     */
     if (!isatty(fileno(stdout))) {
         opts.color = 0;
+        group = 0;
     }
 
     /* TODO: check for insane params. nobody is going to want 5000000 lines of context, for example (on second thought, somebody might?) */

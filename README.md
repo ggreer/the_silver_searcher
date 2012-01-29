@@ -45,7 +45,6 @@ You can use this with [my fork](https://github.com/ggreer/AckMate) of the popula
 * actually get textmate dir patterns working
 * support inverted matching
 * support piping in stuff
-* detect if output is to a pipe and print more useful output (file names on every line, for example)
 * allow searching files > 1GB in size
 * optimizations
   * pthreads. these days it's silly to use only one core
