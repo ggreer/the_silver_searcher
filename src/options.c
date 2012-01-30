@@ -8,6 +8,7 @@
 #include "config.h"
 #include "options.h"
 #include "log.h"
+#include "util.h"
 
 /* TODO: printf()ing this is not going to scale */
 void usage() {
