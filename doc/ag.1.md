@@ -12,7 +12,9 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
 ## OPTIONS
 
   * `--ackmate`:
-    Output results in a format parseable by AckMate.
+    Output results in a format parseable by [AckMate](https://github.com/protocool/AckMate).
+  * `-a --all-types`:
+    Search all files. This doesn't include hidden files.
   * `-A --after` [LINES]:
     Print lines before match. Defaults to 2.
   * `-B --before` [LINES]:
@@ -46,6 +48,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Search binary files for matches.
   * `--stats`:
     Print stats (files scanned, time taken, etc)
+  * `-u --unrestricted`:
+    Search *all* files. This ignores .agignore, .gitignore, etc. It searches binary and hidden files as well.
 
 ## IGNORING FILES
 
@@ -53,7 +57,10 @@ Ag will ignore files matched by patterns in .gitignore, .hgignore, or .aginore. 
 
 ## EXAMPLES
 
-`ag -i foo /bar/`:
+`ag printf`:
+  Find matches for "printf" in the current directory.
+
+`ag foo /bar/`:
   Find matches for "foo" in path /bar/.
 
 ## SEE ALSO
