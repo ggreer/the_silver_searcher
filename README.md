@@ -1,14 +1,14 @@
 # The Silver Searcher #
 
-My attempt to make something better than ack, which itself is better than grep.
+An attempt to make something better than ack, which itself is better than grep.
 
 ## Why use ag? ##
 
 * It searches through code about 3x-5x faster than ack.
 * It ignores files matched by patterns in your .gitignore and .hgignore.
-* The binary name is 33% shorter than ack!
-* It's written in C instead of perl, the lesser of two evils :)
 * If there are files in your source repo that you don't want to search, just add their patterns to a .agignore file. \*cough\* extern \*cough\*
+* It's written in C instead of perl, the lesser of two evils :)
+* The binary name is 33% shorter than ack!
 
 ## Installation ##
 
@@ -35,13 +35,12 @@ On the continuum of...
 
     ag -i SOLR ~/cloudkick/reach  0.25s user 0.13s system 94% cpu 0.404 total
 
-You can use this with [my fork](https://github.com/ggreer/AckMate) of the popular ackmate plugin, which lets you use both ack and ag for searching in textmate. You can also just move or delete `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and run `ln -s /usr/local/bin/ag "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
+You can use this with [my fork](https://github.com/ggreer/AckMate) of the popular ackmate plugin, which lets you use both ack and ag for searching in textmate. You can also move or delete `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and run `ln -s /usr/local/bin/ag "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
 
 
 ### TODO ###
 * behave better when matching in files with really long lines
   * maybe say "match found at position X of line N" if line is > 10k chars
-* parse more ack options correctly
 * actually get textmate dir patterns working (this requires ruby regexes. not fun)
 * support inverted matching
 * support piping in stuff
