@@ -258,7 +258,7 @@ int main(int argc, char **argv) {
 
     char *query = NULL;
     char *path = NULL;
-    int pcre_opts = 0;
+    int pcre_opts = PCRE_MULTILINE;
     int study_opts = 0;
     const char *pcre_err = NULL;
     int pcre_err_offset = 0;
