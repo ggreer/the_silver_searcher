@@ -300,10 +300,10 @@ int main(int argc, char **argv) {
             study_opts = study_opts | PCRE_STUDY_JIT_COMPILE;
         }
 #endif
+
         re_extra = pcre_study(re, study_opts, &pcre_err);
         if (re_extra == NULL) {
-            log_err("pcre_study failed. Error: %s", pcre_err);
-            exit(1);
+            log_debug("pcre_study returned nothing useful. Error: %s", pcre_err);
         }
     }
 
