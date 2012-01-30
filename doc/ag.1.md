@@ -31,18 +31,18 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Output ridiculous amounts of debugging info. Probably not useful.
   * `-f --follow`:
     Follow symlinks.
-  * `--[no]group`:
-  * `-G`, `--file-search-regex PATTERN`
+  * `--[no]group`
+  * `-G`, `--file-search-regex PATTERN`:
     Only search filenames matching PATTERN.
   * `-i`, `--ignore-case`
   * `--[no]heading`
-  * `-l --files-with-matches`
+  * `-l --files-with-matches`:
     Only print filenames containing matches, not matching lines.
   * `--literal`:
     Do not parse PATTERN as a regular expression. Try to match it literally.
-  * `-m --max-count NUM`
+  * `-m --max-count NUM`:
     Stop searching files after NUM matches.
-  * `--print-long-lines`
+  * `--print-long-lines`:
     Print matches on very long lines (> 2k characters by default)
   * `--search-binary`:
     Search binary files for matches.
