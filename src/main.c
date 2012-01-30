@@ -142,10 +142,6 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
             log_debug("File %s is empty, skipping.", dir_full_path);
             goto cleanup;
         }
-        else if (f_len > 1024 * 1024 * 1024) { /* 1 GB */
-            log_err("File %s is too big. Skipping...", dir_full_path);
-            goto cleanup;
-        }
 
         buf = mmap(0, f_len, PROT_READ, MAP_SHARED, fd, 0);
         if (buf == MAP_FAILED) {
