@@ -12,9 +12,15 @@ An attempt to make something better than ack, which itself is better than grep.
 
 ## Installation ##
 
+### Binaries ###
+For debs, rpms, and static builds, see the [downloads page](https://github.com/ggreer/the_silver_searcher/downloads).
+
+### Building from source ###
+
 1. Install PCRE development libraries:
     * Ubuntu: `apt-get install -y libpcre3-dev`
     * OS X: Install [homebrew](http://mxcl.github.com/homebrew/), then `brew install pcre`
+    * Windows: It's complicated. See [this wiki page](https://github.com/ggreer/the_silver_searcher/wiki/Windows).
 2. Run the build script (which just runs aclocal, automake, etc):
     * `./build.sh`
 3. Make install:
