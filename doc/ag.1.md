@@ -15,9 +15,9 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Output results in a format parseable by [AckMate](https://github.com/protocool/AckMate).
   * `-a --all-types`:
     Search all files. This doesn't include hidden files.
-  * `-A --after` [LINES]:
+  * `-A --after [LINES]`:
     Print lines before match. Defaults to 2.
-  * `-B --before` [LINES]:
+  * `-B --before [LINES]`:
     Print lines after match. Defaults to 2.
   * `--[no]break`:
     Print a newline between matches in different files. Enabled by default.
@@ -25,22 +25,22 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Print color codes in results. Enabled by default.
   * `--column`:
     Print column numbers in results.
-  * `-C --context` [LINES]:
+  * `-C --context [LINES]`:
     Print lines before and after matches. Defaults to 2.
   * `-D --debug`:
-    Ridiculous debugging. Probably not useful.
+    Output ridiculous amounts of debugging info. Probably not useful.
   * `-f --follow`:
     Follow symlinks.
-  * `--[no]group`: 
-  * `-G`, `--file-search-regex`
+  * `--[no]group`:
+  * `-G`, `--file-search-regex PATTERN`
+    Only search filenames matching PATTERN.
   * `-i`, `--ignore-case`
-  * `--invert-match`
   * `--[no]heading`
   * `-l --files-with-matches`
     Only print filenames containing matches, not matching lines.
   * `--literal`:
     Do not parse PATTERN as a regular expression. Try to match it literally.
-  * `-m --max-count` NUM
+  * `-m --max-count NUM`
     Stop searching files after NUM matches.
   * `--print-long-lines`
     Print matches on very long lines (> 2k characters by default)
@@ -50,6 +50,7 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Print stats (files scanned, time taken, etc)
   * `-u --unrestricted`:
     Search *all* files. This ignores .agignore, .gitignore, etc. It searches binary and hidden files as well.
+  * `-v --invert-match`
 
 ## IGNORING FILES
 
