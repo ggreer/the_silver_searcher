@@ -257,8 +257,21 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         opts.print_break = 0;
     }
 
-    opts.query = strdup(argv[0]);
-    opts.query_len = strlen(opts.query);
+    /* I can't figure out how to tell pcre_exec() to invert matches,
+       so build an inverse regex. Yes I know this sucks.
+     */
+    if (opts.invert_match) {
+        opts.query_len = strlen(argv[0]) + 11;
+        opts.query = malloc(opts.query_len);
+        strlcat(opts.query, "^((?!", opts.query_len);
+        strlcat(opts.query, argv[0], opts.query_len);
+        strlcat(opts.query, ").)*$", opts.query_len);
+    }
+    else {
+        opts.query = strdup(argv[0]);
+        opts.query_len = strlen(opts.query);
+    }
+
     *query = opts.query;
 
     if (argc > 1) {
