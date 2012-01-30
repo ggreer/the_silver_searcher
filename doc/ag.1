@@ -7,7 +7,7 @@
 \fBag\fR \- The Silver Searcher\. Like ack, but faster\.
 .
 .SH "SYNOPSIS"
-\fBag\fR [\fIoptions\fR] PATTERN PATH
+\fBag\fR [\fIoptions\fR] PATTERN [PATH]
 .
 .SH "DESCRIPTION"
 Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
@@ -15,13 +15,16 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 .SH "OPTIONS"
 .
 .IP "\(bu" 4
-\fB\-\-ackmate\fR: Output results in a format parseable by AckMate\.
+\fB\-\-ackmate\fR: Output results in a format parseable by AckMate \fIhttps://github\.com/protocool/AckMate\fR\.
 .
 .IP "\(bu" 4
-\fB\-A \-\-after\fR [LINES]: Print lines before match\. Defaults to 2\.
+\fB\-a \-\-all\-types\fR: Search all files\. This doesn\'t include hidden files\.
 .
 .IP "\(bu" 4
-\fB\-B \-\-before\fR [LINES]: Print lines after match\. Defaults to 2\.
+\fB\-A \-\-after [LINES]\fR: Print lines before match\. Defaults to 2\.
+.
+.IP "\(bu" 4
+\fB\-B \-\-before [LINES]\fR: Print lines after match\. Defaults to 2\.
 .
 .IP "\(bu" 4
 \fB\-\-[no]break\fR: Print a newline between matches in different files\. Enabled by default\.
@@ -33,10 +36,10 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 \fB\-\-column\fR: Print column numbers in results\.
 .
 .IP "\(bu" 4
-\fB\-C \-\-context\fR [LINES]: Print lines before and after matches\. Defaults to 2\.
+\fB\-C \-\-context [LINES]\fR: Print lines before and after matches\. Defaults to 2\.
 .
 .IP "\(bu" 4
-\fB\-D \-\-debug\fR: Ridiculous debugging\. Probably not useful\.
+\fB\-D \-\-debug\fR: Output ridiculous amounts of debugging info\. Probably not useful\.
 .
 .IP "\(bu" 4
 \fB\-f \-\-follow\fR: Follow symlinks\.
@@ -45,13 +48,10 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 \fB\-\-[no]group\fR:
 .
 .IP "\(bu" 4
-\fB\-G\fR, \fB\-\-file\-search\-regex\fR
+\fB\-G\fR, \fB\-\-file\-search\-regex PATTERN\fR Only search filenames matching PATTERN\.
 .
 .IP "\(bu" 4
 \fB\-i\fR, \fB\-\-ignore\-case\fR
-.
-.IP "\(bu" 4
-\fB\-\-invert\-match\fR
 .
 .IP "\(bu" 4
 \fB\-\-[no]heading\fR
@@ -63,7 +63,7 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 \fB\-\-literal\fR: Do not parse PATTERN as a regular expression\. Try to match it literally\.
 .
 .IP "\(bu" 4
-\fB\-m \-\-max\-count\fR NUM Stop searching files after NUM matches\.
+\fB\-m \-\-max\-count NUM\fR Stop searching files after NUM matches\.
 .
 .IP "\(bu" 4
 \fB\-\-print\-long\-lines\fR Print matches on very long lines (> 2k characters by default)
@@ -74,13 +74,22 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 .IP "\(bu" 4
 \fB\-\-stats\fR: Print stats (files scanned, time taken, etc)
 .
+.IP "\(bu" 4
+\fB\-u \-\-unrestricted\fR: Search \fIall\fR files\. This ignores \.agignore, \.gitignore, etc\. It searches binary and hidden files as well\.
+.
+.IP "\(bu" 4
+\fB\-v \-\-invert\-match\fR
+.
 .IP "" 0
 .
 .SH "IGNORING FILES"
 Ag will ignore files matched by patterns in \.gitignore, \.hgignore, or \.aginore\. Ag also ignores binary files by default\.
 .
 .SH "EXAMPLES"
-\fBag \-i foo /bar/\fR: Find matches for "foo" in path /bar/\.
+\fBag printf\fR: Find matches for "printf" in the current directory\.
+.
+.P
+\fBag foo /bar/\fR: Find matches for "foo" in path /bar/\.
 .
 .SH "SEE ALSO"
 grep(1)
