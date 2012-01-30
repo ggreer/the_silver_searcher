@@ -1,10 +1,7 @@
 #ifndef PRINT_H
 #define PRINT_H
 
-typedef struct {
-    int start; /* Byte at which the match starts */
-    int end; /* and where it ends */
-} match;
+#include "util.h"
 
 void print_path(const char* path);
 void print_binary_file_matches(const char* path);

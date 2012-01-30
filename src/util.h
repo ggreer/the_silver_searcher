@@ -2,6 +2,11 @@
 #define UTIL_H
 
 typedef struct {
+    int start; /* Byte at which the match starts */
+    int end; /* and where it ends */
+} match;
+
+typedef struct {
     long total_bytes;
     long total_files;
     long total_matches;
