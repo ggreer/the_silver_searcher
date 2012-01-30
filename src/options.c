@@ -102,6 +102,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         { "nofollow", no_argument, &(opts.follow_symlinks), 0 },
         { "heading", no_argument, &(opts.print_heading), 1 },
         { "noheading", no_argument, &(opts.print_heading), 0 },
+        { "no-recurse", no_argument, NULL, 'n' },
         { "help", no_argument, &help, 1 },
         { "ignore-case", no_argument, NULL, 'i' },
         { "files-with-matches", no_argument, NULL, 'l' },
@@ -136,7 +137,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
     }
 
     /* TODO: check for insane params. nobody is going to want 5000000 lines of context, for example (on second thought, somebody might?) */
-    while ((ch = getopt_long(argc, argv, "A:aB:C:G:DfilvVu", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:G:DfilnvVu", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 opts.after = atoi(optarg);
@@ -178,6 +179,9 @@ void parse_options(int argc, char **argv, char **query, char **path) {
                 break;
             case 'l':
                 opts.print_filename_only = 1;
+                break;
+            case 'n':
+                opts.recurse_dirs = 0;
                 break;
             case 'u':
                 opts.search_binary_files = 1;
