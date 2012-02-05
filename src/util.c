@@ -71,8 +71,21 @@ char* boyer_moore_strncasestr(const char *s, const char *find, size_t s_len, siz
     return(NULL);
 }
 
-void invert_matches(match matches[], int matches_len) {
-    
+void invert_matches(match matches[], int matches_len, const int buf_len) {
+    int i;
+
+    if (matches_len == 0) {
+        matches[0].start = 0;
+        matches[0].end = buf_len;
+        matches_len = 1;
+        return;
+    }
+
+    matches[matches_len].start = buf_len;
+    for (i = 0; i < matches_len; i++) {
+        matches[i].start = matches[i].end;
+        matches[i].end = matches[i+1].start;
+    }
 }
 
 
