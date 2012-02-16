@@ -10,9 +10,16 @@ An attempt to make something better than ack, which itself is better than grep.
 * It's written in C instead of perl, the lesser of two evils :)
 * The binary name is 33% shorter than ack!
 
-## Installation ##
+## Binary Installation ##
+Ubuntu:
 
-### Binaries ###
+    sudo add-apt-repository ppa:ggreer/ag
+    sudo apt-get install the-silver-searcher
+
+OS X:
+
+    brew install the-silver-searcher
+
 For debs, rpms, and static builds, see the [downloads page](https://github.com/ggreer/the_silver_searcher/downloads).
 
 ### Building from source ###
