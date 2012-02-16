@@ -58,7 +58,12 @@ void load_ignore_patterns(const char *ignore_filename) {
     size_t line_cap = 0;
 
     while((line_length = getline(&line, &line_cap, fp)) > 0) {
-        line[line_length-1] = '\0'; /* kill the \n */
+        if (line_length == 0 || line[0] == '\n') {
+            continue;
+        }
+        if (line[line_length-1] == '\n') {
+            line[line_length-1] = '\0'; /* kill the \n */
+        }
         add_ignore_pattern(line);
     }
 
