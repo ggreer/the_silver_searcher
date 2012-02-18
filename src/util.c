@@ -75,6 +75,8 @@ char* boyer_moore_strncasestr(const char *s, const char *find, size_t s_len, siz
 int invert_matches(match matches[], int matches_len, const int buf_len) {
     int i;
 
+    /* this will totally screw-up if a match starts at the very beginning or end of a file */
+
     matches[matches_len].start = buf_len-1;
     for (i = matches_len; i >= 0; i--) {
         matches[i].end = matches[i].start;
