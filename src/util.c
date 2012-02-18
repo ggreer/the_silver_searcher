@@ -72,25 +72,25 @@ char* boyer_moore_strncasestr(const char *s, const char *find, size_t s_len, siz
 }
 
 /* TODO: haven't slept in 48 hours. need to look this code over when I'm less stupid */
-void invert_matches(match matches[], int *matches_len, const int buf_len) {
+int invert_matches(match matches[], int matches_len, const int buf_len) {
     int i;
 
-    /* No matches, so the inverse is the whole buffer
+    /* No matches, so the inverse is the whole buffer */
     if (matches_len == 0) {
         matches[0].start = 0;
         matches[0].end = buf_len;
-        matches_len = 1;
-        return;
+        return(1);
     }
-*/
-    matches[*matches_len].start = buf_len;
-    matches[*matches_len].end = buf_len;
-    for (i = *matches_len; i > 0; i--) {
+
+    matches[matches_len].start = buf_len;
+    matches[matches_len].end = buf_len;
+    for (i = matches_len; i > 0; i--) {
         matches[i].end = matches[i+1].start;
         matches[i].start = matches[i].end;
     }
     matches[0].start = 0;
-    (*matches_len)++;
+
+    return(matches_len + 1);
 }
 
 
