@@ -36,6 +36,7 @@ void print_binary_file_matches(const char* path) {
 
 /* TODO: make print_matching_line() */
 
+/* TODO: doesn't work for matches across lines */
 void print_file_matches(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len) {
     int line = 1;
     int column = 0;
