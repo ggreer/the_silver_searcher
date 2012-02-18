@@ -212,10 +212,6 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
             stats.total_matches += matches_len;
         }
 
-        if (rc == -1) {
-            log_debug("No match in %s", dir_full_path);
-        }
-
         if (matches_len > 0) {
             if (opts.print_filename_only) {
                 print_path(dir_full_path);
@@ -229,6 +225,9 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
                     print_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
                 }
             }
+        }
+        else {
+            log_debug("No match in %s", dir_full_path);
         }
 
         cleanup:
