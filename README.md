@@ -10,13 +10,17 @@ An attempt to make something better than ack, which itself is better than grep.
 * It's written in C instead of perl, the lesser of two evils :)
 * The binary name is 33% shorter than ack!
 
-## Binary Installation ##
+## Installation ##
 Ubuntu:
 
     sudo add-apt-repository ppa:ggreer/ag
     sudo apt-get install the-silver-searcher
 
-OS X:
+Gentoo:
+
+    emerge the_silver_searcher
+
+OS X: (This actually doesn't work yet. One day....)
 
     brew install the-silver-searcher
 
@@ -48,18 +52,18 @@ On the continuum of...
 
     ag -i SOLR ~/cloudkick/reach  0.25s user 0.13s system 94% cpu 0.404 total
 
-You can use this with [my fork](https://github.com/ggreer/AckMate) of the popular ackmate plugin, which lets you use both ack and ag for searching in textmate. You can also move or delete `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and run `ln -s /usr/local/bin/ag "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
+You can use this with [my fork](https://github.com/ggreer/AckMate) of the popular ackmate plugin, which lets you use both ack and ag for searching in Textmate. You can also move or delete `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and run `ln -s /usr/local/bin/ag "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
 
 
 ### TODO ###
 * behave better when matching in files with really long lines
   * maybe say "match found at position X of line N" if line is > 10k chars
-* actually get textmate dir patterns working (this requires ruby regexes. not fun)
-* support inverted matching
+* better support for inverted matching (it's stupidly slow right now)
 * support piping in stuff
 * allow searching files > 1GB in size
 * optimizations
   * pthreads. these days it's silly to use only one core
+* actually get textmate dir patterns working (this requires ruby regexes. not fun)
 
 ### Other stuff you might like ###
 * [Ack](https://github.com/petdance/ack) - Better than grep
