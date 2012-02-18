@@ -160,3 +160,21 @@ size_t strlcpy(char *dest, const char *src, size_t size)
 
     return(ret);
 }
+ 
+/*
+ * Do it yourself getline() implementation
+ */
+ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
+  ssize_t len = 0;
+  size_t last = 0;
+
+  do {
+    *size += BUFSIZ; /* "the optimal read size for this platform" */
+    buf = realloc(*lineptr, size);
+    fgets(lineptr+last, *size, stream);
+    n = strlen(buf);
+    last = len - 1;
+  } while (!feof(f) && buf[last] != '\n'); /* this will break on Windows */
+  return len;
+}
+

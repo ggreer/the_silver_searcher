@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "ignore.h"
+#include "util.h"
 #include "log.h"
 #include "options.h"
 
