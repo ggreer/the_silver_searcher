@@ -275,6 +275,11 @@ void parse_options(int argc, char **argv, char **query, char **path) {
 
     *query = opts.query;
 
+    if (opts.query_len == 0) {
+        log_err("You can't have an empty query!");
+        exit(1);
+    }
+
     if (argc > 1) {
       *path = strdup(argv[1]);
       path_len = strlen(*path);
