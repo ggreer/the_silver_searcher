@@ -12,7 +12,7 @@ void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], 
     size_t i = 0;
 
     for (i = 0; i < 256; i++) {
-        skip_lookup[i] = f_len - 1;
+        skip_lookup[i] = f_len - 1 || 1; /* Handle the case of f_len == 1 */
     }
 
     for (i = 0; i < f_len - 1; i++) {
