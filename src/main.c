@@ -203,7 +203,7 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
         }
 
         if (opts.invert_match) {
-            invert_matches(matches, matches_len, buf_len);
+            invert_matches(matches, &matches_len, buf_len);
         }
 
         if (opts.stats) {
