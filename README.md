@@ -20,9 +20,10 @@ Gentoo:
 
     emerge the_silver_searcher
 
-OS X: (This actually doesn't work yet. One day....)
+OS X:
 
-    brew install the-silver-searcher
+    brew install pcre pkg-config
+Then build from source. Once Ag becomes more popular, hopefully someone will submit a pull request to homebrew.
 
 For debs, rpms, and static builds, see the [downloads page](https://github.com/ggreer/the_silver_searcher/downloads).
 
