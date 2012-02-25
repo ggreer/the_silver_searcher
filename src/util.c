@@ -189,10 +189,10 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
 
     do {
         *n += BUFSIZ; /* "the optimal read size for this platform" */
-        lineptr = realloc(*lineptr, size);
-        fgets(lineptr+last, *n, stream);
+        lineptr = realloc(*lineptr, *n);
+        fgets(*lineptr + last, *n, stream);
         len = strlen(*lineptr);
         last = len - 1;
-    } while (!feof(f) && *lineptr[last] != '\n'); /* this will break on Windows */
+    } while (!feof(stream) && *lineptr[last] != '\n'); /* this will break on Windows */
     return len;
 }
