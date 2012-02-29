@@ -76,23 +76,22 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                 printf("--\n");
             }
 
-            if (lines_since_last_match > 0) {
+            if (lines_since_last_match > 0 && opts.before > 0) {
                 /* TODO: this is buggy as hell */
-                if (opts.before > 0 && lines_since_last_match > opts.after + opts.before) {
-                    /* We found the start of a match. print the previous line(s) */
-                    for (j = 0; j < opts.before; j++) {
-                        prev_line = (last_prev_line + j) % opts.before;
-                        if (context_prev_lines[prev_line] != NULL) {
-                            if (opts.print_heading == 0) {
-                                print_path(path);
-                                printf(":");
-                            }
-                            if (opts.color) {
-                                printf("%s%i%s%c%s\n", colors_line_number, line - (opts.before - j), colors_reset, sep, context_prev_lines[prev_line]);
-                            }
-                            else {
-                                printf("%i%c%s\n", line - (opts.before - j), sep, context_prev_lines[prev_line]);
-                            }
+                /* TODO: yeah, it totally is */
+                /* print the previous line(s) */
+                for (j = 0; j < opts.before; j++) {
+                    prev_line = (last_prev_line + j) % opts.before;
+                    if (context_prev_lines[prev_line] != NULL) {
+                        if (opts.print_heading == 0) {
+                            print_path(path);
+                            printf(":");
+                        }
+                        if (opts.color) {
+                            printf("%s%i%s%c%s\n", colors_line_number, line - (opts.before - j), colors_reset, sep, context_prev_lines[prev_line]);
+                        }
+                        else {
+                            printf("%i%c%s\n", line - (opts.before - j), sep, context_prev_lines[prev_line]);
                         }
                     }
                 }
