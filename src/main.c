@@ -117,7 +117,7 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
 
         if (opts.file_search_regex) {
             rc = pcre_exec(opts.file_search_regex, NULL, dir_full_path, strlen(dir_full_path),
-                           buf_offset, 0, offset_vector, 3);
+                           0, 0, offset_vector, 3);
             if (rc < 0) { /* no match */
                 log_debug("Skipping %s due to file_search_regex.", dir_full_path);
                 goto cleanup;
