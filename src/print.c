@@ -80,14 +80,14 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                 /* TODO: this is buggy as hell */
                 /* TODO: yeah, it totally is */
                 /* print the previous line(s) */
-                int temp = lines_since_last_match - (opts.before + opts.after - 1);
-                if (temp < 0) {
-                    temp = opts.before;
+                int lines_to_print = lines_since_last_match - (opts.before + opts.after + 1);
+                if (lines_to_print < 0) {
+                    lines_to_print = opts.before;
                 }
-                if (temp > opts.before) {
-                    temp = 0;
+                if (lines_to_print > opts.before) {
+                    lines_to_print = 0;
                 }
-                for (j = temp; j < opts.before; j++) {
+                for (j = lines_to_print; j < opts.before; j++) {
                     prev_line = (last_prev_line + j) % opts.before;
                     if (context_prev_lines[prev_line] != NULL) {
                         if (opts.print_heading == 0) {
