@@ -95,7 +95,19 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
 }
 
 void search_stdin(const pcre *re, const pcre_extra *re_extra) {
+    /* TODO XXX: this is absolutely terrible code */
+    char buf[100000];
+    int buf_len = 100000;
+    int i;
 
+    for(i=0; (buf[i] = getchar()) != EOF; i++) {}
+    buf_len = i;
+
+    buf[i] = '\0';
+
+    buf_len--;
+
+    search_buf(re, re_extra, buf, buf_len, "");
 }
 
 void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_full_path) {
