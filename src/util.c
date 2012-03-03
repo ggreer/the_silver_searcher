@@ -71,6 +71,21 @@ char* boyer_moore_strncasestr(const char *s, const char *find, size_t s_len, siz
     return(NULL);
 }
 
+/* TODO: haven't slept in 48 hours. need to look this code over when I'm less stupid */
+int invert_matches(match matches[], int matches_len, const int buf_len) {
+    int i;
+
+    /* this will totally screw-up if a match starts at the very beginning or end of a file */
+
+    matches[matches_len].start = buf_len-1;
+    for (i = matches_len; i >= 0; i--) {
+        matches[i].end = matches[i].start;
+        matches[i].start = i == 0 ? 0 : matches[i-1].end;
+    }
+
+    return(matches_len + 1);
+}
+
 int is_binary(const void* buf, const int buf_len) {
     int suspicious_bytes = 0;
     int total_bytes = buf_len > 1024 ? 1024 : buf_len;
