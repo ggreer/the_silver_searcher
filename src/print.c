@@ -102,26 +102,26 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                         }
                     }
                 }
+            }
 
-                if (opts.ackmate == 0) {
-                    if (opts.print_heading == 0) {
-                        print_path(path);
-                        printf(":");
-                    }
-                    if (opts.color) {
-                        printf("%s%i%s:", colors_line_number, line, colors_reset);
-                    }
-                    else {
-                        printf("%i:", line);
-                    }
+            if (opts.ackmate == 0) {
+                if (opts.print_heading == 0) {
+                    print_path(path);
+                    printf(":");
+                }
+                if (opts.color) {
+                    printf("%s%i%s:", colors_line_number, line, colors_reset);
+                }
+                else {
+                    printf("%i:", line);
+                }
 
-                    if (opts.column) {
-                        printf("%i:", column + 1);
-                    }
-                    /* print up to current char */
-                    for (j = prev_line_offset; j < i; j++) {
-                        putchar(buf[j]);
-                    }
+                if (opts.column) {
+                    printf("%i:", column + 1);
+                }
+                /* print up to current char */
+                for (j = prev_line_offset; j < i; j++) {
+                    putchar(buf[j]);
                 }
             }
 
