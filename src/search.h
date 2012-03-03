@@ -11,12 +11,15 @@
 #include <sys/dir.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "ignore.h"
 #include "log.h"
 #include "options.h"
 #include "print.h"
 #include "util.h"
+
+#include "config.h"
 
 ag_stats stats;
 
