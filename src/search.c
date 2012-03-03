@@ -160,11 +160,12 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
     }
 
     int buf_len = 0;
-    int offset_vector[MAX_MATCHES_PER_FILE * 3]; /* TODO */
+    int offset_vector[3];
     int rc = 0;
     struct stat statbuf;
 
     for (i=0; i<results; i++) {
+        rc = 0;
         dir = dir_list[i];
         /* TODO: this is copy-pasted from about 30 lines above */
         path_length = (size_t)(strlen(path) + strlen(dir->d_name) + 2); /* 2 for slash and null char */
