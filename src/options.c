@@ -126,6 +126,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
 
     if (!isatty(fileno(stdin))) {
         opts.search_stdin = 1;
+        group = 0;
     }
 
     /* If we're not outputting to a terminal. change output to:
