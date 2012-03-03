@@ -1,6 +1,10 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include <string.h>
+
+#include "config.h"
+
 typedef struct {
     int start; /* Byte at which the match starts */
     int end; /* and where it ends */
