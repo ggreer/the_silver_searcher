@@ -174,7 +174,6 @@ size_t strlcat(char *dst, const char *src, size_t siz)
 #ifndef HAVE_STRLCPY
 size_t strlcpy(char *dst, const char *src, size_t siz)
 {
-    printf("STRLCPY\n");
     char *d = dst;
     const char *s = src;
     size_t n = siz;
