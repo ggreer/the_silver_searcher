@@ -139,6 +139,7 @@ int is_regex(const char* query, const int query_len) {
     return(0);
 }
 
+#ifndef HAVE_STRLCAT
 /*
  * strlcat and strlcpy, taken from Apache Traffic Server
  */
@@ -168,7 +169,9 @@ size_t strlcat(char *dst, const char *src, size_t siz)
 
     return (dlen + (s - src));  /* count does not include NUL */
 }
+#endif
 
+#ifndef HAVE_STRLCPY
 size_t strlcpy(char *dst, const char *src, size_t siz)
 {
     char *d = dst;
@@ -194,4 +197,4 @@ size_t strlcpy(char *dst, const char *src, size_t siz)
 
     return (s - src - 1);   /* count does not include NUL */
 }
-
+#endif
