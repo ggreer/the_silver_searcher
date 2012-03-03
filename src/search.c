@@ -203,10 +203,10 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
         return;
     }
     else if (results == -1) {
-        if (errno == 20) {
+        if (errno == ENOTDIR) {
             /* Not a directory. Probably a file. */
             /* hacky but whatevs */
-            log_err("Error opening directory %s: %s", path, strerror(errno));
+            search_file(re, re_extra, path);
             return;
         }
         else {
