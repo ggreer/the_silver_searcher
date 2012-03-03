@@ -98,6 +98,51 @@ int search_stdin(const pcre *re, const pcre_extra *re_extra) {
     return 0;
 }
 
+void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_full_path) {
+    int fd = -1;
+    off_t f_len = 0;
+    char *buf = NULL;
+    int buf_len = 0;
+    struct stat statbuf;
+    int rv = 0;
+
+    fd = open(file_full_path, O_RDONLY);
+    if (fd < 0) {
+        log_err("Error opening file %s. Skipping...", file_full_path);
+        goto cleanup;
+    }
+
+    rv = fstat(fd, &statbuf);
+    if (rv != 0) {
+        log_err("Error fstat()ing file %s. Skipping...", file_full_path);
+        goto cleanup;
+    }
+
+    f_len = statbuf.st_size;
+
+    if (f_len == 0) {
+        log_debug("File %s is empty, skipping.", file_full_path);
+        goto cleanup;
+    }
+
+    buf = mmap(0, f_len, PROT_READ, MAP_SHARED, fd, 0);
+    if (buf == MAP_FAILED) {
+        log_err("File %s failed to load: %s.", file_full_path, strerror(errno));
+        goto cleanup;
+    }
+
+    buf_len = f_len;
+
+    search_buf(re, re_extra, buf, buf_len, file_full_path);
+
+    cleanup:
+    if (fd != -1) {
+        munmap(buf, f_len);
+        close(fd);
+        fd = -1;
+    }
+}
+
 /* TODO: append matches to some data structure instead of just printing them out
  * then there can be sweet summaries of matches/files scanned/time/etc
  */
@@ -159,10 +204,8 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
         }
     }
 
-    int buf_len = 0;
     int offset_vector[3];
     int rc = 0;
-    struct stat statbuf;
 
     for (i=0; i<results; i++) {
         rc = 0;
@@ -193,34 +236,7 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
             }
         }
 
-        fd = open(dir_full_path, O_RDONLY);
-        if (fd < 0) {
-            log_err("Error opening file %s. Skipping...", dir_full_path);
-            goto cleanup;
-        }
-
-        rv = fstat(fd, &statbuf);
-        if (rv != 0) {
-            log_err("Error fstat()ing file %s. Skipping...", dir_full_path);
-            goto cleanup;
-        }
-
-        f_len = statbuf.st_size;
-
-        if (f_len == 0) {
-            log_debug("File %s is empty, skipping.", dir_full_path);
-            goto cleanup;
-        }
-
-        buf = mmap(0, f_len, PROT_READ, MAP_SHARED, fd, 0);
-        if (buf == MAP_FAILED) {
-            log_err("File %s failed to load: %s.", dir_full_path, strerror(errno));
-            goto cleanup;
-        }
-
-        buf_len = f_len;
-
-        search_buf(re, re_extra, buf, buf_len, dir_full_path);
+        search_file(re, re_extra, dir_full_path);
 
         cleanup:
         if (fd != -1) {
