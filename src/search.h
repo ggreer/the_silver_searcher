@@ -25,7 +25,9 @@ ag_stats stats;
 
 size_t skip_lookup[256];
 
-int search_buf();
+void search_buf(const pcre *re, const pcre_extra *re_extra,
+                const char *buf, const int buf_len,
+                const char *dir_full_path);
 int search_stdin(const pcre *re, const pcre_extra *re_extra);
 int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, const int depth);
 

@@ -4,8 +4,94 @@
 const int MAX_SEARCH_DEPTH = 25;
 const int MAX_MATCHES_PER_FILE = 10000;
 
-int search_buf() {
-    return 0;
+void search_buf(const pcre *re, const pcre_extra *re_extra,
+                const char *buf, const int buf_len,
+                const char *dir_full_path) {
+    int binary = 0;
+    int buf_offset = 0;
+    match matches[MAX_MATCHES_PER_FILE];
+    int matches_len = 0;
+    int offset_vector[MAX_MATCHES_PER_FILE * 3]; /* TODO */
+    int rc = 0;
+
+    if (is_binary((void*)buf, buf_len)) { /* Who needs duck typing when you have void cast? :) */
+        if (opts.search_binary_files) {
+            binary = 1;
+        }
+        else {
+            log_debug("File %s is binary. Skipping...", dir_full_path);
+            return;
+        }
+    }
+
+    if (opts.literal) {
+        const char *match_ptr = buf;
+        char *(*ag_strncmp_fp)(const char*, const char*, size_t, size_t, size_t[]) = &boyer_moore_strnstr;
+
+        if (opts.casing == CASE_INSENSITIVE) {
+            ag_strncmp_fp = &boyer_moore_strncasestr;
+        }
+        while (buf_offset < buf_len) {
+            match_ptr = ag_strncmp_fp(match_ptr, opts.query, buf_len - buf_offset, opts.query_len, skip_lookup);
+            if (match_ptr == NULL) {
+                break;
+            }
+            matches[matches_len].start = match_ptr - buf;
+            matches[matches_len].end = matches[matches_len].start + opts.query_len;
+            buf_offset = matches[matches_len].end;
+            matches_len++;
+            match_ptr++;
+            /* Don't segfault. TODO: realloc this array */
+            if (matches_len >= MAX_MATCHES_PER_FILE) {
+                log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
+                break;
+            }
+        }
+    }
+    else {
+        /* In my profiling, most of the execution time is spent in this pcre_exec */
+        while (buf_offset < buf_len &&
+             (rc = pcre_exec(re, re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
+            log_debug("Match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
+            buf_offset = offset_vector[1];
+            matches[matches_len].start = offset_vector[0];
+            matches[matches_len].end = offset_vector[1];
+            matches_len++;
+            /* Don't segfault. TODO: realloc this array */
+            if (matches_len >= MAX_MATCHES_PER_FILE) {
+                log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
+                break;
+            }
+        }
+    }
+
+    if (opts.invert_match) {
+        matches_len = invert_matches(matches, matches_len, buf_len);
+    }
+
+    if (opts.stats) {
+        stats.total_bytes += buf_len;
+        stats.total_files++;
+        stats.total_matches += matches_len;
+    }
+
+    if (matches_len > 0) {
+        if (opts.print_filename_only) {
+            print_path(dir_full_path);
+            putchar('\n');
+        }
+        else {
+            if (binary) {
+                print_binary_file_matches(dir_full_path);
+            }
+            else {
+                print_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
+            }
+        }
+    }
+    else {
+        log_debug("No match in %s", dir_full_path);
+    }
 }
 
 int search_stdin(const pcre *re, const pcre_extra *re_extra) {
@@ -61,23 +147,24 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
         return(0);
     }
     else if (results == -1) {
-        log_err("Error opening directory %s", path);
-        return(0);
+        if (errno == 20) {
+            /* Not a directory. Probably a file. */
+            /* hacky but whatevs */
+            log_err("Error opening directory %s: %s", path, strerror(errno));
+            return(0);
+        }
+        else {
+            log_err("Error opening directory %s: %s", path, strerror(errno));
+            return(0);
+        }
     }
 
-    match matches[MAX_MATCHES_PER_FILE];
-    int matches_len = 0;
     int buf_len = 0;
-    int buf_offset = 0;
     int offset_vector[MAX_MATCHES_PER_FILE * 3]; /* TODO */
     int rc = 0;
     struct stat statbuf;
-    int binary = 0;
 
     for (i=0; i<results; i++) {
-        matches_len = 0;
-        buf_offset = 0;
-        binary = 0;
         dir = dir_list[i];
         /* TODO: this is copy-pasted from about 30 lines above */
         path_length = (size_t)(strlen(path) + strlen(dir->d_name) + 2); /* 2 for slash and null char */
@@ -132,86 +219,7 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
 
         buf_len = f_len;
 
-        search_buf(buf, buf_len, buf_offset);
-
-        if (is_binary((void*)buf, buf_len)) { /* Who needs duck typing when you have void cast? :) */
-            if (opts.search_binary_files) {
-                binary = 1;
-            }
-            else {
-                log_debug("File %s is binary. Skipping...", dir_full_path);
-                goto cleanup;
-            }
-        }
-
-        if (opts.literal) {
-            char *match_ptr = buf;
-            char *(*ag_strncmp_fp)(const char*, const char*, size_t, size_t, size_t[]) = &boyer_moore_strnstr;
-
-            if (opts.casing == CASE_INSENSITIVE) {
-                ag_strncmp_fp = &boyer_moore_strncasestr;
-            }
-            while (buf_offset < buf_len) {
-                match_ptr = ag_strncmp_fp(match_ptr, opts.query, buf_len - buf_offset, opts.query_len, skip_lookup);
-                if (match_ptr == NULL) {
-                    break;
-                }
-                matches[matches_len].start = match_ptr - buf;
-                matches[matches_len].end = matches[matches_len].start + opts.query_len;
-                buf_offset = matches[matches_len].end;
-                matches_len++;
-                match_ptr++;
-                /* Don't segfault. TODO: realloc this array */
-                if (matches_len >= MAX_MATCHES_PER_FILE) {
-                    log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
-                    break;
-                }
-            }
-        }
-        else {
-            /* In my profiling, most of the execution time is spent in this pcre_exec */
-            while (buf_offset < buf_len &&
-                 (rc = pcre_exec(re, re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
-                log_debug("Match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
-                buf_offset = offset_vector[1];
-                matches[matches_len].start = offset_vector[0];
-                matches[matches_len].end = offset_vector[1];
-                matches_len++;
-                /* Don't segfault. TODO: realloc this array */
-                if (matches_len >= MAX_MATCHES_PER_FILE) {
-                    log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
-                    break;
-                }
-            }
-        }
-
-        if (opts.invert_match) {
-            matches_len = invert_matches(matches, matches_len, buf_len);
-        }
-
-        if (opts.stats) {
-            stats.total_bytes += buf_len;
-            stats.total_files++;
-            stats.total_matches += matches_len;
-        }
-
-        if (matches_len > 0) {
-            if (opts.print_filename_only) {
-                print_path(dir_full_path);
-                putchar('\n');
-            }
-            else {
-                if (binary) {
-                    print_binary_file_matches(dir_full_path);
-                }
-                else {
-                    print_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
-                }
-            }
-        }
-        else {
-            log_debug("No match in %s", dir_full_path);
-        }
+        search_buf(re, re_extra, buf, buf_len, dir_full_path);
 
         cleanup:
         if (fd != -1) {
