@@ -94,8 +94,8 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
     }
 }
 
-int search_stdin(const pcre *re, const pcre_extra *re_extra) {
-    return 0;
+void search_stdin(const pcre *re, const pcre_extra *re_extra) {
+
 }
 
 void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_full_path) {
@@ -146,7 +146,7 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
 /* TODO: append matches to some data structure instead of just printing them out
  * then there can be sweet summaries of matches/files scanned/time/etc
  */
-int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, const int depth) {
+void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, const int depth) {
     /* TODO: don't just die. also make max depth configurable */
     if (depth > MAX_SEARCH_DEPTH) {
         log_err("Search depth greater than %i, giving up.", depth);
@@ -159,7 +159,6 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
     int fd = -1;
     off_t f_len = 0;
     char *buf = NULL;
-    int rv = 0;
     char *dir_full_path = NULL;
     size_t path_length = 0;
     int i;
@@ -189,18 +188,18 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
         log_debug("No results found in directory %s", path);
         free(dir_list);
         dir_list = NULL;
-        return(0);
+        return;
     }
     else if (results == -1) {
         if (errno == 20) {
             /* Not a directory. Probably a file. */
             /* hacky but whatevs */
             log_err("Error opening directory %s: %s", path, strerror(errno));
-            return(0);
+            return;
         }
         else {
             log_err("Error opening directory %s: %s", path, strerror(errno));
-            return(0);
+            return;
         }
     }
 
@@ -222,7 +221,7 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
         if (dir->d_type == DT_DIR) {
             if (opts.recurse_dirs) {
                 log_debug("Searching dir %s", dir_full_path);
-                rv = search_dir(re, re_extra, dir_full_path, depth + 1);
+                search_dir(re, re_extra, dir_full_path, depth + 1);
             }
             goto cleanup;
         }
@@ -253,5 +252,5 @@ int search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, con
 
     free(dir_list);
     dir_list = NULL;
-    return(0);
+    return;
 }
