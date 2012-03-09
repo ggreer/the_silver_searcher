@@ -196,3 +196,23 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
     } while (!feof(stream) && *lineptr[last] != '\n'); /* this will break on Windows */
     return len;
 }
+
+/*
+ * strndup() implementation for OSX
+ * Note that this function is licensed under the LGPL
+ * It was copied from http://opensource.apple.com/source/gcc/gcc-5575.11/libiberty/strndup.c
+ */
+char * strndup (const char *s, size_t n) {
+    char *result;
+    size_t len = strlen (s);
+
+    if (n < len)
+        len = n;
+
+    result = (char *) malloc (len + 1);
+    if (!result)
+        return 0;
+
+    result[len] = '\0';
+    return (char *) memcpy (result, s, len);
+}
