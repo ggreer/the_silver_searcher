@@ -30,5 +30,8 @@ size_t strlcpy(char *dest, const char *src, size_t size);
 #ifndef HAVE_GETLINE
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 #endif
+#ifndef HAVE_STRNDUP
+char * strndup (const char *s, size_t n);
+#endif
 
 #endif
