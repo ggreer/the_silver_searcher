@@ -51,7 +51,7 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
     else {
         /* In my profiling, most of the execution time is spent in this pcre_exec */
         while (buf_offset < buf_len &&
-             (rc = pcre_exec(re, re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
+              (rc = pcre_exec(re, re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
             log_debug("Match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
             buf_offset = offset_vector[1];
             matches[matches_len].start = offset_vector[0];
@@ -94,20 +94,17 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
     }
 }
 
+/* TODO: this will only match single lines. multi-line regexes silently don't match */
 void search_stdin(const pcre *re, const pcre_extra *re_extra) {
-    /* TODO XXX: this is absolutely terrible code */
-    char buf[100000];
-    int buf_len = 100000;
-    int i;
+    char *line = NULL;
+    ssize_t line_length = 0;
+    size_t line_cap = 0;
 
-    for(i=0; (buf[i] = getchar()) != EOF; i++) {}
-    buf_len = i;
+    while ((line_length = getline(&line, &line_cap, stdin)) > 0) {
+        search_buf(re, re_extra, line, line_length-1, "");
+    }
 
-    buf[i] = '\0';
-
-    buf_len--;
-
-    search_buf(re, re_extra, buf, buf_len, "");
+    free(line);
 }
 
 void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_full_path) {
