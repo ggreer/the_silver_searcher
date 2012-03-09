@@ -57,7 +57,7 @@ void load_ignore_patterns(const char *ignore_filename) {
     ssize_t line_length = 0;
     size_t line_cap = 0;
 
-    while((line_length = getline(&line, &line_cap, fp)) > 0) {
+    while ((line_length = getline(&line, &line_cap, fp)) > 0) {
         if (line_length == 0 || line[0] == '\n') {
             continue;
         }
