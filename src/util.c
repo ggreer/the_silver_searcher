@@ -199,6 +199,8 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
 
 /*
  * strndup() implementation for OSX
+ * Note that this function is licensed under the LGPL
+ * It was copied from http://opensource.apple.com/source/gcc/gcc-5575.11/libiberty/strndup.c
  */
 char * strndup (const char *s, size_t n) {
     char *result;
