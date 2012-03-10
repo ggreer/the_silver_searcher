@@ -181,12 +181,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                     print_path(path);
                     printf(":");
                 }
-                if (opts.color) {
-                    printf("%s%i%s%c", colors_line_number, line, colors_reset, sep);
-                }
-                else {
-                    printf("%i%c", line, sep);
-                }
+                print_line_number(line, sep);
 
                 for (j = prev_line_offset; j < i; j++) {
                     putchar(buf[j]);
