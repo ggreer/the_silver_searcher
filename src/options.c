@@ -248,6 +248,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         opts.color = 0;
         opts.print_break = 1;
         group = 1;
+        opts.search_stdin = 0;
     }
 
     if (group) {
