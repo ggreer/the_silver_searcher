@@ -71,6 +71,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
 
     for (i = 0; i < buf_len && (cur_match < matches_len || lines_since_last_match <= opts.after); i++) {
         if (cur_match < matches_len && i == matches[cur_match].start) {
+            /* We found the start of a match */
             in_a_match = 1;
 
             if (cur_match > 0 && opts.context && lines_since_last_match > (opts.before + opts.after + 1)) {
@@ -141,6 +142,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
 
         column++;
 
+        /* We found the end of a line. */
         if (buf[i] == '\n') {
             if (opts.before > 0) {
                 if (context_prev_lines[last_prev_line] != NULL) {
