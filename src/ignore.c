@@ -7,6 +7,7 @@
 #include "ignore.h"
 #include "log.h"
 #include "options.h"
+#include "util.h"
 
 /* TODO: built a huge-ass list of files we want to ignore by default (build cache stuff, pyc files, etc) */
 
