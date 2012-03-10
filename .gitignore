@@ -5,11 +5,13 @@
 aclocal.m4
 ag
 autom4te.cache
+cachegrind.out.*
 callgrind.out.*
 config.log
 config.status
 configure
 depcomp
+gmon.out
 install-sh
 Makefile
 Makefile.in
