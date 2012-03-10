@@ -35,13 +35,12 @@ char* boyer_moore_strnstr(const char *s, const char *find, size_t s_len, size_t 
         return(NULL);
     }
 
-    while (pos < (s_len - f_len)) {
+    while (pos <= (s_len - f_len)) {
         for (i = f_len - 1; s[pos + i] == find[i]; i--) {
             if (i == 0) {
                 return((char *)(&(s[pos])));
             }
         }
-
         pos += skip_lookup[(unsigned char)s[pos + f_len - 1]];
     }
 
@@ -58,17 +57,31 @@ char* boyer_moore_strncasestr(const char *s, const char *find, size_t s_len, siz
         return(NULL);
     }
 
-    while (pos < (s_len - f_len)) {
+    while (pos <= (s_len - f_len)) {
         for (i = f_len - 1; tolower(s[pos + i]) == tolower(find[i]); i--) {
             if (i == 0) {
                 return((char *)(&(s[pos])));
             }
         }
-
         pos += skip_lookup[(unsigned char)tolower(s[pos + f_len - 1])];
     }
 
     return(NULL);
+}
+
+/* TODO: haven't slept in 48 hours. need to look this code over when I'm less stupid */
+int invert_matches(match matches[], int matches_len, const int buf_len) {
+    int i;
+
+    /* this will totally screw-up if a match starts at the very beginning or end of a file */
+
+    matches[matches_len].start = buf_len-1;
+    for (i = matches_len; i >= 0; i--) {
+        matches[i].end = matches[i].start;
+        matches[i].start = i == 0 ? 0 : matches[i-1].end;
+    }
+
+    return(matches_len + 1);
 }
 
 int is_binary(const void* buf, const int buf_len) {
@@ -76,6 +89,10 @@ int is_binary(const void* buf, const int buf_len) {
     int total_bytes = buf_len > 1024 ? 1024 : buf_len;
     const unsigned char *buf_c = buf;
     int i;
+
+    if (buf_len == 0) {
+        return(0);
+    }
 
     for (i = 0; i < buf_len && i < 1024; i++) {
         if (buf_c[i] == '\0') {
@@ -124,6 +141,7 @@ int is_regex(const char* query, const int query_len) {
     return(0);
 }
 
+#ifndef HAVE_STRLCAT
 /*
  * strlcat and strlcpy, taken from Apache Traffic Server
  */
@@ -153,7 +171,9 @@ size_t strlcat(char *dst, const char *src, size_t siz)
 
     return (dlen + (s - src));  /* count does not include NUL */
 }
+#endif
 
+#ifndef HAVE_STRLCPY
 size_t strlcpy(char *dst, const char *src, size_t siz)
 {
     char *d = dst;
@@ -179,7 +199,9 @@ size_t strlcpy(char *dst, const char *src, size_t siz)
 
     return (s - src - 1);   /* count does not include NUL */
 }
+#endif
 
+#ifndef HAVE_GETLINE
 /*
  * Do it yourself getline() implementation
  */
@@ -196,3 +218,4 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
     } while (!feof(stream) && *lineptr[last] != '\n'); /* this will break on Windows */
     return len;
 }
+#endif
