@@ -35,7 +35,7 @@ char* boyer_moore_strnstr(const char *s, const char *find, size_t s_len, size_t 
         return(NULL);
     }
 
-    while (pos < (s_len - f_len)) {
+    while (pos <= (s_len - f_len)) {
         for (i = f_len - 1; s[pos + i] == find[i]; i--) {
             if (i == 0) {
                 return((char *)(&(s[pos])));
@@ -58,7 +58,7 @@ char* boyer_moore_strncasestr(const char *s, const char *find, size_t s_len, siz
         return(NULL);
     }
 
-    while (pos < (s_len - f_len)) {
+    while (pos <= (s_len - f_len)) {
         for (i = f_len - 1; tolower(s[pos + i]) == tolower(find[i]); i--) {
             if (i == 0) {
                 return((char *)(&(s[pos])));
@@ -91,6 +91,10 @@ int is_binary(const void* buf, const int buf_len) {
     int total_bytes = buf_len > 1024 ? 1024 : buf_len;
     const unsigned char *buf_c = buf;
     int i;
+
+    if (buf_len == 0) {
+        return(0);
+    }
 
     for (i = 0; i < buf_len && i < 1024; i++) {
         if (buf_c[i] == '\0') {
