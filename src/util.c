@@ -41,7 +41,6 @@ char* boyer_moore_strnstr(const char *s, const char *find, size_t s_len, size_t 
                 return((char *)(&(s[pos])));
             }
         }
-
         pos += skip_lookup[(unsigned char)s[pos + f_len - 1]];
     }
 
@@ -64,7 +63,6 @@ char* boyer_moore_strncasestr(const char *s, const char *find, size_t s_len, siz
                 return((char *)(&(s[pos])));
             }
         }
-
         pos += skip_lookup[(unsigned char)tolower(s[pos + f_len - 1])];
     }
 
