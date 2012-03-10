@@ -112,12 +112,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                         print_path(path);
                         printf(":");
                     }
-                    if (opts.color) {
-                        printf("%s%i%s:", colors_line_number, line, colors_reset);
-                    }
-                    else {
-                        printf("%i:", line);
-                    }
+                    print_line_number(line, ':');
 
                     if (opts.column) {
                         printf("%i:", column + 1);
@@ -166,7 +161,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
             if (lines_since_last_match == 0) {
                 if (opts.ackmate) {
                     /* print headers for ackmate to parse */
-                    printf("%i;", line);
+                    print_line_number(line, ';');
                     while (last_printed_match < cur_match) {
                         printf("%i %i", (matches[last_printed_match].start - prev_line_offset), (matches[last_printed_match].end - matches[last_printed_match].start));
                         if (last_printed_match == cur_match - 1) {
@@ -211,6 +206,21 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
     }
 
     free(context_prev_lines);
+}
+
+void print_line_number(int line, char sep) {
+    log_debug("printing line number");
+    if (opts.ackmate) {
+        printf("%i%c", line, sep);
+    }
+    else {
+        if (opts.color) {
+            printf("%s%i%s%c", colors_line_number, line, colors_reset, sep);
+        }
+        else {
+            printf("%i%c", line, sep);
+        }
+    }
 }
 
 void print_file_separator() {
