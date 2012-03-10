@@ -16,6 +16,8 @@ const char *colors_match = "\e[30;43m"; /* black with yellow background */
 const char *colors_line_number = "\e[1;33m"; /* yellow with black background */
 
 void print_path(const char* path) {
+    log_debug("printing path");
+
     if (opts.ackmate) {
         printf(":%s", path);
     }
@@ -212,6 +214,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
 }
 
 void print_file_separator() {
+    log_debug("printing file separator");
     if (first_file_match == 0 && opts.print_break) {
         printf("\n");
     }
