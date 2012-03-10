@@ -54,6 +54,7 @@ void init_options() {
     opts.color = TRUE;
     opts.print_break = TRUE;
     opts.print_heading = TRUE;
+    opts.print_line_numbers = TRUE;
     opts.recurse_dirs = TRUE;
 }
 
@@ -126,7 +127,6 @@ void parse_options(int argc, char **argv, char **query, char **path) {
 
     if (!isatty(fileno(stdin))) {
         opts.search_stdin = 1;
-        group = 0;
     }
 
     /* If we're not outputting to a terminal. change output to:
@@ -259,13 +259,19 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         opts.print_break = 0;
     }
 
+    if (opts.search_stdin) {
+        opts.print_break = 1;
+        opts.print_heading = 0;
+        opts.print_line_numbers = 0;
+    }
+
     opts.query = strdup(argv[0]);
     opts.query_len = strlen(opts.query);
 
     *query = opts.query;
 
     if (opts.query_len == 0) {
-        log_err("You can't have an empty query!");
+        log_err("Error: No query. What do you want to search for?");
         exit(1);
     }
 
