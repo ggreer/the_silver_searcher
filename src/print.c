@@ -34,8 +34,6 @@ void print_binary_file_matches(const char* path) {
     printf("Binary file %s matches.\n", path);
 }
 
-/* TODO: make print_matching_line() */
-
 /* TODO: doesn't work for matches across lines */
 void print_file_matches(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len) {
     int line = 1;
@@ -46,6 +44,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
     int prev_line_offset = 0;
     int cur_match = 0;
     int in_a_match = 0;
+    /* TODO the line below contains a terrible hack */
     int lines_since_last_match = 1000000; /* if I initialize this to INT_MAX it'll overflow */
     int last_printed_match = 0;
     char sep = '-';
@@ -155,8 +154,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                     free(context_prev_lines[last_prev_line]);
                 }
                 /* We just incremented column so it will always be at least 1.
-                 * We don't want to strcpy the \n
-                 */
+                 * We don't want to strcpy the \n */
                 context_prev_lines[last_prev_line] = strndup(&buf[prev_line_offset], i - prev_line_offset);
                 last_prev_line = (last_prev_line + 1) % opts.before;
             }
@@ -175,7 +173,6 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                         else {
                             putchar(',');
                         }
-
                         last_printed_match++;
                     }
                     /* print up to current char */
