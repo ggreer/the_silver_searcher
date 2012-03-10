@@ -97,12 +97,8 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                                 print_path(path);
                                 printf(":");
                             }
-                            if (opts.color) {
-                                printf("%s%i%s%c%s\n", colors_line_number, line - (opts.before - j), colors_reset, sep, context_prev_lines[prev_line]);
-                            }
-                            else {
-                                printf("%i%c%s\n", line - (opts.before - j), sep, context_prev_lines[prev_line]);
-                            }
+                            print_line_number(line - (opts.before - j), sep);
+                            printf("%s\n", context_prev_lines[prev_line]);
                         }
                     }
                 }
