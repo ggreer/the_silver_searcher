@@ -219,3 +219,16 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
     return len;
 }
 #endif
+
+#ifndef HAVE_STRNDUP
+/* Apache-licensed implementation of strndup for OS  
+ * taken from http://source-android.frandroid.com/dalvik/tools/dmtracedump/CreateTestTrace.c
+ */ 
+char *strndup(const char *src, size_t len)
+{
+    char *dest = (char *) malloc(len + 1);
+    strncpy(dest, src, len);
+    dest[len] = 0;
+    return dest;
+}
+#endif
