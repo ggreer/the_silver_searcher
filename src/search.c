@@ -109,21 +109,23 @@ void search_stdin(const pcre *re, const pcre_extra *re_extra) {
 
 void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_full_path) {
     int fd = -1;
-    off_t f_len = 0;
+    off64_t f_len = 0;
     char *buf = NULL;
     int buf_len = 0;
     struct stat statbuf;
     int rv = 0;
 
-    fd = open(file_full_path, O_RDONLY);
+    int open_flags = O_RDONLY | O_LARGEFILE;
+
+    fd = open(file_full_path, open_flags);
     if (fd < 0) {
-        log_err("Error opening file %s. Skipping...", file_full_path);
+        log_err("Error opening file %s: %s Skipping...", file_full_path, strerror(errno));
         goto cleanup;
     }
 
     rv = fstat(fd, &statbuf);
     if (rv != 0) {
-        log_err("Error fstat()ing file %s. Skipping...", file_full_path);
+        log_err("Error fstat()ing file %s: %s Skipping...", file_full_path, strerror(errno));
         goto cleanup;
     }
 
