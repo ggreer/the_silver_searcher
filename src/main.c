@@ -9,14 +9,9 @@
 #include "search.h"
 
 #include "config.h"
-/* #define AG_DEBUG */
 
 int main(int argc, char **argv) {
     set_log_level(LOG_LEVEL_WARN);
-
-#ifdef AG_DEBUG
-    set_log_level(LOG_LEVEL_DEBUG);
-#endif
 
     char *query = NULL;
     char *path = NULL;
