@@ -59,7 +59,6 @@ You can use this with [my fork](https://github.com/ggreer/AckMate) of the popula
 ### TODO ###
 * behave better when matching in files with really long lines
   * maybe say "match found at position X of line N" if line is > 10k chars
-* allow searching files > 1GB in size
 * optimizations
   * pthreads. these days it's silly to use only one core
 * actually get textmate dir patterns working (this requires ruby regexes. not fun)
