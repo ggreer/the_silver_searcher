@@ -79,6 +79,7 @@ int ignorefile_filter(struct dirent *dir) {
         return(0);
     }
 
+    /* This isn't as bad as it looks. ignore_pattern_files only has 3 elements */
     for (i = 0; ignore_pattern_files[i] != NULL; i++) {
         if (strcmp(ignore_pattern_files[i], dir->d_name) == 0) {
             log_debug("ignore pattern matched for %s", dir->d_name);
@@ -95,7 +96,7 @@ int filename_filter(struct dirent *dir) {
     int rc = 0;
     int i;
 
-    if (opts.follow_symlinks == 0 && dir->d_type == DT_LNK) {
+    if (!opts.follow_symlinks && dir->d_type == DT_LNK) {
         log_debug("File %s ignored becaused it's a symlink", dir->d_name);
         return(0);
     }
@@ -115,7 +116,7 @@ int filename_filter(struct dirent *dir) {
         }
     }
 
-    for (i = 0; i<ignore_patterns_len; i++) {
+    for (i = 0; i < ignore_patterns_len; i++) {
         pattern = ignore_patterns[i];
         if (fnmatch(pattern, filename, fnmatch_flags) == 0) {
             log_debug("file %s ignored because name matches pattern %s", dir->d_name, pattern);
