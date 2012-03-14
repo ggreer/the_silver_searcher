@@ -16,7 +16,7 @@ LDFLAGS="$LDFLAGS"
 
 AC_CHECK_DECL([PCRE_CONFIG_JIT], [AC_DEFINE([USE_PCRE_JIT], [], [Use PCRE JIT])], [], [#include <pcre.h>])
 
-AC_CHECK_FUNCS(getline strlcpy strlcat)
+AC_CHECK_FUNCS(getline strlcpy strlcat strndup)
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_HEADERS([src/config.h])

@@ -206,16 +206,34 @@ size_t strlcpy(char *dst, const char *src, size_t siz)
  * Do it yourself getline() implementation
  */
 ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
-    ssize_t len = 0;
-    size_t last = 0;
+    size_t len = 0;
+    char *srcln = NULL;
+    char *newlnptr = NULL;
 
-    do {
-        *n += BUFSIZ; /* "the optimal read size for this platform" */
-        lineptr = realloc(*lineptr, *n);
-        fgets(*lineptr + last, *n, stream);
-        len = strlen(*lineptr);
-        last = len - 1;
-    } while (!feof(stream) && *lineptr[last] != '\n'); /* this will break on Windows */
+    if (!(srcln = fgetln(stream, &len))) /* get line, bail on error */
+        return -1;
+
+    if (len >= *n) { /* line is too big for buffer, must realloc */
+        if(!(newlnptr = realloc(*lineptr, len * 2))) /* double the buffer, bail on error */
+          return -1;
+        *lineptr = newlnptr; 
+        *n = len * 2 ;
+    }
+    memcpy(*lineptr, srcln, len);
     return len;
+}
+#endif
+
+
+#ifndef HAVE_STRNDUP
+/* Apache-licensed implementation of strndup for OS  
+ * taken from http://source-android.frandroid.com/dalvik/tools/dmtracedump/CreateTestTrace.c
+ */ 
+char *strndup(const char *src, size_t len)
+{
+    char *dest = (char *) malloc(len + 1);
+    strncpy(dest, src, len);
+    dest[len] = 0;
+    return dest;
 }
 #endif
