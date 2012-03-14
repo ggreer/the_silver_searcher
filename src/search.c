@@ -117,7 +117,7 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
 
     fd = open(file_full_path, O_RDONLY);
     if (fd < 0) {
-        log_err("Error opening file %s. Skipping...", file_full_path);
+        log_err("Error opening file %s: %s Skipping...", file_full_path, strerror(errno));
         goto cleanup;
     }
 
