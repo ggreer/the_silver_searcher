@@ -111,13 +111,12 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
     int fd = -1;
     off_t f_len = 0;
     char *buf = NULL;
-    int buf_len = 0;
     struct stat statbuf;
     int rv = 0;
 
     fd = open(file_full_path, O_RDONLY);
     if (fd < 0) {
-        log_err("Error opening file %s. Skipping...", file_full_path);
+        log_err("Error opening file %s: %s Skipping...", file_full_path, strerror(errno));
         goto cleanup;
     }
 
@@ -140,9 +139,7 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
         goto cleanup;
     }
 
-    buf_len = f_len;
-
-    search_buf(re, re_extra, buf, buf_len, file_full_path);
+    search_buf(re, re_extra, buf, (int)f_len, file_full_path);
 
     cleanup:
     if (fd != -1) {
@@ -172,6 +169,7 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
     size_t path_length = 0;
     int i;
 
+    /* find agignore/gitignore/hgignore/etc files to load ignore patterns from */
     results = scandir(path, &dir_list, &ignorefile_filter, &alphasort);
     if (results > 0) {
         for (i = 0; i < results; i++) {
