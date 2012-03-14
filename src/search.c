@@ -111,7 +111,6 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
     int fd = -1;
     off_t f_len = 0;
     char *buf = NULL;
-    int buf_len = 0;
     struct stat statbuf;
     int rv = 0;
 
@@ -140,9 +139,7 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
         goto cleanup;
     }
 
-    buf_len = f_len;
-
-    search_buf(re, re_extra, buf, buf_len, file_full_path);
+    search_buf(re, re_extra, buf, (int)f_len, file_full_path);
 
     cleanup:
     if (fd != -1) {
