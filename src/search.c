@@ -172,6 +172,7 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
     size_t path_length = 0;
     int i;
 
+    /* find agignore/gitignore/hgignore/etc files to load ignore patterns from */
     results = scandir(path, &dir_list, &ignorefile_filter, &alphasort);
     if (results > 0) {
         for (i = 0; i < results; i++) {
