@@ -15,18 +15,18 @@ const char *colors_path = "\e[1;32m";   /* bold green */
 const char *colors_match = "\e[30;43m"; /* black with yellow background */
 const char *colors_line_number = "\e[1;33m"; /* yellow with black background */
 
-void print_path(const char* path) {
+void print_path(const char* path, const char sep) {
     log_debug("printing path");
 
     if (opts.ackmate) {
-        printf(":%s", path);
+        printf(":%s%c", path, sep);
     }
     else {
         if (opts.color) {
-            printf("%s%s%s", colors_path, path, colors_reset);
+            printf("%s%s%s%c", colors_path, path, colors_reset, sep);
         }
         else {
-            printf("%s", path);
+            printf("%s%c", path, sep);
         }
     }
 }
@@ -59,8 +59,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
     print_file_separator();
 
     if (opts.print_heading) {
-        print_path(path);
-        printf("\n");
+        print_path(path, '\n');
     }
 
     context_prev_lines = malloc(sizeof(char*) * (opts.before + 1));
@@ -105,8 +104,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                         prev_line = (last_prev_line + j) % opts.before;
                         if (context_prev_lines[prev_line] != NULL) {
                             if (opts.print_heading == 0) {
-                                print_path(path);
-                                printf(":");
+                                print_path(path, ':');
                             }
                             print_line_number(line - (opts.before - j), sep);
                             printf("%s\n", context_prev_lines[prev_line]);
@@ -116,8 +114,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
 
                 if (opts.ackmate == 0) {
                     if (opts.print_heading == 0 && !opts.search_stdin) {
-                        print_path(path);
-                        printf(":");
+                        print_path(path, ':');
                     }
                     print_line_number(line, ':');
 
@@ -181,8 +178,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
             else if (lines_since_last_match <= opts.after) {
                 /* print context after matching line */
                 if (opts.print_heading == 0) {
-                    print_path(path);
-                    printf(":");
+                    print_path(path, ':');
                 }
                 print_line_number(line, sep);
 
