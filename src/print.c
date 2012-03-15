@@ -198,7 +198,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
     free(context_prev_lines);
 }
 
-void print_line_number(int line, char sep) {
+void print_line_number(const int line, const char sep) {
     if (!opts.print_line_numbers) {
         return;
     }
