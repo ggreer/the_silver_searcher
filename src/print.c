@@ -156,7 +156,6 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                     for (j = prev_line_offset; j < matches[last_printed_match].start; j++) {
                         putchar(buf[j]);
                     }
-
                     for (; last_printed_match < cur_match; last_printed_match++) {
                         for (; j < matches[last_printed_match].start; j++) {
                             putchar(buf[j]);

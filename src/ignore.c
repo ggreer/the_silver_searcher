@@ -39,7 +39,7 @@ void add_ignore_pattern(const char* pattern) {
 
 void cleanup_ignore_patterns() {
     int i;
-    for(i = 0; i<ignore_patterns_len; i++) {
+    for (i = 0; i<ignore_patterns_len; i++) {
         free(ignore_patterns[i]);
     }
     free(ignore_patterns);
