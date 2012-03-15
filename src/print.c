@@ -201,7 +201,11 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
 }
 
 void print_line_number(int line, char sep) {
+    if (!opts.print_line_numbers) {
+        return;
+    }
     log_debug("printing line number");
+
     if (opts.ackmate) {
         printf("%i%c", line, sep);
     }
