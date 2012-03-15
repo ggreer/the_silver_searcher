@@ -85,27 +85,25 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                 printf("--\n");
             }
 
-            if (lines_since_last_match > 0) {
-                if (opts.before > 0) {
-                    /* TODO: better, but still needs work */
-                    /* print the previous line(s) */
-                    int lines_to_print = lines_since_last_match - (opts.after + 1);
-                    if (lines_to_print < 0) {
-                        lines_to_print = 0;
-                    }
-                    else if (lines_to_print > opts.before) {
-                        lines_to_print = opts.before;
-                    }
+            if (lines_since_last_match > 0 && opts.before > 0) {
+                /* TODO: better, but still needs work */
+                /* print the previous line(s) */
+                int lines_to_print = lines_since_last_match - (opts.after + 1);
+                if (lines_to_print < 0) {
+                    lines_to_print = 0;
+                }
+                else if (lines_to_print > opts.before) {
+                    lines_to_print = opts.before;
+                }
 
-                    for (j = (opts.before - lines_to_print); j < opts.before; j++) {
-                        prev_line = (last_prev_line + j) % opts.before;
-                        if (context_prev_lines[prev_line] != NULL) {
-                            if (opts.print_heading == 0) {
-                                print_path(path, ':');
-                            }
-                            print_line_number(line - (opts.before - j), sep);
-                            printf("%s\n", context_prev_lines[prev_line]);
+                for (j = (opts.before - lines_to_print); j < opts.before; j++) {
+                    prev_line = (last_prev_line + j) % opts.before;
+                    if (context_prev_lines[prev_line] != NULL) {
+                        if (opts.print_heading == 0) {
+                            print_path(path, ':');
                         }
+                        print_line_number(line - (opts.before - j), sep);
+                        printf("%s\n", context_prev_lines[prev_line]);
                     }
                 }
             }
