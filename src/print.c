@@ -158,7 +158,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                 if (opts.ackmate) {
                     /* print headers for ackmate to parse */
                     print_line_number(line, ';');
-                    while (last_printed_match < cur_match) {
+                    for (; last_printed_match < cur_match; last_printed_match++) {
                         printf("%i %i", (matches[last_printed_match].start - prev_line_offset), (matches[last_printed_match].end - matches[last_printed_match].start));
                         if (last_printed_match == cur_match - 1) {
                             putchar(':');
@@ -166,7 +166,6 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                         else {
                             putchar(',');
                         }
-                        last_printed_match++;
                     }
                     /* print up to current char */
                     for (j = prev_line_offset; j < i; j++) {
