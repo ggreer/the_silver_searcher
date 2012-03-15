@@ -135,7 +135,7 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
         goto cleanup;
     }
 
-    buf = mmap(0, f_len, PROT_READ, mmap_flags, fd, 0);
+    buf = mmap(NULL, f_len, PROT_READ, mmap_flags, fd, 0);
     if (buf == MAP_FAILED) {
         log_err("Error mmap()ing file %s: %s.", file_full_path, strerror(errno));
         goto cleanup;
