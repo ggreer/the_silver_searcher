@@ -131,12 +131,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                     print_line_number(line, ';');
                     for (; last_printed_match < cur_match; last_printed_match++) {
                         printf("%i %i", (matches[last_printed_match].start - prev_line_offset), (matches[last_printed_match].end - matches[last_printed_match].start));
-                        if (last_printed_match == cur_match - 1) {
-                            putchar(':');
-                        }
-                        else {
-                            putchar(',');
-                        }
+                        last_printed_match == cur_match - 1 ? putchar(':') : putchar(',');
                     }
                     j = prev_line_offset;
                 }
