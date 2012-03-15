@@ -11,7 +11,7 @@ m4_ifdef(
 
 PKG_CHECK_MODULES([PCRE], [libpcre])
 
-CFLAGS="$CFLAGS $PCRE_CFLAGS -Wall -Wextra -std=c89 -D_GNU_SOURCE -g"
+CFLAGS="$CFLAGS $PCRE_CFLAGS -Wall -Wextra -std=c89 -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -g"
 LDFLAGS="$LDFLAGS"
 
 AC_CHECK_DECL([PCRE_CONFIG_JIT], [AC_DEFINE([USE_PCRE_JIT], [], [Use PCRE JIT])], [], [#include <pcre.h>])
