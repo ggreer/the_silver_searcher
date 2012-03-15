@@ -75,9 +75,6 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
             if (cur_match < matches_len) {
                 cur_match++;
             }
-            if (opts.color) {
-                printf("%s", colors_reset);
-            }
         }
 
         if (cur_match < matches_len && i == matches[cur_match].start) {
@@ -111,31 +108,8 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                         }
                     }
                 }
-
-                if (opts.ackmate == 0) {
-                    if (opts.print_heading == 0 && !opts.search_stdin) {
-                        print_path(path, ':');
-                    }
-                    print_line_number(line, ':');
-
-                    if (opts.column) {
-                        printf("%i:", column + 1);
-                    }
-                    /* print up to current char */
-                    for (j = prev_line_offset; j < i; j++) {
-                        putchar(buf[j]);
-                    }
-                }
             }
-
             lines_since_last_match = 0;
-            if (opts.color) {
-                printf("%s", colors_match);
-            }
-        }
-
-        if (lines_since_last_match == 0 && opts.ackmate == 0) {
-            putchar(buf[i]);
         }
 
         column++;
@@ -155,6 +129,10 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
 
         if (buf[i] == '\n' || i == buf_len - 1) {
             if (lines_since_last_match == 0) {
+                if (opts.print_heading == 0 && !opts.search_stdin) {
+                    print_path(path, ':');
+                }
+
                 if (opts.ackmate) {
                     /* print headers for ackmate to parse */
                     print_line_number(line, ';');
@@ -167,12 +145,38 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                             putchar(',');
                         }
                     }
-                    /* print up to current char */
-                    for (j = prev_line_offset; j < i; j++) {
+                    j = prev_line_offset;
+                }
+                else {
+                    print_line_number(line, ':');
+                    if (opts.column) {
+                        printf("%i:", column + 1);
+                    }
+
+                    for (j = prev_line_offset; j < matches[last_printed_match].start; j++) {
                         putchar(buf[j]);
                     }
-                    putchar('\n');
+
+                    for (; last_printed_match < cur_match; last_printed_match++) {
+                        for (; j < matches[last_printed_match].start; j++) {
+                            putchar(buf[j]);
+                        }
+                        if (opts.color) {
+                            printf("%s", colors_match);
+                        }
+                        for (; j < matches[last_printed_match].end; j++) {
+                            putchar(buf[j]);
+                        }
+                        if (opts.color) {
+                            printf("%s", colors_reset);
+                        }
+                    }
                 }
+                /* print up to current char */
+                for (; j < i; j++) {
+                    putchar(buf[j]);
+                }
+                putchar('\n');
             }
             else if (lines_since_last_match <= opts.after) {
                 /* print context after matching line */

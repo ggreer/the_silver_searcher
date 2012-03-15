@@ -267,7 +267,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
     skip_group:
 
     if (opts.search_stdin) {
-        opts.print_break = 1;
+        opts.print_break = 0;
         opts.print_heading = 0;
         opts.print_line_numbers = 0;
     }
