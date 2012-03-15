@@ -251,6 +251,10 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         opts.search_stdin = 0;
     }
 
+    if (opts.print_heading == 0 || opts.print_break == 0) {
+        goto skip_group;
+    }
+
     if (group) {
         opts.print_heading = 1;
         opts.print_break = 1;
@@ -260,8 +264,10 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         opts.print_break = 0;
     }
 
+    skip_group:
+
     if (opts.search_stdin) {
-        opts.print_break = 1;
+        opts.print_break = 0;
         opts.print_heading = 0;
         opts.print_line_numbers = 0;
     }

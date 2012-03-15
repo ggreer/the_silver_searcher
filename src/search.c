@@ -77,8 +77,7 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
 
     if (matches_len > 0) {
         if (opts.print_filename_only) {
-            print_path(dir_full_path);
-            putchar('\n');
+            print_path(dir_full_path, '\n');
         }
         else {
             if (binary) {
