@@ -218,8 +218,8 @@ void print_line_number(const int line, const char sep) {
 }
 
 void print_file_separator() {
-    log_debug("printing file separator");
     if (first_file_match == 0 && opts.print_break) {
+        log_debug("printing file separator");
         printf("\n");
     }
     first_file_match = 0;
