@@ -48,6 +48,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
     int in_a_match = 0;
     /* TODO the line below contains a terrible hack */
     int lines_since_last_match = 1000000; /* if I initialize this to INT_MAX it'll overflow */
+    int lines_to_print = 0;
     int last_printed_match = 0;
     char sep = '-';
     int i, j;
@@ -88,7 +89,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
             if (lines_since_last_match > 0 && opts.before > 0) {
                 /* TODO: better, but still needs work */
                 /* print the previous line(s) */
-                int lines_to_print = lines_since_last_match - (opts.after + 1);
+                lines_to_print = lines_since_last_match - (opts.after + 1);
                 if (lines_to_print < 0) {
                     lines_to_print = 0;
                 }
