@@ -39,7 +39,6 @@ void print_binary_file_matches(const char* path) {
 /* TODO: doesn't work for matches across lines */
 void print_file_matches(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len) {
     int line = 1;
-    int column = 0;
     char **context_prev_lines = NULL;
     int prev_line = 0;
     int last_prev_line = 0;
@@ -110,8 +109,6 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
             }
             lines_since_last_match = 0;
         }
-
-        column++;
 
         /* We found the end of a line. */
         if (buf[i] == '\n' && opts.before > 0) {
@@ -189,7 +186,6 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
 
             prev_line_offset = i + 1; /* skip the newline */
             line++;
-            column = 0;
             lines_since_last_match++;
         }
     }
