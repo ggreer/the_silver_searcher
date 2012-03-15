@@ -104,7 +104,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                 }
 
                 if (opts.ackmate == 0) {
-                    if (opts.print_heading == 0) {
+                    if (opts.print_heading == 0 && !opts.search_stdin) {
                         print_path(path);
                         printf(":");
                     }
