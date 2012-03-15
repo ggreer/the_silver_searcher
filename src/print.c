@@ -135,7 +135,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
             }
         }
 
-        if ((in_a_match || lines_since_last_match == 0) && opts.ackmate == 0) {
+        if (lines_since_last_match == 0 && opts.ackmate == 0) {
             putchar(buf[i]);
         }
 
