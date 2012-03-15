@@ -114,6 +114,7 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
     int rv = 0;
 
     int open_flags = O_RDONLY | O_LARGEFILE;
+    int mmap_flags = MAP_SHARED;
 
     fd = open(file_full_path, open_flags);
     if (fd < 0) {
@@ -134,9 +135,9 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
         goto cleanup;
     }
 
-    buf = mmap(0, f_len, PROT_READ, MAP_SHARED, fd, 0);
+    buf = mmap(0, f_len, PROT_READ, mmap_flags, fd, 0);
     if (buf == MAP_FAILED) {
-        log_err("File %s failed to load: %s.", file_full_path, strerror(errno));
+        log_err("Error mmap()ing file %s: %s.", file_full_path, strerror(errno));
         goto cleanup;
     }
 
