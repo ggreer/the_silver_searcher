@@ -189,6 +189,11 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
         }
     }
 
+    for (i = 0; i < opts.before; i++) {
+        if (context_prev_lines[i] != NULL) {
+            free(context_prev_lines[i]);
+        }
+    }
     free(context_prev_lines);
 }
 
