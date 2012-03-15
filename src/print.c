@@ -204,16 +204,11 @@ void print_line_number(const int line, const char sep) {
     }
     log_debug("printing line number");
 
-    if (opts.ackmate) {
-        printf("%i%c", line, sep);
+    if (opts.color) {
+        printf("%s%i%s%c", colors_line_number, line, colors_reset, sep);
     }
     else {
-        if (opts.color) {
-            printf("%s%i%s%c", colors_line_number, line, colors_reset, sep);
-        }
-        else {
-            printf("%i%c", line, sep);
-        }
+        printf("%i%c", line, sep);
     }
 }
 
