@@ -156,11 +156,6 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                         }
                     }
                 }
-                /* print up to current char */
-                for (; j < i; j++) {
-                    putchar(buf[j]);
-                }
-                putchar('\n');
             }
             else if (lines_since_last_match <= opts.after) {
                 /* print context after matching line */
@@ -169,11 +164,14 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                 }
                 print_line_number(line, sep);
 
-                for (j = prev_line_offset; j < i; j++) {
-                    putchar(buf[j]);
-                }
-                putchar('\n');
+                j = prev_line_offset;
             }
+
+            /* print up to current char */
+            for (; j < i; j++) {
+                putchar(buf[j]);
+            }
+            putchar('\n');
 
             prev_line_offset = i + 1; /* skip the newline */
             line++;
