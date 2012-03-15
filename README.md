@@ -62,6 +62,7 @@ You can use this with [my fork](https://github.com/ggreer/AckMate) of the popula
 * optimizations
   * pthreads. these days it's silly to use only one core
 * actually get textmate dir patterns working (this requires ruby regexes. not fun)
+* symlink loop detection
 
 ### Other stuff you might like ###
 * [Ack](https://github.com/petdance/ack) - Better than grep
