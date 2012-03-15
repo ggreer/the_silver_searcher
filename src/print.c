@@ -61,11 +61,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
         print_path(path, '\n');
     }
 
-    context_prev_lines = malloc(sizeof(char*) * (opts.before + 1));
-
-    for (i = 0; i < opts.before; i++) {
-        context_prev_lines[i] = NULL;
-    }
+    context_prev_lines = calloc(sizeof(char*), (opts.before + 1));
 
     for (i = 0; i < buf_len && (cur_match < matches_len || lines_since_last_match <= opts.after); i++) {
         if (i == matches[cur_match].end && cur_match < matches_len) {
