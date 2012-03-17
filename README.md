@@ -22,8 +22,7 @@ Gentoo:
 
 OS X:
 
-    brew install pcre pkg-config
-Then build from source. Once Ag becomes more popular, hopefully someone will submit a pull request to homebrew.
+    brew install the_silver_searcher
 
 For debs, rpms, and static builds, see the [downloads page](https://github.com/ggreer/the_silver_searcher/downloads).
 
