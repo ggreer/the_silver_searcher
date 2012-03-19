@@ -144,7 +144,6 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
     if (fd != -1) {
         munmap(buf, f_len);
         close(fd);
-        fd = -1;
     }
 }
 
@@ -213,7 +212,6 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
     int rc = 0;
 
     for (i=0; i<results; i++) {
-        rc = 0;
         dir = dir_list[i];
         /* TODO: this is copy-pasted from about 30 lines above */
         path_length = (size_t)(strlen(path) + strlen(dir->d_name) + 2); /* 2 for slash and null char */
