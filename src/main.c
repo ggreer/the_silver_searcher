@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
         int has_jit = 0;
         pcre_config(PCRE_CONFIG_JIT, &has_jit);
         if (has_jit) {
-            study_opts = study_opts | PCRE_STUDY_JIT_COMPILE;
+            study_opts |= PCRE_STUDY_JIT_COMPILE;
         }
 #endif
 
