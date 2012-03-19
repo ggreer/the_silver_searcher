@@ -108,12 +108,11 @@ void search_stdin(const pcre *re, const pcre_extra *re_extra) {
 
 void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_full_path) {
     int fd = -1;
-    off64_t f_len = 0;
+    off_t f_len = 0;
     char *buf = NULL;
     struct stat statbuf;
     int rv = 0;
-
-    int open_flags = O_RDONLY | O_LARGEFILE;
+    int open_flags = O_RDONLY;
     int mmap_flags = MAP_SHARED;
 
     fd = open(file_full_path, open_flags);
