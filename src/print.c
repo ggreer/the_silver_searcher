@@ -63,8 +63,8 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
 
     context_prev_lines = calloc(sizeof(char*), (opts.before + 1));
 
-    for (i = 0; i < buf_len && (cur_match < matches_len || lines_since_last_match <= opts.after); i++) {
-        if (i == matches[cur_match].end && cur_match < matches_len) {
+    for (i = 0; i <= buf_len && (cur_match < matches_len || lines_since_last_match <= opts.after); i++) {
+        if (cur_match < matches_len && i == matches[cur_match].end) {
             /* We found the end of a match. */
             cur_match++;
         }
@@ -110,7 +110,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
             last_prev_line = (last_prev_line + 1) % opts.before;
         }
 
-        if (buf[i] == '\n' || i == buf_len - 1) {
+        if (buf[i] == '\n' || i == buf_len) {
             if (lines_since_last_match == 0) {
                 if (opts.print_heading == 0 && !opts.search_stdin) {
                     print_path(path, ':');
