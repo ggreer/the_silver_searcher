@@ -49,7 +49,7 @@ void print_version() {
 }
 
 void init_options() {
-    memset(&opts, 0, sizeof(&opts));
+    memset(&opts, 0, sizeof(opts));
     opts.casing = CASE_SENSITIVE;
     opts.color = TRUE;
     opts.print_break = TRUE;
