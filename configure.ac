@@ -16,7 +16,8 @@ LDFLAGS="$LDFLAGS"
 
 AC_CHECK_DECL([PCRE_CONFIG_JIT], [AC_DEFINE([USE_PCRE_JIT], [], [Use PCRE JIT])], [], [#include <pcre.h>])
 
-AC_CHECK_FUNCS(getline strlcpy strlcat strndup)
+# the kqueue part of this is slightly ugly, but it's one cheap way to get BSD detection
+AC_CHECK_FUNCS(getline strlcpy strlcat strndup kqueue)
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_HEADERS([src/config.h])
