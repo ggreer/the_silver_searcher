@@ -100,7 +100,7 @@ void search_stdin(const pcre *re, const pcre_extra *re_extra) {
     size_t line_cap = 0;
 
     while ((line_length = getline(&line, &line_cap, stdin)) > 0) {
-        search_buf(re, re_extra, line, line_length-1, "");
+        search_buf(re, re_extra, line, line_length, "");
     }
 
     free(line);
