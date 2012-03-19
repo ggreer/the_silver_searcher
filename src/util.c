@@ -99,7 +99,7 @@ int is_binary(const void* buf, const int buf_len) {
             /* NULL char. It's binary */
             return(1);
         }
-        else if (buf_c[i] < 32 || buf_c[i] > 127) {
+        else if ((buf_c[i] < 7 || buf_c[i] > 14) && (buf_c[i] < 32 || buf_c[i] > 127)) {
             suspicious_bytes++;
         }
     }

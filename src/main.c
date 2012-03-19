@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
     pcre_extra *re_extra = NULL;
     double time_diff = 0.0;
 
-    memset(&stats, 0, sizeof(&stats)); /* What's the point of an init function if it's going to be this one-liner? */
+    memset(&stats, 0, sizeof(stats)); /* What's the point of an init function if it's going to be this one-liner? */
 
     gettimeofday(&(stats.time_start), NULL);
 
@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
         int has_jit = 0;
         pcre_config(PCRE_CONFIG_JIT, &has_jit);
         if (has_jit) {
-            study_opts = study_opts | PCRE_STUDY_JIT_COMPILE;
+            study_opts |= PCRE_STUDY_JIT_COMPILE;
         }
 #endif
 

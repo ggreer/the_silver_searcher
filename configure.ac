@@ -1,4 +1,4 @@
-AC_INIT([the_silver_searcher], [0.1.1])
+AC_INIT([the_silver_searcher], [0.4])
 AC_PROG_CC
 AC_PREREQ([2.59])
 

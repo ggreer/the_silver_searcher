@@ -22,8 +22,7 @@ Gentoo:
 
 OS X:
 
-    brew install pcre pkg-config
-Then build from source. Once Ag becomes more popular, hopefully someone will submit a pull request to homebrew.
+    brew install the_silver_searcher
 
 For debs, rpms, and static builds, see the [downloads page](https://github.com/ggreer/the_silver_searcher/downloads).
 
@@ -62,6 +61,7 @@ You can use this with [my fork](https://github.com/ggreer/AckMate) of the popula
 * optimizations
   * pthreads. these days it's silly to use only one core
 * actually get textmate dir patterns working (this requires ruby regexes. not fun)
+* symlink loop detection
 
 ### Other stuff you might like ###
 * [Ack](https://github.com/petdance/ack) - Better than grep
