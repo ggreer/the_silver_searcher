@@ -37,19 +37,19 @@ void print_binary_file_matches(const char* path) {
 }
 
 /* TODO: doesn't work for matches across lines */
-void print_file_matches(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len) {
-    int line = 1;
+void print_file_matches(const char* path, const char* buf, const long buf_len, const match matches[], const long matches_len) {
+    long line = 1;
     char **context_prev_lines = NULL;
-    int prev_line = 0;
-    int last_prev_line = 0;
-    int prev_line_offset = 0;
-    int cur_match = 0;
+    long prev_line = 0;
+    long last_prev_line = 0;
+    long prev_line_offset = 0;
+    long cur_match = 0;
     /* TODO the line below contains a terrible hack */
-    int lines_since_last_match = 1000000; /* if I initialize this to INT_MAX it'll overflow */
-    int lines_to_print = 0;
-    int last_printed_match = 0;
+    long lines_since_last_match = 1000000; /* if I initialize this to INT_MAX it'll overflow */
+    long lines_to_print = 0;
+    long last_printed_match = 0;
     char sep = '-';
-    int i, j;
+    long i, j;
 
     if (opts.ackmate) {
         sep = ':';
@@ -120,7 +120,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                     /* print headers for ackmate to parse */
                     print_line_number(line, ';');
                     for (; last_printed_match < cur_match; last_printed_match++) {
-                        printf("%i %i",
+                        printf("%lu %i",
                               (matches[last_printed_match].start - prev_line_offset),
                               (matches[last_printed_match].end - matches[last_printed_match].start)
                         );
@@ -131,7 +131,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                 else {
                     print_line_number(line, ':');
                     if (opts.column) {
-                        printf("%i:", (matches[last_printed_match].start - prev_line_offset) + 1);
+                        printf("%lu:", (matches[last_printed_match].start - prev_line_offset) + 1);
                     }
 
                     for (j = prev_line_offset; j < matches[last_printed_match].start; j++) {
@@ -185,17 +185,17 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
     free(context_prev_lines);
 }
 
-void print_line_number(const int line, const char sep) {
+void print_line_number(const long line, const char sep) {
     if (!opts.print_line_numbers) {
         return;
     }
     log_debug("printing line number");
 
     if (opts.color) {
-        printf("%s%i%s%c", colors_line_number, line, colors_reset, sep);
+        printf("%s%lu%s%c", colors_line_number, line, colors_reset, sep);
     }
     else {
-        printf("%i%c", line, sep);
+        printf("%lu%c", line, sep);
     }
 }
 
