@@ -5,12 +5,12 @@ const int MAX_SEARCH_DEPTH = 25;
 const int MAX_MATCHES_PER_FILE = 10000;
 
 void search_buf(const pcre *re, const pcre_extra *re_extra,
-                const char *buf, const int buf_len,
+                const char *buf, const long buf_len,
                 const char *dir_full_path) {
     int binary = 0;
-    int buf_offset = 0;
+    long buf_offset = 0;
     match matches[MAX_MATCHES_PER_FILE];
-    int matches_len = 0;
+    long matches_len = 0;
     int offset_vector[MAX_MATCHES_PER_FILE * 3]; /* TODO */
     int rc = 0;
 
