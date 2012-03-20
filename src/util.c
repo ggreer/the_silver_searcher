@@ -84,6 +84,7 @@ int invert_matches(match matches[], int matches_len, const int buf_len) {
     return(matches_len + 1);
 }
 
+/* This function is very hot. It's called on every file. */
 int is_binary(const void* buf, const int buf_len) {
     int suspicious_bytes = 0;
     int total_bytes = buf_len > 1024 ? 1024 : buf_len;
@@ -101,6 +102,10 @@ int is_binary(const void* buf, const int buf_len) {
         }
         else if ((buf_c[i] < 7 || buf_c[i] > 14) && (buf_c[i] < 32 || buf_c[i] > 127)) {
             suspicious_bytes++;
+            /* disk IO is so slow that it's worthwhile to do this calculation after every suspicious byte */
+            if ((suspicious_bytes * 100) / total_bytes > 10) {
+                return(1);
+            }
         }
     }
 
