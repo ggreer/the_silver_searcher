@@ -108,11 +108,6 @@ int is_binary(const void* buf, const int buf_len) {
         }
     }
 
-    /* If > 10% of bytes are suspicious, assume it's binary */
-    if ((suspicious_bytes * 100) / total_bytes > 10) {
-        return(1);
-    }
-
     return(0);
 }
 
