@@ -221,14 +221,6 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
         strlcat(dir_full_path, dir->d_name, path_length);
 
         log_debug("dir %s type %i", dir_full_path, dir->d_type);
-        /* TODO: scan files in current dir before going deeper */
-        if (dir->d_type == DT_DIR) {
-            if (opts.recurse_dirs) {
-                log_debug("Searching dir %s", dir_full_path);
-                search_dir(re, re_extra, dir_full_path, depth + 1);
-            }
-            goto cleanup;
-        }
 
         if (opts.file_search_regex) {
             rc = pcre_exec(opts.file_search_regex, NULL, dir_full_path, strlen(dir_full_path),
@@ -237,6 +229,15 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
                 log_debug("Skipping %s due to file_search_regex.", dir_full_path);
                 goto cleanup;
             }
+        }
+
+        /* TODO: scan files in current dir before going deeper */
+        if (dir->d_type == DT_DIR) {
+            if (opts.recurse_dirs) {
+                log_debug("Searching dir %s", dir_full_path);
+                search_dir(re, re_extra, dir_full_path, depth + 1);
+            }
+            goto cleanup;
         }
 
         search_file(re, re_extra, dir_full_path);
