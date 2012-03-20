@@ -101,19 +101,19 @@ int filename_filter(struct dirent *dir) {
         return(0);
     }
 
+    for (i = 0; evil_hardcoded_ignore_files[i] != NULL; i++) {
+        if (strcmp(filename, evil_hardcoded_ignore_files[i]) == 0) {
+            log_debug("file %s ignored because of name", filename);
+            return(0);
+        }
+    }
+
     if (!opts.search_unrestricted && filename[0] == '.') {
         return(0);
     }
 
     if (opts.search_all_files) {
         return(1);
-    }
-
-    for (i = 0; evil_hardcoded_ignore_files[i] != NULL; i++) {
-        if (strcmp(filename, evil_hardcoded_ignore_files[i]) == 0) {
-            log_err("file %s ignored because of name", filename);
-            return(0);
-        }
     }
 
     for (i = 0; i < ignore_patterns_len; i++) {
@@ -128,7 +128,7 @@ int filename_filter(struct dirent *dir) {
         /* we just care about the match, not where the matches are */
         rc = pcre_exec(opts.ackmate_dir_filter, NULL, dir->d_name, strlen(dir->d_name), 0, 0, NULL, 0);
         if (rc >= 0) {
-            log_err("file %s ignored because name ackmate dir filter pattern", dir->d_name);
+            log_debug("file %s ignored because name ackmate dir filter pattern", dir->d_name);
             return(0);
         }
     }
