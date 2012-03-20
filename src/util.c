@@ -69,7 +69,6 @@ char* boyer_moore_strncasestr(const char *s, const char *find, size_t s_len, siz
     return(NULL);
 }
 
-/* TODO: haven't slept in 48 hours. need to look this code over when I'm less stupid */
 int invert_matches(match matches[], int matches_len, const int buf_len) {
     int i;
 
