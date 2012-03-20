@@ -101,19 +101,19 @@ int filename_filter(struct dirent *dir) {
         return(0);
     }
 
+    for (i = 0; evil_hardcoded_ignore_files[i] != NULL; i++) {
+        if (strcmp(filename, evil_hardcoded_ignore_files[i]) == 0) {
+            log_debug("file %s ignored because of name", filename);
+            return(0);
+        }
+    }
+
     if (!opts.search_unrestricted && filename[0] == '.') {
         return(0);
     }
 
     if (opts.search_all_files) {
         return(1);
-    }
-
-    for (i = 0; evil_hardcoded_ignore_files[i] != NULL; i++) {
-        if (strcmp(filename, evil_hardcoded_ignore_files[i]) == 0) {
-            log_err("file %s ignored because of name", filename);
-            return(0);
-        }
     }
 
     for (i = 0; i < ignore_patterns_len; i++) {
