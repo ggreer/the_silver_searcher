@@ -73,7 +73,6 @@ int invert_matches(match matches[], int matches_len, const int buf_len) {
     int i;
 
     /* this will totally screw-up if a match starts at the very beginning or end of a file */
-
     matches[matches_len].start = buf_len-1;
     for (i = matches_len; i >= 0; i--) {
         matches[i].end = matches[i].start;
@@ -195,7 +194,7 @@ size_t strlcpy(char *dst, const char *src, size_t siz)
     /* Not enough room in dst, add NUL and traverse rest of src */
     if (n == 0) {
       if (siz != 0)
-        *d = '\0';      /* NUL-terminate dst */
+        *d = '\0'; /* NUL-terminate dst */
 
       while (*s++)
         ;
@@ -228,9 +227,8 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
 }
 #endif
 
-
 #ifndef HAVE_STRNDUP
-/* Apache-licensed implementation of strndup for OS  
+/* Apache-licensed implementation of strndup for OS
  * taken from http://source-android.frandroid.com/dalvik/tools/dmtracedump/CreateTestTrace.c
  */ 
 char *strndup(const char *src, size_t len)

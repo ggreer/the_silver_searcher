@@ -125,6 +125,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         exit(1);
     }
 
+    /* stdin isn't a tty. something's probably being piped to ag */
     if (!isatty(fileno(stdin))) {
         opts.search_stdin = 1;
     }
@@ -138,7 +139,6 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         group = 0;
     }
 
-    /* TODO: check for insane params. nobody is going to want 5000000 lines of context, for example (on second thought, somebody might?) */
     while ((ch = getopt_long(argc, argv, "A:aB:C:G:DfilnvVu", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
