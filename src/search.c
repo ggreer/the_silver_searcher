@@ -168,7 +168,11 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
     int i;
 
     /* find agignore/gitignore/hgignore/etc files to load ignore patterns from */
+#ifdef AG_OS_BSD
     results = scandir(path, &dir_list, &ignorefile_filter, &alphasort);
+#else
+    results = scandir(path, &dir_list, (int (*)(const struct dirent *))&ignorefile_filter, &alphasort);
+#endif
     if (results > 0) {
         for (i = 0; i < results; i++) {
             dir = dir_list[i];
@@ -187,7 +191,11 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
     free(dir_list);
     dir_list = NULL;
 
+#ifdef AG_OS_BSD
     results = scandir(path, &dir_list, &filename_filter, &alphasort);
+#else
+    results = scandir(path, &dir_list, (int (*)(const struct dirent *))&filename_filter, &alphasort);
+#endif
     if (results == 0)
     {
         log_debug("No results found in directory %s", path);
