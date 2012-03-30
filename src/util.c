@@ -69,12 +69,10 @@ char* boyer_moore_strncasestr(const char *s, const char *find, size_t s_len, siz
     return(NULL);
 }
 
-/* TODO: haven't slept in 48 hours. need to look this code over when I'm less stupid */
 int invert_matches(match matches[], size_t matches_len, const size_t buf_len) {
     int i;
 
     /* this will totally screw-up if a match starts at the very beginning or end of a file */
-
     matches[matches_len].start = buf_len-1;
     for (i = matches_len; i >= 0; i--) {
         matches[i].end = matches[i].start;
@@ -101,12 +99,12 @@ int is_binary(const void* buf, const size_t buf_len) {
         }
         else if ((buf_c[i] < 7 || buf_c[i] > 14) && (buf_c[i] < 32 || buf_c[i] > 127)) {
             suspicious_bytes++;
+            /* disk IO is so slow that it's worthwhile to do this calculation after every suspicious byte */
+            /* even on a 1.6Ghz Atom with an intel 320 SSD */
+            if ((suspicious_bytes * 100) / total_bytes > 10) {
+                return(1);
+            }
         }
-    }
-
-    /* If > 10% of bytes are suspicious, assume it's binary */
-    if ((suspicious_bytes * 100) / total_bytes > 10) {
-        return(1);
     }
 
     return(0);
@@ -191,7 +189,7 @@ size_t strlcpy(char *dst, const char *src, size_t siz)
     /* Not enough room in dst, add NUL and traverse rest of src */
     if (n == 0) {
       if (siz != 0)
-        *d = '\0';      /* NUL-terminate dst */
+        *d = '\0'; /* NUL-terminate dst */
 
       while (*s++)
         ;
@@ -224,9 +222,8 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
 }
 #endif
 
-
 #ifndef HAVE_STRNDUP
-/* Apache-licensed implementation of strndup for OS  
+/* Apache-licensed implementation of strndup for OS
  * taken from http://source-android.frandroid.com/dalvik/tools/dmtracedump/CreateTestTrace.c
  */ 
 char *strndup(const char *src, size_t len)

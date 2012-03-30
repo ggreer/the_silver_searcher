@@ -40,4 +40,8 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 char * strndup (const char *s, size_t n);
 #endif
 
+#if defined __NetBSD__ || defined __OpenBSD__ || defined __FreeBSD__ || defined __bsdi__ || defined __DragonFly__ || defined BSD || defined _SYSTYPE_BSD || defined __APPLE__
+#define AG_OS_BSD
+#endif
+
 #endif

@@ -2,6 +2,7 @@
 *.o
 .deps
 .dirstamp
+.DS_Store
 aclocal.m4
 ag
 autom4te.cache
