@@ -1,17 +1,13 @@
 #include "search.h"
 
-/* TODO: make these configurable */
-const int MAX_SEARCH_DEPTH = 25;
-const int MAX_MATCHES_PER_FILE = 10000;
-
 void search_buf(const pcre *re, const pcre_extra *re_extra,
                 const char *buf, const int buf_len,
                 const char *dir_full_path) {
     int binary = 0;
     int buf_offset = 0;
-    match matches[MAX_MATCHES_PER_FILE];
+    match matches[opts.max_matches_per_file];
     int matches_len = 0;
-    int offset_vector[MAX_MATCHES_PER_FILE * 3]; /* TODO */
+    int offset_vector[opts.max_matches_per_file * 3]; /* TODO */
     int rc = 0;
 
     if (is_binary((void*)buf, buf_len)) { /* Who needs duck typing when you have void cast? :) */
@@ -42,7 +38,7 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
             matches_len++;
             match_ptr++;
             /* Don't segfault. TODO: realloc this array */
-            if (matches_len >= MAX_MATCHES_PER_FILE) {
+            if (matches_len >= opts.max_matches_per_file) {
                 log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
                 break;
             }
@@ -58,7 +54,7 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
             matches[matches_len].end = offset_vector[1];
             matches_len++;
             /* Don't segfault. TODO: realloc this array */
-            if (matches_len >= MAX_MATCHES_PER_FILE) {
+            if (matches_len >= opts.max_matches_per_file) {
                 log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
                 break;
             }
@@ -151,11 +147,6 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
  * then there can be sweet summaries of matches/files scanned/time/etc
  */
 void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, const int depth) {
-    /* TODO: don't just die. also make max depth configurable */
-    if (depth > MAX_SEARCH_DEPTH) {
-        log_err("Search depth greater than %i, giving up.", depth);
-        exit(1);
-    }
     struct dirent **dir_list = NULL;
     struct dirent *dir = NULL;
     int results = 0;
@@ -242,8 +233,13 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
         /* TODO: scan files in current dir before going deeper */
         if (dir->d_type == DT_DIR) {
             if (opts.recurse_dirs) {
-                log_debug("Searching dir %s", dir_full_path);
-                search_dir(re, re_extra, dir_full_path, depth + 1);
+                if (depth < opts.max_search_depth) {
+                    log_debug("Searching dir %s", dir_full_path);
+                    search_dir(re, re_extra, dir_full_path, depth + 1);
+                }
+                else {
+                    log_err("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
+                }
             }
             goto cleanup;
         }

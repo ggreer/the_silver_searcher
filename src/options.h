@@ -34,6 +34,8 @@ typedef struct {
     int follow_symlinks;
     int invert_match;
     int literal;
+    int max_matches_per_file;
+    int max_search_depth;
     int print_break;
     int print_filename_only;
     int print_heading;
