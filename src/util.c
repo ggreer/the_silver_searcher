@@ -126,18 +126,18 @@ int has_chars(const char* s, const char* chars) {
 
 int is_regex(const char* query) {
     char regex_chars[] = {
-        '\\',
-        '^',
         '$',
-        '.',
-        '[',
-        '|',
         '(',
         ')',
-        '?',
         '*',
         '+',
+        '.',
+        '?',
+        '[',
+        '\\',
+        '^',
         '{',
+        '|',
         '\0'
     };
 
