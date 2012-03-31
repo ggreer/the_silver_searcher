@@ -26,7 +26,7 @@ void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], 
 }
 
 /* Boyer-Moore-Horspool strstr */
-char* boyer_moore_strnstr(const char *s, const char *find, size_t s_len, size_t f_len, size_t skip_lookup[]) {
+char* boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]) {
     size_t i;
     size_t pos = 0;
 
@@ -48,7 +48,7 @@ char* boyer_moore_strnstr(const char *s, const char *find, size_t s_len, size_t 
 }
 
 /* Copy-pasted from above. Yes I know this is bad. One day I might even fix it. */
-char* boyer_moore_strncasestr(const char *s, const char *find, size_t s_len, size_t f_len, size_t skip_lookup[]) {
+char* boyer_moore_strncasestr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]) {
     size_t i;
     size_t pos = 0;
 
@@ -110,33 +110,71 @@ int is_binary(const void* buf, const size_t buf_len) {
     return(0);
 }
 
-int is_regex(const char* query, const int query_len) {
+int has_chars(const char* s, const char* chars) {
     int i, j;
-    char regex_chars[] = {
-        '\\',
-        '^',
-        '$',
-        '.',
-        '[',
-        '|',
-        '(',
-        ')',
-        '?',
-        '*',
-        '+',
-        '{',
-        '\0'
-    };
-
-    for (i = 0; i < query_len; i++) {
-        for (j = 0; regex_chars[j] != '\0'; j++) {
-            if (query[i] == regex_chars[j]) {
+    for (i = 0; s[i] != '\0'; i++) {
+        for (j = 0; chars[j] != '\0'; j++) {
+            if (s[i] == chars[j]) {
                 return(1);
             }
         }
     }
 
     return(0);
+}
+
+int is_regex(const char* query) {
+    char regex_chars[] = {
+        '$',
+        '(',
+        ')',
+        '*',
+        '+',
+        '.',
+        '?',
+        '[',
+        '\\',
+        '^',
+        '{',
+        '|',
+        '\0'
+    };
+
+    return(has_chars(query, regex_chars));
+}
+
+int is_fnmatch(const char* filename) {
+    char fnmatch_chars[] = {
+        '!',
+        '*',
+        '?',
+        '[',
+        ']',
+        '\0'
+    };
+
+    return(has_chars(filename, fnmatch_chars));
+}
+
+int binary_search(const char* needle, char **haystack, int start, int end) {
+    int mid;
+    int rc;
+
+    if (start == end) {
+        return -1;
+    }
+
+    mid = (start + end) / 2; /* can screw up on arrays with > 2 billion elements */
+
+    rc = strcmp(needle, haystack[mid]);
+    if (rc < 0) {
+        return binary_search(needle, haystack, start, mid);
+    }
+    else if (rc > 0) {
+        return binary_search(needle, haystack, mid + 1, end);
+    }
+
+    return mid;
 }
 
 #ifndef HAVE_STRLCAT

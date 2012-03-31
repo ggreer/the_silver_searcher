@@ -19,13 +19,15 @@ typedef struct {
 } ag_stats;
 
 void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], int case_sensitive);
-char* boyer_moore_strnstr(const char *s, const char *find, size_t s_len, size_t f_len, size_t skip_lookup[]);
-char* boyer_moore_strncasestr(const char *s, const char *find, size_t s_len, size_t f_len, size_t skip_lookup[]);
+char* boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]);
+char* boyer_moore_strncasestr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]);
 
 int invert_matches(match matches[], size_t matches_len, size_t buf_len);
 
 int is_binary(const void* buf, size_t buf_len);
-int is_regex(const char* query, const int query_len);
+int is_regex(const char* query);
+int is_fnmatch(const char* filename);
+int binary_search(const char* needle, char **haystack, int start, int end);
 
 #ifndef HAVE_STRLCAT
 size_t strlcat(char *dest, const char *src, size_t size);
