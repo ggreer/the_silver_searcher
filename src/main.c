@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
         pcre_opts = pcre_opts | PCRE_CASELESS;
     }
 
-    if (!is_regex(opts.query, opts.query_len)) {
+    if (!is_regex(opts.query)) {
         /* No special chars. Do a literal match */
         opts.literal = 1;
     }
