@@ -32,6 +32,7 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
             if (match_ptr == NULL) {
                 break;
             }
+            log_debug("Match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
             matches[matches_len].start = match_ptr - buf;
             matches[matches_len].end = matches[matches_len].start + opts.query_len;
             buf_offset = matches[matches_len].end;
@@ -48,7 +49,7 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
         /* In my profiling, most of the execution time is spent in this pcre_exec */
         while (buf_offset < buf_len &&
               (rc = pcre_exec(re, re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
-            log_debug("Match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
+            log_debug("Regex match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
             buf_offset = offset_vector[1];
             matches[matches_len].start = offset_vector[0];
             matches[matches_len].end = offset_vector[1];
@@ -200,6 +201,10 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
         if (errno == ENOTDIR) {
             /* Not a directory. Probably a file. */
             /* hacky but whatevs */
+            if (depth == 0) {
+                /* If we're only searching one file, don't print the filename header at the top. */
+                opts.print_heading = -1;
+            }
             search_file(re, re_extra, path);
             return;
         }
