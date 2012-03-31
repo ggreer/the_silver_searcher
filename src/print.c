@@ -57,7 +57,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
 
     print_file_separator();
 
-    if (opts.print_heading) {
+    if (opts.print_heading == TRUE) {
         print_path(path, '\n');
     }
 
