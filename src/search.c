@@ -22,7 +22,7 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
 
     if (opts.literal) {
         const char *match_ptr = buf;
-        char *(*ag_strncmp_fp)(const char*, const char*, size_t, size_t, size_t[]) = &boyer_moore_strnstr;
+        char *(*ag_strncmp_fp)(const char*, const char*, const size_t, const size_t, const size_t[]) = &boyer_moore_strnstr;
 
         if (opts.casing == CASE_INSENSITIVE) {
             ag_strncmp_fp = &boyer_moore_strncasestr;
