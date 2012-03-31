@@ -38,7 +38,7 @@ Search options:\n\
 --[no]heading\n\
 -l --files-with-matches: Only print filenames containing matches, not matching lines.\n\
 --literal: Do not parse PATTERN as a regular expression. Try to match it literally.\n\
--m --max-count NUM: Skip a file after NUM matches. Default is 10,000.\n\
+-m --max-count NUM: Skip the rest of a file after NUM matches. Default is 10,000.\n\
 --print-long-lines: Print matches on very long lines (> 2k characters by default)\n\
 --search-binary: Search binary files for matches.\n\
 --stats: Print stats (files scanned, time taken, etc)\n\

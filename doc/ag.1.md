@@ -43,7 +43,7 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `--literal`:
     Do not parse PATTERN as a regular expression. Try to match it literally.
   * `-m --max-count NUM`:
-    Skip a file after NUM matches. Default is 10,000.
+    Skip the rest of a file after NUM matches. Default is 10,000.
   * `--print-long-lines`:
     Print matches on very long lines (> 2k characters by default)
   * `--search-binary`:
