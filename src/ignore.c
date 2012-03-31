@@ -38,9 +38,9 @@ void add_ignore_pattern(const char* pattern) {
     int i;
 
     if (is_fnmatch(pattern)) {
-        ignore_patterns = realloc(ignore_patterns, (ignore_patterns_len + 1) * sizeof(char**));
-        ignore_patterns[ignore_patterns_len] = strdup(pattern);
         ignore_patterns_len++;
+        ignore_patterns = realloc(ignore_patterns, (ignore_patterns_len) * sizeof(char**));
+        ignore_patterns[ignore_patterns_len - 1] = strdup(pattern);
     }
     else {
         /* a balanced binary tree is best for performance, but I'm lazy */
