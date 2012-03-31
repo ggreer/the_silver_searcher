@@ -109,6 +109,27 @@ int ignorefile_filter(struct dirent *dir) {
     return(0);
 }
 
+int binary_search(const char* needle, char **haystack, int start, int end) {
+    int mid;
+    int rc;
+
+    if (start == end) {
+        return -1;
+    }
+
+    mid = (start + end) / 2; /* can screw up on arrays with > 2 billion elements */
+
+    rc = strcmp(needle, haystack[mid]);
+    if (rc < 0) {
+        return binary_search(needle, haystack, start, mid);
+    }
+    else if (rc > 0) {
+        return binary_search(needle, haystack, mid + 1, end);
+    }
+
+    return mid;
+}
+
 /* this function is REALLY HOT. It gets called for every file */
 int filename_filter(struct dirent *dir) {
     const char *filename = dir->d_name;
@@ -136,12 +157,10 @@ int filename_filter(struct dirent *dir) {
         return(1);
     }
 
-    for (i = 0; i < ignore_names_len; i++) {
-        pattern = ignore_names[i];
-        if (strcmp(pattern, filename) == 0) {
-            log_debug("file %s ignored because name matches static pattern %s", dir->d_name, pattern);
-            return(0);
-        }
+    int match_pos = binary_search(dir->d_name, ignore_names, 0, ignore_names_len);
+    if (match_pos > 0) {
+        log_debug("file %s ignored because name matches static pattern %s", dir->d_name, ignore_names[match_pos]);
+        return(0);
     }
 
     for (i = 0; i < ignore_patterns_len; i++) {
