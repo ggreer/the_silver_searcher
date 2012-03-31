@@ -24,16 +24,36 @@ const char *ignore_pattern_files[] = {
     NULL
 };
 
-/* TODO: make this a sorted array so filtering is O(log(n)) instead of O(n) */
+/* For patterns that need fnmatch */
 char **ignore_patterns = NULL;
 int ignore_patterns_len = 0;
 
+/* For patterns with no regex stuff in them. Sorted for fast matching. */
+char **ignore_names = NULL;
+int ignore_names_len = 0;
+
 const int fnmatch_flags = 0 & FNM_PATHNAME;
 
-void add_ignore_pattern(const char* pattern) {
-    ignore_patterns = realloc(ignore_patterns, (ignore_patterns_len + 1) * sizeof(char**));
-    ignore_patterns[ignore_patterns_len] = strdup(pattern);
-    ignore_patterns_len++;
+void add_ignore_pattern(const char* pattern, const int pattern_len) {
+    int i;
+
+    if (is_regex(pattern, pattern_len)) {
+        ignore_patterns = realloc(ignore_patterns, (ignore_patterns_len + 1) * sizeof(char**));
+        ignore_patterns[ignore_patterns_len] = strdup(pattern);
+        ignore_patterns_len++;
+    }
+    else {
+        /* a balanced binary tree is best for performance, but I'm lazy */
+        ignore_names_len++;
+        ignore_names = realloc(ignore_names, ignore_names_len * sizeof(char**));
+        for (i = ignore_names_len-1; i > 0; i--) {
+            if (strcmp(pattern, ignore_names[i-1]) > 0) {
+                break;
+            }
+            ignore_names[i] = ignore_names[i-1];
+        }
+        ignore_names[i] = strdup(pattern);
+    }
     log_debug("added ignore pattern %s", pattern);
 }
 
@@ -65,7 +85,7 @@ void load_ignore_patterns(const char *ignore_filename) {
         if (line[line_length-1] == '\n') {
             line[line_length-1] = '\0'; /* kill the \n */
         }
-        add_ignore_pattern(line);
+        add_ignore_pattern(line, line_length);
     }
 
     free(line);
@@ -116,10 +136,18 @@ int filename_filter(struct dirent *dir) {
         return(1);
     }
 
+    for (i = 0; i < ignore_names_len; i++) {
+        pattern = ignore_names[i];
+        if (strcmp(pattern, filename) == 0) {
+            log_debug("file %s ignored because name matches static pattern %s", dir->d_name, pattern);
+            return(0);
+        }
+    }
+
     for (i = 0; i < ignore_patterns_len; i++) {
         pattern = ignore_patterns[i];
         if (fnmatch(pattern, filename, fnmatch_flags) == 0) {
-            log_debug("file %s ignored because name matches pattern %s", dir->d_name, pattern);
+            log_debug("file %s ignored because name matches regex pattern %s", dir->d_name, pattern);
             return(0);
         }
     }

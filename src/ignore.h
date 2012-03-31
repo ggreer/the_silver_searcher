@@ -4,7 +4,7 @@
 #ifndef IGNORE_H
 #define IGNORE_H
 
-void add_ignore_pattern(const char* pattern);
+void add_ignore_pattern(const char* pattern, const int pattern_len);
 
 void cleanup_ignore_patterns();
 
