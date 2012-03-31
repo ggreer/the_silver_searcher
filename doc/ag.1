@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "AG" "1" "January 2012" "" ""
+.TH "AG" "1" "March 2012" "" ""
 .
 .SH "NAME"
 \fBag\fR \- The Silver Searcher\. Like ack, but faster\.
@@ -42,6 +42,9 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 \fB\-D \-\-debug\fR: Output ridiculous amounts of debugging info\. Probably not useful\.
 .
 .IP "\(bu" 4
+\fB\-\-depth NUM\fR: Search up to NUM directories deep\. Default is 25\.
+.
+.IP "\(bu" 4
 \fB\-f \-\-follow\fR: Follow symlinks\.
 .
 .IP "\(bu" 4
@@ -63,7 +66,7 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 \fB\-\-literal\fR: Do not parse PATTERN as a regular expression\. Try to match it literally\.
 .
 .IP "\(bu" 4
-\fB\-m \-\-max\-count NUM\fR: Stop searching files after NUM matches\.
+\fB\-m \-\-max\-count NUM\fR: Skip the rest of a file after NUM matches\. Default is 10,000\.
 .
 .IP "\(bu" 4
 \fB\-\-print\-long\-lines\fR: Print matches on very long lines (> 2k characters by default)

@@ -29,6 +29,7 @@ Search options:\n\
 --column: Print column numbers in results.\n\
 -C --context [LINES]: Print lines before and after matches. Defaults to 2.\n\
 -D --debug: Ridiculous debugging. Probably not useful.\n\
+--depth NUM: Search up to NUM directories deep. Default is 25.\n\
 -f --follow: Follow symlinks.\n\
 --[no]group: Same as --[no]break --[no]heading\n\
 -G, --file-search-regex\n\
@@ -37,7 +38,7 @@ Search options:\n\
 --[no]heading\n\
 -l --files-with-matches: Only print filenames containing matches, not matching lines.\n\
 --literal: Do not parse PATTERN as a regular expression. Try to match it literally.\n\
--m --max-count NUM: Stop searching files after NUM matches.\n\
+-m --max-count NUM: Skip the rest of a file after NUM matches. Default is 10,000.\n\
 --print-long-lines: Print matches on very long lines (> 2k characters by default)\n\
 --search-binary: Search binary files for matches.\n\
 --stats: Print stats (files scanned, time taken, etc)\n\
@@ -52,6 +53,8 @@ void init_options() {
     memset(&opts, 0, sizeof(opts));
     opts.casing = CASE_SENSITIVE;
     opts.color = TRUE;
+    opts.max_matches_per_file = 10000;
+    opts.max_search_depth = 25;
     opts.print_break = TRUE;
     opts.print_heading = TRUE;
     opts.print_line_numbers = TRUE;
@@ -96,6 +99,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         { "column", no_argument, &(opts.column), 1 },
         { "context", optional_argument, &(opts.context), 2 },
         { "debug", no_argument, NULL, 'D' },
+        { "depth", required_argument, NULL, 0 },
         { "follow", no_argument, &(opts.follow_symlinks), 1 },
         { "file-search-regex", required_argument, NULL, 'G' },
         { "group", no_argument, &(group), 1 },
@@ -105,11 +109,12 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         { "heading", no_argument, &(opts.print_heading), 1 },
         { "noheading", no_argument, &(opts.print_heading), 0 },
         { "no-recurse", no_argument, NULL, 'n' },
-        { "help", no_argument, &help, 1 },
+        { "help", no_argument, NULL, 'h' },
         { "ignore-case", no_argument, NULL, 'i' },
         { "files-with-matches", no_argument, NULL, 'l' },
         { "literal", no_argument, &(opts.literal), 1 },
         { "match", no_argument, &useless, 0 },
+        { "max-count", required_argument, NULL, 0 },
         { "print-long-lines", no_argument, &(opts.print_long_lines), 1 },
         { "search-binary", no_argument, &(opts.search_binary_files), 1 },
         { "smart-case", no_argument, &useless, 0 },
@@ -139,7 +144,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         group = 0;
     }
 
-    while ((ch = getopt_long(argc, argv, "A:aB:C:G:DfilnvVu", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:G:DfhilnvVu", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 opts.after = atoi(optarg);
@@ -208,6 +213,14 @@ void parse_options(int argc, char **argv, char **query, char **path) {
                       log_err("pcre_study of ackmate-dir-filter failed. Error: %s", pcre_err);
                       exit(1);
                     }
+                    break;
+                }
+                else if (strcmp(longopts[opt_index].name, "depth") == 0) {
+                    opts.max_search_depth = atoi(optarg);
+                    break;
+                }
+                else if (strcmp(longopts[opt_index].name, "max-count") == 0) {
+                    opts.max_matches_per_file = atoi(optarg);
                     break;
                 }
                 /* Continue to usage if we don't recognize the option */

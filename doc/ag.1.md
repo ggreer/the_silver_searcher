@@ -29,6 +29,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Print lines before and after matches. Defaults to 2.
   * `-D --debug`:
     Output ridiculous amounts of debugging info. Probably not useful.
+  * `--depth NUM`:
+    Search up to NUM directories deep. Default is 25.
   * `-f --follow`:
     Follow symlinks.
   * `--[no]group`
@@ -41,7 +43,7 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `--literal`:
     Do not parse PATTERN as a regular expression. Try to match it literally.
   * `-m --max-count NUM`:
-    Stop searching files after NUM matches.
+    Skip the rest of a file after NUM matches. Default is 10,000.
   * `--print-long-lines`:
     Print matches on very long lines (> 2k characters by default)
   * `--search-binary`:
