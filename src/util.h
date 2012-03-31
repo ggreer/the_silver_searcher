@@ -24,7 +24,7 @@ char* boyer_moore_strncasestr(const char *s, const char *find, const size_t s_le
 
 int invert_matches(match matches[], size_t matches_len, size_t buf_len);
 
-int is_binary(const void* buf, size_t buf_len);
+int is_binary(const void* buf, const size_t buf_len);
 int is_regex(const char* query);
 int is_fnmatch(const char* filename);
 int binary_search(const char* needle, char **haystack, int start, int end);
