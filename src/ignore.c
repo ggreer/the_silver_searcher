@@ -34,10 +34,10 @@ int ignore_names_len = 0;
 
 const int fnmatch_flags = 0 & FNM_PATHNAME;
 
-void add_ignore_pattern(const char* pattern, const int pattern_len) {
+void add_ignore_pattern(const char* pattern) {
     int i;
 
-    if (is_regex(pattern, pattern_len)) {
+    if (is_fnmatch(pattern)) {
         ignore_patterns = realloc(ignore_patterns, (ignore_patterns_len + 1) * sizeof(char**));
         ignore_patterns[ignore_patterns_len] = strdup(pattern);
         ignore_patterns_len++;
@@ -85,7 +85,7 @@ void load_ignore_patterns(const char *ignore_filename) {
         if (line[line_length-1] == '\n') {
             line[line_length-1] = '\0'; /* kill the \n */
         }
-        add_ignore_pattern(line, line_length);
+        add_ignore_pattern(line);
     }
 
     free(line);
@@ -107,27 +107,6 @@ int ignorefile_filter(struct dirent *dir) {
         }
     }
     return(0);
-}
-
-int binary_search(const char* needle, char **haystack, int start, int end) {
-    int mid;
-    int rc;
-
-    if (start == end) {
-        return -1;
-    }
-
-    mid = (start + end) / 2; /* can screw up on arrays with > 2 billion elements */
-
-    rc = strcmp(needle, haystack[mid]);
-    if (rc < 0) {
-        return binary_search(needle, haystack, start, mid);
-    }
-    else if (rc > 0) {
-        return binary_search(needle, haystack, mid + 1, end);
-    }
-
-    return mid;
 }
 
 /* this function is REALLY HOT. It gets called for every file */

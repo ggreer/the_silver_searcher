@@ -140,6 +140,39 @@ int is_regex(const char* query, const int query_len) {
     return(0);
 }
 
+int is_fnmatch(const char* filename) {
+    int i;
+
+    for (i = 0; filename[i] != '\0'; i++) {
+        if (filename[i] == '*') {
+            return(1);
+        }
+    }
+
+    return (0);
+}
+
+int binary_search(const char* needle, char **haystack, int start, int end) {
+    int mid;
+    int rc;
+
+    if (start == end) {
+        return -1;
+    }
+
+    mid = (start + end) / 2; /* can screw up on arrays with > 2 billion elements */
+
+    rc = strcmp(needle, haystack[mid]);
+    if (rc < 0) {
+        return binary_search(needle, haystack, start, mid);
+    }
+    else if (rc > 0) {
+        return binary_search(needle, haystack, mid + 1, end);
+    }
+
+    return mid;
+}
+
 #ifndef HAVE_STRLCAT
 /*
  * strlcat and strlcpy, taken from Apache Traffic Server

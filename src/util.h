@@ -26,6 +26,8 @@ int invert_matches(match matches[], int matches_len, const int buf_len);
 
 int is_binary(const void* buf, const int buf_len);
 int is_regex(const char* query, const int query_len);
+int is_fnmatch(const char* filename);
+int binary_search(const char* needle, char **haystack, int start, int end);
 
 #ifndef HAVE_STRLCAT
 size_t strlcat(char *dest, const char *src, size_t size);
