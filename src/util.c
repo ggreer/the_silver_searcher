@@ -146,8 +146,11 @@ int is_regex(const char* query) {
 
 int is_fnmatch(const char* filename) {
     char fnmatch_chars[] = {
+        '!',
         '*',
         '?',
+        '[',
+        ']',
         '\0'
     };
 
