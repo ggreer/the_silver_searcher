@@ -114,7 +114,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         { "files-with-matches", no_argument, NULL, 'l' },
         { "literal", no_argument, &(opts.literal), 1 },
         { "match", no_argument, &useless, 0 },
-        { "max-count", required_argument, NULL, 0 },
+        { "max-count", required_argument, NULL, 'm' },
         { "print-long-lines", no_argument, &(opts.print_long_lines), 1 },
         { "search-binary", no_argument, &(opts.search_binary_files), 1 },
         { "smart-case", no_argument, &useless, 0 },
@@ -144,7 +144,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         group = 0;
     }
 
-    while ((ch = getopt_long(argc, argv, "A:aB:C:G:DfhilnvVu", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:fhilm:nvVu", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 opts.after = atoi(optarg);
@@ -187,6 +187,9 @@ void parse_options(int argc, char **argv, char **query, char **path) {
             case 'l':
                 opts.print_filename_only = 1;
                 break;
+            case 'm':
+                opts.max_matches_per_file = atoi(optarg);
+                break;
             case 'n':
                 opts.recurse_dirs = 0;
                 break;
@@ -217,10 +220,6 @@ void parse_options(int argc, char **argv, char **query, char **path) {
                 }
                 else if (strcmp(longopts[opt_index].name, "depth") == 0) {
                     opts.max_search_depth = atoi(optarg);
-                    break;
-                }
-                else if (strcmp(longopts[opt_index].name, "max-count") == 0) {
-                    opts.max_matches_per_file = atoi(optarg);
                     break;
                 }
                 /* Continue to usage if we don't recognize the option */

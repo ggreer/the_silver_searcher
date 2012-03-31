@@ -32,10 +32,10 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
             if (match_ptr == NULL) {
                 break;
             }
-            log_debug("Match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
             matches[matches_len].start = match_ptr - buf;
             matches[matches_len].end = matches[matches_len].start + opts.query_len;
             buf_offset = matches[matches_len].end;
+            log_debug("Match found. File %s, offset %i bytes.", dir_full_path, matches[matches_len].start);
             matches_len++;
             match_ptr++;
             /* Don't segfault. TODO: realloc this array */
@@ -200,11 +200,8 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
     else if (results == -1) {
         if (errno == ENOTDIR) {
             /* Not a directory. Probably a file. */
-            /* hacky but whatevs */
-            if (depth == 0) {
-                /* If we're only searching one file, don't print the filename header at the top. */
-                opts.print_heading = -1;
-            }
+            /* If we're only searching one file, don't print the filename header at the top. */
+            opts.print_heading = depth == 0 ? -1 : opts.print_heading;
             search_file(re, re_extra, path);
             return;
         }
