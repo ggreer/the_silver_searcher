@@ -8,6 +8,7 @@ ag
 autom4te.cache
 cachegrind.out.*
 callgrind.out.*
+clang_output_
 config.log
 config.status
 configure
