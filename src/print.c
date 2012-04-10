@@ -112,7 +112,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
 
         if (buf[i] == '\n' || i == buf_len) {
             if (lines_since_last_match == 0) {
-                if (opts.print_heading == 0 && !opts.search_stdin) {
+                if (opts.print_heading == 0 && !opts.search_stream) {
                     print_path(path, ':');
                 }
 

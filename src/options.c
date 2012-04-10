@@ -132,7 +132,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
 
     /* stdin isn't a tty. something's probably being piped to ag */
     if (!isatty(fileno(stdin))) {
-        opts.search_stdin = 1;
+        opts.search_stream = 1;
     }
 
     /* If we're not outputting to a terminal. change output to:
@@ -260,7 +260,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         opts.color = 0;
         opts.print_break = 1;
         group = 1;
-        opts.search_stdin = 0;
+        opts.search_stream = 0;
     }
 
     if (opts.print_heading == 0 || opts.print_break == 0) {
@@ -278,7 +278,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
 
     skip_group:
 
-    if (opts.search_stdin) {
+    if (opts.search_stream) {
         opts.print_break = 0;
         opts.print_heading = 0;
         opts.print_line_numbers = 0;
