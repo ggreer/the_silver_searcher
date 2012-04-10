@@ -133,7 +133,7 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
     }
 
     if (statbuf.st_mode & S_IFIFO) {
-        log_err("%s is a named pipe. stream searching", file_full_path);
+        log_debug("%s is a named pipe. stream searching", file_full_path);
         pipe = fdopen(fd, "r");
         opts.print_break = 0;
         opts.print_heading = 0;
