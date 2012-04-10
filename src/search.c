@@ -100,6 +100,11 @@ void search_stream(const pcre *re, const pcre_extra *re_extra, FILE *stream, con
     ssize_t line_length = 0;
     size_t line_cap = 0;
 
+    opts.print_break = 0;
+    opts.print_heading = 0;
+    opts.print_line_numbers = 0;
+    opts.search_stream = 1;
+
     while ((line_length = getline(&line, &line_cap, stream)) > 0) {
         search_buf(re, re_extra, line, line_length, path);
     }
@@ -135,10 +140,6 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
     if (statbuf.st_mode & S_IFIFO) {
         log_debug("%s is a named pipe. stream searching", file_full_path);
         pipe = fdopen(fd, "r");
-        opts.print_break = 0;
-        opts.print_heading = 0;
-        opts.print_line_numbers = 0;
-        opts.search_stream = 1;
         search_stream(re, re_extra, pipe, file_full_path);
         fclose(pipe);
     }
