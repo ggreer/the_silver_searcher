@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    if (opts.search_stdin) {
+    if (opts.search_stream) {
         search_stdin(re, re_extra);
     }
     else {
