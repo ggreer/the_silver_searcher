@@ -29,6 +29,7 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
                 const char *buf, const int buf_len,
                 const char *dir_full_path);
 void search_stdin(const pcre *re, const pcre_extra *re_extra);
+void search_stream(const pcre *re, const pcre_extra *re_extra, FILE *stream, const char *path);
 void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_full_path);
 void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, const int depth);
 

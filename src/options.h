@@ -44,7 +44,7 @@ typedef struct {
     int recurse_dirs;
     int search_all_files;
     int search_binary_files;
-    int search_stdin; /* true if tail -F blah | ag */
+    int search_stream; /* true if tail -F blah | ag */
     int search_unrestricted;
     int stats;
     char *query;

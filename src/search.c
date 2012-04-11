@@ -90,14 +90,23 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
     }
 }
 
-/* TODO: this will only match single lines. multi-line regexes silently don't match */
 void search_stdin(const pcre *re, const pcre_extra *re_extra) {
+    search_stream(re, re_extra, stdin, "");
+}
+
+/* TODO: this will only match single lines. multi-line regexes silently don't match */
+void search_stream(const pcre *re, const pcre_extra *re_extra, FILE *stream, const char *path) {
     char *line = NULL;
     ssize_t line_length = 0;
     size_t line_cap = 0;
 
-    while ((line_length = getline(&line, &line_cap, stdin)) > 0) {
-        search_buf(re, re_extra, line, line_length, "");
+    opts.print_break = 0;
+    opts.print_heading = 0;
+    opts.print_line_numbers = 0;
+    opts.search_stream = 1;
+
+    while ((line_length = getline(&line, &line_cap, stream)) > 0) {
+        search_buf(re, re_extra, line, line_length, path);
     }
 
     free(line);
@@ -109,6 +118,7 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
     char *buf = NULL;
     struct stat statbuf;
     int rv = 0;
+    FILE *pipe = NULL;
 
     fd = open(file_full_path, O_RDONLY);
     if (fd < 0) {
@@ -122,20 +132,33 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
         goto cleanup;
     }
 
-    f_len = statbuf.st_size;
-
-    if (f_len == 0) {
-        log_debug("File %s is empty, skipping.", file_full_path);
+    if ((statbuf.st_mode & S_IFMT) == 0) {
+        log_err("%s is not a file. Mode %u. Skipping...", file_full_path, statbuf.st_mode);
         goto cleanup;
     }
 
-    buf = mmap(0, f_len, PROT_READ, MAP_SHARED, fd, 0);
-    if (buf == MAP_FAILED) {
-        log_err("File %s failed to load: %s.", file_full_path, strerror(errno));
-        goto cleanup;
+    if (statbuf.st_mode & S_IFIFO) {
+        log_debug("%s is a named pipe. stream searching", file_full_path);
+        pipe = fdopen(fd, "r");
+        search_stream(re, re_extra, pipe, file_full_path);
+        fclose(pipe);
     }
+    else {
+        f_len = statbuf.st_size;
 
-    search_buf(re, re_extra, buf, (int)f_len, file_full_path);
+        if (f_len == 0) {
+            log_debug("File %s is empty, skipping.", file_full_path);
+            goto cleanup;
+        }
+
+        buf = mmap(0, f_len, PROT_READ, MAP_SHARED, fd, 0);
+        if (buf == MAP_FAILED) {
+            log_err("File %s failed to load: %s.", file_full_path, strerror(errno));
+            goto cleanup;
+        }
+
+        search_buf(re, re_extra, buf, (int)f_len, file_full_path);
+    }
 
     cleanup:
     if (fd != -1) {
