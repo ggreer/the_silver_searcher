@@ -36,7 +36,7 @@ OS X:
 
 For debs, rpms, and static builds, see the [downloads page](https://github.com/ggreer/the_silver_searcher/downloads).
 
-### Building from source ###
+## Building from source ##
 
 1. Install PCRE development libraries:
     * Ubuntu: `apt-get install -y libpcre3-dev`
@@ -57,7 +57,7 @@ It's pretty stable now. Most changes are new features or minor bug fixes, such a
 
 You can use ag with [my fork](https://github.com/ggreer/AckMate) of the popular ackmate plugin, which lets you use both ack and ag for searching in Textmate. You can also move or delete `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and run `ln -s /usr/local/bin/ag "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
 
-### TODO ###
+## TODO ##
 * behave better when matching in files with really long lines
   * maybe say "match found at position X of line N" if line is > 10k chars
 * optimizations
@@ -65,7 +65,7 @@ You can use ag with [my fork](https://github.com/ggreer/AckMate) of the popular 
 * actually get textmate dir patterns working (this requires ruby regexes. not fun)
 * symlink loop detection
 
-### Other stuff you might like ###
+## Other stuff you might like ##
 * [Ack](https://github.com/petdance/ack) - Better than grep
 * [AckMate](https://github.com/protocool/AckMate) - An ack-powered replacement for TextMate's slow built-in search.
 * [ack.vim](https://github.com/mileszs/ack.vim)
