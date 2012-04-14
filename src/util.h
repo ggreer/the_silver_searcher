@@ -2,6 +2,7 @@
 #define UTIL_H
 
 #include <string.h>
+#include <sys/time.h>
 
 #include "config.h"
 
