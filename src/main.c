@@ -13,8 +13,8 @@
 int main(int argc, char **argv) {
     set_log_level(LOG_LEVEL_WARN);
 
-    char *query = NULL;
-    char *path = NULL;
+    char **paths = NULL;
+    int i;
     int pcre_opts = PCRE_MULTILINE;
     int study_opts = 0;
     const char *pcre_err = NULL;
@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
 
     gettimeofday(&(stats.time_start), NULL);
 
-    parse_options(argc, argv, &query, &path);
+    parse_options(argc, argv, &paths);
 
     log_debug("PCRE Version: %s", pcre_version());
 
@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
         generate_skip_lookup(opts.query, opts.query_len, skip_lookup, opts.casing == CASE_SENSITIVE);
     }
     else {
-        re = pcre_compile(query, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
+        re = pcre_compile(opts.query, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
         if (re == NULL) {
             log_err("pcre_compile failed at position %i. Error: %s", pcre_err_offset, pcre_err);
             exit(1);
@@ -68,7 +68,11 @@ int main(int argc, char **argv) {
         search_stdin(re, re_extra);
     }
     else {
-        search_dir(re, re_extra, path, 0);
+        for (i = 0; paths[i] != NULL; i++) {
+            log_debug("searching path %s for %s", paths[i], opts.query);
+            search_dir(re, re_extra, paths[i], 0);
+            free(paths[i]);
+        }
     }
 
     if (opts.stats) {
@@ -82,8 +86,7 @@ int main(int argc, char **argv) {
 
     pcre_free(re);
     pcre_free(re_extra); /* Using pcre_free_study here segfaults on some versions of PCRE */
-    free(query);
-    free(path);
+    free(paths);
     cleanup_ignore_patterns();
 
     return(0);
