@@ -63,6 +63,11 @@ void cleanup_ignore_patterns() {
         free(ignore_patterns[i]);
     }
     free(ignore_patterns);
+
+    for (i = 0; i<ignore_names_len; i++) {
+        free(ignore_names[i]);
+    }
+    free(ignore_names);
 }
 
 /* For loading git/svn/hg ignore patterns */
