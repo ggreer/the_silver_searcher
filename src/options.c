@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <xlocale.h>
 
 #include "config.h"
 #include "options.h"
@@ -73,8 +72,9 @@ void cleanup_options() {
     }
 }
 
-void parse_options(int argc, char **argv, char **query, char **path) {
+void parse_options(int argc, char **argv, char **paths[]) {
     int ch;
+    int i;
     const char *pcre_err = NULL;
     int pcre_err_offset = 0;
     int path_len = 0;
@@ -132,7 +132,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
 
     /* stdin isn't a tty. something's probably being piped to ag */
     if (!isatty(fileno(stdin))) {
-        opts.search_stdin = 1;
+        opts.search_stream = 1;
     }
 
     /* If we're not outputting to a terminal. change output to:
@@ -260,7 +260,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         opts.color = 0;
         opts.print_break = 1;
         group = 1;
-        opts.search_stdin = 0;
+        opts.search_stream = 0;
     }
 
     if (opts.print_heading == 0 || opts.print_break == 0) {
@@ -278,7 +278,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
 
     skip_group:
 
-    if (opts.search_stdin) {
+    if (opts.search_stream) {
         opts.print_break = 0;
         opts.print_heading = 0;
         opts.print_line_numbers = 0;
@@ -287,22 +287,31 @@ void parse_options(int argc, char **argv, char **query, char **path) {
     opts.query = strdup(argv[0]);
     opts.query_len = strlen(opts.query);
 
-    *query = opts.query;
+    log_debug("Query is %s", opts.query);
 
     if (opts.query_len == 0) {
         log_err("Error: No query. What do you want to search for?");
         exit(1);
     }
 
+    char *path = NULL;
     if (argc > 1) {
-      *path = strdup(argv[1]);
-      path_len = strlen(*path);
-      /* kill trailing slash */
-      if (path_len > 0 && (*path)[path_len - 1] == '/') {
-        (*path)[path_len - 1] = '\0';
-      }
+        *paths = malloc(sizeof(char*) * argc);
+        for (i = 1; i < argc; i++) {
+            path = strdup(argv[i]);
+            path_len = strlen(path);
+            /* kill trailing slash */
+            if (path_len > 0 && path[path_len - 1] == '/') {
+              path[path_len - 1] = '\0';
+            }
+            (*paths)[i-1] = path;
+        }
+        (*paths)[i-1] = NULL;
     }
     else {
-      *path = strdup(".");
+        path = strdup(".");
+        *paths = malloc(sizeof(char*) * 2);
+        (*paths)[0] = path;
+        (*paths)[1] = NULL;
     }
 }

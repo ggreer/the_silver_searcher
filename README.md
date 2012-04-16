@@ -7,10 +7,20 @@ An attempt to make something better than ack, which itself is better than grep.
 * It searches through code about 3x-5x faster than ack.
 * It ignores files matched by patterns in your .gitignore and .hgignore.
 * If there are files in your source repo that you don't want to search, just add their patterns to a .agignore file. \*cough\* extern \*cough\*
-* It's written in C instead of perl, the lesser of two evils :)
 * The binary name is 33% shorter than ack!
 
+## How is it so fast? ##
+
+* Searching for literals (no regex) uses [Boyer-Moore-Horspool strstr](http://en.wikipedia.org/wiki/Boyer%E2%80%93Moore%E2%80%93Horspool_algorithm).
+* Files are mmap()ed instead of read into a buffer.
+* If you're building with PCRE 8.21 or greater, regex searches use [the JIT compiler](http://sljit.sourceforge.net/pcre.html).
+* Ag calls pcre_study() before executing the regex on a jillion files.
+* Instead of calling fnmatch() on every pattern in your ignore files, non-regex patterns are loaded into an array and binary searched.
+
+[This blog post](http://geoff.greer.fm/2012/01/23/making-programs-faster-profiling/) gives an idea of how I go about improving performance.
+
 ## Installation ##
+
 Ubuntu:
 
     sudo add-apt-repository ppa:ggreer/ag
@@ -26,7 +36,7 @@ OS X:
 
 For debs, rpms, and static builds, see the [downloads page](https://github.com/ggreer/the_silver_searcher/downloads).
 
-### Building from source ###
+## Building from source ##
 
 1. Install PCRE development libraries:
     * Ubuntu: `apt-get install -y libpcre3-dev`
@@ -39,23 +49,15 @@ For debs, rpms, and static builds, see the [downloads page](https://github.com/g
 
 ## Current development status ##
 
-On the continuum of...
-
-1. Compiles
-2. Runs
-3. Behaves correctly
-4. Behaves correctly and runs fast
-
-...it's somewhere between 2 and 3 right now. Although it's much faster than ack in my benchmarks.
+It's pretty stable now. Most changes are new features or minor bug fixes, such as support for named pipes. It's much faster than ack in my benchmarks.
 
     ack -i SOLR ~/cloudkick/reach  2.89s user 0.77s system 97% cpu 3.765 total
 
     ag -i SOLR ~/cloudkick/reach  0.25s user 0.13s system 94% cpu 0.404 total
 
-You can use this with [my fork](https://github.com/ggreer/AckMate) of the popular ackmate plugin, which lets you use both ack and ag for searching in Textmate. You can also move or delete `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and run `ln -s /usr/local/bin/ag "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
+You can use ag with [my fork](https://github.com/ggreer/AckMate) of the popular ackmate plugin, which lets you use both ack and ag for searching in Textmate. You can also move or delete `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and run `ln -s /usr/local/bin/ag "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
 
-
-### TODO ###
+## TODO ##
 * behave better when matching in files with really long lines
   * maybe say "match found at position X of line N" if line is > 10k chars
 * optimizations
@@ -63,7 +65,7 @@ You can use this with [my fork](https://github.com/ggreer/AckMate) of the popula
 * actually get textmate dir patterns working (this requires ruby regexes. not fun)
 * symlink loop detection
 
-### Other stuff you might like ###
+## Other stuff you might like ##
 * [Ack](https://github.com/petdance/ack) - Better than grep
 * [AckMate](https://github.com/protocool/AckMate) - An ack-powered replacement for TextMate's slow built-in search.
 * [ack.vim](https://github.com/mileszs/ack.vim)

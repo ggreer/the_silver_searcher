@@ -1,7 +1,6 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdio.h>
-#include <xlocale.h>
 #include <stdarg.h>
 #include <strings.h>
 #include <stdlib.h>

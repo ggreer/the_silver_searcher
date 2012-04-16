@@ -44,7 +44,7 @@ typedef struct {
     int recurse_dirs;
     int search_all_files;
     int search_binary_files;
-    int search_stdin; /* true if tail -F blah | ag */
+    int search_stream; /* true if tail -F blah | ag */
     int search_unrestricted;
     int stats;
     char *query;
@@ -55,7 +55,7 @@ typedef struct {
 cli_options opts;
 
 void init_options();
-void parse_options(int argc, char **argv, char **query, char **path);
+void parse_options(int argc, char **argv, char **paths[]);
 void cleanup_options();
 
 void usage();
