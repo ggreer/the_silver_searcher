@@ -163,7 +163,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 set_log_level(LOG_LEVEL_DEBUG);
                 break;
             case 'f':
-                opts.print_filename_only = 1;
+                opts.follow_symlinks = 1;
                 break;
             case 'G':
                 opts.file_search_regex = pcre_compile(optarg, 0, &pcre_err, &pcre_err_offset, NULL);
