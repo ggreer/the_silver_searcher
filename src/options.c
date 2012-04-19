@@ -104,6 +104,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         { "file-search-regex", required_argument, NULL, 'G' },
         { "group", no_argument, &(group), 1 },
         { "nogroup", no_argument, &(group), 0 },
+        { "hidden", no_argument, &(opts.search_hidden_files), 1 },
         { "invert-match", no_argument, &(opts.invert_match), 1 },
         { "nofollow", no_argument, &(opts.follow_symlinks), 0 },
         { "heading", no_argument, &(opts.print_heading), 1 },
@@ -163,7 +164,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 set_log_level(LOG_LEVEL_DEBUG);
                 break;
             case 'f':
-                opts.print_filename_only = 1;
+                opts.follow_symlinks = 1;
                 break;
             case 'G':
                 opts.file_search_regex = pcre_compile(optarg, 0, &pcre_err, &pcre_err_offset, NULL);
@@ -196,6 +197,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
             case 'u':
                 opts.search_binary_files = 1;
                 opts.search_unrestricted = 1;
+                opts.search_hidden_files = 1;
                 break;
             case 'v':
                 opts.invert_match = 1;

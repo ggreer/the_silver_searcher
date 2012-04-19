@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "AG" "1" "March 2012" "" ""
+.TH "AG" "1" "April 2012" "" ""
 .
 .SH "NAME"
 \fBag\fR \- The Silver Searcher\. Like ack, but faster\.
@@ -54,6 +54,9 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 \fB\-G\fR, \fB\-\-file\-search\-regex PATTERN\fR: Only search filenames matching PATTERN\.
 .
 .IP "\(bu" 4
+\fB\-\-hidden\fR: Search hidden files\. This option obeys ignore files\.
+.
+.IP "\(bu" 4
 \fB\-i\fR, \fB\-\-ignore\-case\fR
 .
 .IP "\(bu" 4
@@ -86,7 +89,7 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 .IP "" 0
 .
 .SH "IGNORING FILES"
-Ag will ignore files matched by patterns in \.gitignore, \.hgignore, or \.aginore\. Ag also ignores binary files by default\.
+Ag will ignore files matched by patterns in \.gitignore, \.hgignore, or \.agignore\. Ag also ignores binary files by default\.
 .
 .SH "EXAMPLES"
 \fBag printf\fR: Find matches for "printf" in the current directory\.
