@@ -36,6 +36,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `--[no]group`
   * `-G`, `--file-search-regex PATTERN`:
     Only search filenames matching PATTERN.
+  * `--hidden`:
+    Search hidden files. This option obeys ignore files.
   * `-i`, `--ignore-case`
   * `--[no]heading`
   * `-l --files-with-matches`:
