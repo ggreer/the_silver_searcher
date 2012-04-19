@@ -37,19 +37,19 @@ void print_binary_file_matches(const char* path) {
 }
 
 /* TODO: doesn't work for matches across lines */
-void print_file_matches(const char* path, const char* buf, const long buf_len, const match matches[], const long matches_len) {
-    long line = 1;
+void print_file_matches(const char* path, const char* buf, const ulong buf_len, const match matches[], const ulong matches_len) {
+    ulong line = 1;
     char **context_prev_lines = NULL;
-    long prev_line = 0;
-    long last_prev_line = 0;
-    long prev_line_offset = 0;
-    long cur_match = 0;
+    ulong prev_line = 0;
+    ulong last_prev_line = 0;
+    ulong prev_line_offset = 0;
+    ulong cur_match = 0;
     /* TODO the line below contains a terrible hack */
-    long lines_since_last_match = 1000000; /* if I initialize this to INT_MAX it'll overflow */
+    ulong lines_since_last_match = 1000000; /* if I initialize this to INT_MAX it'll overflow */
     long lines_to_print = 0;
-    long last_printed_match = 0;
+    ulong last_printed_match = 0;
     char sep = '-';
-    long i, j;
+    ulong i, j;
 
     if (opts.ackmate) {
         sep = ':';
@@ -82,7 +82,7 @@ void print_file_matches(const char* path, const char* buf, const long buf_len, c
                 if (lines_to_print < 0) {
                     lines_to_print = 0;
                 }
-                else if (lines_to_print > opts.before) {
+                else if (lines_to_print > (long) opts.before) {
                     lines_to_print = opts.before;
                 }
 
@@ -120,7 +120,7 @@ void print_file_matches(const char* path, const char* buf, const long buf_len, c
                     /* print headers for ackmate to parse */
                     print_line_number(line, ';');
                     for (; last_printed_match < cur_match; last_printed_match++) {
-                        printf("%lu %i",
+                        printf("%lu %lu",
                               (matches[last_printed_match].start - prev_line_offset),
                               (matches[last_printed_match].end - matches[last_printed_match].start)
                         );
@@ -185,7 +185,7 @@ void print_file_matches(const char* path, const char* buf, const long buf_len, c
     free(context_prev_lines);
 }
 
-void print_line_number(const long line, const char sep) {
+void print_line_number(const ulong line, const char sep) {
     if (!opts.print_line_numbers) {
         return;
     }

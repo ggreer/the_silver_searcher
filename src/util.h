@@ -6,15 +6,25 @@
 
 #include "config.h"
 
+#ifndef TRUE
+#define TRUE 1
+#endif
+
+#ifndef FALSE
+#define FALSE 0
+#endif
+
+typedef unsigned long ulong;
+
 typedef struct {
-    int start; /* Byte at which the match starts */
-    int end; /* and where it ends */
+    ulong start; /* Byte at which the match starts */
+    ulong end; /* and where it ends */
 } match;
 
 typedef struct {
-    long total_bytes;
-    long total_files;
-    long total_matches;
+    ulong total_bytes;
+    ulong total_files;
+    ulong total_matches;
     struct timeval time_start;
     struct timeval time_end;
 } ag_stats;
