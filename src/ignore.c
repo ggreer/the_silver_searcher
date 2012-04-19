@@ -143,7 +143,7 @@ int filename_filter(struct dirent *dir) {
     }
 
     int match_pos = binary_search(dir->d_name, ignore_names, 0, ignore_names_len);
-    if (match_pos > 0) {
+    if (match_pos >= 0) {
         log_debug("file %s ignored because name matches static pattern %s", dir->d_name, ignore_names[match_pos]);
         return(0);
     }
