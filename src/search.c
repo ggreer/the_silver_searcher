@@ -1,7 +1,7 @@
 #include "search.h"
 
 void search_buf(const pcre *re, const pcre_extra *re_extra,
-                const char *buf, const long buf_len,
+                const char *buf, const off_t buf_len,
                 const char *dir_full_path) {
     int binary = 0;
     long buf_offset = 0;
