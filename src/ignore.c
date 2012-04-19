@@ -41,6 +41,7 @@ void add_ignore_pattern(const char* pattern) {
         ignore_patterns_len++;
         ignore_patterns = realloc(ignore_patterns, (ignore_patterns_len) * sizeof(char**));
         ignore_patterns[ignore_patterns_len - 1] = strdup(pattern);
+        log_debug("added regex ignore pattern %s", pattern);
     }
     else {
         /* a balanced binary tree is best for performance, but I'm lazy */
@@ -53,8 +54,8 @@ void add_ignore_pattern(const char* pattern) {
             ignore_names[i] = ignore_names[i-1];
         }
         ignore_names[i] = strdup(pattern);
+        log_debug("added literal ignore pattern %s", pattern);
     }
-    log_debug("added ignore pattern %s", pattern);
 }
 
 void cleanup_ignore_patterns() {
