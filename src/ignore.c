@@ -124,7 +124,7 @@ int filename_filter(struct dirent *dir) {
     int i;
     if(strcmp(filename, "_sgbak")==0)
     {
-      printf("File %s ignored because it's an _sgbak file", dir->d_name);
+      log_debug("File %s ignored because it's an _sgbak file", dir->d_name);
       return(0);
     }
     if (!opts.follow_symlinks && dir->d_type == DT_LNK) {
