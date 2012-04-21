@@ -122,9 +122,13 @@ int filename_filter(struct dirent *dir) {
     char *pattern = NULL;
     int rc = 0;
     int i;
-
+    if(strcmp(filename, "_sgbak")==0)
+    {
+      log_debug("File %s ignored because it's an _sgbak file", dir->d_name);
+      return(0);
+    }
     if (!opts.follow_symlinks && dir->d_type == DT_LNK) {
-        log_debug("File %s ignored becaused it's a symlink", dir->d_name);
+        log_debug("File %s ignored because it's a symlink", dir->d_name);
         return(0);
     }
 
