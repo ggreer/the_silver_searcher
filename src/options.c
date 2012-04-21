@@ -118,6 +118,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         { "max-count", required_argument, NULL, 'm' },
         { "print-long-lines", no_argument, &(opts.print_long_lines), 1 },
         { "search-binary", no_argument, &(opts.search_binary_files), 1 },
+        { "search-files", no_argument, &(opts.search_stream), 0 },
         { "smart-case", no_argument, &useless, 0 },
         { "nosmart-case", no_argument, &useless, 0 },
         { "stats", no_argument, &(opts.stats), 1 },
