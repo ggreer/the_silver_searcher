@@ -1,4 +1,4 @@
-AC_INIT([the_silver_searcher], [0.6], [https://github.com/ggreer/the_silver_searcher/issues], [the_silver_searcher], [https://github.com/ggreer/the_silver_searcher])
+AC_INIT([the_silver_searcher], [0.7], [https://github.com/ggreer/the_silver_searcher/issues], [the_silver_searcher], [https://github.com/ggreer/the_silver_searcher])
 AC_PROG_CC
 AC_PREREQ([2.59])
 
