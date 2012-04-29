@@ -11,7 +11,8 @@ m4_ifdef(
 
 PKG_CHECK_MODULES([PCRE], [libpcre])
 
-CFLAGS="$CFLAGS $PCRE_CFLAGS -Wall -Wextra -std=c89 -D_GNU_SOURCE -g"
+# Run CFLAGS="-g" ./configure if you want debug symbols
+CFLAGS="$CFLAGS $PCRE_CFLAGS -Wall -Wextra -std=c89 -D_GNU_SOURCE"
 LDFLAGS="$LDFLAGS"
 
 AC_CHECK_DECL([PCRE_CONFIG_JIT], [AC_DEFINE([USE_PCRE_JIT], [], [Use PCRE JIT])], [], [#include <pcre.h>])
