@@ -1,5 +1,6 @@
 AC_INIT([the_silver_searcher], [0.7], [https://github.com/ggreer/the_silver_searcher/issues], [the_silver_searcher], [https://github.com/ggreer/the_silver_searcher])
 AC_PROG_CC
+AM_PROG_CC_C_O
 AC_PREREQ([2.59])
 
 AM_INIT_AUTOMAKE([no-define foreign subdir-objects])
@@ -11,7 +12,8 @@ m4_ifdef(
 
 PKG_CHECK_MODULES([PCRE], [libpcre])
 
-CFLAGS="$CFLAGS $PCRE_CFLAGS -Wall -Wextra -std=c89 -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -g"
+# Run CFLAGS="-g" ./configure if you want debug symbols
+CFLAGS="$CFLAGS $PCRE_CFLAGS -Wall -Wextra -std=c89 -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64"
 LDFLAGS="$LDFLAGS"
 
 AC_CHECK_DECL([PCRE_CONFIG_JIT], [AC_DEFINE([USE_PCRE_JIT], [], [Use PCRE JIT])], [], [#include <pcre.h>])
