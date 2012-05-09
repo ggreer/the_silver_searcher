@@ -24,6 +24,7 @@ An attempt to make something better than ack, which itself is better than grep.
 Ubuntu:
 
     sudo add-apt-repository ppa:ggreer/ag
+    sudo apt-get update
     sudo apt-get install the-silver-searcher
 
 Gentoo:
