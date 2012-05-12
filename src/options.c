@@ -5,6 +5,7 @@
 #include <unistd.h>
 
 #include "config.h"
+#include "ignore.h"
 #include "options.h"
 #include "log.h"
 #include "util.h"
@@ -83,6 +84,8 @@ void parse_options(int argc, char **argv, char **paths[]) {
     int help = 0;
     int version = 0;
     int opt_index = 0;
+    const char *home_dir = getenv("HOME");
+    char *ignore_file_path = NULL;
 
     init_options();
 
@@ -252,6 +255,20 @@ void parse_options(int argc, char **argv, char **paths[]) {
     if (argc == 0) {
         log_err("What do you want to search for?");
         exit(1);
+    }
+
+    if (home_dir) {
+        log_debug("Found user's home dir: %s", home_dir);
+        ignore_file_path = malloc((size_t)(strlen(home_dir) + 11));
+        strcpy(ignore_file_path, home_dir);
+        strcat(ignore_file_path, "/.agignore");
+
+        if(access(ignore_file_path, R_OK) != -1) {
+            log_debug("Reading ignore file %s", ignore_file_path);
+            load_ignore_patterns(ignore_file_path);
+        }
+
+        free(ignore_file_path);
     }
 
     if (opts.context > 0) {

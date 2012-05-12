@@ -68,22 +68,6 @@ int main(int argc, char **argv) {
         search_stdin(re, re_extra);
     }
     else {
-        /* Support a global ignore file */
-        char* p=getenv("HOME");
-        char* ignore_file_path=NULL;
-
-        if(p) {
-            log_debug("Found user's home dir %s" ,p);
-            ignore_file_path=malloc((size_t)(strlen(p)+11));
-            strcpy(ignore_file_path,p);
-            strcat(ignore_file_path,"/.agignore");
-            if(-1!=access(ignore_file_path,R_OK)) {
-                log_debug("Reading ignore file %s", ignore_file_path);
-                load_ignore_patterns(ignore_file_path);	
-            }
-            free(ignore_file_path);
-        }
-	
         for (i = 0; paths[i] != NULL; i++) {
             log_debug("searching path %s for %s", paths[i], opts.query);
             search_dir(re, re_extra, paths[i], 0);
