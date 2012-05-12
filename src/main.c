@@ -89,5 +89,5 @@ int main(int argc, char **argv) {
     free(paths);
     cleanup_ignore_patterns();
 
-    return(0);
+    return 0;
 }

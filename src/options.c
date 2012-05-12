@@ -210,8 +210,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 version = 1;
                 break;
             case 0: /* Long option */
-                if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0)
-                {
+                if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0) {
                     opts.ackmate_dir_filter = pcre_compile(optarg, 0, &pcre_err, &pcre_err_offset, NULL);
                     if (opts.ackmate_dir_filter == NULL) {
                         log_err("pcre_compile of ackmate-dir-filter failed at position %i. Error: %s", pcre_err_offset, pcre_err);

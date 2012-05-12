@@ -31,19 +31,19 @@ char* boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, c
 
     /* It's impossible to match a larger string */
     if (f_len > s_len) {
-        return(NULL);
+        return NULL;
     }
 
     while (pos <= (s_len - f_len)) {
         for (i = f_len - 1; s[pos + i] == find[i]; i--) {
             if (i == 0) {
-                return((char *)(&(s[pos])));
+                return (char *)(&(s[pos]));
             }
         }
         pos += skip_lookup[(unsigned char)s[pos + f_len - 1]];
     }
 
-    return(NULL);
+    return NULL;
 }
 
 /* Copy-pasted from above. Yes I know this is bad. One day I might even fix it. */
@@ -53,19 +53,19 @@ char* boyer_moore_strncasestr(const char *s, const char *find, const size_t s_le
 
     /* It's impossible to match a larger string */
     if (f_len > s_len) {
-        return(NULL);
+        return NULL;
     }
 
     while (pos <= (s_len - f_len)) {
         for (i = f_len - 1; tolower(s[pos + i]) == tolower(find[i]); i--) {
             if (i == 0) {
-                return((char *)(&(s[pos])));
+                return (char *)(&(s[pos]));
             }
         }
         pos += skip_lookup[(unsigned char)tolower(s[pos + f_len - 1])];
     }
 
-    return(NULL);
+    return NULL;
 }
 
 int invert_matches(match matches[], int matches_len, const int buf_len) {
@@ -78,7 +78,7 @@ int invert_matches(match matches[], int matches_len, const int buf_len) {
         matches[i].start = i == 0 ? 0 : matches[i-1].end;
     }
 
-    return(matches_len + 1);
+    return (matches_len + 1);
 }
 
 /* This function is very hot. It's called on every file. */
@@ -89,25 +89,25 @@ int is_binary(const void* buf, const int buf_len) {
     int i;
 
     if (buf_len == 0) {
-        return(0);
+        return 0;
     }
 
     for (i = 0; i < buf_len && i < 1024; i++) {
         if (buf_c[i] == '\0') {
             /* NULL char. It's binary */
-            return(1);
+            return 1;
         }
         else if ((buf_c[i] < 7 || buf_c[i] > 14) && (buf_c[i] < 32 || buf_c[i] > 127)) {
             suspicious_bytes++;
             /* disk IO is so slow that it's worthwhile to do this calculation after every suspicious byte */
             /* even on a 1.6Ghz Atom with an intel 320 SSD */
             if ((suspicious_bytes * 100) / total_bytes > 10) {
-                return(1);
+                return 1;
             }
         }
     }
 
-    return(0);
+    return 0;
 }
 
 int has_chars(const char* s, const char* chars) {
@@ -115,12 +115,12 @@ int has_chars(const char* s, const char* chars) {
     for (i = 0; s[i] != '\0'; i++) {
         for (j = 0; chars[j] != '\0'; j++) {
             if (s[i] == chars[j]) {
-                return(1);
+                return 1;
             }
         }
     }
 
-    return(0);
+    return 0;
 }
 
 int is_regex(const char* query) {
@@ -140,7 +140,7 @@ int is_regex(const char* query) {
         '\0'
     };
 
-    return(has_chars(query, regex_chars));
+    return (has_chars(query, regex_chars));
 }
 
 int is_fnmatch(const char* filename) {
@@ -153,7 +153,7 @@ int is_fnmatch(const char* filename) {
         '\0'
     };
 
-    return(has_chars(filename, fnmatch_chars));
+    return (has_chars(filename, fnmatch_chars));
 }
 
 int binary_search(const char* needle, char **haystack, int start, int end) {
@@ -246,15 +246,21 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
     char *srcln = NULL;
     char *newlnptr = NULL;
 
-    if (!(srcln = fgetln(stream, &len))) /* get line, bail on error */
+    /* get line, bail on error */
+    if (!(srcln = fgetln(stream, &len))) {
         return -1;
+    }
 
-    if (len >= *n) { /* line is too big for buffer, must realloc */
-        if(!(newlnptr = realloc(*lineptr, len * 2))) /* double the buffer, bail on error */
-          return -1;
-        *lineptr = newlnptr; 
+    if (len >= *n) {
+        /* line is too big for buffer, must realloc */
+        /* double the buffer, bail on error */
+        if (!(newlnptr = realloc(*lineptr, len * 2))) {
+            return -1;
+        }
+        *lineptr = newlnptr;
         *n = len * 2 ;
     }
+
     memcpy(*lineptr, srcln, len);
     return len;
 }
