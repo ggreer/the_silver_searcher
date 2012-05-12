@@ -259,14 +259,13 @@ void parse_options(int argc, char **argv, char **paths[]) {
 
     if (home_dir) {
         log_debug("Found user's home dir: %s", home_dir);
-        ignore_file_path = malloc((size_t)(strlen(home_dir) + 11));
-        strcpy(ignore_file_path, home_dir);
-        strcat(ignore_file_path, "/.agignore");
+        size_t path_length = (size_t)(strlen(home_dir) + 11); /* strlen("/.agignore") */
+        ignore_file_path = malloc(path_length);
+        strlcpy(ignore_file_path, home_dir, path_length);
+        strlcat(ignore_file_path, "/", path_length);
+        strlcat(ignore_file_path, ignore_pattern_files[0], path_length);
 
-        if(access(ignore_file_path, R_OK) != -1) {
-            log_debug("Reading ignore file %s", ignore_file_path);
-            load_ignore_patterns(ignore_file_path);
-        }
+        load_ignore_patterns(ignore_file_path);
 
         free(ignore_file_path);
     }
