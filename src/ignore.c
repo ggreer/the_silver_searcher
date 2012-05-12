@@ -76,7 +76,7 @@ void load_ignore_patterns(const char *ignore_filename) {
     FILE *fp = NULL;
     fp = fopen(ignore_filename, "r");
     if (fp == NULL) {
-        log_err("Skipping ignore file %s", ignore_filename);
+        log_debug("Skipping ignore file %s", ignore_filename);
         return;
     }
 
