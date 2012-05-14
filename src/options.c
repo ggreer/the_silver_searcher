@@ -258,7 +258,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
 
     if (home_dir) {
         log_debug("Found user's home dir: %s", home_dir);
-        size_t path_length = (size_t)(strlen(home_dir) + strlen(ignore_pattern_files[0]));
+        size_t path_length = (size_t)(strlen(home_dir) + strlen(ignore_pattern_files[0])+2);
         ignore_file_path = malloc(path_length);
         strlcpy(ignore_file_path, home_dir, path_length);
         strlcat(ignore_file_path, "/", path_length);
