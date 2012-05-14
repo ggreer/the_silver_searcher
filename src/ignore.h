@@ -4,6 +4,9 @@
 #ifndef IGNORE_H
 #define IGNORE_H
 
+extern const char *evil_hardcoded_ignore_files[];
+extern const char *ignore_pattern_files[];
+
 void add_ignore_pattern(const char* pattern);
 
 void cleanup_ignore_patterns();

@@ -5,6 +5,7 @@
 #include <unistd.h>
 
 #include "config.h"
+#include "ignore.h"
 #include "options.h"
 #include "log.h"
 #include "util.h"
@@ -83,6 +84,8 @@ void parse_options(int argc, char **argv, char **paths[]) {
     int help = 0;
     int version = 0;
     int opt_index = 0;
+    const char *home_dir = getenv("HOME");
+    char *ignore_file_path = NULL;
 
     init_options();
 
@@ -207,8 +210,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 version = 1;
                 break;
             case 0: /* Long option */
-                if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0)
-                {
+                if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0) {
                     opts.ackmate_dir_filter = pcre_compile(optarg, 0, &pcre_err, &pcre_err_offset, NULL);
                     if (opts.ackmate_dir_filter == NULL) {
                         log_err("pcre_compile of ackmate-dir-filter failed at position %i. Error: %s", pcre_err_offset, pcre_err);
@@ -252,6 +254,19 @@ void parse_options(int argc, char **argv, char **paths[]) {
     if (argc == 0) {
         log_err("What do you want to search for?");
         exit(1);
+    }
+
+    if (home_dir) {
+        log_debug("Found user's home dir: %s", home_dir);
+        size_t path_length = (size_t)(strlen(home_dir) + strlen(ignore_pattern_files[0]));
+        ignore_file_path = malloc(path_length);
+        strlcpy(ignore_file_path, home_dir, path_length);
+        strlcat(ignore_file_path, "/", path_length);
+        strlcat(ignore_file_path, ignore_pattern_files[0], path_length);
+
+        load_ignore_patterns(ignore_file_path);
+
+        free(ignore_file_path);
     }
 
     if (opts.context > 0) {
