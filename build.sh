@@ -1,6 +1,8 @@
 #!/bin/sh
 
 AC_SEARCH_OPTS=""
+# For those of us with pkg-config and other tools in /usr/local
+PATH=$PATH:/usr/local/bin
 
 # This is to make life easier for people who installed pkg-config in /usr/local
 # but have autoconf/make/etc in /usr/. AKA most mac users
