@@ -313,6 +313,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
     }
 
     char *path = NULL;
+    opts.paths_len = argc - 1;
     if (argc > 1) {
         *paths = malloc(sizeof(char*) * argc);
         for (i = 1; i < argc; i++) {

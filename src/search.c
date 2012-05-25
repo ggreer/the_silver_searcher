@@ -222,7 +222,9 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
         if (errno == ENOTDIR) {
             /* Not a directory. Probably a file. */
             /* If we're only searching one file, don't print the filename header at the top. */
-            opts.print_heading = depth == 0 ? -1 : opts.print_heading;
+            if (depth == 0 && opts.paths_len == 1) {
+                opts.print_heading = -1;
+            }
             search_file(re, re_extra, path);
             return;
         }
