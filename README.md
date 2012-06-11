@@ -29,7 +29,7 @@ Ubuntu 12.04+:
     sudo apt-get update
     sudo apt-get install the-silver-searcher
 
-If you get the error `-bash: /usr/bin/ag: No such file or directory`, congratulations, apt managed to install the i386 version on an x86-64 system. This is Launchpad's fault. It sometimes doesn't build 64-bit versions of packages. To fix this issue, you'll have to `apt-get install ia32-libs` or `apt-get purge the-silver-searcher` and build from source.
+If you get the error `-bash: /usr/bin/ag: No such file or directory`, congratulations, apt managed to install the i386 version on an x86-64 system. To fix this issue, you'll have to `apt-get install ia32-libs` or `apt-get purge the-silver-searcher` and build from source.
 
 Gentoo:
 
