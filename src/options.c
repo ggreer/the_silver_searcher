@@ -119,6 +119,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         { "literal", no_argument, &(opts.literal), 1 },
         { "match", no_argument, &useless, 0 },
         { "max-count", required_argument, NULL, 'm' },
+        { "parallel", no_argument, &(opts.parallel), 1},
         { "print-long-lines", no_argument, &(opts.print_long_lines), 1 },
         { "search-binary", no_argument, &(opts.search_binary_files), 1 },
         { "search-files", no_argument, &(opts.search_stream), 0 },
@@ -278,6 +279,10 @@ void parse_options(int argc, char **argv, char **paths[]) {
         opts.color = 0;
         opts.print_break = 1;
         group = 1;
+        opts.search_stream = 0;
+    }
+
+    if (opts.parallel) {
         opts.search_stream = 0;
     }
 
