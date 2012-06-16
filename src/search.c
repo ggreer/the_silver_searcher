@@ -97,7 +97,7 @@ void search_stdin(const pcre *re, const pcre_extra *re_extra) {
 /* TODO: this will only match single lines. multi-line regexes silently don't match */
 void search_stream(const pcre *re, const pcre_extra *re_extra, FILE *stream, const char *path) {
     char *line = NULL;
-    ssize_t line_length = 0;
+    ssize_t line_len = 0;
     size_t line_cap = 0;
 
     opts.print_break = 0;
@@ -105,8 +105,8 @@ void search_stream(const pcre *re, const pcre_extra *re_extra, FILE *stream, con
     opts.print_line_numbers = 0;
     opts.search_stream = 1;
 
-    while ((line_length = getline(&line, &line_cap, stream)) > 0) {
-        search_buf(re, re_extra, line, line_length, path);
+    while ((line_len = getline(&line, &line_cap, stream)) > 0) {
+        search_buf(re, re_extra, line, line_len, path);
     }
 
     free(line);
@@ -179,7 +179,7 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
     off_t f_len = 0;
     char *buf = NULL;
     char *dir_full_path = NULL;
-    size_t path_length = 0;
+    size_t path_len = 0;
     int i;
 
     /* find agignore/gitignore/hgignore/etc files to load ignore patterns from */
@@ -191,11 +191,11 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
     if (results > 0) {
         for (i = 0; i < results; i++) {
             dir = dir_list[i];
-            path_length = (size_t)(strlen(path) + strlen(dir->d_name) + 2); /* 2 for slash and null char */
-            dir_full_path = malloc(path_length);
-            strlcpy(dir_full_path, path, path_length);
-            strlcat(dir_full_path, "/", path_length);
-            strlcat(dir_full_path, dir->d_name, path_length);
+            path_len = (size_t)(strlen(path) + strlen(dir->d_name) + 2); /* 2 for slash and null char */
+            dir_full_path = malloc(path_len);
+            strlcpy(dir_full_path, path, path_len);
+            strlcat(dir_full_path, "/", path_len);
+            strlcat(dir_full_path, dir->d_name, path_len);
             load_ignore_patterns(dir_full_path);
             free(dir);
             dir = NULL;
@@ -241,11 +241,11 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
     for (i = 0; i < results; i++) {
         dir = dir_list[i];
         /* TODO: this is copy-pasted from about 30 lines above */
-        path_length = (size_t)(strlen(path) + strlen(dir->d_name) + 2); /* 2 for slash and null char */
-        dir_full_path = malloc(path_length);
-        strlcpy(dir_full_path, path, path_length);
-        strlcat(dir_full_path, "/", path_length);
-        strlcat(dir_full_path, dir->d_name, path_length);
+        path_len = (size_t)(strlen(path) + strlen(dir->d_name) + 2); /* 2 for slash and null char */
+        dir_full_path = malloc(path_len);
+        strlcpy(dir_full_path, path, path_len);
+        strlcat(dir_full_path, "/", path_len);
+        strlcat(dir_full_path, dir->d_name, path_len);
 
         /* Some filesystems, e.g. ReiserFS, always return a type DT_UNKNOWN from readdir or scandir. */
         /* Call lstat if we find DT_UNKNOWN to get the information we need. */
