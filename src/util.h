@@ -6,6 +6,14 @@
 
 #include "config.h"
 
+#ifndef TRUE
+#define TRUE 1
+#endif
+
+#ifndef FALSE
+#define FALSE 0
+#endif
+
 typedef struct {
     int start; /* Byte at which the match starts */
     int end; /* and where it ends */

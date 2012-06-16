@@ -4,13 +4,7 @@
 #include <getopt.h>
 #include <pcre.h>
 
-#ifndef TRUE
-#define TRUE 1
-#endif
-
-#ifndef FALSE
-#define FALSE 0
-#endif
+#include "util.h"
 
 enum case_behavior {
     CASE_SENSITIVE,
