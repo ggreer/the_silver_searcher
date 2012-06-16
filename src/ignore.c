@@ -115,7 +115,7 @@ int ignorefile_filter(struct dirent *dir) {
     return 0;
 }
 
-/* this function is REALLY HOT. It gets called for every file */
+/* This function is REALLY HOT. It gets called for every file */
 int filename_filter(struct dirent *dir) {
     const char *filename = dir->d_name;
     int match_pos;
