@@ -119,6 +119,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         { "literal", no_argument, &(opts.literal), 1 },
         { "match", no_argument, &useless, 0 },
         { "max-count", required_argument, NULL, 'm' },
+        { "parallel", no_argument, &(opts.parallel), 1},
         { "print-long-lines", no_argument, &(opts.print_long_lines), 1 },
         { "search-binary", no_argument, &(opts.search_binary_files), 1 },
         { "search-files", no_argument, &(opts.search_stream), 0 },
@@ -258,7 +259,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
 
     if (home_dir) {
         log_debug("Found user's home dir: %s", home_dir);
-        size_t path_length = (size_t)(strlen(home_dir) + strlen(ignore_pattern_files[0]));
+        size_t path_length = (size_t)(strlen(home_dir) + strlen(ignore_pattern_files[0]) + 2);
         ignore_file_path = malloc(path_length);
         strlcpy(ignore_file_path, home_dir, path_length);
         strlcat(ignore_file_path, "/", path_length);
@@ -278,6 +279,10 @@ void parse_options(int argc, char **argv, char **paths[]) {
         opts.color = 0;
         opts.print_break = 1;
         group = 1;
+        opts.search_stream = 0;
+    }
+
+    if (opts.parallel) {
         opts.search_stream = 0;
     }
 
@@ -313,6 +318,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
     }
 
     char *path = NULL;
+    opts.paths_len = argc - 1;
     if (argc > 1) {
         *paths = malloc(sizeof(char*) * argc);
         for (i = 1; i < argc; i++) {

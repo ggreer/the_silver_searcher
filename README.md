@@ -21,11 +21,15 @@ An attempt to make something better than ack, which itself is better than grep.
 
 ## Installation ##
 
-Ubuntu:
+Ubuntu 12.04+:
+
+[Add the PPA](https://help.ubuntu.com/community/Repositories/Ubuntu#Adding_PPAs). Make sure you have `python-software-properties` installed, then:
 
     sudo add-apt-repository ppa:ggreer/ag
     sudo apt-get update
     sudo apt-get install the-silver-searcher
+
+If you get the error `-bash: /usr/bin/ag: No such file or directory`, congratulations, apt managed to install the i386 version on an x86-64 system. To fix this issue, you'll have to `apt-get install ia32-libs` or `apt-get purge the-silver-searcher` and build from source.
 
 Gentoo:
 

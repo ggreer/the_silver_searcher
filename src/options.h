@@ -44,6 +44,8 @@ typedef struct {
     int stats;
     char *query;
     int query_len;
+    int paths_len;
+    int parallel;
 } cli_options;
 
 /* global options. parse_options gives it sane values, everything else reads from it */

@@ -9,6 +9,7 @@ autom4te.cache
 cachegrind.out.*
 callgrind.out.*
 clang_output_*
+compile
 config.log
 config.status
 configure
