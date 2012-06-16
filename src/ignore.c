@@ -130,7 +130,7 @@ int filename_filter(struct dirent *dir) {
 
     for (i = 0; evil_hardcoded_ignore_files[i] != NULL; i++) {
         if (strcmp(filename, evil_hardcoded_ignore_files[i]) == 0) {
-            log_debug("file %s ignored because of name", filename);
+            log_debug("file %s ignored because it was in evil_hardcoded_ignore_files", filename);
             return 0;
         }
     }
