@@ -139,7 +139,7 @@ int ignorefile_filter(struct dirent *dir) {
             return 1;
         }
         else if (strcmp(SVR_DIR, dir->d_name) == 0) {
-            log_err("svn ignore pattern matched for %s", dir->d_name);
+            log_debug("svn ignore pattern matched for %s", dir->d_name);
             load_svn_ignore_patterns(dir->d_name);
             return 1;
         }
