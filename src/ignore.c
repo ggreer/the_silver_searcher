@@ -161,7 +161,7 @@ int filename_filter(struct dirent *dir) {
         /* we just care about the match, not where the matches are */
         rc = pcre_exec(opts.ackmate_dir_filter, NULL, dir->d_name, strlen(dir->d_name), 0, 0, NULL, 0);
         if (rc >= 0) {
-            log_debug("file %s ignored because name ackmate dir filter pattern", dir->d_name);
+            log_debug("file %s ignored because name matches ackmate dir filter pattern", dir->d_name);
             return 0;
         }
     }
