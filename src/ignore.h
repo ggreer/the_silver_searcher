@@ -4,6 +4,9 @@
 #ifndef IGNORE_H
 #define IGNORE_H
 
+#define SVR_DIR_PROP_BASE ".svn/dir-prop-base"
+#define SVR_DIR ".svn"
+
 extern const char *evil_hardcoded_ignore_files[];
 extern const char *ignore_pattern_files[];
 
@@ -12,6 +15,7 @@ void add_ignore_pattern(const char* pattern);
 void cleanup_ignore_patterns();
 
 void load_ignore_patterns(const char *ignore_filename);
+void load_svn_ignore_patterns(const char *path);
 
 int ignorefile_filter(struct dirent *dir);
 int filename_filter(struct dirent *dir);
