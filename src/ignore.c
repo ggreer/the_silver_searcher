@@ -138,12 +138,14 @@ int ignorefile_filter(struct dirent *dir) {
             log_debug("ignore pattern matched for %s", dir->d_name);
             return 1;
         }
-        else if (strcmp(SVR_DIR, dir->d_name) == 0) {
-            log_debug("svn ignore pattern matched for %s", dir->d_name);
-            load_svn_ignore_patterns(dir->d_name);
-            return 1;
-        }
     }
+
+    if (strcmp(SVR_DIR, dir->d_name) == 0) {
+        log_debug("svn ignore pattern matched for %s", dir->d_name);
+        load_svn_ignore_patterns(dir->d_name);
+        return 1;
+    }
+
     return 0;
 }
 
