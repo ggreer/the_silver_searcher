@@ -71,6 +71,33 @@ void cleanup_ignore_patterns() {
     free(ignore_names);
 }
 
+void load_svn_ignore_patterns(const char *path) {
+    int key_len;
+    FILE *fp = NULL;
+    char *dir_prop_base = malloc(strlen(path) + strlen(SVR_DIR_PROP_BASE) + 1);
+    strlcat(dir_prop_base, path, strlen(SVR_DIR_PROP_BASE));
+
+    fp = fopen(dir_prop_base, "r");
+    if (fp == NULL) {
+        log_debug("Skipping svn ignore file %s", dir_prop_base);
+        return;
+    }
+
+    char *line = NULL;
+    ssize_t line_len = 0;
+    size_t line_cap = 0;
+    char *entry;
+
+    while (fscanf(fp, "K %i", &key_len) == 1) {
+        line_len = getline(&line, &line_cap, fp);
+        
+        add_ignore_pattern(entry);
+    }
+
+
+    fclose(fp);
+}
+
 /* For loading git/svn/hg ignore patterns */
 void load_ignore_patterns(const char *ignore_filename) {
     FILE *fp = NULL;
@@ -109,6 +136,11 @@ int ignorefile_filter(struct dirent *dir) {
     for (i = 0; ignore_pattern_files[i] != NULL; i++) {
         if (strcmp(ignore_pattern_files[i], dir->d_name) == 0) {
             log_debug("ignore pattern matched for %s", dir->d_name);
+            return 1;
+        }
+        else if (strcmp(SVR_DIR, dir->d_name) == 0) {
+            log_err("svn ignore pattern matched for %s", dir->d_name);
+            load_svn_ignore_patterns(dir->d_name);
             return 1;
         }
     }
