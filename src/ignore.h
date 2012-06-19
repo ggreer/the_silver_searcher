@@ -4,8 +4,9 @@
 #ifndef IGNORE_H
 #define IGNORE_H
 
-#define SVR_DIR_PROP_BASE ".svn/dir-prop-base"
-#define SVR_DIR ".svn"
+#define SVN_DIR_PROP_BASE ".svn/dir-prop-base"
+#define SVN_DIR ".svn"
+#define SVN_PROP_IGNORE "svn:ignore"
 
 extern const char *evil_hardcoded_ignore_files[];
 extern const char *ignore_pattern_files[];
