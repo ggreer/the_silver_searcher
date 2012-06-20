@@ -71,18 +71,17 @@ void cleanup_ignore_patterns() {
     free(ignore_names);
 }
 
-void load_svn_ignore_patterns(const char *path) {
+void load_svn_ignore_patterns(const char *path, const int path_len) {
     FILE *fp = NULL;
-    char *dir_prop_base = malloc(strlen(path) + strlen(SVN_DIR_PROP_BASE) + 1);
-    strlcat(dir_prop_base, path, strlen(SVN_DIR_PROP_BASE));
+    char *dir_prop_base = malloc(path_len + strlen(SVN_DIR_PROP_BASE) + 1);
+    strlcpy(dir_prop_base, path, path_len + 1);
+    strlcat(dir_prop_base, SVN_DIR_PROP_BASE, path_len + strlen(SVN_DIR_PROP_BASE) + 1);
 
     fp = fopen(dir_prop_base, "r");
     if (fp == NULL) {
         log_debug("Skipping svn ignore file %s", dir_prop_base);
         return;
     }
-
-    log_err("found svn ignore file %s", dir_prop_base);
 
     char *entry = NULL;
     size_t entry_len = 0;
@@ -94,10 +93,12 @@ void load_svn_ignore_patterns(const char *path) {
 
     while (fscanf(fp, "K %zu", &key_len) == 1) {
         key = malloc(key_len + 1);
+        log_err("key len: %u", key_len);
         bytes_read = fread(key, key_len, 1, fp);
         key[bytes_read] = '\0';
         fscanf(fp, "V %zu", &entry_len); /* TODO: make sure fscanf worked */
         if (strncmp(SVN_PROP_IGNORE, key, bytes_read) != 0) {
+            log_err("key is %s, not %s. continuing", key, SVN_PROP_IGNORE);
             free(key);
             /* Not the key we care about. fseek and repeat */
             fseek(fp, entry_len, SEEK_CUR);
@@ -108,6 +109,7 @@ void load_svn_ignore_patterns(const char *path) {
         entry = malloc(entry_len + 1);
         bytes_read = fread(entry, entry_len, 1, fp);
         entry[bytes_read] = '\0';
+        log_err("entry: %s", entry);
         char *patterns = entry;
         while (patterns != NULL) {
             for (line_len = 0; line_len < strlen(patterns); line_len++) {
@@ -118,6 +120,7 @@ void load_svn_ignore_patterns(const char *path) {
             entry_line = malloc((size_t)line_len + 1);
             strlcpy(entry_line, entry, line_len);
             log_err("adding ignore pattern %s", entry_line);
+            exit(0);
             add_ignore_pattern(entry_line);
             free(entry_line);
             if (patterns > (entry + entry_len)) {
@@ -174,7 +177,7 @@ int ignorefile_filter(struct dirent *dir) {
 
     if (strcmp(SVN_DIR, dir->d_name) == 0) {
         log_debug("svn ignore pattern matched for %s", dir->d_name);
-        load_svn_ignore_patterns(dir->d_name);
+        load_svn_ignore_patterns(dir->d_name, strlen(dir->d_name));
         return 1;
     }
 
