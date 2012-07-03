@@ -87,6 +87,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
     int opt_index = 0;
     const char *home_dir = getenv("HOME");
     char *ignore_file_path = NULL;
+    int needs_query = 1;
 
     init_options();
 
@@ -174,6 +175,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 opts.follow_symlinks = 1;
                 break;
             case 'g':
+                needs_query = 0;
                 opts.match_files = 1;
                 /* Fall through and build regex */
             case 'G':
@@ -261,7 +263,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         exit(0);
     }
 
-    if (argc == 0) {
+    if (needs_query && argc == 0) {
         log_err("What do you want to search for?");
         exit(1);
     }
@@ -316,7 +318,12 @@ void parse_options(int argc, char **argv, char **paths[]) {
         opts.print_line_numbers = 0;
     }
 
-    opts.query = strdup(argv[0]);
+    if (needs_query) {
+        opts.query = strdup(argv[0]);
+    }
+    else {
+        opts.query = strdup(".");
+    }
     opts.query_len = strlen(opts.query);
 
     log_debug("Query is %s", opts.query);
