@@ -32,7 +32,8 @@ Search options:\n\
 --depth NUM: Search up to NUM directories deep. Default is 25.\n\
 -f --follow: Follow symlinks.\n\
 --[no]group: Same as --[no]break --[no]heading\n\
--G, --file-search-regex\n\
+-g PATTERN: Print filenames that match PATTERN\n\
+-G, --file-search-regex PATTERN: Only search file names matching PATTERN\n\
 -i, --ignore-case\n\
 --invert-match\n\
 --[no]heading\n\
@@ -86,6 +87,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
     int opt_index = 0;
     const char *home_dir = getenv("HOME");
     char *ignore_file_path = NULL;
+    int needs_query = 1;
 
     init_options();
 
@@ -116,6 +118,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         { "help", no_argument, NULL, 'h' },
         { "ignore-case", no_argument, NULL, 'i' },
         { "files-with-matches", no_argument, NULL, 'l' },
+        { "files-without-matches", no_argument, NULL, 'L' },
         { "literal", no_argument, &(opts.literal), 1 },
         { "match", no_argument, &useless, 0 },
         { "max-count", required_argument, NULL, 'm' },
@@ -150,7 +153,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         group = 0;
     }
 
-    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:fhilm:nvVu", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:nvVu", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 opts.after = atoi(optarg);
@@ -171,6 +174,10 @@ void parse_options(int argc, char **argv, char **paths[]) {
             case 'f':
                 opts.follow_symlinks = 1;
                 break;
+            case 'g':
+                needs_query = 0;
+                opts.match_files = 1;
+                /* Fall through and build regex */
             case 'G':
                 opts.file_search_regex = pcre_compile(optarg, 0, &pcre_err, &pcre_err_offset, NULL);
                 if (opts.file_search_regex == NULL) {
@@ -192,6 +199,10 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 break;
             case 'l':
                 opts.print_filename_only = 1;
+                break;
+            case 'L':
+                opts.print_filename_only = 1;
+                opts.invert_match = 1;
                 break;
             case 'm':
                 opts.max_matches_per_file = atoi(optarg);
@@ -252,7 +263,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         exit(0);
     }
 
-    if (argc == 0) {
+    if (needs_query && argc == 0) {
         log_err("What do you want to search for?");
         exit(1);
     }
@@ -307,7 +318,12 @@ void parse_options(int argc, char **argv, char **paths[]) {
         opts.print_line_numbers = 0;
     }
 
-    opts.query = strdup(argv[0]);
+    if (needs_query) {
+        opts.query = strdup(argv[0]);
+    }
+    else {
+        opts.query = strdup(".");
+    }
     opts.query_len = strlen(opts.query);
 
     log_debug("Query is %s", opts.query);
