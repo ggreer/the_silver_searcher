@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "AG" "1" "April 2012" "" ""
+.TH "AG" "1" "July 2012" "" ""
 .
 .SH "NAME"
 \fBag\fR \- The Silver Searcher\. Like ack, but faster\.
@@ -51,6 +51,9 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 \fB\-\-[no]group\fR
 .
 .IP "\(bu" 4
+\fB\-g PATTERN\fR: Print filenames matching PATTERN\.
+.
+.IP "\(bu" 4
 \fB\-G\fR, \fB\-\-file\-search\-regex PATTERN\fR: Only search filenames matching PATTERN\.
 .
 .IP "\(bu" 4
@@ -64,6 +67,9 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 .
 .IP "\(bu" 4
 \fB\-l \-\-files\-with\-matches\fR: Only print filenames containing matches, not matching lines\.
+.
+.IP "\(bu" 4
+\fB\-L \-\-files\-without\-matches\fR: Only print filenames that don\'t contain matches\.
 .
 .IP "\(bu" 4
 \fB\-\-literal\fR: Do not parse PATTERN as a regular expression\. Try to match it literally\.
