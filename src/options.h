@@ -20,6 +20,7 @@ typedef struct {
     int before;
     enum case_behavior casing;
     const char *file_search_string;
+    int match_files;
     pcre *file_search_regex;
     pcre_extra *file_search_regex_extra;
     int color;
