@@ -39,14 +39,14 @@ void add_ignore_pattern(const char* pattern) {
 
     if (is_fnmatch(pattern)) {
         ignore_patterns_len++;
-        ignore_patterns = realloc(ignore_patterns, (ignore_patterns_len) * sizeof(char**));
+        ignore_patterns = realloc(ignore_patterns, (ignore_patterns_len) * sizeof(char*));
         ignore_patterns[ignore_patterns_len - 1] = strdup(pattern);
         log_debug("added regex ignore pattern %s", pattern);
     }
     else {
         /* a balanced binary tree is best for performance, but I'm lazy */
         ignore_names_len++;
-        ignore_names = realloc(ignore_names, ignore_names_len * sizeof(char**));
+        ignore_names = realloc(ignore_names, ignore_names_len * sizeof(char*));
         for (i = ignore_names_len-1; i > 0; i--) {
             if (strcmp(pattern, ignore_names[i-1]) > 0) {
                 break;
