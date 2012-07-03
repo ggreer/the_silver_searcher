@@ -34,6 +34,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `-f --follow`:
     Follow symlinks.
   * `--[no]group`
+  * `-g PATTERN`:
+    Print filenames matching PATTERN.
   * `-G`, `--file-search-regex PATTERN`:
     Only search filenames matching PATTERN.
   * `--hidden`:
@@ -42,6 +44,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `--[no]heading`
   * `-l --files-with-matches`:
     Only print filenames containing matches, not matching lines.
+  * `-L --files-without-matches`:
+    Only print filenames that don't contain matches.
   * `--literal`:
     Do not parse PATTERN as a regular expression. Try to match it literally.
   * `-m --max-count NUM`:
