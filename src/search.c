@@ -307,6 +307,11 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
                 log_debug("Skipping %s due to file_search_regex.", dir_full_path);
                 goto cleanup;
             }
+            else if (opts.match_files) {
+                log_debug("match_files: file_search_regex matched for %s.", dir_full_path);
+                print_path(dir_full_path, '\n');
+                goto cleanup;
+            }
         }
 
         search_file(re, re_extra, dir_full_path);
