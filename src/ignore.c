@@ -85,51 +85,60 @@ void load_svn_ignore_patterns(const char *path, const int path_len) {
 
     char *entry = NULL;
     size_t entry_len = 0;
-    char *key = NULL;
+    char *key = malloc(32);
     size_t key_len = 0;
     size_t bytes_read = 0;
     char *entry_line = NULL;
     size_t line_len;
 
-    while (fscanf(fp, "K %zu", &key_len) == 1) {
-        key = malloc(key_len + 1);
-        log_err("key len: %u", key_len);
-        bytes_read = fread(key, key_len, 1, fp);
-        key[bytes_read] = '\0';
-        fscanf(fp, "V %zu", &entry_len); /* TODO: make sure fscanf worked */
+    while (fscanf(fp, "K %zu\n", &key_len) == 1) {
+        key = realloc(key, (key_len + 1) * sizeof(char));
+        bytes_read = fread(key, 1, key_len, fp);
+        key[key_len] = '\0';
+        fscanf(fp, "\nV %zu\n", &entry_len); /* TODO: make sure fscanf worked */
+
         if (strncmp(SVN_PROP_IGNORE, key, bytes_read) != 0) {
-            log_err("key is %s, not %s. continuing", key, SVN_PROP_IGNORE);
-            free(key);
+            log_err("key is %s, not %s. skipping %u bytes", key, SVN_PROP_IGNORE, entry_len);
             /* Not the key we care about. fseek and repeat */
-            fseek(fp, entry_len, SEEK_CUR);
+            fseek(fp, entry_len + 1, SEEK_CUR); /* +1 to account for newline. yes I know this is hacky */
             continue;
         }
-        free(key);
         /* Aww yeah. Time to ignore stuff */
         entry = malloc(entry_len + 1);
-        bytes_read = fread(entry, entry_len, 1, fp);
+        bytes_read = fread(entry, 1, entry_len, fp);
         entry[bytes_read] = '\0';
         log_err("entry: %s", entry);
         char *patterns = entry;
-        while (patterns != NULL) {
+        while (patterns != '\0') {
+            if (patterns > (entry + bytes_read)) {
+                log_err("WE SHOULD NEVER GET HERE!");
+                log_err("diff %i", patterns - (entry + bytes_read));
+                exit(1);
+            }
             for (line_len = 0; line_len < strlen(patterns); line_len++) {
                 if (patterns[line_len] == '\n') {
                     break;
                 }
             }
-            entry_line = malloc((size_t)line_len + 1);
-            strlcpy(entry_line, entry, line_len);
-            log_err("adding ignore pattern %s", entry_line);
-            exit(0);
-            add_ignore_pattern(entry_line);
-            free(entry_line);
-            if (patterns > (entry + entry_len)) {
-                log_err("WE SHOULD NEVER GET HERE!");
-                exit(1);
+            if (line_len > 0) {
+                entry_line = malloc((size_t)line_len + 1);
+                strlcpy(entry_line, patterns, line_len + 1);
+                log_err("adding ignore pattern %s", entry_line);
+                add_ignore_pattern(entry_line);
+                free(entry_line);
+                entry_line = NULL;
             }
+            else {
+                log_err("line is empty");
+                log_err(patterns);
+            }
+            patterns += line_len + 1;
         }
+        /* TODO: move this loop out */
         free(entry);
+        break;
     }
+    free(key);
     fclose(fp);
 }
 
