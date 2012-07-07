@@ -112,12 +112,7 @@ void load_svn_ignore_patterns(const char *path, const int path_len) {
         break;
     }
     char *patterns = entry;
-    while (*patterns != '\0') {
-        if (patterns > (entry + bytes_read)) {
-            log_err("WE SHOULD NEVER GET HERE!");
-            log_err("diff %i", patterns - (entry + bytes_read));
-            exit(1);
-        }
+    while (*patterns != '\0' && patterns < (entry + bytes_read)) {
         for (line_len = 0; line_len < strlen(patterns); line_len++) {
             if (patterns[line_len] == '\n') {
                 break;
@@ -126,14 +121,9 @@ void load_svn_ignore_patterns(const char *path, const int path_len) {
         if (line_len > 0) {
             entry_line = malloc((size_t)line_len + 1);
             strlcpy(entry_line, patterns, line_len + 1);
-            log_err("adding ignore pattern %s", entry_line);
             add_ignore_pattern(entry_line);
             free(entry_line);
             entry_line = NULL;
-        }
-        else {
-            log_err("line is empty");
-            log_err("'%s' %i", patterns, patterns - (entry + bytes_read));
         }
         patterns += line_len + 1;
     }
