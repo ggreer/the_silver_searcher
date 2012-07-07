@@ -109,36 +109,35 @@ void load_svn_ignore_patterns(const char *path, const int path_len) {
         bytes_read = fread(entry, 1, entry_len, fp);
         entry[bytes_read] = '\0';
         log_err("entry: %s", entry);
-        char *patterns = entry;
-        while (patterns != '\0') {
-            if (patterns > (entry + bytes_read)) {
-                log_err("WE SHOULD NEVER GET HERE!");
-                log_err("diff %i", patterns - (entry + bytes_read));
-                exit(1);
-            }
-            for (line_len = 0; line_len < strlen(patterns); line_len++) {
-                if (patterns[line_len] == '\n') {
-                    break;
-                }
-            }
-            if (line_len > 0) {
-                entry_line = malloc((size_t)line_len + 1);
-                strlcpy(entry_line, patterns, line_len + 1);
-                log_err("adding ignore pattern %s", entry_line);
-                add_ignore_pattern(entry_line);
-                free(entry_line);
-                entry_line = NULL;
-            }
-            else {
-                log_err("line is empty");
-                log_err(patterns);
-            }
-            patterns += line_len + 1;
-        }
-        /* TODO: move this loop out */
-        free(entry);
         break;
     }
+    char *patterns = entry;
+    while (*patterns != '\0') {
+        if (patterns > (entry + bytes_read)) {
+            log_err("WE SHOULD NEVER GET HERE!");
+            log_err("diff %i", patterns - (entry + bytes_read));
+            exit(1);
+        }
+        for (line_len = 0; line_len < strlen(patterns); line_len++) {
+            if (patterns[line_len] == '\n') {
+                break;
+            }
+        }
+        if (line_len > 0) {
+            entry_line = malloc((size_t)line_len + 1);
+            strlcpy(entry_line, patterns, line_len + 1);
+            log_err("adding ignore pattern %s", entry_line);
+            add_ignore_pattern(entry_line);
+            free(entry_line);
+            entry_line = NULL;
+        }
+        else {
+            log_err("line is empty");
+            log_err("'%s' %i", patterns, patterns - (entry + bytes_read));
+        }
+        patterns += line_len + 1;
+    }
+    free(entry);
     free(key);
     fclose(fp);
 }
