@@ -99,7 +99,7 @@ void load_svn_ignore_patterns(const char *path, const int path_len) {
         fscanf(fp, "\nV %zu\n", &entry_len); /* TODO: make sure fscanf worked */
 
         if (strncmp(SVN_PROP_IGNORE, key, bytes_read) != 0) {
-            log_err("key is %s, not %s. skipping %u bytes", key, SVN_PROP_IGNORE, entry_len);
+            log_debug("key is %s, not %s. skipping %u bytes", key, SVN_PROP_IGNORE, entry_len);
             /* Not the key we care about. fseek and repeat */
             fseek(fp, entry_len + 1, SEEK_CUR); /* +1 to account for newline. yes I know this is hacky */
             continue;
@@ -108,8 +108,11 @@ void load_svn_ignore_patterns(const char *path, const int path_len) {
         entry = malloc(entry_len + 1);
         bytes_read = fread(entry, 1, entry_len, fp);
         entry[bytes_read] = '\0';
-        log_err("entry: %s", entry);
+        log_debug("entry: %s", entry);
         break;
+    }
+    if (entry == NULL) {
+        goto cleanup;
     }
     char *patterns = entry;
     while (*patterns != '\0' && patterns < (entry + bytes_read)) {
@@ -128,6 +131,7 @@ void load_svn_ignore_patterns(const char *path, const int path_len) {
         patterns += line_len + 1;
     }
     free(entry);
+    cleanup:
     free(key);
     fclose(fp);
 }
