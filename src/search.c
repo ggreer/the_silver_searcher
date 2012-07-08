@@ -197,8 +197,8 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
             strlcat(dir_full_path, "/", path_len);
             strlcat(dir_full_path, dir->d_name, path_len);
             if (strcmp(SVN_DIR, dir->d_name) == 0) {
-                log_debug("svn ignore pattern matched for %s", dir->d_name);
-                load_svn_ignore_patterns(dir->d_name, strlen(dir->d_name));
+                log_debug("svn ignore pattern matched for %s", dir_full_path);
+                load_svn_ignore_patterns(dir_full_path, strlen(dir_full_path));
             }
             else {
                 load_ignore_patterns(dir_full_path);
