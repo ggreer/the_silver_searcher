@@ -75,4 +75,4 @@ You can use ag with [my fork](https://github.com/ggreer/AckMate) of the popular 
 * [AckMate](https://github.com/protocool/AckMate) - An ack-powered replacement for TextMate's slow built-in search.
 * [ack.vim](https://github.com/mileszs/ack.vim)
 * [Exuberant Ctags](http://ctags.sourceforge.net/) - Faster than Ag, but it builds an index beforehand. Good for *really* big codebases.
-* [Git-grep](http://book.git-scm.com/4_finding_with_git_grep.html) - As fast as Ag but only works on git repos.
+* [Git-grep](http://git-scm.com/docs/git-grep) - As fast as Ag but only works on git repos.
