@@ -21,6 +21,7 @@ const char *ignore_pattern_files[] = {
     ".agignore",
     ".gitignore",
     ".hgignore",
+    ".svn",
     NULL
 };
 
@@ -71,6 +72,76 @@ void cleanup_ignore_patterns() {
     free(ignore_names);
 }
 
+void load_svn_ignore_patterns(const char *path, const int path_len) {
+    FILE *fp = NULL;
+    char *dir_prop_base = malloc(path_len + strlen(SVN_DIR_PROP_BASE) + 1);
+    strlcpy(dir_prop_base, path, path_len + 1);
+    strlcat(dir_prop_base, SVN_DIR_PROP_BASE, path_len + strlen(SVN_DIR_PROP_BASE) + 1);
+
+    fp = fopen(dir_prop_base, "r");
+    if (fp == NULL) {
+        log_debug("Skipping svn ignore file %s", dir_prop_base);
+        return;
+    }
+
+    char *entry = NULL;
+    size_t entry_len = 0;
+    char *key = malloc(32); /* Sane start for max key length. */
+    size_t key_len = 0;
+    size_t bytes_read = 0;
+    char *entry_line = NULL;
+    size_t line_len;
+    int matches;
+
+    while (fscanf(fp, "K %zu\n", &key_len) == 1) {
+        key = realloc(key, (key_len + 1) * sizeof(char));
+        bytes_read = fread(key, 1, key_len, fp);
+        key[key_len] = '\0';
+        matches = fscanf(fp, "\nV %zu\n", &entry_len);
+        if (matches != 1) {
+            log_debug("Unable to parse svnignore file %s: fscanf() got %i matches, expected 1.", dir_prop_base, matches);
+            goto cleanup;
+        }
+
+        if (strncmp(SVN_PROP_IGNORE, key, bytes_read) != 0) {
+            log_debug("key is %s, not %s. skipping %u bytes", key, SVN_PROP_IGNORE, entry_len);
+            /* Not the key we care about. fseek and repeat */
+            fseek(fp, entry_len + 1, SEEK_CUR); /* +1 to account for newline. yes I know this is hacky */
+            continue;
+        }
+        /* Aww yeah. Time to ignore stuff */
+        entry = malloc(entry_len + 1);
+        bytes_read = fread(entry, 1, entry_len, fp);
+        entry[bytes_read] = '\0';
+        log_debug("entry: %s", entry);
+        break;
+    }
+    if (entry == NULL) {
+        goto cleanup;
+    }
+    char *patterns = entry;
+    while (*patterns != '\0' && patterns < (entry + bytes_read)) {
+        for (line_len = 0; line_len < strlen(patterns); line_len++) {
+            if (patterns[line_len] == '\n') {
+                break;
+            }
+        }
+        if (line_len > 0) {
+            entry_line = malloc((size_t)line_len + 1);
+            strlcpy(entry_line, patterns, line_len + 1);
+            add_ignore_pattern(entry_line);
+            free(entry_line);
+            entry_line = NULL;
+        }
+        patterns += line_len + 1;
+    }
+    free(entry);
+    cleanup:
+    free(dir_prop_base);
+    free(key);
+    fclose(fp);
+}
+
 /* For loading git/svn/hg ignore patterns */
 void load_ignore_patterns(const char *ignore_filename) {
     FILE *fp = NULL;
@@ -81,15 +152,15 @@ void load_ignore_patterns(const char *ignore_filename) {
     }
 
     char *line = NULL;
-    ssize_t line_length = 0;
+    ssize_t line_len = 0;
     size_t line_cap = 0;
 
-    while ((line_length = getline(&line, &line_cap, fp)) > 0) {
-        if (line_length == 0 || line[0] == '\n') {
+    while ((line_len = getline(&line, &line_cap, fp)) > 0) {
+        if (line_len == 0 || line[0] == '\n') {
             continue;
         }
-        if (line[line_length-1] == '\n') {
-            line[line_length-1] = '\0'; /* kill the \n */
+        if (line[line_len-1] == '\n') {
+            line[line_len-1] = '\0'; /* kill the \n */
         }
         add_ignore_pattern(line);
     }
@@ -112,10 +183,11 @@ int ignorefile_filter(struct dirent *dir) {
             return 1;
         }
     }
+
     return 0;
 }
 
-/* this function is REALLY HOT. It gets called for every file */
+/* This function is REALLY HOT. It gets called for every file */
 int filename_filter(struct dirent *dir) {
     const char *filename = dir->d_name;
     int match_pos;
@@ -130,7 +202,7 @@ int filename_filter(struct dirent *dir) {
 
     for (i = 0; evil_hardcoded_ignore_files[i] != NULL; i++) {
         if (strcmp(filename, evil_hardcoded_ignore_files[i]) == 0) {
-            log_debug("file %s ignored because of name", filename);
+            log_debug("file %s ignored because it was in evil_hardcoded_ignore_files", filename);
             return 0;
         }
     }
@@ -161,7 +233,7 @@ int filename_filter(struct dirent *dir) {
         /* we just care about the match, not where the matches are */
         rc = pcre_exec(opts.ackmate_dir_filter, NULL, dir->d_name, strlen(dir->d_name), 0, 0, NULL, 0);
         if (rc >= 0) {
-            log_debug("file %s ignored because name ackmate dir filter pattern", dir->d_name);
+            log_debug("file %s ignored because name matches ackmate dir filter pattern", dir->d_name);
             return 0;
         }
     }
