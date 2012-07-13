@@ -86,17 +86,22 @@ void load_svn_ignore_patterns(const char *path, const int path_len) {
 
     char *entry = NULL;
     size_t entry_len = 0;
-    char *key = malloc(32);
+    char *key = malloc(32); /* Sane start for max key length. */
     size_t key_len = 0;
     size_t bytes_read = 0;
     char *entry_line = NULL;
     size_t line_len;
+    int matches;
 
     while (fscanf(fp, "K %zu\n", &key_len) == 1) {
         key = realloc(key, (key_len + 1) * sizeof(char));
         bytes_read = fread(key, 1, key_len, fp);
         key[key_len] = '\0';
-        fscanf(fp, "\nV %zu\n", &entry_len); /* TODO: make sure fscanf worked */
+        matches = fscanf(fp, "\nV %zu\n", &entry_len);
+        if (matches != 1) {
+            log_debug("Unable to parse svnignore file %s: fscanf() got %i matches, expected 1.", dir_prop_base, matches);
+            goto cleanup;
+        }
 
         if (strncmp(SVN_PROP_IGNORE, key, bytes_read) != 0) {
             log_debug("key is %s, not %s. skipping %u bytes", key, SVN_PROP_IGNORE, entry_len);
