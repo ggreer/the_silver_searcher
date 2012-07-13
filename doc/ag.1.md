@@ -62,7 +62,9 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
 
 ## IGNORING FILES
 
-Ag will ignore files matched by patterns in .gitignore, .hgignore, or .agignore. Ag also ignores binary files by default.
+By default, ag will ignore files matched by patterns in .gitignore, .hgignore, or .agignore. Ag also ignores files matched by the svn:ignore property in subversion repositories. Binary files are ignored by default as well.
+
+Use the `-a` option to search all text files, and `-u` to search *all* files.
 
 ## EXAMPLES
 
