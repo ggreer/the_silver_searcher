@@ -132,6 +132,7 @@ void load_svn_ignore_patterns(const char *path, const int path_len) {
     }
     free(entry);
     cleanup:
+    free(dir_prop_base);
     free(key);
     fclose(fp);
 }
