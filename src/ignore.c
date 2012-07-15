@@ -240,3 +240,39 @@ int filename_filter(struct dirent *dir) {
 
     return 1;
 }
+
+int filepath_filter(char *filepath) {
+    int match_pos;
+    char *pattern = NULL;
+    int rc = 0;
+    int i;
+
+    if (opts.search_all_files) {
+        return 1;
+    }
+
+    match_pos = binary_search(filepath, ignore_names, 0, ignore_names_len);
+    if (match_pos >= 0) {
+        log_debug("file %s ignored because name matches static pattern %s", filepath, ignore_names[match_pos]);
+        return 0;
+    }
+
+    for (i = 0; i < ignore_patterns_len; i++) {
+        pattern = ignore_patterns[i];
+        if (fnmatch(pattern, filepath, fnmatch_flags) == 0) {
+            log_debug("file %s ignored because name matches regex pattern %s", filepath, pattern);
+            return 0;
+        }
+    }
+
+    if (opts.ackmate_dir_filter != NULL) {
+        /* we just care about the match, not where the matches are */
+        rc = pcre_exec(opts.ackmate_dir_filter, NULL, filepath, strlen(filepath), 0, 0, NULL, 0);
+        if (rc >= 0) {
+            log_debug("file %s ignored because name matches ackmate dir filter pattern", filepath);
+            return 0;
+        }
+    }
+
+    return 1;
+}
