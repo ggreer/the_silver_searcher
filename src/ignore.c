@@ -251,6 +251,11 @@ int filepath_filter(char *filepath) {
         return 1;
     }
 
+    /* Strip off the leading ./ so that matches are more likely. */
+    if (strncmp(filepath, "./", 2) == 0) {
+        filepath += 2; /* TODO: this totally breaks on systems without 1 byte chars */
+    }
+
     match_pos = binary_search(filepath, ignore_names, 0, ignore_names_len);
     if (match_pos >= 0) {
         log_debug("file %s ignored because name matches static pattern %s", filepath, ignore_names[match_pos]);
