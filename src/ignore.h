@@ -20,5 +20,6 @@ void load_svn_ignore_patterns(const char *path, const int path_len);
 
 int ignorefile_filter(struct dirent *dir);
 int filename_filter(struct dirent *dir);
+int filepath_filter(char *filepath);
 
 #endif
