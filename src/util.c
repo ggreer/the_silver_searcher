@@ -99,8 +99,8 @@ int is_binary(const void* buf, const int buf_len) {
         }
         else if ((buf_c[i] < 7 || buf_c[i] > 14) && (buf_c[i] < 32 || buf_c[i] > 127)) {
             suspicious_bytes++;
-            /* disk IO is so slow that it's worthwhile to do this calculation after every suspicious byte */
-            /* even on a 1.6Ghz Atom with an intel 320 SSD */
+            /* Disk IO is so slow that it's worthwhile to do this calculation after every suspicious byte. */
+            /* This is true even on a 1.6Ghz Atom with an Intel 320 SSD. */
             if ((suspicious_bytes * 100) / total_bytes > 10) {
                 return 1;
             }
