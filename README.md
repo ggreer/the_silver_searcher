@@ -29,7 +29,7 @@ Ubuntu 12.04+:
     sudo apt-get update
     sudo apt-get install the-silver-searcher
 
-If you get the error `-bash: /usr/bin/ag: No such file or directory`, congratulations, apt managed to install the i386 version on an x86-64 system. To fix this issue, you'll have to `apt-get install ia32-libs` or `apt-get purge the-silver-searcher` and build from source.
+If you get the error `-bash: /usr/bin/ag: No such file or directory`, congratulations, you are one of the lucky few. Apt managed to install the i386 version of Ag on an x86-64 system. I have no idea why this happens. To fix this issue, you'll have to `apt-get install ia32-libs` or `apt-get purge the-silver-searcher` and build from source.
 
 Gentoo:
 
@@ -54,7 +54,7 @@ For debs, rpms, and static builds, see the [downloads page](https://github.com/g
 
 ## Current development status ##
 
-It's pretty stable now. Most changes are new features or minor bug fixes, such as support for named pipes. It's much faster than Ack in my benchmarks.
+It's quite stable now. Most changes are new features, minor bug fixes, or performance improvements. It's much faster than Ack in my benchmarks.
 
     ack -i SOLR ~/cloudkick/reach  1.83s user 0.41s system 99% cpu 2.242 total
 
