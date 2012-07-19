@@ -56,9 +56,9 @@ For debs, rpms, and static builds, see the [downloads page](https://github.com/g
 
 It's pretty stable now. Most changes are new features or minor bug fixes, such as support for named pipes. It's much faster than Ack in my benchmarks.
 
-    ack -i SOLR ~/cloudkick/reach  2.89s user 0.77s system 97% cpu 3.765 total
+    ack -i SOLR ~/cloudkick/reach  1.83s user 0.41s system 99% cpu 2.242 total
 
-    ag -i SOLR ~/cloudkick/reach  0.25s user 0.13s system 94% cpu 0.404 total
+    ag -i SOLR ~/cloudkick/reach  0.26s user 0.07s system 99% cpu 0.323 total
 
 You can use Ag with [my fork](https://github.com/ggreer/AckMate) of the popular ackmate plugin, which lets you use both Ack and Ag for searching in Textmate. You can also move or delete `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and run `ln -s /usr/local/bin/ag "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
 
