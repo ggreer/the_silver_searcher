@@ -67,7 +67,6 @@ A special thanks goes out to [Alex Davies](http://alexdavies.net/). He has given
 
 * Possible bugs
   * Review `generate_skip_lookup()` for off-by-one errors.
-  * Simplify `is_binary()` to use total_bytes instead of hard-coded constant of 1024.
 * Optimizations
   * Profile `read()` against `mmap()`. Remember that's `read()` not `fread()`.
   * pthreads. these days it's silly to use only one core
