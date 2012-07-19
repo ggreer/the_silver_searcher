@@ -92,7 +92,7 @@ int is_binary(const void* buf, const int buf_len) {
         return 0;
     }
 
-    for (i = 0; i < buf_len && i < total_bytes; i++) {
+    for (i = 0; i < total_bytes; i++) {
         if (buf_c[i] == '\0') {
             /* NULL char. It's binary */
             return 1;
