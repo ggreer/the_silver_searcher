@@ -2,12 +2,12 @@
 
 An attempt to make something better than ack, which itself is better than grep.
 
-## Why use ag? ##
+## Why use Ag? ##
 
-* It searches through code about 3x-5x faster than ack.
+* It searches through code about 3x-5x faster than Ack.
 * It ignores files matched by patterns in your .gitignore and .hgignore.
 * If there are files in your source repo that you don't want to search, just add their patterns to a .agignore file. \*cough\* extern \*cough\*
-* The binary name is 33% shorter than ack!
+* The binary name is 33% shorter than Ack!
 
 ## How is it so fast? ##
 
@@ -54,13 +54,13 @@ For debs, rpms, and static builds, see the [downloads page](https://github.com/g
 
 ## Current development status ##
 
-It's pretty stable now. Most changes are new features or minor bug fixes, such as support for named pipes. It's much faster than ack in my benchmarks.
+It's pretty stable now. Most changes are new features or minor bug fixes, such as support for named pipes. It's much faster than Ack in my benchmarks.
 
     ack -i SOLR ~/cloudkick/reach  2.89s user 0.77s system 97% cpu 3.765 total
 
     ag -i SOLR ~/cloudkick/reach  0.25s user 0.13s system 94% cpu 0.404 total
 
-You can use ag with [my fork](https://github.com/ggreer/AckMate) of the popular ackmate plugin, which lets you use both ack and ag for searching in Textmate. You can also move or delete `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and run `ln -s /usr/local/bin/ag "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
+You can use Ag with [my fork](https://github.com/ggreer/AckMate) of the popular ackmate plugin, which lets you use both Ack and Ag for searching in Textmate. You can also move or delete `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and run `ln -s /usr/local/bin/ag "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
 
 ## TODO ##
 A special thanks goes out to [Alex Davies](http://alexdavies.net/). He has given me some excellent recommendations to improve Ag. Many of these things are still on my list:
