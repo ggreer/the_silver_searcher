@@ -63,12 +63,24 @@ It's pretty stable now. Most changes are new features or minor bug fixes, such a
 You can use ag with [my fork](https://github.com/ggreer/AckMate) of the popular ackmate plugin, which lets you use both ack and ag for searching in Textmate. You can also move or delete `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and run `ln -s /usr/local/bin/ag "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
 
 ## TODO ##
-* behave better when matching in files with really long lines
-  * maybe say "match found at position X of line N" if line is > 10k chars
-* optimizations
+A special thanks goes out to [Alex Davies](http://alexdavies.net/). He has given me some excellent recommendations to improve Ag. Many of these things are still on my list:
+
+* Possible bugs
+  * Review `generate_skip_lookup()` for off-by-one errors.
+  * Simplify `is_binary()` to use total_bytes instead of hard-coded constant of 1024.
+* Optimizations
+  * Profile `read()` against `mmap()`. Remember that's `read()` not `fread()`.
   * pthreads. these days it's silly to use only one core
-* actually get textmate dir patterns working (this requires ruby regexes. not fun)
-* symlink loop detection
+    * Take a look at git. Its use of pthreads is a good example to follow.
+  * `search_dir()` is definitely sub-optimal. It's doing some work twice.
+* Features
+  * Symlink loop detection.
+  * Behave better when matching in files with really long lines.
+    * Report "match found at position X of line N" if line is > 10k chars.
+* Windows support
+  * `readdir()` and `stat()` are much slower on Windows. Use `FindNextFile()` instead.
+  * Support Visual Studio instead of autotools?
+
 
 ## Other stuff you might like ##
 * [Ack](https://github.com/petdance/ack) - Better than grep
