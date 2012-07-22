@@ -63,7 +63,7 @@ It's quite stable now. Most changes are new features, minor bug fixes, or perfor
 You can use Ag with [my fork](https://github.com/ggreer/AckMate) of the popular ackmate plugin, which lets you use both Ack and Ag for searching in Textmate. You can also move or delete `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and run `ln -s /usr/local/bin/ag "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
 
 ## TODO ##
-A special thanks goes out to [Alex Davies](http://alexdavies.net/). He has given me some excellent recommendations to improve Ag. Many of these things are still on my list:
+A special thanks goes out to Alex Davies. He has given me some excellent recommendations to improve Ag. Many of these things are still on my list:
 
 * Possible bugs
   * Review `generate_skip_lookup()` for off-by-one errors.
