@@ -95,7 +95,10 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 .IP "" 0
 .
 .SH "IGNORING FILES"
-Ag will ignore files matched by patterns in \.gitignore, \.hgignore, or \.agignore\. Ag also ignores binary files by default\.
+By default, ag will ignore files matched by patterns in \.gitignore, \.hgignore, or \.agignore\. Ag also ignores files matched by the svn:ignore property in subversion repositories\. Binary files are ignored by default as well\.
+.
+.P
+Use the \fB\-a\fR option to search all text files, and \fB\-u\fR to search \fIall\fR files\.
 .
 .SH "EXAMPLES"
 \fBag printf\fR: Find matches for "printf" in the current directory\.

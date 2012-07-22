@@ -2,12 +2,12 @@
 
 An attempt to make something better than ack, which itself is better than grep.
 
-## Why use ag? ##
+## Why use Ag? ##
 
-* It searches through code about 3x-5x faster than ack.
+* It searches through code about 3x-5x faster than Ack.
 * It ignores files matched by patterns in your .gitignore and .hgignore.
 * If there are files in your source repo that you don't want to search, just add their patterns to a .agignore file. \*cough\* extern \*cough\*
-* The binary name is 33% shorter than ack!
+* The binary name is 33% shorter than Ack!
 
 ## How is it so fast? ##
 
@@ -29,7 +29,7 @@ Ubuntu 12.04+:
     sudo apt-get update
     sudo apt-get install the-silver-searcher
 
-If you get the error `-bash: /usr/bin/ag: No such file or directory`, congratulations, apt managed to install the i386 version on an x86-64 system. To fix this issue, you'll have to `apt-get install ia32-libs` or `apt-get purge the-silver-searcher` and build from source.
+If you get the error `-bash: /usr/bin/ag: No such file or directory`, congratulations, you are one of the lucky few. Apt managed to install the i386 version of Ag on an x86-64 system. I have no idea why this happens. To fix this issue, you'll have to `apt-get install ia32-libs` or `apt-get purge the-silver-searcher` and build from source.
 
 Gentoo:
 
@@ -54,25 +54,36 @@ For debs, rpms, and static builds, see the [downloads page](https://github.com/g
 
 ## Current development status ##
 
-It's pretty stable now. Most changes are new features or minor bug fixes, such as support for named pipes. It's much faster than ack in my benchmarks.
+It's quite stable now. Most changes are new features, minor bug fixes, or performance improvements. It's much faster than Ack in my benchmarks.
 
-    ack -i SOLR ~/cloudkick/reach  2.89s user 0.77s system 97% cpu 3.765 total
+    ack -i SOLR ~/cloudkick/reach  1.83s user 0.41s system 99% cpu 2.242 total
 
-    ag -i SOLR ~/cloudkick/reach  0.25s user 0.13s system 94% cpu 0.404 total
+    ag -i SOLR ~/cloudkick/reach  0.26s user 0.07s system 99% cpu 0.323 total
 
-You can use ag with [my fork](https://github.com/ggreer/AckMate) of the popular ackmate plugin, which lets you use both ack and ag for searching in Textmate. You can also move or delete `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and run `ln -s /usr/local/bin/ag "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
+You can use Ag with [my fork](https://github.com/ggreer/AckMate) of the popular ackmate plugin, which lets you use both Ack and Ag for searching in Textmate. You can also move or delete `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and run `ln -s /usr/local/bin/ag "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
 
 ## TODO ##
-* behave better when matching in files with really long lines
-  * maybe say "match found at position X of line N" if line is > 10k chars
-* optimizations
+A special thanks goes out to Alex Davies. He has given me some excellent recommendations to improve Ag. Many of these things are still on my list:
+
+* Possible bugs
+  * Review `generate_skip_lookup()` for off-by-one errors.
+* Optimizations
+  * Profile `read()` against `mmap()`. Remember that's `read()` not `fread()`.
   * pthreads. these days it's silly to use only one core
-* actually get textmate dir patterns working (this requires ruby regexes. not fun)
-* symlink loop detection
+    * Take a look at git. Its use of pthreads is a good example to follow.
+  * `search_dir()` is definitely sub-optimal. It's doing some work twice.
+* Features
+  * Symlink loop detection.
+  * Behave better when matching in files with really long lines.
+    * Report "match found at position X of line N" if line is > 10k chars.
+* Windows support
+  * `readdir()` and `stat()` are much slower on Windows. Use `FindNextFile()` instead.
+  * Support Visual Studio instead of autotools?
+
 
 ## Other stuff you might like ##
 * [Ack](https://github.com/petdance/ack) - Better than grep
 * [AckMate](https://github.com/protocool/AckMate) - An ack-powered replacement for TextMate's slow built-in search.
 * [ack.vim](https://github.com/mileszs/ack.vim)
 * [Exuberant Ctags](http://ctags.sourceforge.net/) - Faster than Ag, but it builds an index beforehand. Good for *really* big codebases.
-* [Git-grep](http://book.git-scm.com/4_finding_with_git_grep.html) - As fast as Ag but only works on git repos.
+* [Git-grep](http://git-scm.com/docs/git-grep) - As fast as Ag but only works on git repos.
