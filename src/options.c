@@ -186,7 +186,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 }
 
                 opts.file_search_regex_extra = pcre_study(opts.file_search_regex, 0, &pcre_err);
-                if (opts.file_search_regex_extra == NULL) {
+                if (opts.file_search_regex_extra == NULL && pcre_err != NULL) {
                   log_err("pcre_study of file-search-regex failed. Error: %s", pcre_err);
                   exit(1);
                 }
