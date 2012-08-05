@@ -1,12 +1,12 @@
 #include "search.h"
 
 void search_buf(const pcre *re, const pcre_extra *re_extra,
-                const char *buf, const int buf_len,
+                const char *buf, const off_t buf_len,
                 const char *dir_full_path) {
     int binary = 0;
-    int buf_offset = 0;
+    long buf_offset = 0;
     match matches[opts.max_matches_per_file];
-    int matches_len = 0;
+    long matches_len = 0;
     int offset_vector[opts.max_matches_per_file * 3]; /* TODO */
     int rc = 0;
 
@@ -118,9 +118,11 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
     char *buf = NULL;
     struct stat statbuf;
     int rv = 0;
+    int open_flags = O_RDONLY;
+    int mmap_flags = MAP_SHARED;
     FILE *pipe = NULL;
 
-    fd = open(file_full_path, O_RDONLY);
+    fd = open(file_full_path, open_flags);
     if (fd < 0) {
         log_err("Error opening file %s: %s Skipping...", file_full_path, strerror(errno));
         goto cleanup;
@@ -128,7 +130,7 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
 
     rv = fstat(fd, &statbuf);
     if (rv != 0) {
-        log_err("Error fstat()ing file %s. Skipping...", file_full_path);
+        log_err("Error fstat()ing file %s: %s Skipping...", file_full_path, strerror(errno));
         goto cleanup;
     }
 
@@ -151,7 +153,7 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
             goto cleanup;
         }
 
-        buf = mmap(0, f_len, PROT_READ, MAP_SHARED, fd, 0);
+        buf = mmap(0, f_len, PROT_READ, mmap_flags, fd, 0);
         if (buf == MAP_FAILED) {
             log_err("File %s failed to load: %s.", file_full_path, strerror(errno));
             goto cleanup;

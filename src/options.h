@@ -16,8 +16,8 @@ typedef struct {
     int ackmate;
     pcre *ackmate_dir_filter;
     pcre_extra *ackmate_dir_filter_extra;
-    int after;
-    int before;
+    ulong after;
+    ulong before;
     enum case_behavior casing;
     const char *file_search_string;
     int match_files;
