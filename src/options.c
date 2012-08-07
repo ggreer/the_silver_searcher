@@ -43,6 +43,7 @@ Search options:\n\
 --print-long-lines: Print matches on very long lines (> 2k characters by default)\n\
 --search-binary: Search binary files for matches.\n\
 --stats: Print stats (files scanned, time taken, etc)\n\
+-w --word-regexp: Only match whole words.\n\
 \n");
 }
 
@@ -131,6 +132,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         { "stats", no_argument, &(opts.stats), 1 },
         { "unrestricted", no_argument, NULL, 'u' },
         { "version", no_argument, &version, 1 },
+        { "word-regexp", no_argument, NULL, 'w' },
         { NULL, 0, NULL, 0 }
     };
 
@@ -153,7 +155,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         group = 0;
     }
 
-    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:nQvVu", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:nQvVuw", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 opts.after = atoi(optarg);
@@ -222,6 +224,9 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 break;
             case 'V':
                 version = 1;
+                break;
+            case 'w':
+                opts.whole_word = 1;
                 break;
             case 0: /* Long option */
                 if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0) {

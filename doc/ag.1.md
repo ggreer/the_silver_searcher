@@ -59,6 +59,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `-u --unrestricted`:
     Search *all* files. This ignores .agignore, .gitignore, etc. It searches binary and hidden files as well.
   * `-v --invert-match`
+  * `-w --word-regexp`:
+    Only match whole words.
 
 ## IGNORING FILES
 
