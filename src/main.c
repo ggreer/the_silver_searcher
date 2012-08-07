@@ -53,7 +53,8 @@ int main(int argc, char **argv) {
             strlcat(word_regexp_query, word_sep, query_len);
             free(opts.query);
             opts.query = word_regexp_query;
-            log_err("query %s", opts.query);
+            opts.query_len = query_len;
+            log_debug("Word regexp query: %s", opts.query);
         }
         re = pcre_compile(opts.query, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
         if (re == NULL) {
