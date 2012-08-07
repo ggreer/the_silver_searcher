@@ -226,7 +226,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 version = 1;
                 break;
             case 'w':
-                opts.whole_word = 1;
+                opts.word_regexp = 1;
                 break;
             case 0: /* Long option */
                 if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0) {
