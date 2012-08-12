@@ -5,6 +5,7 @@
 #include <sys/time.h>
 
 #include "config.h"
+#include "options.h"
 
 #ifndef TRUE
 #define TRUE 1
@@ -27,9 +28,17 @@ typedef struct {
     struct timeval time_end;
 } ag_stats;
 
+typedef char *(*strncmp_fp)(const char*, const char*, const size_t, const size_t, const size_t[]);
+
 void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], int case_sensitive);
+
+/* OK, these functions are getting a little out of control */
 char* boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]);
 char* boyer_moore_strncasestr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]);
+char* boyer_moore_strnstr_word(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]);
+char* boyer_moore_strncasestr_word(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]);
+
+strncmp_fp get_strstr(cli_options opts);
 
 int invert_matches(match matches[], int matches_len, const int buf_len);
 

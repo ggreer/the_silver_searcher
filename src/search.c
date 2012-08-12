@@ -22,11 +22,8 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
 
     if (opts.literal) {
         const char *match_ptr = buf;
-        char *(*ag_strncmp_fp)(const char*, const char*, const size_t, const size_t, const size_t[]) = &boyer_moore_strnstr;
+        strncmp_fp ag_strncmp_fp = get_strstr(opts);
 
-        if (opts.casing == CASE_INSENSITIVE) {
-            ag_strncmp_fp = &boyer_moore_strncasestr;
-        }
         while (buf_offset < buf_len) {
             match_ptr = ag_strncmp_fp(match_ptr, opts.query, buf_len - buf_offset, opts.query_len, skip_lookup);
             if (match_ptr == NULL) {

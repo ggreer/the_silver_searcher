@@ -68,6 +68,33 @@ char* boyer_moore_strncasestr(const char *s, const char *find, const size_t s_le
     return NULL;
 }
 
+char* boyer_moore_strnstr_word(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]) {
+    
+}
+
+char* boyer_moore_strncasestr_word(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]) {
+    
+}
+
+strncmp_fp get_strstr(cli_options opts) {
+    strncmp_fp ag_strncmp_fp = &boyer_moore_strnstr;
+
+    if (opts.casing == CASE_INSENSITIVE) {
+        ag_strncmp_fp = &boyer_moore_strncasestr;
+    }
+
+    if (opts.word_regexp) {
+        if (opts.casing == CASE_INSENSITIVE) {
+            ag_strncmp_fp = &boyer_moore_strncasestr_word;
+        }
+        else {
+            ag_strncmp_fp = &boyer_moore_strnstr_word;
+        }
+    }
+
+    return ag_strncmp_fp;
+}
+
 int invert_matches(match matches[], int matches_len, const int buf_len) {
     int i;
 

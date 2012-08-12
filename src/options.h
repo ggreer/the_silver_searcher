@@ -4,8 +4,6 @@
 #include <getopt.h>
 #include <pcre.h>
 
-#include "util.h"
-
 enum case_behavior {
     CASE_SENSITIVE,
     CASE_INSENSITIVE,
