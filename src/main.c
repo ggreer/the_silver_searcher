@@ -45,15 +45,14 @@ int main(int argc, char **argv) {
     }
     else {
         if (opts.word_regexp) {
-            int query_len = opts.query_len + 5; /* "\b" + "\b" + \0 */
-            char *word_regexp_query = malloc(query_len);
+            opts.query_len = opts.query_len + 5; /* "\b" + "\b" + '\0' */
+            char *word_regexp_query = malloc(opts.query_len);
             char *word_sep = "\\b";
-            strlcpy(word_regexp_query, word_sep, query_len);
-            strlcat(word_regexp_query, opts.query, query_len);
-            strlcat(word_regexp_query, word_sep, query_len);
+            strlcpy(word_regexp_query, word_sep, opts.query_len);
+            strlcat(word_regexp_query, opts.query, opts.query_len);
+            strlcat(word_regexp_query, word_sep, opts.query_len);
             free(opts.query);
             opts.query = word_regexp_query;
-            opts.query_len = query_len;
             log_debug("Word regexp query: %s", opts.query);
         }
         re = pcre_compile(opts.query, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
