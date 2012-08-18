@@ -22,16 +22,41 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
 
     if (opts.literal) {
         const char *match_ptr = buf;
-        char *(*ag_strncmp_fp)(const char*, const char*, const size_t, const size_t, const size_t[]) = &boyer_moore_strnstr;
+        strncmp_fp ag_strnstr_fp = get_strstr(opts);
 
-        if (opts.casing == CASE_INSENSITIVE) {
-            ag_strncmp_fp = &boyer_moore_strncasestr;
-        }
         while (buf_offset < buf_len) {
-            match_ptr = ag_strncmp_fp(match_ptr, opts.query, buf_len - buf_offset, opts.query_len, skip_lookup);
+            match_ptr = ag_strnstr_fp(match_ptr, opts.query, buf_len - buf_offset, opts.query_len, skip_lookup);
             if (match_ptr == NULL) {
                 break;
             }
+
+            if (opts.word_regexp) {
+                int word_start = FALSE;
+                int word_end = FALSE;
+                const char *start = match_ptr;
+                const char *end = match_ptr + opts.query_len;
+
+                if (start == buf) {
+                    /* Start of string. */
+                    word_start = TRUE;
+                }
+                else if (is_whitespace(*(start - 1))) {
+                    word_start = TRUE;
+                }
+
+                if (*end == '\0') {
+                    /* End of string. */
+                    word_end = TRUE;
+                }
+                else if (is_whitespace(*end)) {
+                    word_end = TRUE;
+                }
+                if (!(word_start && word_end)) {
+                    match_ptr += opts.query_len;
+                    continue;
+                }
+            }
+
             matches[matches_len].start = match_ptr - buf;
             matches[matches_len].end = matches[matches_len].start + opts.query_len;
             buf_offset = matches[matches_len].end;

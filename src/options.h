@@ -4,8 +4,6 @@
 #include <getopt.h>
 #include <pcre.h>
 
-#include "util.h"
-
 enum case_behavior {
     CASE_SENSITIVE,
     CASE_INSENSITIVE,
@@ -47,6 +45,7 @@ typedef struct {
     int query_len;
     int paths_len;
     int parallel;
+    int word_regexp;
 } cli_options;
 
 /* global options. parse_options gives it sane values, everything else reads from it */
