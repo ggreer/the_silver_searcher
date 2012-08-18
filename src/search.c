@@ -41,11 +41,11 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
                     word_start = TRUE;
                 }
                 else if (is_whitespace(*(start - 1))) {
-                    /* Whitespace before match. */
                     word_start = TRUE;
                 }
 
                 if (*end == '\0') {
+                    /* End of string. */
                     word_end = TRUE;
                 }
                 else if (is_whitespace(*end)) {
