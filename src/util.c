@@ -62,10 +62,20 @@ char* boyer_moore_strncasestr(const char *s, const char *find, const size_t s_le
                 return (char *)(&(s[pos]));
             }
         }
-        pos += skip_lookup[(unsigned char)tolower(s[pos + f_len - 1])];
+        pos += skip_lookup[(unsigned char)s[pos + f_len - 1]];
     }
 
     return NULL;
+}
+
+strncmp_fp get_strstr(cli_options opts) {
+    strncmp_fp ag_strncmp_fp = &boyer_moore_strnstr;
+
+    if (opts.casing == CASE_INSENSITIVE) {
+        ag_strncmp_fp = &boyer_moore_strncasestr;
+    }
+
+    return ag_strncmp_fp;
 }
 
 int invert_matches(match matches[], int matches_len, const int buf_len) {
@@ -175,6 +185,26 @@ int binary_search(const char* needle, char **haystack, int start, int end) {
     }
 
     return mid;
+}
+
+int is_whitespace(const char ch) {
+    int i;
+    char whitespace_chars[] = {
+        ' ',
+        '\t',
+        '\n',
+        '\r',
+        '\v',
+        '\0'
+    };
+
+    for (i = 0; whitespace_chars[i] != '\0'; i++) {
+        if (ch == whitespace_chars[i]) {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
 }
 
 #ifndef HAVE_STRLCAT

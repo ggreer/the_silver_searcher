@@ -44,6 +44,17 @@ int main(int argc, char **argv) {
         generate_skip_lookup(opts.query, opts.query_len, skip_lookup, opts.casing == CASE_SENSITIVE);
     }
     else {
+        if (opts.word_regexp) {
+            opts.query_len = opts.query_len + 5; /* "\b" + "\b" + '\0' */
+            char *word_regexp_query = malloc(opts.query_len);
+            char *word_sep = "\\b";
+            strlcpy(word_regexp_query, word_sep, opts.query_len);
+            strlcat(word_regexp_query, opts.query, opts.query_len);
+            strlcat(word_regexp_query, word_sep, opts.query_len);
+            free(opts.query);
+            opts.query = word_regexp_query;
+            log_debug("Word regexp query: %s", opts.query);
+        }
         re = pcre_compile(opts.query, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
         if (re == NULL) {
             log_err("pcre_compile failed at position %i. Error: %s", pcre_err_offset, pcre_err);
