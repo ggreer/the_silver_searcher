@@ -5,12 +5,13 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
                 const char *dir_full_path) {
     int binary = 0;
     int buf_offset = 0;
-    match matches[opts.max_matches_per_file];
+    match *matches = NULL;
     int matches_len = 0;
-    int offset_vector[opts.max_matches_per_file * 3]; /* TODO */
+    int *offset_vector = NULL;
     int rc = 0;
 
-    if (is_binary((void*)buf, buf_len)) { /* Who needs duck typing when you have void cast? :) */
+    /* Who needs duck typing when you have void cast? :) */
+    if (is_binary((void*)buf, buf_len)) {
         if (opts.search_binary_files) {
             binary = 1;
         }
@@ -19,6 +20,9 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
             return;
         }
     }
+
+    matches = malloc(sizeof(match) * opts.max_matches_per_file);
+    offset_vector = malloc(sizeof(int) * opts.max_matches_per_file * 3);
 
     if (opts.literal) {
         const char *match_ptr = buf;
@@ -113,6 +117,9 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
     else {
         log_debug("No match in %s", dir_full_path);
     }
+
+    free(matches);
+    free(offset_vector);
 }
 
 void search_stdin(const pcre *re, const pcre_extra *re_extra) {
