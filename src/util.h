@@ -35,8 +35,6 @@ void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], 
 /* OK, these functions are getting a little out of control */
 char* boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]);
 char* boyer_moore_strncasestr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]);
-char* boyer_moore_strnstr_word(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]);
-char* boyer_moore_strncasestr_word(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]);
 
 strncmp_fp get_strstr(cli_options opts);
 
