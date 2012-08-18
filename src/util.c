@@ -187,6 +187,26 @@ int binary_search(const char* needle, char **haystack, int start, int end) {
     return mid;
 }
 
+int is_whitespace(const char ch) {
+    int i;
+    char whitespace_chars[] = {
+        ' ',
+        '\t',
+        '\n',
+        '\r',
+        '\v',
+        '\0'
+    };
+
+    for (i = 0; whitespace_chars[i] != '\0'; i++) {
+        if (ch == whitespace_chars[i]) {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 #ifndef HAVE_STRLCAT
 /*
  * strlcat and strlcpy, taken from Apache Traffic Server
