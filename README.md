@@ -65,8 +65,6 @@ You can use Ag with [my fork](https://github.com/ggreer/AckMate) of the popular 
 ## TODO ##
 A special thanks goes out to Alex Davies. He has given me some excellent recommendations to improve Ag. Many of these things are still on my list:
 
-* Possible bugs
-  * Review `generate_skip_lookup()` for off-by-one errors.
 * Optimizations
   * Profile `read()` against `mmap()`. Remember that's `read()` not `fread()`.
   * pthreads. these days it's silly to use only one core
