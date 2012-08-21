@@ -22,6 +22,7 @@ void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], 
         }
         else {
             skip_lookup[(unsigned char)tolower(find[i])] = f_len - i;
+            skip_lookup[(unsigned char)toupper(find[i])] = f_len - i;
         }
     }
 }
