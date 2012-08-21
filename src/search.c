@@ -90,9 +90,16 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
             matches[matches_len].start = offset_vector[0];
             matches[matches_len].end = offset_vector[1];
             matches_len++;
-            /* Don't segfault. TODO: realloc this array */
+            /* TODO: copy-pasted from above. FIXME */
             if (matches_len >= opts.max_matches_per_file) {
                 log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
+                break;
+            }
+            else if ((size_t)matches_len >= matches_size) {
+                matches_size = matches_size * 2;
+                matches = realloc(matches, matches_size);
+                offset_vector = realloc(offset_vector, sizeof(int) * matches_size * 3);
+                log_debug("Too many matches in %s. Reallocating matches to %u.", dir_full_path, matches_size);
                 break;
             }
         }
