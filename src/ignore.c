@@ -81,6 +81,7 @@ void load_svn_ignore_patterns(const char *path, const int path_len) {
     fp = fopen(dir_prop_base, "r");
     if (fp == NULL) {
         log_debug("Skipping svn ignore file %s", dir_prop_base);
+        free(dir_prop_base);
         return;
     }
 
