@@ -335,7 +335,7 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
         }
 
         log_debug("dir %s type %i", dir_full_path, dir->d_type);
-        if ( ! filepath_filter(dir_full_path)) {
+        if (!filepath_filter(dir_full_path)) {
             goto cleanup;
         }
 
