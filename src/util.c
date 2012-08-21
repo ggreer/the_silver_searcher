@@ -8,18 +8,20 @@
 
 
 void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], int case_sensitive) {
-    size_t i = 0;
+    size_t i;
 
     for (i = 0; i < 256; i++) {
-        skip_lookup[i] = f_len - 1 || 1; /* Handle the case of f_len == 1 */
+        skip_lookup[i] = f_len;
     }
 
-    for (i = 0; i < f_len - 1; i++) {
+    f_len--;
+
+    for (i = 0; i < f_len; i++) {
         if (case_sensitive) {
-            skip_lookup[(unsigned char)find[i]] = f_len - i - 1;
+            skip_lookup[(unsigned char)find[i]] = f_len - i;
         }
         else {
-            skip_lookup[(unsigned char)tolower(find[i])] = f_len - i - 1;
+            skip_lookup[(unsigned char)tolower(find[i])] = f_len - i;
         }
     }
 }
