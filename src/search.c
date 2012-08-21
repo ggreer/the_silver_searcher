@@ -56,6 +56,7 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
                 else if (is_whitespace(*end)) {
                     word_end = TRUE;
                 }
+                /* Skip if we're not a word. */
                 if (!(word_start && word_end)) {
                     match_ptr += opts.query_len;
                     continue;
