@@ -68,7 +68,6 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
             log_debug("Match found. File %s, offset %i bytes.", dir_full_path, matches[matches_len].start);
             matches_len++;
             match_ptr += opts.query_len;
-            /* Don't segfault. TODO: realloc this array */
             if (matches_len >= opts.max_matches_per_file) {
                 log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
                 break;
