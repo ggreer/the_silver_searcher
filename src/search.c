@@ -339,35 +339,32 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
             goto cleanup;
         }
 
-        /* TODO: scan files in current dir before going deeper */
-        if (dir->d_type == DT_DIR) {
-            if (opts.recurse_dirs) {
-                if (depth < opts.max_search_depth) {
-                    log_debug("Searching dir %s", dir_full_path);
-                    search_dir(re, re_extra, dir_full_path, depth + 1);
+        if (dir->d_type != DT_DIR) {
+            if (opts.file_search_regex) {
+                rc = pcre_exec(opts.file_search_regex, NULL, dir_full_path, strlen(dir_full_path),
+                               0, 0, offset_vector, 3);
+                if (rc < 0) { /* no match */
+                    log_debug("Skipping %s due to file_search_regex.", dir_full_path);
+                    goto cleanup;
                 }
-                else {
-                    log_err("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
+                else if (opts.match_files) {
+                    log_debug("match_files: file_search_regex matched for %s.", dir_full_path);
+                    print_path(dir_full_path, '\n');
+                    goto cleanup;
                 }
             }
-            goto cleanup;
-        }
 
-        if (opts.file_search_regex) {
-            rc = pcre_exec(opts.file_search_regex, NULL, dir_full_path, strlen(dir_full_path),
-                           0, 0, offset_vector, 3);
-            if (rc < 0) { /* no match */
-                log_debug("Skipping %s due to file_search_regex.", dir_full_path);
-                goto cleanup;
+            search_file(re, re_extra, dir_full_path);
+        }
+        else if (opts.recurse_dirs) {
+            if (depth < opts.max_search_depth) {
+                log_debug("Searching dir %s", dir_full_path);
+                search_dir(re, re_extra, dir_full_path, depth + 1);
             }
-            else if (opts.match_files) {
-                log_debug("match_files: file_search_regex matched for %s.", dir_full_path);
-                print_path(dir_full_path, '\n');
-                goto cleanup;
+            else {
+                log_err("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
             }
         }
-
-        search_file(re, re_extra, dir_full_path);
 
         cleanup:
         if (fd != -1) {
