@@ -59,6 +59,7 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
                 /* Skip if we're not a word. */
                 if (!(word_start && word_end)) {
                     match_ptr += opts.query_len;
+                    buf_offset = end - buf;
                     continue;
                 }
             }
