@@ -233,6 +233,9 @@ int filename_filter(struct dirent *dir) {
     return 1;
 }
 
+/* Profiling shows that 70% of execution time is spent in this function.
+   Most of that time is in fnmatch()
+ */
 int filepath_filter(char *filepath) {
     int match_pos;
     char *pattern = NULL;
