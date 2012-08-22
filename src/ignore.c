@@ -222,19 +222,19 @@ int filename_filter(struct dirent *dir) {
         return 0;
     }
 
-    for (i = 0; i < ignore_patterns_len; i++) {
-        pattern = ignore_patterns[i];
-        if (fnmatch(pattern, filename, fnmatch_flags) == 0) {
-            log_debug("file %s ignored because name matches regex pattern %s", dir->d_name, pattern);
-            return 0;
-        }
-    }
-
     if (opts.ackmate_dir_filter != NULL) {
         /* we just care about the match, not where the matches are */
         rc = pcre_exec(opts.ackmate_dir_filter, NULL, dir->d_name, strlen(dir->d_name), 0, 0, NULL, 0);
         if (rc >= 0) {
             log_debug("file %s ignored because name matches ackmate dir filter pattern", dir->d_name);
+            return 0;
+        }
+    }
+
+    for (i = 0; i < ignore_patterns_len; i++) {
+        pattern = ignore_patterns[i];
+        if (fnmatch(pattern, filename, fnmatch_flags) == 0) {
+            log_debug("file %s ignored because name matches regex pattern %s", dir->d_name, pattern);
             return 0;
         }
     }
@@ -263,19 +263,19 @@ int filepath_filter(char *filepath) {
         return 0;
     }
 
-    for (i = 0; i < ignore_patterns_len; i++) {
-        pattern = ignore_patterns[i];
-        if (fnmatch(pattern, filepath, fnmatch_flags) == 0) {
-            log_debug("file %s ignored because name matches regex pattern %s", filepath, pattern);
-            return 0;
-        }
-    }
-
     if (opts.ackmate_dir_filter != NULL) {
         /* we just care about the match, not where the matches are */
         rc = pcre_exec(opts.ackmate_dir_filter, NULL, filepath, strlen(filepath), 0, 0, NULL, 0);
         if (rc >= 0) {
             log_debug("file %s ignored because name matches ackmate dir filter pattern", filepath);
+            return 0;
+        }
+    }
+
+    for (i = 0; i < ignore_patterns_len; i++) {
+        pattern = ignore_patterns[i];
+        if (fnmatch(pattern, filepath, fnmatch_flags) == 0) {
+            log_debug("file %s ignored because name matches regex pattern %s", filepath, pattern);
             return 0;
         }
     }
