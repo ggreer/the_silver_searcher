@@ -72,6 +72,33 @@ void cleanup_ignore_patterns() {
     free(ignore_names);
 }
 
+/* For loading git/svn/hg ignore patterns */
+void load_ignore_patterns(const char *ignore_filename) {
+    FILE *fp = NULL;
+    fp = fopen(ignore_filename, "r");
+    if (fp == NULL) {
+        log_debug("Skipping ignore file %s", ignore_filename);
+        return;
+    }
+
+    char *line = NULL;
+    ssize_t line_len = 0;
+    size_t line_cap = 0;
+
+    while ((line_len = getline(&line, &line_cap, fp)) > 0) {
+        if (line_len == 0 || line[0] == '\n') {
+            continue;
+        }
+        if (line[line_len-1] == '\n') {
+            line[line_len-1] = '\0'; /* kill the \n */
+        }
+        add_ignore_pattern(line);
+    }
+
+    free(line);
+    fclose(fp);
+}
+
 void load_svn_ignore_patterns(const char *path, const int path_len) {
     FILE *fp = NULL;
     char *dir_prop_base = malloc(path_len + strlen(SVN_DIR_PROP_BASE) + 1);
@@ -140,33 +167,6 @@ void load_svn_ignore_patterns(const char *path, const int path_len) {
     cleanup:
     free(dir_prop_base);
     free(key);
-    fclose(fp);
-}
-
-/* For loading git/svn/hg ignore patterns */
-void load_ignore_patterns(const char *ignore_filename) {
-    FILE *fp = NULL;
-    fp = fopen(ignore_filename, "r");
-    if (fp == NULL) {
-        log_debug("Skipping ignore file %s", ignore_filename);
-        return;
-    }
-
-    char *line = NULL;
-    ssize_t line_len = 0;
-    size_t line_cap = 0;
-
-    while ((line_len = getline(&line, &line_cap, fp)) > 0) {
-        if (line_len == 0 || line[0] == '\n') {
-            continue;
-        }
-        if (line[line_len-1] == '\n') {
-            line[line_len-1] = '\0'; /* kill the \n */
-        }
-        add_ignore_pattern(line);
-    }
-
-    free(line);
     fclose(fp);
 }
 
