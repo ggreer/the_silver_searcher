@@ -18,6 +18,8 @@ void cleanup_ignore_patterns();
 void load_ignore_patterns(const char *ignore_filename);
 void load_svn_ignore_patterns(const char *path, const int path_len);
 
+int ackmate_dir_match(const char* dir_name);
+
 int filename_filter(struct dirent *dir);
 int filepath_filter(char *filepath);
 
