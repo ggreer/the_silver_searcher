@@ -170,6 +170,21 @@ void load_ignore_patterns(const char *ignore_filename) {
     fclose(fp);
 }
 
+int ackmate_dir_match(const char* dir_name) {
+    int rc = 0;
+
+    if (opts.ackmate_dir_filter != NULL) {
+        /* we just care about the match, not where the matches are */
+        rc = pcre_exec(opts.ackmate_dir_filter, NULL, dir_name, strlen(dir_name), 0, 0, NULL, 0);
+        if (rc >= 0) {
+            log_debug("file %s ignored because name matches ackmate dir filter pattern", dir_name);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 int ignorefile_filter(struct dirent *dir) {
     int i;
 
@@ -181,21 +196,6 @@ int ignorefile_filter(struct dirent *dir) {
     for (i = 0; ignore_pattern_files[i] != NULL; i++) {
         if (strcmp(ignore_pattern_files[i], dir->d_name) == 0) {
             log_debug("ignore pattern matched for %s", dir->d_name);
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
-int ackmate_dir_match(const char* dir_name) {
-    int rc = 0;
-
-    if (opts.ackmate_dir_filter != NULL) {
-        /* we just care about the match, not where the matches are */
-        rc = pcre_exec(opts.ackmate_dir_filter, NULL, dir_name, strlen(dir_name), 0, 0, NULL, 0);
-        if (rc >= 0) {
-            log_debug("file %s ignored because name matches ackmate dir filter pattern", dir_name);
             return 1;
         }
     }
