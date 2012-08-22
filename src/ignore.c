@@ -188,12 +188,26 @@ int ignorefile_filter(struct dirent *dir) {
     return 0;
 }
 
+int ackmate_dir_match(const char* dir_name) {
+    int rc = 0;
+
+    if (opts.ackmate_dir_filter != NULL) {
+        /* we just care about the match, not where the matches are */
+        rc = pcre_exec(opts.ackmate_dir_filter, NULL, dir_name, strlen(dir_name), 0, 0, NULL, 0);
+        if (rc >= 0) {
+            log_debug("file %s ignored because name matches ackmate dir filter pattern", dir_name);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 /* This function is REALLY HOT. It gets called for every file */
 int filename_filter(struct dirent *dir) {
     const char *filename = dir->d_name;
     int match_pos;
     char *pattern = NULL;
-    int rc = 0;
     int i;
 
     if (!opts.follow_symlinks && dir->d_type == DT_LNK) {
@@ -222,13 +236,8 @@ int filename_filter(struct dirent *dir) {
         return 0;
     }
 
-    if (opts.ackmate_dir_filter != NULL) {
-        /* we just care about the match, not where the matches are */
-        rc = pcre_exec(opts.ackmate_dir_filter, NULL, dir->d_name, strlen(dir->d_name), 0, 0, NULL, 0);
-        if (rc >= 0) {
-            log_debug("file %s ignored because name matches ackmate dir filter pattern", dir->d_name);
-            return 0;
-        }
+    if (ackmate_dir_match(dir->d_name)) {
+        return 0;
     }
 
     for (i = 0; i < ignore_patterns_len; i++) {
@@ -245,7 +254,6 @@ int filename_filter(struct dirent *dir) {
 int filepath_filter(char *filepath) {
     int match_pos;
     char *pattern = NULL;
-    int rc = 0;
     int i;
 
     if (opts.search_all_files) {
@@ -263,13 +271,8 @@ int filepath_filter(char *filepath) {
         return 0;
     }
 
-    if (opts.ackmate_dir_filter != NULL) {
-        /* we just care about the match, not where the matches are */
-        rc = pcre_exec(opts.ackmate_dir_filter, NULL, filepath, strlen(filepath), 0, 0, NULL, 0);
-        if (rc >= 0) {
-            log_debug("file %s ignored because name matches ackmate dir filter pattern", filepath);
-            return 0;
-        }
+    if (ackmate_dir_match(filepath)) {
+        return 0;
     }
 
     for (i = 0; i < ignore_patterns_len; i++) {
