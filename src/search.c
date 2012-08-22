@@ -226,38 +226,28 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
     off_t f_len = 0;
     char *buf = NULL;
     char *dir_full_path = NULL;
+    char *ignore_file = NULL;
     size_t path_len = 0;
     int i;
 
     /* find agignore/gitignore/hgignore/etc files to load ignore patterns from */
-#ifdef SCANDIR_CONST
-    results = scandir(path, &dir_list, &ignorefile_filter, &alphasort);
-#else
-    results = scandir(path, &dir_list, (int (*)(const struct dirent *))&ignorefile_filter, &alphasort);
-#endif
-    if (results > 0) {
-        for (i = 0; i < results; i++) {
-            dir = dir_list[i];
-            path_len = (size_t)(strlen(path) + strlen(dir->d_name) + 2); /* 2 for slash and null char */
-            dir_full_path = malloc(path_len);
-            strlcpy(dir_full_path, path, path_len);
-            strlcat(dir_full_path, "/", path_len);
-            strlcat(dir_full_path, dir->d_name, path_len);
-            if (strcmp(SVN_DIR, dir->d_name) == 0) {
-                log_debug("svn ignore pattern matched for %s", dir_full_path);
-                load_svn_ignore_patterns(dir_full_path, strlen(dir_full_path));
-            }
-            else {
-                load_ignore_patterns(dir_full_path);
-            }
-            free(dir);
-            dir = NULL;
-            free(dir_full_path);
-            dir_full_path = NULL;
+    for (i = 0; ignore_pattern_files[i] != NULL; i++) {
+        ignore_file = ignore_pattern_files[i];
+        path_len = (size_t)(strlen(path) + strlen(ignore_file) + 2); /* 2 for slash and null char */
+        dir_full_path = malloc(path_len);
+        strlcpy(dir_full_path, path, path_len);
+        strlcat(dir_full_path, "/", path_len);
+        strlcat(dir_full_path, ignore_file, path_len);
+        if (strcmp(SVN_DIR, ignore_file) == 0) {
+            log_debug("svn ignore pattern matched for %s", dir_full_path);
+            load_svn_ignore_patterns(dir_full_path, strlen(dir_full_path));
         }
+        else {
+            load_ignore_patterns(dir_full_path);
+        }
+        free(dir_full_path);
+        dir_full_path = NULL;
     }
-    free(dir_list);
-    dir_list = NULL;
 
 #ifdef SCANDIR_CONST
     results = scandir(path, &dir_list, &filename_filter, &alphasort);
