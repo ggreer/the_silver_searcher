@@ -185,24 +185,6 @@ int ackmate_dir_match(const char* dir_name) {
     return 0;
 }
 
-int ignorefile_filter(struct dirent *dir) {
-    int i;
-
-    if (opts.search_all_files || opts.search_unrestricted) {
-        return 0;
-    }
-
-    /* This isn't as bad as it looks. ignore_pattern_files only has 3 elements */
-    for (i = 0; ignore_pattern_files[i] != NULL; i++) {
-        if (strcmp(ignore_pattern_files[i], dir->d_name) == 0) {
-            log_debug("ignore pattern matched for %s", dir->d_name);
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
 /* This function is REALLY HOT. It gets called for every file */
 int filename_filter(struct dirent *dir) {
     const char *filename = dir->d_name;
