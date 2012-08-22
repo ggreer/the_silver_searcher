@@ -226,7 +226,7 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
     off_t f_len = 0;
     char *buf = NULL;
     char *dir_full_path = NULL;
-    char *ignore_file = NULL;
+    const char *ignore_file = NULL;
     size_t path_len = 0;
     int i;
 
