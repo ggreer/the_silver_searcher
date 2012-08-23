@@ -325,10 +325,13 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
             }
         }
 
+/* TODO: this kills performance */
+/*
         log_debug("dir %s type %i", dir_full_path, dir->d_type);
         if (!filepath_filter(dir_full_path)) {
             goto cleanup;
         }
+*/
 
         if (dir->d_type != DT_DIR) {
             if (opts.file_search_regex) {
