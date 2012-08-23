@@ -5,6 +5,7 @@
 #include <sys/time.h>
 
 #include "config.h"
+#include "options.h"
 
 #ifndef TRUE
 #define TRUE 1
@@ -27,9 +28,14 @@ typedef struct {
     struct timeval time_end;
 } ag_stats;
 
+typedef char *(*strncmp_fp)(const char*, const char*, const size_t, const size_t, const size_t[]);
+
 void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], int case_sensitive);
+
 char* boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]);
 char* boyer_moore_strncasestr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]);
+
+strncmp_fp get_strstr(cli_options opts);
 
 int invert_matches(match matches[], int matches_len, const int buf_len);
 
@@ -37,6 +43,8 @@ int is_binary(const void* buf, const int buf_len);
 int is_regex(const char* query);
 int is_fnmatch(const char* filename);
 int binary_search(const char* needle, char **haystack, int start, int end);
+
+int is_whitespace(const char ch);
 
 #ifndef HAVE_STRLCAT
 size_t strlcat(char *dest, const char *src, size_t size);
@@ -51,8 +59,12 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 char * strndup (const char *s, size_t n);
 #endif
 
+/*
+ * This is just to squelch a compiler warning.
+ * Most BSDs want the 3rd parameter to scandir() to be const. Linux doesn't.
+ */
 #if defined __NetBSD__ || defined __OpenBSD__ || defined __FreeBSD__ || defined __bsdi__ || defined __DragonFly__ || defined BSD || defined _SYSTYPE_BSD || defined __APPLE__
-#define AG_OS_BSD
+#define SCANDIR_CONST
 #endif
 
 #endif

@@ -46,7 +46,7 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Only print filenames containing matches, not matching lines.
   * `-L --files-without-matches`:
     Only print filenames that don't contain matches.
-  * `--literal`:
+  * `-Q --literal`:
     Do not parse PATTERN as a regular expression. Try to match it literally.
   * `-m --max-count NUM`:
     Skip the rest of a file after NUM matches. Default is 10,000.
@@ -59,6 +59,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `-u --unrestricted`:
     Search *all* files. This ignores .agignore, .gitignore, etc. It searches binary and hidden files as well.
   * `-v --invert-match`
+  * `-w --word-regexp`:
+    Only match whole words.
 
 ## IGNORING FILES
 

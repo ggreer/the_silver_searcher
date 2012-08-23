@@ -38,11 +38,12 @@ Search options:\n\
 --invert-match\n\
 --[no]heading\n\
 -l --files-with-matches: Only print filenames containing matches, not matching lines.\n\
---literal: Do not parse PATTERN as a regular expression. Try to match it literally.\n\
+-Q --literal: Do not parse PATTERN as a regular expression. Try to match it literally.\n\
 -m --max-count NUM: Skip the rest of a file after NUM matches. Default is 10,000.\n\
 --print-long-lines: Print matches on very long lines (> 2k characters by default)\n\
 --search-binary: Search binary files for matches.\n\
 --stats: Print stats (files scanned, time taken, etc)\n\
+-w --word-regexp: Only match whole words.\n\
 \n");
 }
 
@@ -65,11 +66,15 @@ void init_options() {
 void cleanup_options() {
     if (opts.ackmate_dir_filter) {
         pcre_free(opts.ackmate_dir_filter);
+    }
+    if (opts.ackmate_dir_filter_extra) {
         pcre_free(opts.ackmate_dir_filter_extra); /* Using pcre_free_study here segfaults on some versions of PCRE */
     }
 
     if (opts.file_search_regex) {
         pcre_free(opts.file_search_regex);
+    }
+    if (opts.file_search_regex_extra) {
         pcre_free(opts.file_search_regex_extra); /* Using pcre_free_study here segfaults on some versions of PCRE */
     }
 }
@@ -119,7 +124,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         { "ignore-case", no_argument, NULL, 'i' },
         { "files-with-matches", no_argument, NULL, 'l' },
         { "files-without-matches", no_argument, NULL, 'L' },
-        { "literal", no_argument, &(opts.literal), 1 },
+        { "literal", no_argument, NULL, 'Q' },
         { "match", no_argument, &useless, 0 },
         { "max-count", required_argument, NULL, 'm' },
         { "parallel", no_argument, &(opts.parallel), 1},
@@ -131,6 +136,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         { "stats", no_argument, &(opts.stats), 1 },
         { "unrestricted", no_argument, NULL, 'u' },
         { "version", no_argument, &version, 1 },
+        { "word-regexp", no_argument, NULL, 'w' },
         { NULL, 0, NULL, 0 }
     };
 
@@ -153,7 +159,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         group = 0;
     }
 
-    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:nvVu", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:nQvVuw", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 opts.after = atoi(optarg);
@@ -186,9 +192,8 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 }
 
                 opts.file_search_regex_extra = pcre_study(opts.file_search_regex, 0, &pcre_err);
-                if (opts.file_search_regex_extra == NULL) {
-                  log_err("pcre_study of file-search-regex failed. Error: %s", pcre_err);
-                  exit(1);
+                if (opts.file_search_regex_extra == NULL && pcre_err != NULL) {
+                  log_debug("pcre_study of file-search-regex failed. Error: %s", pcre_err);
                 }
                 break;
             case 'h':
@@ -210,6 +215,9 @@ void parse_options(int argc, char **argv, char **paths[]) {
             case 'n':
                 opts.recurse_dirs = 0;
                 break;
+            case 'Q':
+                opts.literal = 1;
+                break;
             case 'u':
                 opts.search_binary_files = 1;
                 opts.search_unrestricted = 1;
@@ -220,6 +228,9 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 break;
             case 'V':
                 version = 1;
+                break;
+            case 'w':
+                opts.word_regexp = 1;
                 break;
             case 0: /* Long option */
                 if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0) {
