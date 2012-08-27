@@ -35,6 +35,30 @@ int ignore_names_len = 0;
 
 const int fnmatch_flags = 0 & FNM_PATHNAME;
 
+ignores* init_ignore(ignores *ig, ignores *parent) {
+    ig = malloc(sizeof(ignores));
+    ig->names = NULL;
+    ig->names_len = 0;
+    ig->regexes = NULL;
+    ig->regexes_len = 0;
+    ig->parent = parent;
+    return ig;
+}
+
+/* TODO: don't leak children! */
+void cleanup_ignore(ignores *ig) {
+    if (ig) {
+        if (ig->regexes) {
+            free(ig->regexes);
+        }
+        if (ig->names) {
+            free(ig->names);
+        }
+        free(ig);
+    }
+}
+
+
 void add_ignore_pattern(const char* pattern) {
     int i;
 
