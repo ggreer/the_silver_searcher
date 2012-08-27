@@ -23,7 +23,9 @@ int main(int argc, char **argv) {
     pcre_extra *re_extra = NULL;
     double time_diff = 0.0;
 
-    memset(&stats, 0, sizeof(stats)); /* What's the point of an init function if it's going to be this one-liner? */
+    /* What's the point of an init function if it's going to be two lines? */
+    memset(&stats, 0, sizeof(stats));
+    root_ignores = init_ignore(root_ignores, NULL);
 
     gettimeofday(&(stats.time_start), NULL);
 
@@ -98,6 +100,7 @@ int main(int argc, char **argv) {
     pcre_free(re);
     pcre_free(re_extra); /* Using pcre_free_study here segfaults on some versions of PCRE */
     free(paths);
+    cleanup_ignore(root_ignores);
     cleanup_ignore_patterns();
 
     return 0;
