@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
 
     /* What's the point of an init function if it's going to be two lines? */
     memset(&stats, 0, sizeof(stats));
-    root_ignores = init_ignore(root_ignores, NULL);
+    init_ignore(root_ignores, NULL);
 
     gettimeofday(&(stats.time_start), NULL);
 

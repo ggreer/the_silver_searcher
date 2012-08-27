@@ -8,20 +8,21 @@
 #define SVN_DIR ".svn"
 #define SVN_PROP_IGNORE "svn:ignore"
 
-typedef struct {
+struct ignores {
     char **names; /* Non-regex ignore lines. Sorted so we can binary search them. */
     size_t names_len;
     char **regexes;
     size_t regexes_len;
     struct ignores *parent;
-} ignores;
+};
+typedef struct ignores ignores;
 
 ignores *root_ignores;
 
 extern const char *evil_hardcoded_ignore_files[];
 extern const char *ignore_pattern_files[];
 
-ignores* init_ignore(ignores *ig, ignores *parent);
+void init_ignore(ignores *ig, ignores *parent);
 void cleanup_ignore(ignores *ig);
 
 void add_ignore_pattern(const char* pattern);

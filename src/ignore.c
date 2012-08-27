@@ -35,14 +35,13 @@ int ignore_names_len = 0;
 
 const int fnmatch_flags = 0 & FNM_PATHNAME;
 
-ignores* init_ignore(ignores *ig, ignores *parent) {
+void init_ignore(ignores *ig, ignores *parent) {
     ig = malloc(sizeof(ignores));
     ig->names = NULL;
     ig->names_len = 0;
     ig->regexes = NULL;
     ig->regexes_len = 0;
     ig->parent = parent;
-    return ig;
 }
 
 /* TODO: don't leak children! */
