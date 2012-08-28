@@ -4,11 +4,11 @@
 #include <string.h>
 #include <sys/time.h>
 
+#include "config.h"
+
 #include "log.h"
 #include "options.h"
 #include "search.h"
-
-#include "config.h"
 
 int main(int argc, char **argv) {
     set_log_level(LOG_LEVEL_WARN);
@@ -26,6 +26,13 @@ int main(int argc, char **argv) {
     /* What's the point of an init function if it's going to be two lines? */
     memset(&stats, 0, sizeof(stats));
     root_ignores = init_ignore(NULL);
+#ifdef USE_PCRE_JIT
+    int has_jit = 0;
+    pcre_config(PCRE_CONFIG_JIT, &has_jit);
+    if (has_jit) {
+        study_opts |= PCRE_STUDY_JIT_COMPILE;
+    }
+#endif
 
     gettimeofday(&(stats.time_start), NULL);
 
@@ -62,15 +69,6 @@ int main(int argc, char **argv) {
             log_err("pcre_compile failed at position %i. Error: %s", pcre_err_offset, pcre_err);
             exit(1);
         }
-
-#ifdef USE_PCRE_JIT
-        int has_jit = 0;
-        pcre_config(PCRE_CONFIG_JIT, &has_jit);
-        if (has_jit) {
-            study_opts |= PCRE_STUDY_JIT_COMPILE;
-        }
-#endif
-
         re_extra = pcre_study(re, study_opts, &pcre_err);
         if (re_extra == NULL) {
             log_debug("pcre_study returned nothing useful. Error: %s", pcre_err);
