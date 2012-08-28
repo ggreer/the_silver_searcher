@@ -363,5 +363,4 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
     free(dir_list);
     dir_list = NULL;
     cleanup_ignore(ig);
-    return;
 }

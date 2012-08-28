@@ -38,8 +38,8 @@ int ag_scandir(const char *dirname,
         names[results_len] = d;
         results_len++;
     }
-    closedir(dirp);
 
+    closedir(dirp);
     *namelist = names;
     return results_len;
 }

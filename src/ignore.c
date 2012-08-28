@@ -37,7 +37,6 @@ ignores *init_ignore(ignores *parent) {
     return ig;
 }
 
-/* TODO: don't leak children! */
 void cleanup_ignore(ignores *ig) {
     if (ig) {
         if (ig->regexes) {
@@ -60,7 +59,7 @@ void add_ignore_pattern(ignores *ig, const char* pattern) {
 
     if (is_fnmatch(pattern)) {
         ig->regexes_len++;
-        ig->regexes = realloc(ig->regexes, (ig->regexes_len) * sizeof(char*));
+        ig->regexes = realloc(ig->regexes, ig->regexes_len * sizeof(char*));
         ig->regexes[ig->regexes_len - 1] = strdup(pattern);
         log_debug("added regex ignore pattern %s", pattern);
     }
