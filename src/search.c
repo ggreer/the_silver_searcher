@@ -1,4 +1,5 @@
 #include "search.h"
+#include "scandir.h"
 
 void search_buf(const pcre *re, const pcre_extra *re_extra,
                 const char *buf, const int buf_len,
@@ -248,11 +249,7 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
         dir_full_path = NULL;
     }
 
-#ifdef SCANDIR_CONST
-    results = scandir(path, &dir_list, &filename_filter, &alphasort);
-#else
-    results = scandir(path, &dir_list, (int (*)(const struct dirent *))&filename_filter, &alphasort);
-#endif
+    results = ag_scandir(path, &dir_list, &filename_filter, ig);
     if (results == 0)
     {
         log_debug("No results found in directory %s", path);

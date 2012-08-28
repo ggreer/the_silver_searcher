@@ -194,11 +194,11 @@ int ackmate_dir_match(const char* dir_name) {
 }
 
 /* This function is REALLY HOT. It gets called for every file */
-int filename_filter(struct dirent *dir) {
+int filename_filter(const struct dirent *dir, void *baton) {
     const char *filename = dir->d_name;
     int match_pos;
-    char *pattern = NULL;
     size_t i;
+    ignores *ig = (ignores*) baton;
 
     if (!opts.follow_symlinks && dir->d_type == DT_LNK) {
         log_debug("File %s ignored becaused it's a symlink", dir->d_name);
@@ -220,13 +220,9 @@ int filename_filter(struct dirent *dir) {
         return 1;
     }
 
-    char **ignore_names = root_ignores->names;
-    size_t ignore_names_len = root_ignores->names_len;
-    char **ignore_patterns = root_ignores->regexes;
-    size_t ignore_patterns_len = root_ignores->regexes_len;
-    match_pos = binary_search(dir->d_name, ignore_names, 0, ignore_names_len);
+    match_pos = binary_search(dir->d_name, ig->names, 0, ig->names_len);
     if (match_pos >= 0) {
-        log_debug("file %s ignored because name matches static pattern %s", dir->d_name, ignore_names[match_pos]);
+        log_debug("file %s ignored because name matches static pattern %s", dir->d_name, ig->names[match_pos]);
         return 0;
     }
 
@@ -234,12 +230,15 @@ int filename_filter(struct dirent *dir) {
         return 0;
     }
 
-    for (i = 0; i < ignore_patterns_len; i++) {
-        pattern = ignore_patterns[i];
-        if (fnmatch(pattern, filename, fnmatch_flags) == 0) {
-            log_debug("file %s ignored because name matches regex pattern %s", dir->d_name, pattern);
+    for (i = 0; i < ig->regexes_len; i++) {
+        if (fnmatch(ig->regexes[i], filename, fnmatch_flags) == 0) {
+            log_debug("file %s ignored because name matches regex pattern %s", dir->d_name, ig->regexes[i]);
             return 0;
         }
+    }
+
+    if (ig->parent != NULL) {
+        return filename_filter(dir, (void *)(ig->parent));
     }
 
     return 1;
