@@ -38,11 +38,19 @@ ignores *init_ignore(ignores *parent) {
 }
 
 void cleanup_ignore(ignores *ig) {
+    size_t i;
+
     if (ig) {
         if (ig->regexes) {
+            for (i = 0; i < ig->regexes_len; i++) {
+                free(ig->regexes[i]);
+            }
             free(ig->regexes);
         }
         if (ig->names) {
+            for (i = 0; i < ig->names_len; i++) {
+                free(ig->names[i]);
+            }
             free(ig->names);
         }
         free(ig);
