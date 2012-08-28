@@ -11,7 +11,7 @@
 struct ignores {
     char **names; /* Non-regex ignore lines. Sorted so we can binary search them. */
     size_t names_len;
-    char **regexes;
+    char **regexes; /* For patterns that need fnmatch */
     size_t regexes_len;
     struct ignores *parent;
 };
@@ -22,15 +22,15 @@ ignores *root_ignores;
 extern const char *evil_hardcoded_ignore_files[];
 extern const char *ignore_pattern_files[];
 
-void init_ignore(ignores *ig, ignores *parent);
+ignores *init_ignore(ignores *parent);
 void cleanup_ignore(ignores *ig);
 
-void add_ignore_pattern(const char* pattern);
+void add_ignore_pattern(ignores *ig, const char* pattern);
 
 void cleanup_ignore_patterns();
 
-void load_ignore_patterns(const char *ignore_filename);
-void load_svn_ignore_patterns(const char *path, const int path_len);
+void load_ignore_patterns(ignores *ig, const char *ignore_filename);
+void load_svn_ignore_patterns(ignores *ig, const char *path);
 
 int ackmate_dir_match(const char* dir_name);
 

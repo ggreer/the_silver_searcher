@@ -25,23 +25,16 @@ const char *ignore_pattern_files[] = {
     NULL
 };
 
-/* For patterns that need fnmatch */
-char **ignore_patterns = NULL;
-int ignore_patterns_len = 0;
-
-/* For patterns with no regex stuff in them. Sorted for fast matching. */
-char **ignore_names = NULL;
-int ignore_names_len = 0;
-
 const int fnmatch_flags = 0 & FNM_PATHNAME;
 
-void init_ignore(ignores *ig, ignores *parent) {
-    ig = malloc(sizeof(ignores));
+ignores *init_ignore(ignores *parent) {
+    ignores *ig = malloc(sizeof(ignores));
     ig->names = NULL;
     ig->names_len = 0;
     ig->regexes = NULL;
     ig->regexes_len = 0;
     ig->parent = parent;
+    return ig;
 }
 
 /* TODO: don't leak children! */
@@ -58,45 +51,35 @@ void cleanup_ignore(ignores *ig) {
 }
 
 
-void add_ignore_pattern(const char* pattern) {
+void add_ignore_pattern(ignores *ig, const char* pattern) {
     int i;
 
     if (is_fnmatch(pattern)) {
-        ignore_patterns_len++;
-        ignore_patterns = realloc(ignore_patterns, (ignore_patterns_len) * sizeof(char*));
-        ignore_patterns[ignore_patterns_len - 1] = strdup(pattern);
+        ig->regexes_len++;
+        ig->regexes = realloc(ig->regexes, (ig->regexes_len) * sizeof(char*));
+        ig->regexes[ig->regexes_len - 1] = strdup(pattern);
         log_debug("added regex ignore pattern %s", pattern);
     }
     else {
         /* a balanced binary tree is best for performance, but I'm lazy */
-        ignore_names_len++;
-        ignore_names = realloc(ignore_names, ignore_names_len * sizeof(char*));
-        for (i = ignore_names_len-1; i > 0; i--) {
-            if (strcmp(pattern, ignore_names[i-1]) > 0) {
+        ig->names_len++;
+        ig->names = realloc(ig->names, ig->names_len * sizeof(char*));
+        for (i = ig->names_len - 1; i > 0; i--) {
+            if (strcmp(pattern, ig->names[i-1]) > 0) {
                 break;
             }
-            ignore_names[i] = ignore_names[i-1];
+            ig->names[i] = ig->names[i-1];
         }
-        ignore_names[i] = strdup(pattern);
+        ig->names[i] = strdup(pattern);
         log_debug("added literal ignore pattern %s", pattern);
     }
 }
 
 void cleanup_ignore_patterns() {
-    int i;
-    for (i = 0; i<ignore_patterns_len; i++) {
-        free(ignore_patterns[i]);
-    }
-    free(ignore_patterns);
-
-    for (i = 0; i<ignore_names_len; i++) {
-        free(ignore_names[i]);
-    }
-    free(ignore_names);
 }
 
 /* For loading git/svn/hg ignore patterns */
-void load_ignore_patterns(const char *ignore_filename) {
+void load_ignore_patterns(ignores *ig, const char *ignore_filename) {
     FILE *fp = NULL;
     fp = fopen(ignore_filename, "r");
     if (fp == NULL) {
@@ -115,15 +98,16 @@ void load_ignore_patterns(const char *ignore_filename) {
         if (line[line_len-1] == '\n') {
             line[line_len-1] = '\0'; /* kill the \n */
         }
-        add_ignore_pattern(line);
+        add_ignore_pattern(ig, line);
     }
 
     free(line);
     fclose(fp);
 }
 
-void load_svn_ignore_patterns(const char *path, const int path_len) {
+void load_svn_ignore_patterns(ignores *ig, const char *path) {
     FILE *fp = NULL;
+    int path_len = strlen(path);
     char *dir_prop_base = malloc(path_len + strlen(SVN_DIR_PROP_BASE) + 1);
     strlcpy(dir_prop_base, path, path_len + 1);
     strlcat(dir_prop_base, SVN_DIR_PROP_BASE, path_len + strlen(SVN_DIR_PROP_BASE) + 1);
@@ -180,7 +164,7 @@ void load_svn_ignore_patterns(const char *path, const int path_len) {
         if (line_len > 0) {
             entry_line = malloc((size_t)line_len + 1);
             strlcpy(entry_line, patterns, line_len + 1);
-            add_ignore_pattern(entry_line);
+            add_ignore_pattern(ig, entry_line);
             free(entry_line);
             entry_line = NULL;
         }
@@ -213,7 +197,7 @@ int filename_filter(struct dirent *dir) {
     const char *filename = dir->d_name;
     int match_pos;
     char *pattern = NULL;
-    int i;
+    size_t i;
 
     if (!opts.follow_symlinks && dir->d_type == DT_LNK) {
         log_debug("File %s ignored becaused it's a symlink", dir->d_name);
@@ -235,6 +219,10 @@ int filename_filter(struct dirent *dir) {
         return 1;
     }
 
+    char **ignore_names = root_ignores->names;
+    size_t ignore_names_len = root_ignores->names_len;
+    char **ignore_patterns = root_ignores->regexes;
+    size_t ignore_patterns_len = root_ignores->regexes_len;
     match_pos = binary_search(dir->d_name, ignore_names, 0, ignore_names_len);
     if (match_pos >= 0) {
         log_debug("file %s ignored because name matches static pattern %s", dir->d_name, ignore_names[match_pos]);
@@ -262,7 +250,11 @@ int filename_filter(struct dirent *dir) {
 int filepath_filter(char *filepath) {
     int match_pos;
     char *pattern = NULL;
-    int i;
+    size_t i;
+    char **ignore_names = root_ignores->names;
+    size_t ignore_names_len = root_ignores->names_len;
+    char **ignore_patterns = root_ignores->regexes;
+    size_t ignore_patterns_len = root_ignores->regexes_len;
 
     if (opts.search_all_files) {
         return 1;

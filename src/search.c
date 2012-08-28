@@ -239,11 +239,10 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
         strlcat(dir_full_path, "/", path_len);
         strlcat(dir_full_path, ignore_file, path_len);
         if (strcmp(SVN_DIR, ignore_file) == 0) {
-            log_debug("svn ignore pattern matched for %s", dir_full_path);
-            load_svn_ignore_patterns(dir_full_path, strlen(dir_full_path));
+            load_svn_ignore_patterns(root_ignores, dir_full_path);
         }
         else {
-            load_ignore_patterns(dir_full_path);
+            load_ignore_patterns(root_ignores, dir_full_path);
         }
         free(dir_full_path);
         dir_full_path = NULL;
