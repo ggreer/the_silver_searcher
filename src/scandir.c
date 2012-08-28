@@ -25,7 +25,6 @@ int ag_scandir(const char *dirname,
 
     while ((entry = readdir(dirp)) != NULL) {
         if ((*filter)(entry, baton) == FALSE) {
-            entry = readdir(dirp);
             continue;
         }
         if (results_len >= names_len) {
