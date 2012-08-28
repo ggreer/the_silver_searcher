@@ -287,7 +287,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         strlcat(ignore_file_path, "/", path_len);
         strlcat(ignore_file_path, ignore_pattern_files[0], path_len);
 
-        load_ignore_patterns(ignore_file_path);
+        load_ignore_patterns(root_ignores, ignore_file_path);
 
         free(ignore_file_path);
     }

@@ -4,11 +4,11 @@
 #include <string.h>
 #include <sys/time.h>
 
+#include "config.h"
+
 #include "log.h"
 #include "options.h"
 #include "search.h"
-
-#include "config.h"
 
 int main(int argc, char **argv) {
     set_log_level(LOG_LEVEL_WARN);
@@ -23,7 +23,16 @@ int main(int argc, char **argv) {
     pcre_extra *re_extra = NULL;
     double time_diff = 0.0;
 
-    memset(&stats, 0, sizeof(stats)); /* What's the point of an init function if it's going to be this one-liner? */
+    /* What's the point of an init function if it's going to be two lines? */
+    memset(&stats, 0, sizeof(stats));
+    root_ignores = init_ignore(NULL);
+#ifdef USE_PCRE_JIT
+    int has_jit = 0;
+    pcre_config(PCRE_CONFIG_JIT, &has_jit);
+    if (has_jit) {
+        study_opts |= PCRE_STUDY_JIT_COMPILE;
+    }
+#endif
 
     gettimeofday(&(stats.time_start), NULL);
 
@@ -60,15 +69,6 @@ int main(int argc, char **argv) {
             log_err("pcre_compile failed at position %i. Error: %s", pcre_err_offset, pcre_err);
             exit(1);
         }
-
-#ifdef USE_PCRE_JIT
-        int has_jit = 0;
-        pcre_config(PCRE_CONFIG_JIT, &has_jit);
-        if (has_jit) {
-            study_opts |= PCRE_STUDY_JIT_COMPILE;
-        }
-#endif
-
         re_extra = pcre_study(re, study_opts, &pcre_err);
         if (re_extra == NULL) {
             log_debug("pcre_study returned nothing useful. Error: %s", pcre_err);
@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
     else {
         for (i = 0; paths[i] != NULL; i++) {
             log_debug("searching path %s for %s", paths[i], opts.query);
-            search_dir(re, re_extra, paths[i], 0);
+            search_dir(root_ignores, re, re_extra, paths[i], 0);
             free(paths[i]);
         }
     }
@@ -98,7 +98,5 @@ int main(int argc, char **argv) {
     pcre_free(re);
     pcre_free(re_extra); /* Using pcre_free_study here segfaults on some versions of PCRE */
     free(paths);
-    cleanup_ignore_patterns();
-
     return 0;
 }

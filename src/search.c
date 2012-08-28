@@ -1,4 +1,5 @@
 #include "search.h"
+#include "scandir.h"
 
 void search_buf(const pcre *re, const pcre_extra *re_extra,
                 const char *buf, const int buf_len,
@@ -217,7 +218,7 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
 /* TODO: Append matches to some data structure instead of just printing them out.
  * Then ag can have sweet summaries of matches/files scanned/time/etc.
  */
-void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, const int depth) {
+void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const char* path, const int depth) {
     struct dirent **dir_list = NULL;
     struct dirent *dir = NULL;
     int results = 0;
@@ -239,27 +240,20 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
         strlcat(dir_full_path, "/", path_len);
         strlcat(dir_full_path, ignore_file, path_len);
         if (strcmp(SVN_DIR, ignore_file) == 0) {
-            log_debug("svn ignore pattern matched for %s", dir_full_path);
-            load_svn_ignore_patterns(dir_full_path, strlen(dir_full_path));
+            load_svn_ignore_patterns(ig, dir_full_path);
         }
         else {
-            load_ignore_patterns(dir_full_path);
+            load_ignore_patterns(ig, dir_full_path);
         }
         free(dir_full_path);
         dir_full_path = NULL;
     }
 
-#ifdef SCANDIR_CONST
-    results = scandir(path, &dir_list, &filename_filter, &alphasort);
-#else
-    results = scandir(path, &dir_list, (int (*)(const struct dirent *))&filename_filter, &alphasort);
-#endif
+    results = ag_scandir(path, &dir_list, &filename_filter, ig);
     if (results == 0)
     {
         log_debug("No results found in directory %s", path);
-        free(dir_list);
-        dir_list = NULL;
-        return;
+        goto search_dir_cleanup;
     }
     else if (results == -1) {
         if (errno == ENOTDIR) {
@@ -269,12 +263,11 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
                 opts.print_heading = -1;
             }
             search_file(re, re_extra, path);
-            return;
         }
         else {
             log_err("Error opening directory %s: %s", path, strerror(errno));
-            return;
         }
+        goto search_dir_cleanup;
     }
 
     int offset_vector[3];
@@ -325,14 +318,6 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
             }
         }
 
-/* TODO: this kills performance */
-/*
-        log_debug("dir %s type %i", dir_full_path, dir->d_type);
-        if (!filepath_filter(dir_full_path)) {
-            goto cleanup;
-        }
-*/
-
         if (dir->d_type != DT_DIR) {
             if (opts.file_search_regex) {
                 rc = pcre_exec(opts.file_search_regex, NULL, dir_full_path, strlen(dir_full_path),
@@ -353,7 +338,8 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
         else if (opts.recurse_dirs) {
             if (depth < opts.max_search_depth) {
                 log_debug("Searching dir %s", dir_full_path);
-                search_dir(re, re_extra, dir_full_path, depth + 1);
+                ignores *child_ig = init_ignore(ig);
+                search_dir(child_ig, re, re_extra, dir_full_path, depth + 1);
             }
             else {
                 log_err("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
@@ -373,7 +359,8 @@ void search_dir(const pcre *re, const pcre_extra *re_extra, const char* path, co
         dir_full_path = NULL;
     }
 
+    search_dir_cleanup:
     free(dir_list);
     dir_list = NULL;
-    return;
+    cleanup_ignore(ig);
 }
