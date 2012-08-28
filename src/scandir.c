@@ -23,8 +23,7 @@ int ag_scandir(const char *dirname,
     /* TODO: handle allocation failures */
     names = malloc(sizeof(struct dirent*) * names_len);
 
-    entry = readdir(dirp);
-    while (entry != NULL) {
+    while ((entry = readdir(dirp)) != NULL) {
         if ((*filter)(entry, baton) == FALSE) {
             entry = readdir(dirp);
             continue;
@@ -38,7 +37,6 @@ int ag_scandir(const char *dirname,
         memcpy(d, entry, sizeof(struct dirent));
         names[results_len] = d;
         results_len++;
-        entry = readdir(dirp);
     }
     closedir(dirp);
 
