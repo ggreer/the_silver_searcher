@@ -15,13 +15,13 @@ int ag_scandir(const char *dirname,
     int names_len = 32;
     int results_len = 0;
 
-    /* TODO: handle allocation failures */
-    names = malloc(sizeof(struct dirent*) * names_len);
-
     dirp = opendir(dirname);
     if (dirp == NULL) {
         return -1;
     }
+
+    /* TODO: handle allocation failures */
+    names = malloc(sizeof(struct dirent*) * names_len);
 
     entry = readdir(dirp);
     while (entry != NULL) {
