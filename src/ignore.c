@@ -50,9 +50,13 @@ void cleanup_ignore(ignores *ig) {
     }
 }
 
-
 void add_ignore_pattern(ignores *ig, const char* pattern) {
     int i;
+
+    /* Strip off the leading ./ so that matches are more likely. */
+    if (strncmp(pattern, "./", 2) == 0) {
+        pattern += 2; /* TODO: this totally breaks on systems without 1 byte chars */
+    }
 
     if (is_fnmatch(pattern)) {
         ig->regexes_len++;
@@ -237,48 +241,6 @@ int filename_filter(struct dirent *dir) {
         pattern = ignore_patterns[i];
         if (fnmatch(pattern, filename, fnmatch_flags) == 0) {
             log_debug("file %s ignored because name matches regex pattern %s", dir->d_name, pattern);
-            return 0;
-        }
-    }
-
-    return 1;
-}
-
-/* Profiling shows that 70% of execution time is spent in this function.
-   Most of that time is in fnmatch()
- */
-int filepath_filter(char *filepath) {
-    int match_pos;
-    char *pattern = NULL;
-    size_t i;
-    char **ignore_names = root_ignores->names;
-    size_t ignore_names_len = root_ignores->names_len;
-    char **ignore_patterns = root_ignores->regexes;
-    size_t ignore_patterns_len = root_ignores->regexes_len;
-
-    if (opts.search_all_files) {
-        return 1;
-    }
-
-    /* Strip off the leading ./ so that matches are more likely. */
-    if (strncmp(filepath, "./", 2) == 0) {
-        filepath += 2; /* TODO: this totally breaks on systems without 1 byte chars */
-    }
-
-    match_pos = binary_search(filepath, ignore_names, 0, ignore_names_len);
-    if (match_pos >= 0) {
-        log_debug("file %s ignored because name matches static pattern %s", filepath, ignore_names[match_pos]);
-        return 0;
-    }
-
-    if (ackmate_dir_match(filepath)) {
-        return 0;
-    }
-
-    for (i = 0; i < ignore_patterns_len; i++) {
-        pattern = ignore_patterns[i];
-        if (fnmatch(pattern, filepath, fnmatch_flags) == 0) {
-            log_debug("file %s ignored because name matches regex pattern %s", filepath, pattern);
             return 0;
         }
     }
