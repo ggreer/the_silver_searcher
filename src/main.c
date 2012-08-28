@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
     else {
         for (i = 0; paths[i] != NULL; i++) {
             log_debug("searching path %s for %s", paths[i], opts.query);
-            search_dir(re, re_extra, paths[i], 0);
+            search_dir(root_ignores, re, re_extra, paths[i], 0);
             free(paths[i]);
         }
     }
@@ -100,7 +100,6 @@ int main(int argc, char **argv) {
     pcre_free(re);
     pcre_free(re_extra); /* Using pcre_free_study here segfaults on some versions of PCRE */
     free(paths);
-    cleanup_ignore(root_ignores);
     cleanup_ignore_patterns();
 
     return 0;
