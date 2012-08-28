@@ -79,9 +79,6 @@ void add_ignore_pattern(ignores *ig, const char* pattern) {
     }
 }
 
-void cleanup_ignore_patterns() {
-}
-
 /* For loading git/svn/hg ignore patterns */
 void load_ignore_patterns(ignores *ig, const char *ignore_filename) {
     FILE *fp = NULL;
