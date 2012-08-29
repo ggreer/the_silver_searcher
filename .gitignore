@@ -21,3 +21,4 @@ Makefile.in
 missing
 src/config.h*
 stamp-h1
+*.plist
