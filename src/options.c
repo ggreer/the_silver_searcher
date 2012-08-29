@@ -64,6 +64,10 @@ void init_options() {
 }
 
 void cleanup_options() {
+    if (opts.query) {
+        free(opts.query);
+    }
+
     if (opts.ackmate_dir_filter) {
         pcre_free(opts.ackmate_dir_filter);
     }
