@@ -348,16 +348,16 @@ void parse_options(int argc, char **argv, char **paths[]) {
     opts.paths_len = argc - 1;
     if (argc > 1) {
         *paths = malloc(sizeof(char*) * argc);
-        for (i = 1; i < argc; i++) {
-            path = strdup(argv[i]);
+        for (i = 0; i < argc - 1; i++) {
+            path = strdup(argv[i + 1]);
             path_len = strlen(path);
             /* kill trailing slash */
             if (path_len > 0 && path[path_len - 1] == '/') {
               path[path_len - 1] = '\0';
             }
-            (*paths)[i-1] = path;
+            (*paths)[i] = path;
         }
-        (*paths)[i-1] = NULL;
+        (*paths)[i] = NULL;
     }
     else {
         path = strdup(".");
