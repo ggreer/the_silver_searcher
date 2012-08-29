@@ -208,7 +208,7 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
         search_buf(re, re_extra, buf, (int)f_len, file_full_path);
     }
 
-    cleanup:
+    cleanup:;
     if (fd != -1) {
         munmap(buf, f_len);
         close(fd);
@@ -346,7 +346,7 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
             }
         }
 
-        cleanup:
+        cleanup:;
         if (fd != -1) {
             munmap(buf, f_len);
             close(fd);
@@ -359,7 +359,7 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
         dir_full_path = NULL;
     }
 
-    search_dir_cleanup:
+    search_dir_cleanup:;
     free(dir_list);
     dir_list = NULL;
     cleanup_ignore(ig);

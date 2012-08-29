@@ -179,7 +179,7 @@ void load_svn_ignore_patterns(ignores *ig, const char *path) {
         patterns += line_len + 1;
     }
     free(entry);
-    cleanup:
+    cleanup:;
     free(dir_prop_base);
     free(key);
     fclose(fp);

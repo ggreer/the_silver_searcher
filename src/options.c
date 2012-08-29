@@ -321,7 +321,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         opts.print_break = 0;
     }
 
-    skip_group:
+    skip_group:;
 
     if (opts.search_stream) {
         opts.print_break = 0;
