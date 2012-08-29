@@ -1,4 +1,5 @@
 #include <pcre.h>
+#include <pthread.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -81,6 +82,14 @@ int main(int argc, char **argv) {
     else {
         for (i = 0; paths[i] != NULL; i++) {
             log_debug("searching path %s for %s", paths[i], opts.query);
+            pthread_t thread;
+            search_dir_args args;
+            args.ig = root_ignores;
+            args.re = re;
+            args.re_extra = re_extra;
+            args.path = paths[i];
+            args.depth = 0;
+            pthread_create(&thread, NULL, &search_dir_entry, (void*)&args);
             search_dir(root_ignores, re, re_extra, paths[i], 0);
             free(paths[i]);
         }

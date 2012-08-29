@@ -215,6 +215,13 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
     }
 }
 
+void *search_dir_entry(void *void_args) {
+    search_dir_args *args = void_args;
+    search_dir(args->ig, args->re, args->re_extra, args->path, args->depth);
+    pthread_exit(NULL);
+    return NULL;
+}
+
 /* TODO: Append matches to some data structure instead of just printing them out.
  * Then ag can have sweet summaries of matches/files scanned/time/etc.
  */

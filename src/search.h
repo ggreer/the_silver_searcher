@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <pcre.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,6 +24,14 @@
 
 ag_stats stats;
 
+typedef struct {
+    ignores *ig;
+    pcre *re;
+    pcre_extra *re_extra;
+    char *path;
+    int depth;
+} search_dir_args;
+
 size_t skip_lookup[256];
 
 void search_buf(const pcre *re, const pcre_extra *re_extra,
@@ -31,6 +40,8 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
 void search_stdin(const pcre *re, const pcre_extra *re_extra);
 void search_stream(const pcre *re, const pcre_extra *re_extra, FILE *stream, const char *path);
 void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_full_path);
+
+void *search_dir_entry(void *void_args);
 void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const char* path, const int depth);
 
 #endif
