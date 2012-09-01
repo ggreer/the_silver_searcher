@@ -206,12 +206,11 @@ void parse_options(int argc, char **argv, char **paths[]) {
             case 'i':
                 opts.casing = CASE_INSENSITIVE;
                 break;
+            case 'L':
+                opts.invert_match = 1;
+                /* fall through */
             case 'l':
                 opts.print_filename_only = 1;
-                break;
-            case 'L':
-                opts.print_filename_only = 1;
-                opts.invert_match = 1;
                 break;
             case 'm':
                 opts.max_matches_per_file = atoi(optarg);
