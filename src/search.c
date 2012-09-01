@@ -340,6 +340,7 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
                 log_debug("Searching dir %s", dir_full_path);
                 ignores *child_ig = init_ignore(ig);
                 search_dir(child_ig, re, re_extra, dir_full_path, depth + 1);
+                cleanup_ignore(child_ig);
             }
             else {
                 log_err("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
@@ -362,5 +363,4 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
     search_dir_cleanup:;
     free(dir_list);
     dir_list = NULL;
-    cleanup_ignore(ig);
 }
