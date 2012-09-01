@@ -362,6 +362,8 @@ void parse_options(int argc, char **argv, char **paths[]) {
             (*paths)[i] = path;
         }
         (*paths)[i] = NULL;
+        /* Make sure we search these paths instead of stdin. */
+        opts.search_stream = 0;
     }
     else {
         path = strdup(".");
