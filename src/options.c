@@ -223,7 +223,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 break;
             case 'u':
                 opts.search_binary_files = 1;
-                opts.search_unrestricted = 1;
+                opts.search_all_files = 1;
                 opts.search_hidden_files = 1;
                 break;
             case 'v':
