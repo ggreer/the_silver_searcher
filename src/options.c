@@ -40,6 +40,7 @@ Search options:\n\
 -l --files-with-matches: Only print filenames containing matches, not matching lines.\n\
 -Q --literal: Do not parse PATTERN as a regular expression. Try to match it literally.\n\
 -m --max-count NUM: Skip the rest of a file after NUM matches. Default is 10,000.\n\
+-p --path-to-agignore STRING: Provide a path to a specific .agignore file\n\
 --print-long-lines: Print matches on very long lines (> 2k characters by default)\n\
 --search-binary: Search binary files for matches.\n\
 --stats: Print stats (files scanned, time taken, etc)\n\
@@ -132,6 +133,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         { "match", no_argument, &useless, 0 },
         { "max-count", required_argument, NULL, 'm' },
         { "parallel", no_argument, &(opts.parallel), 1},
+        { "path-to-agignore", required_argument, NULL, 'p'},
         { "print-long-lines", no_argument, &(opts.print_long_lines), 1 },
         { "search-binary", no_argument, &(opts.search_binary_files), 1 },
         { "search-files", no_argument, &(opts.search_stream), 0 },
@@ -163,7 +165,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         group = 0;
     }
 
-    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:nQvVuw", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:np:QvVuw", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 opts.after = atoi(optarg);
@@ -218,6 +220,9 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 break;
             case 'n':
                 opts.recurse_dirs = 0;
+                break;
+            case 'p':
+                opts.path_to_agignore = optarg;
                 break;
             case 'Q':
                 opts.literal = 1;
