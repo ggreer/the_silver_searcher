@@ -34,6 +34,7 @@ Search options:\n\
 --[no]group: Same as --[no]break --[no]heading\n\
 -g PATTERN: Print filenames that match PATTERN\n\
 -G, --file-search-regex PATTERN: Only search file names matching PATTERN\n\
+--hidden: Search hidden files. This option obeys ignore files.
 -i, --ignore-case\n\
 --invert-match\n\
 --[no]heading\n\

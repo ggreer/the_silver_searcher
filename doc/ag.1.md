@@ -50,6 +50,7 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Do not parse PATTERN as a regular expression. Try to match it literally.
   * `-m --max-count NUM`:
     Skip the rest of a file after NUM matches. Default is 10,000.
+  * `-p --path-to-agignore STRING`: Provide a path to a specific .agignore file
   * `--print-long-lines`:
     Print matches on very long lines (> 2k characters by default)
   * `--search-binary`:
