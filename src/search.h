@@ -26,9 +26,9 @@ ag_stats stats;
 
 typedef struct {
     ignores *ig;
-    pcre *re;
-    pcre_extra *re_extra;
-    char *path;
+    const pcre *re;
+    const pcre_extra *re_extra;
+    const char *path;
     int depth;
 } search_dir_args;
 
