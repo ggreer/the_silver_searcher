@@ -87,11 +87,11 @@ void add_ignore_pattern(ignores *ig, const char* pattern) {
 }
 
 /* For loading git/svn/hg ignore patterns */
-void load_ignore_patterns(ignores *ig, const char *ignore_filename) {
+void load_ignore_patterns(ignores *ig, const char *path) {
     FILE *fp = NULL;
-    fp = fopen(ignore_filename, "r");
+    fp = fopen(path, "r");
     if (fp == NULL) {
-        log_debug("Skipping ignore file %s", ignore_filename);
+        log_debug("Skipping ignore file %s", path);
         return;
     }
 

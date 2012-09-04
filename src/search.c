@@ -218,6 +218,7 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
 void *search_dir_entry(void *void_args) {
     search_dir_args *args = void_args;
     search_dir(args->ig, args->re, args->re_extra, args->path, args->depth);
+    cleanup_ignore(args->ig);
 /*    free(args->path);*/
     pthread_exit(NULL);
     return NULL;
@@ -378,5 +379,4 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
     search_dir_cleanup:;
     free(dir_list);
     dir_list = NULL;
-    cleanup_ignore(ig);
 }

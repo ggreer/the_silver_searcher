@@ -106,6 +106,7 @@ int main(int argc, char **argv) {
         printf("%ld matches\n%ld files searched\n%ld bytes searched\n%f seconds\n", stats.total_matches, stats.total_files, stats.total_bytes, time_diff);
     }
 
+    cleanup_ignore(root_ignores);
     pcre_free(re);
     pcre_free(re_extra); /* Using pcre_free_study here segfaults on some versions of PCRE */
     free(paths);
