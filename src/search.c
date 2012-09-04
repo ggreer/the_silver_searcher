@@ -219,7 +219,6 @@ void *search_dir_entry(void *void_args) {
     search_dir_args *args = void_args;
     search_dir(args->ig, args->re, args->re_extra, args->path, args->depth);
     cleanup_ignore(args->ig);
-/*    free(args->path);*/
     pthread_exit(NULL);
     return NULL;
 }
@@ -356,7 +355,6 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
                 args.path = dir_full_path;
                 args.depth = depth + 1;
                 pthread_create(&thread, NULL, &search_dir_entry, (void*)&args);
-/*                search_dir(child_ig, re, re_extra, dir_full_path, depth + 1);*/
             }
             else {
                 log_err("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
