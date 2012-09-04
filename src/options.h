@@ -40,7 +40,6 @@ typedef struct {
     int search_binary_files;
     int search_hidden_files;
     int search_stream; /* true if tail -F blah | ag */
-    int search_unrestricted;
     int stats;
     char *query;
     int query_len;

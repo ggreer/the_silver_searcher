@@ -27,7 +27,7 @@ void cleanup_ignore(ignores *ig);
 
 void add_ignore_pattern(ignores *ig, const char* pattern);
 
-void load_ignore_patterns(ignores *ig, const char *ignore_filename);
+void load_ignore_patterns(ignores *ig, const char *path);
 void load_svn_ignore_patterns(ignores *ig, const char *path);
 
 int ackmate_dir_match(const char* dir_name);
