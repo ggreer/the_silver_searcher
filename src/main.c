@@ -83,13 +83,7 @@ int main(int argc, char **argv) {
         pthread_t threads[128];
         for (i = 0; paths[i] != NULL; i++) {
             log_debug("searching path %s for %s", paths[i], opts.query);
-            search_dir_args args;
-            args.ig = root_ignores;
-            args.re = re;
-            args.re_extra = re_extra;
-            args.path = paths[i];
-            args.depth = 0;
-            pthread_create(&(threads[i]), NULL, &search_dir_entry, (void*)&args);
+            search_dir_wrap(&(threads[i]), root_ignores, re, re_extra, paths[i], 0);
         }
         for (i = 0; paths[i] != NULL; i++) {
             pthread_join(threads[i], NULL);
