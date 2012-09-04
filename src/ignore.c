@@ -22,7 +22,6 @@ const char *ignore_pattern_files[] = {
     ".gitignore",
     ".hgignore",
     ".svn",
-    "", /* for passing in non-local .agignore */
     NULL
 };
 
@@ -91,14 +90,13 @@ void add_ignore_pattern(ignores *ig, const char* pattern) {
 void load_ignore_patterns(ignores *ig, const char *ignore_filename) {
     FILE *fp = NULL;
 
-    if (strncmp(ignore_filename, "./.", 3) != 0) {
-        ignore_filename += 1; /* Meaning that, instead of ./.<file>, it's ./<file_path> */
-    }
     fp = fopen(ignore_filename, "r");
     if (fp == NULL) {
         log_debug("Skipping ignore file %s", ignore_filename);
         return;
     }
+
+    log_debug("Adding ignore file %s", ignore_filename);
 
     char *line = NULL;
     ssize_t line_len = 0;
