@@ -22,7 +22,6 @@ const char *ignore_pattern_files[] = {
     ".gitignore",
     ".hgignore",
     ".svn",
-    "", /* for passing in non-local .agignore */
     NULL
 };
 
@@ -95,6 +94,8 @@ void load_ignore_patterns(ignores *ig, const char *path) {
         log_debug("Skipping ignore file %s", path);
         return;
     }
+
+    log_debug("Adding ignore file %s", path);
 
     char *line = NULL;
     ssize_t line_len = 0;
