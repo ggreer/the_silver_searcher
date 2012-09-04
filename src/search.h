@@ -41,6 +41,7 @@ void search_stdin(const pcre *re, const pcre_extra *re_extra);
 void search_stream(const pcre *re, const pcre_extra *re_extra, FILE *stream, const char *path);
 void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_full_path);
 
+int search_dir_wrap(pthread_t *thread, ignores *ig, const pcre *re, const pcre_extra *re_extra, const char* path, const int depth);
 void *search_dir_entry(void *void_args);
 void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const char* path, const int depth);
 
