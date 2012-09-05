@@ -215,21 +215,19 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
     }
 }
 
-int search_dir_wrap(pthread_t *thread, ignores *ig, const pcre *re, const pcre_extra *re_extra, const char* path, const int depth) {
-    search_dir_args *args = malloc(sizeof(search_dir_args));
-    args->ig = ig;
+int search_file_wrap(pthread_t *thread, const pcre *re, const pcre_extra *re_extra, char* path) {
+    search_file_args *args = malloc(sizeof(search_file_args));
     args->re = re;
     args->re_extra = re_extra;
     args->path = path;
-    args->depth = depth;
-    /* TODO: free args */
-    return pthread_create(thread, NULL, &search_dir_entry, args);
+    return pthread_create(thread, NULL, &search_file_entry, args);
 }
 
-void *search_dir_entry(void *void_args) {
-    search_dir_args *args = void_args;
-    search_dir(args->ig, args->re, args->re_extra, args->path, args->depth);
-    cleanup_ignore(args->ig);
+void *search_file_entry(void *void_args) {
+    search_file_args *args = void_args;
+    search_file(args->re, args->re_extra, args->path);
+    free(args->path);
+    free(args);
     pthread_exit(NULL);
     return NULL;
 }
@@ -352,14 +350,14 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
                 }
             }
 
-            search_file(re, re_extra, dir_full_path);
+            pthread_t thread;
+            search_file_wrap(&thread, re, re_extra, dir_full_path);
         }
         else if (opts.recurse_dirs) {
             if (depth < opts.max_search_depth) {
                 log_debug("Searching dir %s", dir_full_path);
                 ignores *child_ig = init_ignore(ig);
-                pthread_t thread;
-                search_dir_wrap(&thread, child_ig, re, re_extra, dir_full_path, depth + 1);
+                search_dir(child_ig, re, re_extra, dir_full_path, depth + 1);
             }
             else {
                 log_err("Skipping %s. Use the --depth option to search deeper.", dir_full_path);

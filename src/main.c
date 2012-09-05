@@ -80,15 +80,17 @@ int main(int argc, char **argv) {
         search_stdin(re, re_extra);
     }
     else {
-        pthread_t threads[128];
+        pthread_t search_workers[4];
         for (i = 0; paths[i] != NULL; i++) {
             log_debug("searching path %s for %s", paths[i], opts.query);
-            search_dir_wrap(&(threads[i]), root_ignores, re, re_extra, paths[i], 0);
+            search_dir(root_ignores, re, re_extra, paths[i], 0);
         }
+/*
         for (i = 0; paths[i] != NULL; i++) {
             pthread_join(threads[i], NULL);
             free(paths[i]);
         }
+*/
     }
 
     if (opts.stats) {
