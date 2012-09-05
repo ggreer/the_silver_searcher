@@ -231,7 +231,7 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
     size_t path_len = 0;
     int i;
 
-    if (opts.search_all_files == 0) {
+    if (!opts.search_all_files) {
         /* find agignore/gitignore/hgignore/etc files to load ignore patterns from */
         for (i = 0; ignore_pattern_files[i] != NULL; i++) {
             ignore_file = ignore_pattern_files[i];
