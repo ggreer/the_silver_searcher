@@ -231,28 +231,30 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
     size_t path_len = 0;
     int i;
 
-    /* find agignore/gitignore/hgignore/etc files to load ignore patterns from */
-    for (i = 0; ignore_pattern_files[i] != NULL; i++) {
-        ignore_file = ignore_pattern_files[i];
-        path_len = (size_t)(strlen(path) + strlen(ignore_file) + 2); /* 2 for slash and null char */
-        dir_full_path = malloc(path_len);
-        strlcpy(dir_full_path, path, path_len);
-        strlcat(dir_full_path, "/", path_len);
-        strlcat(dir_full_path, ignore_file, path_len);
-        if (strcmp(SVN_DIR, ignore_file) == 0) {
-            load_svn_ignore_patterns(ig, dir_full_path);
+    if (opts.search_all_files == 0) {
+        /* find agignore/gitignore/hgignore/etc files to load ignore patterns from */
+        for (i = 0; ignore_pattern_files[i] != NULL; i++) {
+            ignore_file = ignore_pattern_files[i];
+            path_len = (size_t)(strlen(path) + strlen(ignore_file) + 2); /* 2 for slash and null char */
+            dir_full_path = malloc(path_len);
+            strlcpy(dir_full_path, path, path_len);
+            strlcat(dir_full_path, "/", path_len);
+            strlcat(dir_full_path, ignore_file, path_len);
+            if (strcmp(SVN_DIR, ignore_file) == 0) {
+                load_svn_ignore_patterns(ig, dir_full_path);
+            }
+            else {
+                load_ignore_patterns(ig, dir_full_path);
+            }
+            free(dir_full_path);
+            dir_full_path = NULL;
         }
-        else {
-            load_ignore_patterns(ig, dir_full_path);
-        }
-        free(dir_full_path);
-        dir_full_path = NULL;
     }
 
     if (opts.path_to_agignore) {
         load_ignore_patterns(ig, opts.path_to_agignore);
     }
-    exit(1);
+
     results = ag_scandir(path, &dir_list, &filename_filter, ig);
     if (results == 0)
     {

@@ -22,6 +22,7 @@ Example: ag -i foo /bar/\n\
 Search options:\n\
 \n\
 --ackmate: Output results in a format parseable by AckMate.\n\
+-a --all-types: Search all files. This doesn't include hidden files, and doesn't respect any ignore files\n\
 -A --after [LINES]: Print lines before match. Defaults to 2.\n\
 -B --before [LINES]: Print lines after match. Defaults to 2.\n\
 --[no]break: Print a newline between matches in different files. Enabled by default.\n\
@@ -34,17 +35,19 @@ Search options:\n\
 --[no]group: Same as --[no]break --[no]heading\n\
 -g PATTERN: Print filenames that match PATTERN\n\
 -G, --file-search-regex PATTERN: Only search file names matching PATTERN\n\
+--[no]heading\n\
 --hidden: Search hidden files. This option obeys ignore files.\n\
 -i, --ignore-case\n\
---invert-match\n\
---[no]heading\n\
 -l --files-with-matches: Only print filenames containing matches, not matching lines.\n\
--Q --literal: Do not parse PATTERN as a regular expression. Try to match it literally.\n\
+-L --files-without-matches:  Only print filenames that don't contain matches.\n\
 -m --max-count NUM: Skip the rest of a file after NUM matches. Default is 10,000.\n\
 -p --path-to-agignore STRING: Provide a path to a specific .agignore file\n\
 --print-long-lines: Print matches on very long lines (> 2k characters by default)\n\
+-Q --literal: Do not parse PATTERN as a regular expression. Try to match it literally.\n\
 --search-binary: Search binary files for matches.\n\
 --stats: Print stats (files scanned, time taken, etc)\n\
+-u --unrestricted: Search *all* files. This ignores .agignore, .gitignore, etc. It searches binary and hidden files as well.\n\
+-v --invert-match\n\
 -w --word-regexp: Only match whole words.\n\
 \n");
 }
@@ -296,7 +299,9 @@ void parse_options(int argc, char **argv, char **paths[]) {
         strlcat(ignore_file_path, "/", path_len);
         strlcat(ignore_file_path, ignore_pattern_files[0], path_len);
 
-        load_ignore_patterns(root_ignores, ignore_file_path);
+        if (!opts.search_all_files) {
+            load_ignore_patterns(root_ignores, ignore_file_path);
+        }
 
         free(ignore_file_path);
     }

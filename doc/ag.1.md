@@ -14,7 +14,7 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `--ackmate`:
     Output results in a format parseable by [AckMate](https://github.com/protocool/AckMate).
   * `-a --all-types`:
-    Search all files. This doesn't include hidden files.
+    Search all files. This doesn't include hidden files, and doesn't respect any ignore files (except -p)
   * `-A --after [LINES]`:
     Print lines before match. Defaults to 2.
   * `-B --before [LINES]`:
@@ -34,25 +34,26 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `-f --follow`:
     Follow symlinks.
   * `--[no]group`
+    Same as --[no]break --[no]heading
   * `-g PATTERN`:
     Print filenames matching PATTERN.
   * `-G`, `--file-search-regex PATTERN`:
     Only search filenames matching PATTERN.
+  * `--[no]heading`
   * `--hidden`:
     Search hidden files. This option obeys ignore files.
   * `-i`, `--ignore-case`
-  * `--[no]heading`
   * `-l --files-with-matches`:
     Only print filenames containing matches, not matching lines.
   * `-L --files-without-matches`:
     Only print filenames that don't contain matches.
-  * `-Q --literal`:
-    Do not parse PATTERN as a regular expression. Try to match it literally.
   * `-m --max-count NUM`:
     Skip the rest of a file after NUM matches. Default is 10,000.
   * `-p --path-to-agignore STRING`: Provide a path to a specific .agignore file
   * `--print-long-lines`:
     Print matches on very long lines (> 2k characters by default)
+  * `-Q --literal`:
+    Do not parse PATTERN as a regular expression. Try to match it literally.
   * `--search-binary`:
     Search binary files for matches.
   * `--stats`:

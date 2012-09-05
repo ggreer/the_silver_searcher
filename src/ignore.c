@@ -225,7 +225,7 @@ int filename_filter(const struct dirent *dir, void *baton) {
         return 0;
     }
 
-    if (opts.search_all_files) {
+    if (opts.search_all_files && !opts.path_to_agignore) {
         return 1;
     }
 

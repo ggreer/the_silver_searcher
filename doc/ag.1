@@ -20,7 +20,7 @@ Output results in a format parseable by AckMate \fIhttps://github\.com/protocool
 .
 .IP "\(bu" 4
 \fB\-a \-\-all\-types\fR:
-Search all files\. This doesn\'t include hidden files\.
+Search all files\. This doesn\'t include hidden files, and doesn\'t respect any ignore files (except \-p)
 .
 .IP "\(bu" 4
 \fB\-A \-\-after [LINES]\fR:
@@ -60,6 +60,7 @@ Follow symlinks\.
 .
 .IP "\(bu" 4
 \fB\-\-[no]group\fR
+Same as \-\-[no]break \-\-[no]heading
 .
 .IP "\(bu" 4
 \fB\-g PATTERN\fR:
@@ -70,14 +71,14 @@ Print filenames matching PATTERN\.
 Only search filenames matching PATTERN\.
 .
 .IP "\(bu" 4
+\fB\-\-[no]heading\fR
+.
+.IP "\(bu" 4
 \fB\-\-hidden\fR:
 Search hidden files\. This option obeys ignore files\.
 .
 .IP "\(bu" 4
 \fB\-i\fR, \fB\-\-ignore\-case\fR
-.
-.IP "\(bu" 4
-\fB\-\-[no]heading\fR
 .
 .IP "\(bu" 4
 \fB\-l \-\-files\-with\-matches\fR:
@@ -86,10 +87,6 @@ Only print filenames containing matches, not matching lines\.
 .IP "\(bu" 4
 \fB\-L \-\-files\-without\-matches\fR:
 Only print filenames that don\'t contain matches\.
-.
-.IP "\(bu" 4
-\fB\-Q \-\-literal\fR:
-Do not parse PATTERN as a regular expression\. Try to match it literally\.
 .
 .IP "\(bu" 4
 \fB\-m \-\-max\-count NUM\fR:
@@ -101,6 +98,10 @@ Skip the rest of a file after NUM matches\. Default is 10,000\.
 .IP "\(bu" 4
 \fB\-\-print\-long\-lines\fR:
 Print matches on very long lines (> 2k characters by default)
+.
+.IP "\(bu" 4
+\fB\-Q \-\-literal\fR:
+Do not parse PATTERN as a regular expression\. Try to match it literally\.
 .
 .IP "\(bu" 4
 \fB\-\-search\-binary\fR:
