@@ -290,6 +290,7 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
     int offset_vector[3];
     int rc = 0;
     struct stat stDirInfo;
+    pthread_t *threads = calloc(results, sizeof(pthread_t));
 
     for (i = 0; i < results; i++) {
         dir = dir_list[i];
@@ -350,8 +351,11 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
                 }
             }
 
-            pthread_t thread;
-            search_file_wrap(&thread, re, re_extra, dir_full_path);
+            int rv = 0;
+            rv = search_file_wrap(&(threads[i]), re, re_extra, dir_full_path);
+            if (rv < 0) {
+                log_err("OMGOMOGOMG");
+            }
         }
         else if (opts.recurse_dirs) {
             if (depth < opts.max_search_depth) {
@@ -373,8 +377,16 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
 
         free(dir);
         dir = NULL;
-        free(dir_full_path);
-        dir_full_path = NULL;
+        if (threads[i] == NULL) {
+            free(dir_full_path);
+            dir_full_path = NULL;
+        }
+    }
+    for (i = 0; i < results; i++) {
+        if (threads[i] != NULL) {
+            log_debug("joining thread");
+            pthread_join(threads[i], NULL);
+        }
     }
 
     search_dir_cleanup:;
