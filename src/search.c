@@ -242,9 +242,6 @@ void search_dir(ignores *ig, const char* path, const int depth) {
     struct dirent *dir = NULL;
     int results = 0;
 
-    int fd = -1;
-    off_t f_len = 0;
-    char *buf = NULL;
     char *dir_full_path = NULL;
     const char *ignore_file = NULL;
     size_t path_len = 0;
@@ -372,12 +369,6 @@ void search_dir(ignores *ig, const char* path, const int depth) {
         }
 
         cleanup:;
-        if (fd != -1) {
-            munmap(buf, f_len);
-            close(fd);
-            fd = -1;
-        }
-
         free(dir);
         dir = NULL;
         /*
