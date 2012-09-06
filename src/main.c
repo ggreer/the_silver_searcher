@@ -4,12 +4,16 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/time.h>
+#include <unistd.h>
 
 #include "config.h"
 
 #include "log.h"
 #include "options.h"
 #include "search.h"
+
+pthread_t *workers = NULL;
+int workers_len = 0;
 
 int main(int argc, char **argv) {
     set_log_level(LOG_LEVEL_WARN);
@@ -24,7 +28,10 @@ int main(int argc, char **argv) {
     pcre_extra *re_extra = NULL;
     double time_diff = 0.0;
 
-    /* What's the point of an init function if it's going to be two lines? */
+    /* What's the point of an init function if it's going to be 4 lines? */
+    work_queue = NULL;
+    workers_len = (int)sysconf(_SC_NPROCESSORS_ONLN);
+    workers = calloc(workers_len, sizeof(pthread_t));
     memset(&stats, 0, sizeof(stats));
     root_ignores = init_ignore(NULL);
 #ifdef USE_PCRE_JIT
@@ -36,10 +43,9 @@ int main(int argc, char **argv) {
 #endif
 
     gettimeofday(&(stats.time_start), NULL);
+    log_debug("PCRE Version: %s", pcre_version());
 
     parse_options(argc, argv, &paths);
-
-    log_debug("PCRE Version: %s", pcre_version());
 
     if (opts.casing == CASE_INSENSITIVE) {
         pcre_opts = pcre_opts | PCRE_CASELESS;

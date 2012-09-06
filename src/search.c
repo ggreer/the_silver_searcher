@@ -351,11 +351,11 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
                 }
             }
 
-            int rv = 0;
-            rv = search_file_wrap(&(threads[i]), re, re_extra, dir_full_path);
-            if (rv < 0) {
-                log_err("OMGOMOGOMG");
-            }
+            work_queue_t *queue_item = malloc(sizeof(work_queue_t));
+            queue_item->path = dir_full_path;
+            queue_item->next = work_queue;
+            work_queue = queue_item;
+            log_debug("%s added to work queue", dir_full_path);
         }
         else if (opts.recurse_dirs) {
             if (depth < opts.max_search_depth) {
@@ -382,12 +382,14 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
             dir_full_path = NULL;
         }
     }
+
     for (i = 0; i < results; i++) {
         if (threads[i] != NULL) {
             log_debug("joining thread");
             pthread_join(threads[i], NULL);
         }
     }
+    free(threads);
 
     search_dir_cleanup:;
     free(dir_list);

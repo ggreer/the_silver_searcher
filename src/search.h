@@ -30,6 +30,14 @@ typedef struct {
 
 size_t skip_lookup[256];
 
+struct work_queue_t {
+    char *path;
+    struct work_queue_t *next;
+};
+typedef struct work_queue_t work_queue_t;
+
+work_queue_t *work_queue;
+
 void search_buf(const pcre *re, const pcre_extra *re_extra,
                 const char *buf, const int buf_len,
                 const char *dir_full_path);
