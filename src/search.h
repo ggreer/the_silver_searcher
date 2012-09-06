@@ -31,6 +31,8 @@ struct work_queue_t {
 typedef struct work_queue_t work_queue_t;
 
 work_queue_t *work_queue;
+int done_adding_files;
+pthread_mutex_t work_queue_mtx;
 
 void search_buf(const char *buf, const int buf_len,
                 const char *dir_full_path);

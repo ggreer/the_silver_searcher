@@ -213,10 +213,19 @@ void search_file(const char *file_full_path) {
 void *search_file_worker(void *void_args) {
     work_queue_t *queue_item;
 
-    while (work_queue != NULL) {
-        /* TODO: This is totally going to break. use a mutex! */
+    while (TRUE) {
+        pthread_mutex_lock(&work_queue_mtx);
+        if (work_queue == NULL) {
+            /* terrible */
+            pthread_mutex_unlock(&work_queue_mtx);
+            if (done_adding_files) {
+                break;
+            }
+            continue;
+        }
         queue_item = work_queue;
         work_queue = work_queue->next;
+        pthread_mutex_unlock(&work_queue_mtx);
         search_file(queue_item->path);
     }
 
@@ -345,8 +354,10 @@ void search_dir(ignores *ig, const char* path, const int depth) {
 
             work_queue_t *queue_item = malloc(sizeof(work_queue_t));
             queue_item->path = dir_full_path;
+            pthread_mutex_lock(&work_queue_mtx);
             queue_item->next = work_queue;
             work_queue = queue_item;
+            pthread_mutex_unlock(&work_queue_mtx);
             log_debug("%s added to work queue", dir_full_path);
         }
         else if (opts.recurse_dirs) {

@@ -29,9 +29,11 @@ int main(int argc, char **argv) {
     /* What's the point of an init function if it's going to be 4 lines? */
     work_queue = NULL;
     workers_len = (int)sysconf(_SC_NPROCESSORS_ONLN);
+    done_adding_files = FALSE;
     workers = calloc(workers_len, sizeof(pthread_t));
     memset(&stats, 0, sizeof(stats));
     root_ignores = init_ignore(NULL);
+    pthread_mutex_init(&work_queue_mtx, NULL); /* todo: check return value */
 #ifdef USE_PCRE_JIT
     int has_jit = 0;
     pcre_config(PCRE_CONFIG_JIT, &has_jit);
@@ -80,13 +82,14 @@ int main(int argc, char **argv) {
         search_stream(stdin, "");
     }
     else {
+        for (i = 0; i < workers_len; i++) {
+            pthread_create(&(workers[i]), NULL, &search_file_worker, NULL);
+        }
         for (i = 0; paths[i] != NULL; i++) {
             log_debug("searching path %s for %s", paths[i], opts.query);
             search_dir(root_ignores, paths[i], 0);
         }
-        for (i = 0; i < workers_len; i++) {
-            pthread_create(&(workers[i]), NULL, &search_file_worker, NULL);
-        }
+        done_adding_files = TRUE;
         for (i = 0; i < workers_len; i++) {
             pthread_join(workers[i], NULL);
         }
@@ -101,6 +104,7 @@ int main(int argc, char **argv) {
         printf("%ld matches\n%ld files searched\n%ld bytes searched\n%f seconds\n", stats.total_matches, stats.total_files, stats.total_bytes, time_diff);
     }
 
+    pthread_mutex_destroy(&work_queue_mtx);
     pcre_free(opts.re);
     if (opts.re_extra) {
         pcre_free(opts.re_extra); /* Using pcre_free_study here segfaults on some versions of PCRE */
