@@ -28,6 +28,8 @@ typedef struct {
     struct timeval time_end;
 } ag_stats;
 
+ag_stats stats;
+
 typedef char *(*strncmp_fp)(const char*, const char*, const size_t, const size_t, const size_t[]);
 
 void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], int case_sensitive);
