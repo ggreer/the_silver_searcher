@@ -51,11 +51,6 @@ int main(int argc, char **argv) {
         pcre_opts = pcre_opts | PCRE_CASELESS;
     }
 
-    if (!is_regex(opts.query)) {
-        /* No special chars. Do a literal match */
-        opts.literal = 1;
-    }
-
     if (opts.literal) {
         generate_skip_lookup(opts.query, opts.query_len, skip_lookup, opts.casing == CASE_SENSITIVE);
     }

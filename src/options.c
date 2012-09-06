@@ -347,6 +347,10 @@ void parse_options(int argc, char **argv, char **paths[]) {
         exit(1);
     }
 
+    if (!is_regex(opts.query)) {
+        opts.literal = 1;
+    }
+
     char *path = NULL;
     opts.paths_len = argc - 1;
     if (argc > 1) {
