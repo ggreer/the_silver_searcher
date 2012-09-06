@@ -102,7 +102,9 @@ int main(int argc, char **argv) {
     }
 
     pcre_free(re);
-    pcre_free(re_extra); /* Using pcre_free_study here segfaults on some versions of PCRE */
+    if (re_extra) {
+        pcre_free(re_extra); /* Using pcre_free_study here segfaults on some versions of PCRE */
+    }
     free(paths);
     return 0;
 }
