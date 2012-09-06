@@ -227,7 +227,9 @@ void *search_file_worker(void *void_args) {
         queue_item = work_queue;
         work_queue = work_queue->next;
         pthread_mutex_unlock(&work_queue_mtx);
+
         search_file(queue_item->path);
+        free(queue_item->path);
     }
 
     log_debug("Worker finished.");
