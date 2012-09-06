@@ -215,19 +215,18 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
     }
 }
 
-int search_file_wrap(pthread_t *thread, const pcre *re, const pcre_extra *re_extra, char* path) {
-    search_file_args *args = malloc(sizeof(search_file_args));
-    args->re = re;
-    args->re_extra = re_extra;
-    args->path = path;
-    return pthread_create(thread, NULL, &search_file_entry, args);
-}
+void *search_file_worker(void *void_args) {
+    search_worker_args *args = void_args;
+    work_queue_t *queue_item;
 
-void *search_file_entry(void *void_args) {
-    search_file_args *args = void_args;
-    search_file(args->re, args->re_extra, args->path);
-    free(args->path);
-    free(args);
+    while (work_queue != NULL) {
+        /* TODO: This is totally going to break. use a mutex! */
+        queue_item = work_queue;
+        work_queue = work_queue->next;
+        search_file(args->re, args->re_extra, queue_item->path);
+    }
+
+    log_debug("Worker finished.");
     pthread_exit(NULL);
     return NULL;
 }
@@ -290,7 +289,6 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
     int offset_vector[3];
     int rc = 0;
     struct stat stDirInfo;
-    pthread_t *threads = calloc(results, sizeof(pthread_t));
 
     for (i = 0; i < results; i++) {
         dir = dir_list[i];
@@ -377,19 +375,11 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
 
         free(dir);
         dir = NULL;
-        if (threads[i] == NULL) {
+        /*
             free(dir_full_path);
             dir_full_path = NULL;
-        }
+            */
     }
-
-    for (i = 0; i < results; i++) {
-        if (threads[i] != NULL) {
-            log_debug("joining thread");
-            pthread_join(threads[i], NULL);
-        }
-    }
-    free(threads);
 
     search_dir_cleanup:;
     free(dir_list);

@@ -85,6 +85,15 @@ int main(int argc, char **argv) {
             log_debug("searching path %s for %s", paths[i], opts.query);
             search_dir(root_ignores, re, re_extra, paths[i], 0);
         }
+        for (i = 0; i < workers_len; i++) {
+            search_worker_args *args = malloc(sizeof(search_worker_args));
+            args->re = re;
+            args->re_extra = re_extra;
+            pthread_create(&(workers[i]), NULL, &search_file_worker, args);
+        }
+        for (i = 0; i < workers_len; i++) {
+            pthread_join(workers[i], NULL);
+        }
     }
 
     if (opts.stats) {
