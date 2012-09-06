@@ -41,9 +41,10 @@ int main(int argc, char **argv) {
 #endif
 
     gettimeofday(&(stats.time_start), NULL);
-    log_debug("PCRE Version: %s", pcre_version());
 
     parse_options(argc, argv, &paths);
+    log_debug("PCRE Version: %s", pcre_version());
+    log_debug("Using %i workers", workers_len);
 
     if (opts.casing == CASE_INSENSITIVE) {
         pcre_opts = pcre_opts | PCRE_CASELESS;
