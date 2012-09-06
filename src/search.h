@@ -22,11 +22,6 @@
 #include "print.h"
 #include "util.h"
 
-typedef struct {
-    const pcre *re;
-    const pcre_extra *re_extra;
-} search_worker_args;
-
 size_t skip_lookup[256];
 
 struct work_queue_t {
@@ -37,15 +32,13 @@ typedef struct work_queue_t work_queue_t;
 
 work_queue_t *work_queue;
 
-void search_buf(const pcre *re, const pcre_extra *re_extra,
-                const char *buf, const int buf_len,
+void search_buf(const char *buf, const int buf_len,
                 const char *dir_full_path);
-void search_stdin(const pcre *re, const pcre_extra *re_extra);
-void search_stream(const pcre *re, const pcre_extra *re_extra, FILE *stream, const char *path);
-void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_full_path);
+void search_stream(FILE *stream, const char *path);
+void search_file(const char *file_full_path);
 
 void *search_file_worker(void *void_args);
 
-void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const char* path, const int depth);
+void search_dir(ignores *ig, const char* path, const int depth);
 
 #endif

@@ -1,8 +1,7 @@
 #include "search.h"
 #include "scandir.h"
 
-void search_buf(const pcre *re, const pcre_extra *re_extra,
-                const char *buf, const int buf_len,
+void search_buf(const char *buf, const int buf_len,
                 const char *dir_full_path) {
     int binary = 0;
     int buf_offset = 0;
@@ -86,7 +85,7 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
     else {
         /* In my profiling, most of the execution time is spent in this pcre_exec */
         while (buf_offset < buf_len &&
-              (rc = pcre_exec(re, re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
+              (rc = pcre_exec(opts.re, opts.re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
             log_debug("Regex match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
             buf_offset = offset_vector[1];
             matches[matches_len].start = offset_vector[0];
@@ -138,12 +137,8 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
     free(offset_vector);
 }
 
-void search_stdin(const pcre *re, const pcre_extra *re_extra) {
-    search_stream(re, re_extra, stdin, "");
-}
-
 /* TODO: this will only match single lines. multi-line regexes silently don't match */
-void search_stream(const pcre *re, const pcre_extra *re_extra, FILE *stream, const char *path) {
+void search_stream(FILE *stream, const char *path) {
     char *line = NULL;
     ssize_t line_len = 0;
     size_t line_cap = 0;
@@ -154,13 +149,13 @@ void search_stream(const pcre *re, const pcre_extra *re_extra, FILE *stream, con
     opts.search_stream = 1;
 
     while ((line_len = getline(&line, &line_cap, stream)) > 0) {
-        search_buf(re, re_extra, line, line_len, path);
+        search_buf(line, line_len, path);
     }
 
     free(line);
 }
 
-void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_full_path) {
+void search_file(const char *file_full_path) {
     int fd = -1;
     off_t f_len = 0;
     char *buf = NULL;
@@ -188,7 +183,7 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
     if (statbuf.st_mode & S_IFIFO) {
         log_debug("%s is a named pipe. stream searching", file_full_path);
         pipe = fdopen(fd, "r");
-        search_stream(re, re_extra, pipe, file_full_path);
+        search_stream(pipe, file_full_path);
         fclose(pipe);
     }
     else {
@@ -205,7 +200,7 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
             goto cleanup;
         }
 
-        search_buf(re, re_extra, buf, (int)f_len, file_full_path);
+        search_buf(buf, (int)f_len, file_full_path);
     }
 
     cleanup:;
@@ -216,14 +211,13 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
 }
 
 void *search_file_worker(void *void_args) {
-    search_worker_args *args = void_args;
     work_queue_t *queue_item;
 
     while (work_queue != NULL) {
         /* TODO: This is totally going to break. use a mutex! */
         queue_item = work_queue;
         work_queue = work_queue->next;
-        search_file(args->re, args->re_extra, queue_item->path);
+        search_file(queue_item->path);
     }
 
     log_debug("Worker finished.");
@@ -234,7 +228,7 @@ void *search_file_worker(void *void_args) {
 /* TODO: Append matches to some data structure instead of just printing them out.
  * Then ag can have sweet summaries of matches/files scanned/time/etc.
  */
-void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const char* path, const int depth) {
+void search_dir(ignores *ig, const char* path, const int depth) {
     struct dirent **dir_list = NULL;
     struct dirent *dir = NULL;
     int results = 0;
@@ -278,7 +272,7 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
             if (depth == 0 && opts.paths_len == 1) {
                 opts.print_heading = -1;
             }
-            search_file(re, re_extra, path);
+            search_file(path);
         }
         else {
             log_err("Error opening directory %s: %s", path, strerror(errno));
@@ -359,7 +353,7 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
             if (depth < opts.max_search_depth) {
                 log_debug("Searching dir %s", dir_full_path);
                 ignores *child_ig = init_ignore(ig);
-                search_dir(child_ig, re, re_extra, dir_full_path, depth + 1);
+                search_dir(child_ig, dir_full_path, depth + 1);
             }
             else {
                 log_err("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
