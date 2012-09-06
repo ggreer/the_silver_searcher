@@ -230,6 +230,7 @@ void *search_file_worker(void *void_args) {
 
         search_file(queue_item->path);
         free(queue_item->path);
+        free(queue_item);
     }
 
     log_debug("Worker finished.");
@@ -368,6 +369,7 @@ void search_dir(ignores *ig, const char* path, const int depth) {
                 log_debug("Searching dir %s", dir_full_path);
                 ignores *child_ig = init_ignore(ig);
                 search_dir(child_ig, dir_full_path, depth + 1);
+                free(child_ig);
             }
             else {
                 log_err("Skipping %s. Use the --depth option to search deeper.", dir_full_path);

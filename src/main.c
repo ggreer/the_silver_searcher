@@ -112,6 +112,8 @@ int main(int argc, char **argv) {
     if (opts.re_extra) {
         pcre_free(opts.re_extra); /* Using pcre_free_study here segfaults on some versions of PCRE */
     }
+    free(workers);
+    free(root_ignores);
     free(paths);
     return 0;
 }
