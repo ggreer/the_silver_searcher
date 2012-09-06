@@ -292,8 +292,10 @@ void search_dir(ignores *ig, const char* path, const int depth) {
     int offset_vector[3];
     int rc = 0;
     struct stat stDirInfo;
+    work_queue_t *queue_item;
 
     for (i = 0; i < results; i++) {
+        queue_item = NULL;
         dir = dir_list[i];
         /* TODO: this is copy-pasted from about 30 lines above */
         path_len = (size_t)(strlen(path) + strlen(dir->d_name) + 2); /* 2 for slash and null char */
@@ -352,7 +354,7 @@ void search_dir(ignores *ig, const char* path, const int depth) {
                 }
             }
 
-            work_queue_t *queue_item = malloc(sizeof(work_queue_t));
+            queue_item = malloc(sizeof(work_queue_t));
             queue_item->path = dir_full_path;
             pthread_mutex_lock(&work_queue_mtx);
             queue_item->next = work_queue;
@@ -375,10 +377,10 @@ void search_dir(ignores *ig, const char* path, const int depth) {
         cleanup:;
         free(dir);
         dir = NULL;
-        /*
+        if (queue_item == NULL) {
             free(dir_full_path);
             dir_full_path = NULL;
-            */
+        }
     }
 
     search_dir_cleanup:;
