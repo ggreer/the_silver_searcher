@@ -15,9 +15,24 @@
 pthread_t *workers = NULL;
 int workers_len = 0;
 
-int main(int argc, char **argv) {
+void init() {
     set_log_level(LOG_LEVEL_WARN);
 
+    work_queue = NULL;
+    workers_len = (int)sysconf(_SC_NPROCESSORS_ONLN);
+    done_adding_files = FALSE;
+    workers = calloc(workers_len, sizeof(pthread_t));
+    if (pthread_cond_init(&files_ready, NULL)) {
+        log_err("pthread_cond_init failed!");
+        exit(1);
+    }
+    if (pthread_mutex_init(&work_queue_mtx, NULL)) {
+        log_err("pthread_mutex_init failed!");
+        exit(1);
+    }
+}
+
+int main(int argc, char **argv) {
     char **paths = NULL;
     int i;
     int pcre_opts = PCRE_MULTILINE;
@@ -26,16 +41,9 @@ int main(int argc, char **argv) {
     int pcre_err_offset = 0;
     double time_diff = 0.0;
 
-    /* What's the point of an init function if it's going to be 4 lines? */
-    work_queue = NULL;
-    workers_len = (int)sysconf(_SC_NPROCESSORS_ONLN);
-    done_adding_files = FALSE;
-    workers = calloc(workers_len, sizeof(pthread_t));
+    init();
     memset(&stats, 0, sizeof(stats));
     root_ignores = init_ignore(NULL);
-    /* todo: check return values */
-    pthread_cond_init(&files_ready, NULL);
-    pthread_mutex_init(&work_queue_mtx, NULL);
 #ifdef USE_PCRE_JIT
     int has_jit = 0;
     pcre_config(PCRE_CONFIG_JIT, &has_jit);
