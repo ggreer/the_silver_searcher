@@ -369,7 +369,7 @@ void search_dir(ignores *ig, const char* path, const int depth) {
                 log_debug("Searching dir %s", dir_full_path);
                 ignores *child_ig = init_ignore(ig);
                 search_dir(child_ig, dir_full_path, depth + 1);
-                free(child_ig);
+                cleanup_ignore(child_ig);
             }
             else {
                 log_err("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
