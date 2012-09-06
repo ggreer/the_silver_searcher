@@ -216,11 +216,12 @@ void *search_file_worker(void *void_args) {
     while (TRUE) {
         pthread_mutex_lock(&work_queue_mtx);
         if (work_queue == NULL) {
-            /* terrible */
-            pthread_mutex_unlock(&work_queue_mtx);
             if (done_adding_files) {
+                pthread_mutex_unlock(&work_queue_mtx);
                 break;
             }
+            pthread_cond_wait(&files_ready, &work_queue_mtx);
+            pthread_mutex_unlock(&work_queue_mtx);
             continue;
         }
         queue_item = work_queue;
@@ -355,6 +356,7 @@ void search_dir(ignores *ig, const char* path, const int depth) {
             queue_item->next = work_queue;
             work_queue = queue_item;
             pthread_mutex_unlock(&work_queue_mtx);
+            pthread_cond_broadcast(&files_ready);
             log_debug("%s added to work queue", dir_full_path);
         }
         else if (opts.recurse_dirs) {
