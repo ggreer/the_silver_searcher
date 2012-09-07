@@ -101,7 +101,10 @@ int main(int argc, char **argv) {
         }
         done_adding_files = TRUE;
         for (i = 0; i < workers_len; i++) {
-            pthread_join(workers[i], NULL);
+            if (pthread_join(workers[i], NULL)) {
+                log_err("pthread_join failed!");
+                exit(1);
+            }
         }
     }
 
