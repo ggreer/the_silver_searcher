@@ -20,9 +20,9 @@ int main(int argc, char **argv) {
     int study_opts = 0;
     const char *pcre_err = NULL;
     int pcre_err_offset = 0;
-    double time_diff = 0.0;
+    double time_diff;
     pthread_t *workers = NULL;
-    int workers_len = 0;
+    int workers_len;
 
     set_log_level(LOG_LEVEL_WARN);
 
@@ -68,15 +68,7 @@ int main(int argc, char **argv) {
     }
     else {
         if (opts.word_regexp) {
-            opts.query_len = opts.query_len + 5; /* "\b" + "\b" + '\0' */
-            char *word_regexp_query = malloc(opts.query_len);
-            char *word_sep = "\\b";
-            strlcpy(word_regexp_query, word_sep, opts.query_len);
-            strlcat(word_regexp_query, opts.query, opts.query_len);
-            strlcat(word_regexp_query, word_sep, opts.query_len);
-            free(opts.query);
-            opts.query = word_regexp_query;
-            log_debug("Word regexp query: %s", opts.query);
+            build_word_regex();
         }
         opts.re = pcre_compile(opts.query, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
         if (opts.re == NULL) {

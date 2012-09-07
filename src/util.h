@@ -40,6 +40,7 @@ char* boyer_moore_strncasestr(const char *s, const char *find, const size_t s_le
 strncmp_fp get_strstr(cli_options opts);
 
 int invert_matches(match matches[], int matches_len, const int buf_len);
+void build_word_regex();
 
 int is_binary(const void* buf, const int buf_len);
 int is_regex(const char* query);
