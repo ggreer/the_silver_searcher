@@ -192,7 +192,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 opts.file_search_regex = pcre_compile(optarg, 0, &pcre_err, &pcre_err_offset, NULL);
                 if (opts.file_search_regex == NULL) {
                   log_err("pcre_compile of file-search-regex failed at position %i. Error: %s", pcre_err_offset, pcre_err);
-                  exit(1);
+                  exit(2);
                 }
 
                 opts.file_search_regex_extra = pcre_study(opts.file_search_regex, 0, &pcre_err);
@@ -240,12 +240,11 @@ void parse_options(int argc, char **argv, char **paths[]) {
                     opts.ackmate_dir_filter = pcre_compile(optarg, 0, &pcre_err, &pcre_err_offset, NULL);
                     if (opts.ackmate_dir_filter == NULL) {
                         log_err("pcre_compile of ackmate-dir-filter failed at position %i. Error: %s", pcre_err_offset, pcre_err);
-                        exit(1);
+                        exit(2);
                     }
                     opts.ackmate_dir_filter_extra = pcre_study(opts.ackmate_dir_filter, 0, &pcre_err);
                     if (opts.ackmate_dir_filter_extra == NULL) {
-                      log_err("pcre_study of ackmate-dir-filter failed. Error: %s", pcre_err);
-                      exit(1);
+                      log_debug("pcre_study of ackmate-dir-filter failed. Error: %s", pcre_err);
                     }
                     break;
                 }

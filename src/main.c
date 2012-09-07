@@ -12,26 +12,6 @@
 #include "options.h"
 #include "search.h"
 
-pthread_t *workers = NULL;
-int workers_len = 0;
-
-void init() {
-    set_log_level(LOG_LEVEL_WARN);
-
-    work_queue = NULL;
-    work_queue_tail = NULL;
-    workers_len = (int)sysconf(_SC_NPROCESSORS_ONLN);
-    done_adding_files = FALSE;
-    workers = calloc(workers_len, sizeof(pthread_t));
-    if (pthread_cond_init(&files_ready, NULL)) {
-        log_err("pthread_cond_init failed!");
-        exit(1);
-    }
-    if (pthread_mutex_init(&work_queue_mtx, NULL)) {
-        log_err("pthread_mutex_init failed!");
-        exit(1);
-    }
-}
 
 int main(int argc, char **argv) {
     char **paths = NULL;
@@ -41,8 +21,24 @@ int main(int argc, char **argv) {
     const char *pcre_err = NULL;
     int pcre_err_offset = 0;
     double time_diff = 0.0;
+    pthread_t *workers = NULL;
+    int workers_len = 0;
 
-    init();
+    set_log_level(LOG_LEVEL_WARN);
+
+    work_queue = NULL;
+    work_queue_tail = NULL;
+    workers_len = (int)sysconf(_SC_NPROCESSORS_ONLN);
+    done_adding_files = FALSE;
+    workers = calloc(workers_len, sizeof(pthread_t));
+    if (pthread_cond_init(&files_ready, NULL)) {
+        log_err("pthread_cond_init failed!");
+        exit(2);
+    }
+    if (pthread_mutex_init(&work_queue_mtx, NULL)) {
+        log_err("pthread_mutex_init failed!");
+        exit(2);
+    }
     memset(&stats, 0, sizeof(stats));
     root_ignores = init_ignore(NULL);
 #ifdef USE_PCRE_JIT
@@ -81,7 +77,7 @@ int main(int argc, char **argv) {
         opts.re = pcre_compile(opts.query, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
         if (opts.re == NULL) {
             log_err("pcre_compile failed at position %i. Error: %s", pcre_err_offset, pcre_err);
-            exit(1);
+            exit(2);
         }
         opts.re_extra = pcre_study(opts.re, study_opts, &pcre_err);
         if (opts.re_extra == NULL) {
@@ -104,7 +100,7 @@ int main(int argc, char **argv) {
         for (i = 0; i < workers_len; i++) {
             if (pthread_join(workers[i], NULL)) {
                 log_err("pthread_join failed!");
-                exit(1);
+                exit(2);
             }
         }
     }
