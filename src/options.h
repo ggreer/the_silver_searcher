@@ -47,6 +47,7 @@ typedef struct {
     int paths_len;
     int parallel;
     int word_regexp;
+    int workers;
 } cli_options;
 
 /* global options. parse_options gives it sane values, everything else reads from it */

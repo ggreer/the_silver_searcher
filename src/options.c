@@ -145,6 +145,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         { "unrestricted", no_argument, NULL, 'u' },
         { "version", no_argument, &version, 1 },
         { "word-regexp", no_argument, NULL, 'w' },
+        { "workers", required_argument, NULL, 0 },
         { NULL, 0, NULL, 0 }
     };
 
@@ -237,6 +238,10 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 }
                 else if (strcmp(longopts[opt_index].name, "depth") == 0) {
                     opts.max_search_depth = atoi(optarg);
+                    break;
+                }
+                else if (strcmp(longopts[opt_index].name, "workers") == 0) {
+                    opts.workers = atoi(optarg);
                     break;
                 }
                 /* Continue to usage if we don't recognize the option */

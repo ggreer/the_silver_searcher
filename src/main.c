@@ -26,7 +26,26 @@ int main(int argc, char **argv) {
 
     work_queue = NULL;
     work_queue_tail = NULL;
+    memset(&stats, 0, sizeof(stats));
+    root_ignores = init_ignore(NULL);
+#ifdef USE_PCRE_JIT
+    int has_jit = 0;
+    pcre_config(PCRE_CONFIG_JIT, &has_jit);
+    if (has_jit) {
+        study_opts |= PCRE_STUDY_JIT_COMPILE;
+    }
+#endif
+
+    gettimeofday(&(stats.time_start), NULL);
+
+    parse_options(argc, argv, &paths);
+    log_debug("PCRE Version: %s", pcre_version());
+    log_debug("Using %i workers", workers_len);
+
     workers_len = (int)sysconf(_SC_NPROCESSORS_ONLN);
+    if (opts.workers) {
+        workers_len = opts.workers;
+    }
     done_adding_files = FALSE;
     workers = calloc(workers_len, sizeof(pthread_t));
     if (pthread_cond_init(&files_ready, NULL)) {
@@ -45,21 +64,6 @@ int main(int argc, char **argv) {
         log_err("pthread_mutex_init failed!");
         exit(2);
     }
-    memset(&stats, 0, sizeof(stats));
-    root_ignores = init_ignore(NULL);
-#ifdef USE_PCRE_JIT
-    int has_jit = 0;
-    pcre_config(PCRE_CONFIG_JIT, &has_jit);
-    if (has_jit) {
-        study_opts |= PCRE_STUDY_JIT_COMPILE;
-    }
-#endif
-
-    gettimeofday(&(stats.time_start), NULL);
-
-    parse_options(argc, argv, &paths);
-    log_debug("PCRE Version: %s", pcre_version());
-    log_debug("Using %i workers", workers_len);
 
     if (opts.literal) {
         generate_skip_lookup(opts.query, opts.query_len, skip_lookup, opts.casing == CASE_SENSITIVE);
