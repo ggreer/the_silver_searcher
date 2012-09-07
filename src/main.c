@@ -33,11 +33,15 @@ int main(int argc, char **argv) {
         log_err("pthread_cond_init failed!");
         exit(2);
     }
-    if (pthread_mutex_init(&work_queue_mtx, NULL)) {
+    if (pthread_mutex_init(&print_mtx, NULL)) {
         log_err("pthread_mutex_init failed!");
         exit(2);
     }
     if (pthread_mutex_init(&stats_mtx, NULL)) {
+        log_err("pthread_mutex_init failed!");
+        exit(2);
+    }
+    if (pthread_mutex_init(&work_queue_mtx, NULL)) {
         log_err("pthread_mutex_init failed!");
         exit(2);
     }

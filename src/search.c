@@ -118,6 +118,7 @@ void search_buf(const char *buf, const int buf_len,
     }
 
     if (matches_len > 0) {
+        pthread_mutex_lock(&print_mtx);
         if (opts.print_filename_only) {
             print_path(dir_full_path, '\n');
         }
@@ -129,6 +130,7 @@ void search_buf(const char *buf, const int buf_len,
                 print_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
             }
         }
+        pthread_mutex_unlock(&print_mtx);
     }
     else {
         log_debug("No match in %s", dir_full_path);
@@ -349,7 +351,9 @@ void search_dir(ignores *ig, const char* path, const int depth) {
                 }
                 else if (opts.match_files) {
                     log_debug("match_files: file_search_regex matched for %s.", dir_full_path);
+                    pthread_mutex_lock(&print_mtx);
                     print_path(dir_full_path, '\n');
+                    pthread_mutex_unlock(&print_mtx);
                     goto cleanup;
                 }
             }
