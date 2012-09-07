@@ -111,9 +111,11 @@ void search_buf(const char *buf, const int buf_len,
     }
 
     if (opts.stats) {
+        pthread_mutex_lock(&stats_mtx);
         stats.total_bytes += buf_len;
         stats.total_files++;
         stats.total_matches += matches_len;
+        pthread_mutex_unlock(&stats_mtx);
     }
 
     if (matches_len > 0) {

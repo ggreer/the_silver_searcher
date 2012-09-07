@@ -39,6 +39,10 @@ int main(int argc, char **argv) {
         log_err("pthread_mutex_init failed!");
         exit(2);
     }
+    if (pthread_mutex_init(&stats_mtx, NULL)) {
+        log_err("pthread_mutex_init failed!");
+        exit(2);
+    }
     memset(&stats, 0, sizeof(stats));
     root_ignores = init_ignore(NULL);
 #ifdef USE_PCRE_JIT
@@ -116,6 +120,7 @@ int main(int argc, char **argv) {
 
     pthread_cond_destroy(&files_ready);
     pthread_mutex_destroy(&work_queue_mtx);
+    pthread_mutex_destroy(&stats_mtx);
     pcre_free(opts.re);
     if (opts.re_extra) {
         pcre_free(opts.re_extra); /* Using pcre_free_study here segfaults on some versions of PCRE */

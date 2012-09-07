@@ -35,6 +35,7 @@ work_queue_t *work_queue_tail;
 int done_adding_files;
 pthread_cond_t files_ready;
 pthread_mutex_t work_queue_mtx;
+pthread_mutex_t stats_mtx;
 
 void search_buf(const char *buf, const int buf_len,
                 const char *dir_full_path);
