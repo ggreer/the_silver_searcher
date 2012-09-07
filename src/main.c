@@ -19,7 +19,9 @@ void init() {
     set_log_level(LOG_LEVEL_WARN);
 
     work_queue = NULL;
+    work_queue_tail = NULL;
     workers_len = (int)sysconf(_SC_NPROCESSORS_ONLN);
+    workers_len = 2;
     done_adding_files = FALSE;
     workers = calloc(workers_len, sizeof(pthread_t));
     if (pthread_cond_init(&files_ready, NULL)) {

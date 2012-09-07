@@ -226,6 +226,9 @@ void *search_file_worker(void *void_args) {
         }
         queue_item = work_queue;
         work_queue = work_queue->next;
+        if (work_queue == NULL) {
+            work_queue_tail = NULL;
+        }
         pthread_mutex_unlock(&work_queue_mtx);
 
         search_file(queue_item->path);
@@ -357,9 +360,15 @@ void search_dir(ignores *ig, const char* path, const int depth) {
 
             queue_item = malloc(sizeof(work_queue_t));
             queue_item->path = dir_full_path;
+            queue_item->next = NULL;
             pthread_mutex_lock(&work_queue_mtx);
-            queue_item->next = work_queue;
-            work_queue = queue_item;
+            if (work_queue_tail == NULL) {
+                work_queue = queue_item;
+            }
+            else {
+                work_queue_tail->next = queue_item;
+            }
+            work_queue_tail = queue_item;
             pthread_mutex_unlock(&work_queue_mtx);
             pthread_cond_broadcast(&files_ready);
             log_debug("%s added to work queue", dir_full_path);
