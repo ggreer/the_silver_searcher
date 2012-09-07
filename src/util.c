@@ -94,6 +94,32 @@ int invert_matches(match matches[], int matches_len, const int buf_len) {
     return (matches_len + 1);
 }
 
+void build_word_regex() {
+    opts.query_len = opts.query_len + 5; /* "\b" + "\b" + '\0' */
+    char *word_regexp_query = malloc(opts.query_len);
+    char *word_sep = "\\b";
+    strlcpy(word_regexp_query, word_sep, opts.query_len);
+    strlcat(word_regexp_query, opts.query, opts.query_len);
+    strlcat(word_regexp_query, word_sep, opts.query_len);
+    free(opts.query);
+    opts.query = word_regexp_query;
+}
+
+void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opts, const int study_opts) {
+    const char *pcre_err = NULL;
+    int pcre_err_offset = 0;
+
+    *re = pcre_compile(q, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
+    if (re == NULL) {
+        log_err("pcre_compile failed at position %i. Error: %s", pcre_err_offset, pcre_err);
+        exit(2);
+    }
+    *re_extra = pcre_study(*re, study_opts, &pcre_err);
+    if (re_extra == NULL) {
+        log_debug("pcre_study returned nothing useful. Error: %s", pcre_err);
+    }
+}
+
 /* This function is very hot. It's called on every file. */
 int is_binary(const void* buf, const int buf_len) {
     int suspicious_bytes = 0;

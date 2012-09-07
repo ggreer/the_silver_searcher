@@ -68,26 +68,30 @@ void cleanup_options() {
         free(opts.query);
     }
 
+    pcre_free(opts.re);
+    if (opts.re_extra) {
+         /* Using pcre_free_study on pcre_extra* can segfault on some versions of PCRE */
+        pcre_free(opts.re_extra);
+    }
+
     if (opts.ackmate_dir_filter) {
         pcre_free(opts.ackmate_dir_filter);
     }
     if (opts.ackmate_dir_filter_extra) {
-        pcre_free(opts.ackmate_dir_filter_extra); /* Using pcre_free_study here segfaults on some versions of PCRE */
+        pcre_free(opts.ackmate_dir_filter_extra);
     }
 
     if (opts.file_search_regex) {
         pcre_free(opts.file_search_regex);
     }
     if (opts.file_search_regex_extra) {
-        pcre_free(opts.file_search_regex_extra); /* Using pcre_free_study here segfaults on some versions of PCRE */
+        pcre_free(opts.file_search_regex_extra);
     }
 }
 
 void parse_options(int argc, char **argv, char **paths[]) {
     int ch;
     int i;
-    const char *pcre_err = NULL;
-    int pcre_err_offset = 0;
     int path_len = 0;
     int useless = 0;
     int group = 1;
@@ -141,6 +145,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         { "unrestricted", no_argument, NULL, 'u' },
         { "version", no_argument, &version, 1 },
         { "word-regexp", no_argument, NULL, 'w' },
+        { "workers", required_argument, NULL, 0 },
         { NULL, 0, NULL, 0 }
     };
 
@@ -189,16 +194,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 opts.match_files = 1;
                 /* Fall through and build regex */
             case 'G':
-                opts.file_search_regex = pcre_compile(optarg, 0, &pcre_err, &pcre_err_offset, NULL);
-                if (opts.file_search_regex == NULL) {
-                  log_err("pcre_compile of file-search-regex failed at position %i. Error: %s", pcre_err_offset, pcre_err);
-                  exit(1);
-                }
-
-                opts.file_search_regex_extra = pcre_study(opts.file_search_regex, 0, &pcre_err);
-                if (opts.file_search_regex_extra == NULL && pcre_err != NULL) {
-                  log_debug("pcre_study of file-search-regex failed. Error: %s", pcre_err);
-                }
+                compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, optarg, 0, 0);
                 break;
             case 'h':
                 help = 1;
@@ -237,20 +233,15 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 break;
             case 0: /* Long option */
                 if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0) {
-                    opts.ackmate_dir_filter = pcre_compile(optarg, 0, &pcre_err, &pcre_err_offset, NULL);
-                    if (opts.ackmate_dir_filter == NULL) {
-                        log_err("pcre_compile of ackmate-dir-filter failed at position %i. Error: %s", pcre_err_offset, pcre_err);
-                        exit(1);
-                    }
-                    opts.ackmate_dir_filter_extra = pcre_study(opts.ackmate_dir_filter, 0, &pcre_err);
-                    if (opts.ackmate_dir_filter_extra == NULL) {
-                      log_err("pcre_study of ackmate-dir-filter failed. Error: %s", pcre_err);
-                      exit(1);
-                    }
+                    compile_study(&opts.ackmate_dir_filter, &opts.ackmate_dir_filter_extra, optarg, 0, 0);
                     break;
                 }
                 else if (strcmp(longopts[opt_index].name, "depth") == 0) {
                     opts.max_search_depth = atoi(optarg);
+                    break;
+                }
+                else if (strcmp(longopts[opt_index].name, "workers") == 0) {
+                    opts.workers = atoi(optarg);
                     break;
                 }
                 /* Continue to usage if we don't recognize the option */
@@ -345,6 +336,10 @@ void parse_options(int argc, char **argv, char **paths[]) {
     if (opts.query_len == 0) {
         log_err("Error: No query. What do you want to search for?");
         exit(1);
+    }
+
+    if (!is_regex(opts.query)) {
+        opts.literal = 1;
     }
 
     char *path = NULL;
