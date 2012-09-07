@@ -42,7 +42,7 @@ void search_buf(const char *buf, const int buf_len,
 void search_stream(FILE *stream, const char *path);
 void search_file(const char *file_full_path);
 
-void *search_file_worker(void *void_args);
+void *search_file_worker();
 
 void search_dir(ignores *ig, const char* path, const int depth);
 
