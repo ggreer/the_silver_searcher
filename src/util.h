@@ -1,10 +1,12 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include <pcre.h>
 #include <string.h>
 #include <sys/time.h>
 
 #include "config.h"
+#include "log.h"
 #include "options.h"
 
 #ifndef TRUE
@@ -41,6 +43,7 @@ strncmp_fp get_strstr(cli_options opts);
 
 int invert_matches(match matches[], int matches_len, const int buf_len);
 void build_word_regex();
+void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opts, const int study_opts);
 
 int is_binary(const void* buf, const int buf_len);
 int is_regex(const char* query);

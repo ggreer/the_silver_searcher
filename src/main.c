@@ -18,8 +18,6 @@ int main(int argc, char **argv) {
     int i;
     int pcre_opts = PCRE_MULTILINE;
     int study_opts = 0;
-    const char *pcre_err = NULL;
-    int pcre_err_offset = 0;
     double time_diff;
     pthread_t *workers = NULL;
     int workers_len;
@@ -59,26 +57,17 @@ int main(int argc, char **argv) {
     log_debug("PCRE Version: %s", pcre_version());
     log_debug("Using %i workers", workers_len);
 
-    if (opts.casing == CASE_INSENSITIVE) {
-        pcre_opts = pcre_opts | PCRE_CASELESS;
-    }
-
     if (opts.literal) {
         generate_skip_lookup(opts.query, opts.query_len, skip_lookup, opts.casing == CASE_SENSITIVE);
     }
     else {
+        if (opts.casing == CASE_INSENSITIVE) {
+            pcre_opts = pcre_opts | PCRE_CASELESS;
+        }
         if (opts.word_regexp) {
             build_word_regex();
         }
-        opts.re = pcre_compile(opts.query, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
-        if (opts.re == NULL) {
-            log_err("pcre_compile failed at position %i. Error: %s", pcre_err_offset, pcre_err);
-            exit(2);
-        }
-        opts.re_extra = pcre_study(opts.re, study_opts, &pcre_err);
-        if (opts.re_extra == NULL) {
-            log_debug("pcre_study returned nothing useful. Error: %s", pcre_err);
-        }
+        compile_study(&opts.re, &opts.re_extra, opts.query, pcre_opts, study_opts);
     }
 
     if (opts.search_stream) {
@@ -113,10 +102,6 @@ int main(int argc, char **argv) {
     pthread_cond_destroy(&files_ready);
     pthread_mutex_destroy(&work_queue_mtx);
     pthread_mutex_destroy(&stats_mtx);
-    pcre_free(opts.re);
-    if (opts.re_extra) {
-        pcre_free(opts.re_extra); /* Using pcre_free_study here segfaults on some versions of PCRE */
-    }
     cleanup_ignore(root_ignores);
     free(workers);
     free(paths);
