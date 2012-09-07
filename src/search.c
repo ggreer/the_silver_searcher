@@ -144,11 +144,6 @@ void search_stream(FILE *stream, const char *path) {
     ssize_t line_len = 0;
     size_t line_cap = 0;
 
-    opts.print_break = 0;
-    opts.print_heading = 0;
-    opts.print_line_numbers = 0;
-    opts.search_stream = 1;
-
     while ((line_len = getline(&line, &line_cap, stream)) > 0) {
         search_buf(line, line_len, path);
     }
