@@ -40,12 +40,12 @@ int main(int argc, char **argv) {
 
     parse_options(argc, argv, &paths);
     log_debug("PCRE Version: %s", pcre_version());
-    log_debug("Using %i workers", workers_len);
 
     workers_len = (int)sysconf(_SC_NPROCESSORS_ONLN);
     if (opts.workers) {
         workers_len = opts.workers;
     }
+    log_debug("Using %i workers", workers_len);
     done_adding_files = FALSE;
     workers = calloc(workers_len, sizeof(pthread_t));
     if (pthread_cond_init(&files_ready, NULL)) {
