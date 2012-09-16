@@ -90,6 +90,7 @@ int main(int argc, char **argv) {
             search_dir(root_ignores, paths[i], 0);
         }
         done_adding_files = TRUE;
+        pthread_cond_broadcast(&files_ready);
         for (i = 0; i < workers_len; i++) {
             if (pthread_join(workers[i], NULL)) {
                 log_err("pthread_join failed!");
