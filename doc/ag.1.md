@@ -56,6 +56,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Search binary files for matches.
   * `--stats`:
     Print stats (files scanned, time taken, etc)
+  * `-t, --all-text`:
+    Search all text files. This doesn't include hidden files.
   * `-u --unrestricted`:
     Search *all* files. This ignores .agignore, .gitignore, etc. It searches binary and hidden files as well.
   * `-v --invert-match`

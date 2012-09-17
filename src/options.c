@@ -109,6 +109,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         { "ackmate-dir-filter", required_argument, NULL, 0 },
         { "after", required_argument, NULL, 'A' },
         { "all-types", no_argument, NULL, 'a' },
+        { "all-text", no_argument, NULL, 't' },
         { "before", required_argument, NULL, 'B' },
         { "break", no_argument, &(opts.print_break), 1 },
         { "nobreak", no_argument, &(opts.print_break), 0 },
@@ -168,7 +169,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         group = 0;
     }
 
-    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:nQvVuw", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:nQvVtuw", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 opts.after = atoi(optarg);
@@ -217,6 +218,9 @@ void parse_options(int argc, char **argv, char **paths[]) {
             case 'Q':
                 opts.literal = 1;
                 break;
+            case 't':
+                opts.search_all_files = 1;
+            break;
             case 'u':
                 opts.search_binary_files = 1;
                 opts.search_all_files = 1;
