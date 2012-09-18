@@ -149,19 +149,6 @@ int is_binary(const void* buf, const int buf_len) {
     return 0;
 }
 
-int has_chars(const char* s, const char* chars) {
-    int i, j;
-    for (i = 0; s[i] != '\0'; i++) {
-        for (j = 0; chars[j] != '\0'; j++) {
-            if (s[i] == chars[j]) {
-                return 1;
-            }
-        }
-    }
-
-    return 0;
-}
-
 int is_regex(const char* query) {
     char regex_chars[] = {
         '$',
@@ -179,7 +166,7 @@ int is_regex(const char* query) {
         '\0'
     };
 
-    return (has_chars(query, regex_chars));
+    return (strpbrk(query, regex_chars) != NULL);
 }
 
 int is_fnmatch(const char* filename) {
@@ -192,7 +179,7 @@ int is_fnmatch(const char* filename) {
         '\0'
     };
 
-    return (has_chars(filename, fnmatch_chars));
+    return (strpbrk(filename, fnmatch_chars) != NULL);
 }
 
 int binary_search(const char* needle, char **haystack, int start, int end) {
