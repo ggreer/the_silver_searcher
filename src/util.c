@@ -220,6 +220,7 @@ int is_whitespace(const char ch) {
     int i;
     char whitespace_chars[] = {
         ' ',
+        '\f',
         '\t',
         '\n',
         '\r',
