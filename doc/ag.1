@@ -93,6 +93,9 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 \fB\-u \-\-unrestricted\fR: Search \fIall\fR files\. This ignores \.agignore, \.gitignore, etc\. It searches binary and hidden files as well\.
 .
 .IP "\(bu" 4
+\fB\-U, \-\-skip\-vcs\-ignores\fR: Ignore VCS ignore files (\.gitigore, \.hgignore, svn:ignore), but still use \.agignore\.
+.
+.IP "\(bu" 4
 \fB\-v \-\-invert\-match\fR
 .
 .IP "\(bu" 4
@@ -102,6 +105,9 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 .
 .SH "IGNORING FILES"
 By default, ag will ignore files matched by patterns in \.gitignore, \.hgignore, or \.agignore\. Ag also ignores files matched by the svn:ignore property in subversion repositories\. Binary files are ignored by default as well\.
+.
+.P
+If you want to ignore \.gitignore, \.hgignore, and svn:ignore but still take \.agignore into account, use \fB\-U\fR\.
 .
 .P
 Use the \fB\-a\fR option to search all text files, and \fB\-u\fR to search \fIall\fR files\.
