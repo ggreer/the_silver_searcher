@@ -17,6 +17,7 @@ const char *evil_hardcoded_ignore_files[] = {
     NULL
 };
 
+/* Warning: changing the first string will break skip_vcs_ignores. */
 const char *ignore_pattern_files[] = {
     ".agignore",
     ".gitignore",
