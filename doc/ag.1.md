@@ -60,6 +60,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Search all text files. This doesn't include hidden files.
   * `-u --unrestricted`:
     Search *all* files. This ignores .agignore, .gitignore, etc. It searches binary and hidden files as well.
+  * `-U, --skip-vcs-ignores`:
+    Ignore VCS ignore files (.gitigore, .hgignore, svn:ignore), but still use .agignore.
   * `-v --invert-match`
   * `-w --word-regexp`:
     Only match whole words.
@@ -67,6 +69,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
 ## IGNORING FILES
 
 By default, ag will ignore files matched by patterns in .gitignore, .hgignore, or .agignore. Ag also ignores files matched by the svn:ignore property in subversion repositories. Binary files are ignored by default as well.
+
+If you want to ignore .gitignore, .hgignore, and svn:ignore but still take .agignore into account, use `-U`.
 
 Use the `-a` option to search all text files, and `-u` to search *all* files.
 

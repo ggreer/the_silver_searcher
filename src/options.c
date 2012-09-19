@@ -144,6 +144,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         { "nosmart-case", no_argument, &useless, 0 },
         { "stats", no_argument, &(opts.stats), 1 },
         { "unrestricted", no_argument, NULL, 'u' },
+        { "skip-vcs-ignores", no_argument, NULL, 'U' },
         { "version", no_argument, &version, 1 },
         { "word-regexp", no_argument, NULL, 'w' },
         { "workers", required_argument, NULL, 0 },
@@ -169,7 +170,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         group = 0;
     }
 
-    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:nQvVtuw", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:nQvVtuUw", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 opts.after = atoi(optarg);
@@ -220,11 +221,14 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 break;
             case 't':
                 opts.search_all_files = 1;
-            break;
+                break;
             case 'u':
                 opts.search_binary_files = 1;
                 opts.search_all_files = 1;
                 opts.search_hidden_files = 1;
+                break;
+            case 'U':
+                opts.skip_vcs_ignores = 1;
                 break;
             case 'v':
                 opts.invert_match = 1;
