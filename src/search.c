@@ -253,7 +253,7 @@ void search_dir(ignores *ig, const char* path, const int depth) {
     int i;
 
     /* find agignore/gitignore/hgignore/etc files to load ignore patterns from */
-    for (i = 0; ignore_pattern_files[i] != NULL; i++) {
+    for (i = 0; opts.skip_vcs_ignores ? (i == 0) : (ignore_pattern_files[i] != NULL); i++) {
         ignore_file = ignore_pattern_files[i];
         path_len = (size_t)(strlen(path) + strlen(ignore_file) + 2); /* 2 for slash and null char */
         dir_full_path = malloc(path_len);
