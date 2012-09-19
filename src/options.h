@@ -38,6 +38,7 @@ typedef struct {
     pcre_extra *re_extra;
     int recurse_dirs;
     int search_all_files;
+    int skip_vcs_ignores;
     int search_binary_files;
     int search_hidden_files;
     int search_stream; /* true if tail -F blah | ag */
