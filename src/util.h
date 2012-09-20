@@ -2,6 +2,7 @@
 #define UTIL_H
 
 #include <pcre.h>
+#include <stdio.h>
 #include <string.h>
 #include <sys/time.h>
 
