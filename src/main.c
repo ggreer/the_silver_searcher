@@ -36,7 +36,9 @@ int main(int argc, char **argv) {
     }
 #endif
 
-    gettimeofday(&(stats.time_start), NULL);
+    if (opts.stats) {
+      gettimeofday(&(stats.time_start), NULL);
+    }
 
     parse_options(argc, argv, &paths);
     log_debug("PCRE Version: %s", pcre_version());
