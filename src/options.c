@@ -141,8 +141,8 @@ void parse_options(int argc, char **argv, char **paths[]) {
         { "recurse", no_argument, NULL, 'r' },
         { "search-binary", no_argument, &(opts.search_binary_files), 1 },
         { "search-files", no_argument, &(opts.search_stream), 0 },
-        { "smart-case", no_argument, &useless, 0 },
-        { "nosmart-case", no_argument, &useless, 0 },
+        { "case-sensitive", no_argument, NULL, 's' },
+        { "smart-case", no_argument, NULL, 'S' },
         { "stats", no_argument, &(opts.stats), 1 },
         { "unrestricted", no_argument, NULL, 'u' },
         { "skip-vcs-ignores", no_argument, NULL, 'U' },
@@ -171,7 +171,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         group = 0;
     }
 
-    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:nQRrvVtuUw", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:nQRrSsvVtuUw", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 opts.after = atoi(optarg);
@@ -223,6 +223,11 @@ void parse_options(int argc, char **argv, char **paths[]) {
             case 'R':
             case 'r':
                 opts.recurse_dirs = 1;
+            case 'S':
+                opts.casing = CASE_SMART;
+                break;
+            case 's':
+                opts.casing = CASE_SENSITIVE;
                 break;
             case 't':
                 opts.search_all_files = 1;

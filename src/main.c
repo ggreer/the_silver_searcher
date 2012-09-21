@@ -11,6 +11,7 @@
 #include "log.h"
 #include "options.h"
 #include "search.h"
+#include "util.h"
 
 
 int main(int argc, char **argv) {
@@ -63,6 +64,10 @@ int main(int argc, char **argv) {
     if (pthread_mutex_init(&work_queue_mtx, NULL)) {
         log_err("pthread_mutex_init failed!");
         exit(2);
+    }
+
+    if (opts.casing == CASE_SMART) {
+        opts.casing = contains_uppercase(opts.query) ? CASE_SENSITIVE : CASE_INSENSITIVE;
     }
 
     if (opts.literal) {

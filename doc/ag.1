@@ -60,7 +60,13 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 \fB\-\-hidden\fR: Search hidden files\. This option obeys ignore files\.
 .
 .IP "\(bu" 4
-\fB\-i\fR, \fB\-\-ignore\-case\fR
+\fB\-i \-\-ignore\-case\fR: Match case insensitively\.
+.
+.IP "\(bu" 4
+\fB\-s \-\-case\-sensitive\fR: Match case sensitively\. Enabled by default\.
+.
+.IP "\(bu" 4
+\fB\-S \-\-smart\-case\fR: Match case sensitively if there are any uppercase letters in PATTERN, or case insensitively otherwise\.
 .
 .IP "\(bu" 4
 \fB\-\-[no]heading\fR
