@@ -7,6 +7,7 @@
 enum case_behavior {
     CASE_SENSITIVE,
     CASE_INSENSITIVE,
+    CASE_SMART,
     CASE_SENSITIVE_RETRY_INSENSITIVE /* for future use */
 };
 
