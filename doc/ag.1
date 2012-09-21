@@ -60,7 +60,13 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 \fB\-\-hidden\fR: Search hidden files\. This option obeys ignore files\.
 .
 .IP "\(bu" 4
-\fB\-i\fR, \fB\-\-ignore\-case\fR
+\fB\-i \-\-ignore\-case\fR: Match case insensitively\.
+.
+.IP "\(bu" 4
+\fB\-s \-\-case\-sensitive\fR: Match case sensitively\. Enabled by default\.
+.
+.IP "\(bu" 4
+\fB\-S \-\-smart\-case\fR: Match case sensitively if there are any uppercase letters in PATTERN, or case insensitively otherwise\.
 .
 .IP "\(bu" 4
 \fB\-\-[no]heading\fR
@@ -93,6 +99,9 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 \fB\-u \-\-unrestricted\fR: Search \fIall\fR files\. This ignores \.agignore, \.gitignore, etc\. It searches binary and hidden files as well\.
 .
 .IP "\(bu" 4
+\fB\-U, \-\-skip\-vcs\-ignores\fR: Ignore VCS ignore files (\.gitigore, \.hgignore, svn:ignore), but still use \.agignore\.
+.
+.IP "\(bu" 4
 \fB\-v \-\-invert\-match\fR
 .
 .IP "\(bu" 4
@@ -102,6 +111,9 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 .
 .SH "IGNORING FILES"
 By default, ag will ignore files matched by patterns in \.gitignore, \.hgignore, or \.agignore\. Ag also ignores files matched by the svn:ignore property in subversion repositories\. Binary files are ignored by default as well\.
+.
+.P
+If you want to ignore \.gitignore, \.hgignore, and svn:ignore but still take \.agignore into account, use \fB\-U\fR\.
 .
 .P
 Use the \fB\-a\fR option to search all text files, and \fB\-u\fR to search \fIall\fR files\.

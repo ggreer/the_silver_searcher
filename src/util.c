@@ -224,6 +224,16 @@ int is_whitespace(const char ch) {
     return FALSE;
 }
 
+int contains_uppercase(const char* s) {
+    int i;
+    for (i = 0; s[i] != '\0'; i++) {
+        if (isupper(s[i])) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
 #ifndef HAVE_STRLCAT
 /*
  * strlcat and strlcpy, taken from Apache Traffic Server

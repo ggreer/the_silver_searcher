@@ -40,7 +40,12 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Only search filenames matching PATTERN.
   * `--hidden`:
     Search hidden files. This option obeys ignore files.
-  * `-i`, `--ignore-case`
+  * `-i --ignore-case`:
+    Match case insensitively.
+  * `-s --case-sensitive`:
+    Match case sensitively. Enabled by default.
+  * `-S --smart-case`:
+    Match case sensitively if there are any uppercase letters in PATTERN, or case insensitively otherwise.
   * `--[no]heading`
   * `-l --files-with-matches`:
     Only print filenames containing matches, not matching lines.
