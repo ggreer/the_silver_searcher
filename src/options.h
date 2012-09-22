@@ -4,6 +4,8 @@
 #include <getopt.h>
 #include <pcre.h>
 
+#define DEFAULT_CONTEXT_LEN 2
+
 enum case_behavior {
     CASE_SENSITIVE,
     CASE_INSENSITIVE,

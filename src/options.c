@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -116,7 +117,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         { "color", no_argument, &(opts.color), 1 },
         { "nocolor", no_argument, &(opts.color), 0 },
         { "column", no_argument, &(opts.column), 1 },
-        { "context", optional_argument, &(opts.context), 2 },
+        { "context", optional_argument, NULL, 'C' },
         { "debug", no_argument, NULL, 'D' },
         { "depth", required_argument, NULL, 0 },
         { "follow", no_argument, &(opts.follow_symlinks), 1 },
@@ -185,6 +186,11 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 break;
             case 'C':
                 opts.context = atoi(optarg);
+                if (opts.context == 0 && errno == EINVAL) {
+                    /* This arg must be the search string instead of the context length */
+                    optind--;
+                    opts.context = DEFAULT_CONTEXT_LEN;
+                }
                 break;
             case 'D':
                 set_log_level(LOG_LEVEL_DEBUG);
