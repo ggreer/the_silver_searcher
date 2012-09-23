@@ -23,6 +23,7 @@ Example: ag -i foo /bar/\n\
 Search options:\n\
 \n\
 --ackmate: Output results in a format parseable by AckMate.\n\
+-a --all-types: Search all files. This doesn't include hidden files, and also doesn't respect any ignore files.\n\
 -A --after [LINES]: Print lines before match. Defaults to 2.\n\
 -B --before [LINES]: Print lines after match. Defaults to 2.\n\
 --[no]break: Print a newline between matches in different files. Enabled by default.\n\
@@ -35,15 +36,24 @@ Search options:\n\
 --[no]group: Same as --[no]break --[no]heading\n\
 -g PATTERN: Print filenames that match PATTERN\n\
 -G, --file-search-regex PATTERN: Only search file names matching PATTERN\n\
--i, --ignore-case\n\
---invert-match\n\
 --[no]heading\n\
+--hidden: Search hidden files. This option obeys ignore files.\n\
+-i, --ignore-case: Match case insensitively\n\
+--ignore PATTERN: Ignore files/directories matching this pattern. Literal file and directory names are also allowed.\n\
 -l --files-with-matches: Only print filenames containing matches, not matching lines.\n\
--Q --literal: Do not parse PATTERN as a regular expression. Try to match it literally.\n\
+-L --files-without-matches: Only print filenames that don't contain matches.\n\
 -m --max-count NUM: Skip the rest of a file after NUM matches. Default is 10,000.\n\
+-p --path-to-agignore STRING: Provide a path to a specific .agignore file\n\
 --print-long-lines: Print matches on very long lines (> 2k characters by default)\n\
+-Q --literal: Do not parse PATTERN as a regular expression. Try to match it literally.\n\
+-s --case-sensitive: Match case sensitively. Enabled by default.\n\
+-S --smart-case: Match case sensitively if there are any uppercase letters in PATTERN, or case insensitively otherwise.\n\
 --search-binary: Search binary files for matches.\n\
 --stats: Print stats (files scanned, time taken, etc)\n\
+-t --all-text: Search all text files. This doesn't include hidden files.\n\
+-u --unrestricted: Search *all* files. This ignores .agignore, .gitignore, etc. It searches binary and hidden files as well.\n\
+-U --skip-vcs-ignores: Ignore VCS ignore files (.gitigore, .hgignore, svn:ignore), but still use .agignore.\n\
+-v --invert-match\n\
 -w --word-regexp: Only match whole words.\n\
 \n");
 }
@@ -140,6 +150,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         { "nogroup", no_argument, &(group), 0 },
         { "noheading", no_argument, &(opts.print_heading), 0 },
         { "parallel", no_argument, &(opts.parallel), 1},
+        { "path-to-agignore", required_argument, NULL, 'p'},
         { "print-long-lines", no_argument, &(opts.print_long_lines), 1 },
         { "recurse", no_argument, NULL, 'r' },
         { "search-binary", no_argument, &(opts.search_binary_files), 1 },
@@ -173,7 +184,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         group = 0;
     }
 
-    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:nQRrSsvVtuUw", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:np:QRrSsvVtuUw", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 opts.after = atoi(optarg);
@@ -223,6 +234,9 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 break;
             case 'n':
                 opts.recurse_dirs = 0;
+                break;
+            case 'p':
+                opts.path_to_agignore = optarg;
                 break;
             case 'Q':
                 opts.literal = 1;
@@ -302,7 +316,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         exit(1);
     }
 
-    if (home_dir) {
+    if (home_dir && !opts.search_all_files) {
         log_debug("Found user's home dir: %s", home_dir);
         size_t path_len = (size_t)(strlen(home_dir) + strlen(ignore_pattern_files[0]) + 2); /* / + \0 */
         ignore_file_path = malloc(path_len);
