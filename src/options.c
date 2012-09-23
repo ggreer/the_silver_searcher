@@ -127,6 +127,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         { "heading", no_argument, &(opts.print_heading), 1 },
         { "help", no_argument, NULL, 'h' },
         { "hidden", no_argument, &(opts.search_hidden_files), 1 },
+        { "ignore", required_argument, NULL, 0 },
         { "ignore-case", no_argument, NULL, 'i' },
         { "invert-match", no_argument, &(opts.invert_match), 1 },
         { "literal", no_argument, NULL, 'Q' },
@@ -262,6 +263,10 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 }
                 else if (strcmp(longopts[opt_index].name, "depth") == 0) {
                     opts.max_search_depth = atoi(optarg);
+                    break;
+                }
+                else if (strcmp(longopts[opt_index].name, "ignore") == 0) {
+                    add_ignore_pattern(root_ignores, optarg);
                     break;
                 }
                 else if (strcmp(longopts[opt_index].name, "workers") == 0) {
