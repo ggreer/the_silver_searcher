@@ -32,6 +32,7 @@ void load_svn_ignore_patterns(ignores *ig, const char *path);
 
 int ackmate_dir_match(const char* dir_name);
 
+int filename_ignore_search(const ignores *ig, const char *filename);
 int filename_filter(const struct dirent *dir, void *baton);
 
 #endif
