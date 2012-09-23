@@ -32,6 +32,7 @@ typedef struct {
     int literal;
     int max_matches_per_file;
     int max_search_depth;
+    char *path_to_agignore;
     int print_break;
     int print_filename_only;
     int print_heading;

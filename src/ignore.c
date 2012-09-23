@@ -245,7 +245,7 @@ int filename_filter(const struct dirent *dir, void *baton) {
     if (!opts.search_hidden_files && filename[0] == '.') {
         return 0;
     }
-    if (opts.search_all_files) {
+    if (opts.search_all_files && !opts.path_to_agignore) {
         return 1;
     }
     if (filename_ignore_search(ig, filename)) {

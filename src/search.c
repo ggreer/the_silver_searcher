@@ -270,6 +270,10 @@ void search_dir(ignores *ig, const char* path, const int depth) {
         dir_full_path = NULL;
     }
 
+    if (opts.path_to_agignore) {
+        load_ignore_patterns(ig, opts.path_to_agignore);
+    }
+
     results = ag_scandir(path, &dir_list, &filename_filter, ig);
     if (results == 0)
     {
