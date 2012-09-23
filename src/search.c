@@ -252,7 +252,6 @@ void search_dir(ignores *ig, const char* path, const int depth) {
     size_t path_len = 0;
     int i;
 
-    if (!opts.search_all_files) {
     /* find agignore/gitignore/hgignore/etc files to load ignore patterns from */
     for (i = 0; opts.skip_vcs_ignores ? (i == 0) : (ignore_pattern_files[i] != NULL); i++) {
         ignore_file = ignore_pattern_files[i];
@@ -269,7 +268,6 @@ void search_dir(ignores *ig, const char* path, const int depth) {
         }
         free(dir_full_path);
         dir_full_path = NULL;
-    }
     }
 
     if (opts.path_to_agignore) {

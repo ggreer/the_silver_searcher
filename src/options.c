@@ -47,7 +47,7 @@ Search options:\n\
 --print-long-lines: Print matches on very long lines (> 2k characters by default)\n\
 -Q --literal: Do not parse PATTERN as a regular expression. Try to match it literally.\n\
 -s --case-sensitive: Match case sensitively. Enabled by default.\n\
--S --smart-case: Match case sensitively if there are any uppercase letters in PATTERN, or case insensitively otherwise.
+-S --smart-case: Match case sensitively if there are any uppercase letters in PATTERN, or case insensitively otherwise.\n\
 --search-binary: Search binary files for matches.\n\
 --stats: Print stats (files scanned, time taken, etc)\n\
 -t --all-text: Search all text files. This doesn't include hidden files.\n\
