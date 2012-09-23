@@ -227,19 +227,20 @@ int filename_filter(const struct dirent *dir, void *baton) {
         return 1;
     }
 
-    match_pos = binary_search(dir->d_name, ig->names, 0, ig->names_len);
+    match_pos = binary_search(filename, ig->names, 0, ig->names_len);
     if (match_pos >= 0) {
-        log_debug("file %s ignored because name matches static pattern %s", dir->d_name, ig->names[match_pos]);
+        log_debug("file %s ignored because name matches static pattern %s", filename, ig->names[match_pos]);
         return 0;
     }
 
-    if (ackmate_dir_match(dir->d_name)) {
+    if (ackmate_dir_match(filename)) {
+        log_debug("file %s ignored because name matches ackmate regex", filename);
         return 0;
     }
 
     for (i = 0; i < ig->regexes_len; i++) {
         if (fnmatch(ig->regexes[i], filename, fnmatch_flags) == 0) {
-            log_debug("file %s ignored because name matches regex pattern %s", dir->d_name, ig->regexes[i]);
+            log_debug("file %s ignored because name matches regex pattern %s", filename, ig->regexes[i]);
             return 0;
         }
     }
