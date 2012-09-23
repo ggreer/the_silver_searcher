@@ -4,9 +4,12 @@
 #include <getopt.h>
 #include <pcre.h>
 
+#define DEFAULT_CONTEXT_LEN 2
+
 enum case_behavior {
     CASE_SENSITIVE,
     CASE_INSENSITIVE,
+    CASE_SMART,
     CASE_SENSITIVE_RETRY_INSENSITIVE /* for future use */
 };
 
@@ -35,8 +38,11 @@ typedef struct {
     int print_heading;
     int print_line_numbers;
     int print_long_lines; /* TODO: support this in print.c */
+    pcre *re;
+    pcre_extra *re_extra;
     int recurse_dirs;
     int search_all_files;
+    int skip_vcs_ignores;
     int search_binary_files;
     int search_hidden_files;
     int search_stream; /* true if tail -F blah | ag */
@@ -46,6 +52,7 @@ typedef struct {
     int paths_len;
     int parallel;
     int word_regexp;
+    int workers;
 } cli_options;
 
 /* global options. parse_options gives it sane values, everything else reads from it */

@@ -17,6 +17,7 @@ const char *evil_hardcoded_ignore_files[] = {
     NULL
 };
 
+/* Warning: changing the first string will break skip_vcs_ignores. */
 const char *ignore_pattern_files[] = {
     ".agignore",
     ".gitignore",
@@ -94,8 +95,6 @@ void load_ignore_patterns(ignores *ig, const char *path) {
         log_debug("Skipping ignore file %s", path);
         return;
     }
-
-    log_debug("Adding ignore file %s", path);
 
     char *line = NULL;
     ssize_t line_len = 0;
@@ -202,10 +201,33 @@ int ackmate_dir_match(const char* dir_name) {
     return 0;
 }
 
+int filename_ignore_search(const ignores *ig, const char *filename) {
+    size_t i;
+    int match_pos;
+
+    match_pos = binary_search(filename, ig->names, 0, ig->names_len);
+    if (match_pos >= 0) {
+        log_debug("file %s ignored because name matches static pattern %s", filename, ig->names[match_pos]);
+        return 1;
+    }
+
+    if (ackmate_dir_match(filename)) {
+        log_debug("file %s ignored because name matches ackmate regex", filename);
+        return 1;
+    }
+
+    for (i = 0; i < ig->regexes_len; i++) {
+        if (fnmatch(ig->regexes[i], filename, fnmatch_flags) == 0) {
+            log_debug("file %s ignored because name matches regex pattern %s", filename, ig->regexes[i]);
+            return 1;
+        }
+    }
+    return 0;
+}
+
 /* This function is REALLY HOT. It gets called for every file */
 int filename_filter(const struct dirent *dir, void *baton) {
     const char *filename = dir->d_name;
-    int match_pos;
     size_t i;
     ignores *ig = (ignores*) baton;
 
@@ -216,7 +238,6 @@ int filename_filter(const struct dirent *dir, void *baton) {
 
     for (i = 0; evil_hardcoded_ignore_files[i] != NULL; i++) {
         if (strcmp(filename, evil_hardcoded_ignore_files[i]) == 0) {
-            log_debug("file %s ignored because it was in evil_hardcoded_ignore_files", filename);
             return 0;
         }
     }
@@ -224,24 +245,21 @@ int filename_filter(const struct dirent *dir, void *baton) {
     if (!opts.search_hidden_files && filename[0] == '.') {
         return 0;
     }
-
     if (opts.search_all_files && !opts.path_to_agignore) {
         return 1;
     }
-
-    match_pos = binary_search(dir->d_name, ig->names, 0, ig->names_len);
-    if (match_pos >= 0) {
-        log_debug("file %s ignored because name matches static pattern %s", dir->d_name, ig->names[match_pos]);
+    if (filename_ignore_search(ig, filename)) {
         return 0;
     }
 
-    if (ackmate_dir_match(dir->d_name)) {
-        return 0;
-    }
-
-    for (i = 0; i < ig->regexes_len; i++) {
-        if (fnmatch(ig->regexes[i], filename, fnmatch_flags) == 0) {
-            log_debug("file %s ignored because name matches regex pattern %s", dir->d_name, ig->regexes[i]);
+    if (dir->d_type == DT_DIR && filename[strlen(filename) - 1] != '/') {
+        int fn_len = strlen(filename) + 2;
+        char *temp = malloc(fn_len);
+        strlcpy(temp, filename, fn_len);
+        strlcat(temp, "/", fn_len);
+        int rv = filename_ignore_search(ig, temp);
+        free(temp);
+        if (rv) {
             return 0;
         }
     }

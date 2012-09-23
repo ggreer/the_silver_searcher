@@ -16,6 +16,7 @@ An attempt to make something better than ack, which itself is better than grep.
 * If you're building with PCRE 8.21 or greater, regex searches use [the JIT compiler](http://sljit.sourceforge.net/pcre.html).
 * Ag calls pcre_study() before executing the regex on a jillion files.
 * Instead of calling fnmatch() on every pattern in your ignore files, non-regex patterns are loaded into an array and binary searched.
+* Ag uses [Pthreads](http://en.wikipedia.org/wiki/POSIX_Threads) to take advantage of multiple CPU cores and search files in parallel.
 
 [This blog post](http://geoff.greer.fm/2012/01/23/making-programs-faster-profiling/) gives an idea of how I go about improving performance.
 
@@ -43,9 +44,9 @@ For debs, rpms, and static builds, see the [downloads page](https://github.com/g
 
 ## Building from source ##
 
-1. Install PCRE development libraries:
-    * Ubuntu: `apt-get install -y libpcre3-dev`
-    * OS X: Install [homebrew](http://mxcl.github.com/homebrew/), then `brew install pcre`
+1. Install dependencies (Automake, pkg-config, PCRE):
+    * Ubuntu: `apt-get install -y automake pkg-config libpcre3-dev`
+    * OS X: Install [homebrew](http://mxcl.github.com/homebrew/), then `brew install automake pkg-config pcre`
     * Windows: It's complicated. See [this wiki page](https://github.com/ggreer/the_silver_searcher/wiki/Windows).
 2. Run the build script (which just runs aclocal, automake, etc):
     * `./build.sh`
@@ -56,20 +57,24 @@ For debs, rpms, and static builds, see the [downloads page](https://github.com/g
 
 It's quite stable now. Most changes are new features, minor bug fixes, or performance improvements. It's much faster than Ack in my benchmarks.
 
-    ack -i SOLR ~/cloudkick/reach  1.83s user 0.41s system 99% cpu 2.242 total
+    ack blahblahblah ~/code  6.59s user 1.94s system 99% cpu 8.547 total
 
-    ag -i SOLR ~/cloudkick/reach  0.26s user 0.07s system 99% cpu 0.323 total
+    ag blahblahblah ~/code  1.39s user 1.81s system 229% cpu 1.396 total
 
 You can use Ag with [my fork](https://github.com/ggreer/AckMate) of the popular ackmate plugin, which lets you use both Ack and Ag for searching in Textmate. You can also move or delete `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and run `ln -s /usr/local/bin/ag "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
+
+You can use Ag with [ack.vim][] by adding the following line to your `.vimrc`:
+
+    let g:ackprg = 'ag --nogroup --nocolor --column'
+
+[ack.vim]: https://github.com/mileszs/ack.vim
 
 ## TODO ##
 A special thanks goes out to Alex Davies. He has given me some excellent recommendations to improve Ag. Many of these things are still on my list:
 
 * Optimizations
   * Profile `read()` against `mmap()`. Remember that's `read()` not `fread()`.
-  * pthreads. these days it's silly to use only one core
-    * Take a look at git. Its use of pthreads is a good example to follow.
-  * `search_dir()` is definitely sub-optimal. It's doing some work twice.
+  * Write a benchmarking script that tweaks various settings to find what's fastest.
 * Features
   * Symlink loop detection.
   * Behave better when matching in files with really long lines.
@@ -77,6 +82,7 @@ A special thanks goes out to Alex Davies. He has given me some excellent recomme
 * Windows support
   * `readdir()` and `stat()` are much slower on Windows. Use `FindNextFile()` instead.
   * Support Visual Studio instead of autotools?
+  * Need to use pthreads-win32 or something similar.
 
 
 ## Other stuff you might like ##

@@ -1,13 +1,13 @@
-.\" Generated with Ronnjs 0.3.8
-.\" http://github.com/kapouer/ronnjs/
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
 .TH "AG" "1" "September 2012" "" ""
 .
 .SH "NAME"
-\fBag\fR \-\- The Silver Searcher\. Like ack, but faster\.
+\fBag\fR \- The Silver Searcher\. Like ack, but faster\.
 .
 .SH "SYNOPSIS"
-\fBag\fR [<options>] PATTERN [PATH]
+\fBag\fR [\fIoptions\fR] PATTERN [PATH]
 .
 .SH "DESCRIPTION"
 Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
@@ -15,112 +15,103 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 .SH "OPTIONS"
 .
 .IP "\(bu" 4
-\fB\-\-ackmate\fR:
-Output results in a format parseable by AckMate \fIhttps://github\.com/protocool/AckMate\fR\|\.
+\fB\-\-ackmate\fR: Output results in a format parseable by AckMate \fIhttps://github\.com/protocool/AckMate\fR\.
 .
 .IP "\(bu" 4
-\fB\-a \-\-all\-types\fR:
-Search all files\. This doesn\'t include hidden files, and doesn\'t respect any ignore files (except \-p)
+\fB\-a \-\-all\-types\fR: Search all files\. This doesn\'t include hidden files, and also doesn\'t respect any ignore files
 .
 .IP "\(bu" 4
-\fB\-A \-\-after [LINES]\fR:
-Print lines before match\. Defaults to 2\.
+\fB\-A \-\-after [LINES]\fR: Print lines before match\. Defaults to 2\.
 .
 .IP "\(bu" 4
-\fB\-B \-\-before [LINES]\fR:
-Print lines after match\. Defaults to 2\.
+\fB\-B \-\-before [LINES]\fR: Print lines after match\. Defaults to 2\.
 .
 .IP "\(bu" 4
-\fB\-\-[no]break\fR:
-Print a newline between matches in different files\. Enabled by default\.
+\fB\-\-[no]break\fR: Print a newline between matches in different files\. Enabled by default\.
 .
 .IP "\(bu" 4
-\fB\-\-[no]color\fR:
-Print color codes in results\. Enabled by default\.
+\fB\-\-[no]color\fR: Print color codes in results\. Enabled by default\.
 .
 .IP "\(bu" 4
-\fB\-\-column\fR:
-Print column numbers in results\.
+\fB\-\-column\fR: Print column numbers in results\.
 .
 .IP "\(bu" 4
-\fB\-C \-\-context [LINES]\fR:
-Print lines before and after matches\. Defaults to 2\.
+\fB\-C \-\-context [LINES]\fR: Print lines before and after matches\. Defaults to 2\.
 .
 .IP "\(bu" 4
-\fB\-D \-\-debug\fR:
-Output ridiculous amounts of debugging info\. Probably not useful\.
+\fB\-D \-\-debug\fR: Output ridiculous amounts of debugging info\. Probably not useful\.
 .
 .IP "\(bu" 4
-\fB\-\-depth NUM\fR:
-Search up to NUM directories deep\. Default is 25\.
+\fB\-\-depth NUM\fR: Search up to NUM directories deep\. Default is 25\.
 .
 .IP "\(bu" 4
-\fB\-f \-\-follow\fR:
-Follow symlinks\.
+\fB\-f \-\-follow\fR: Follow symlinks\.
 .
 .IP "\(bu" 4
 \fB\-\-[no]group\fR
-Same as \-\-[no]break \-\-[no]heading
 .
 .IP "\(bu" 4
-\fB\-g PATTERN\fR:
-Print filenames matching PATTERN\.
+\fB\-g PATTERN\fR: Print filenames matching PATTERN\.
 .
 .IP "\(bu" 4
-\fB\-G\fR, \fB\-\-file\-search\-regex PATTERN\fR:
-Only search filenames matching PATTERN\.
+\fB\-G\fR, \fB\-\-file\-search\-regex PATTERN\fR: Only search filenames matching PATTERN\.
 .
 .IP "\(bu" 4
 \fB\-\-[no]heading\fR
 .
 .IP "\(bu" 4
-\fB\-\-hidden\fR:
-Search hidden files\. This option obeys ignore files\.
+\fB\-\-hidden\fR: Search hidden files\. This option obeys ignore files\.
 .
 .IP "\(bu" 4
-\fB\-i\fR, \fB\-\-ignore\-case\fR
+\fB\-\-ignore PATTERN\fR: Ignore files/directories matching this pattern\. Literal file and directory names are also allowed\.
 .
 .IP "\(bu" 4
-\fB\-l \-\-files\-with\-matches\fR:
-Only print filenames containing matches, not matching lines\.
+\fB\-i \-\-ignore\-case\fR: Match case insensitively\.
 .
 .IP "\(bu" 4
-\fB\-L \-\-files\-without\-matches\fR:
-Only print filenames that don\'t contain matches\.
+\fB\-l \-\-files\-with\-matches\fR: Only print filenames containing matches, not matching lines\.
 .
 .IP "\(bu" 4
-\fB\-m \-\-max\-count NUM\fR:
-Skip the rest of a file after NUM matches\. Default is 10,000\.
+\fB\-L \-\-files\-without\-matches\fR: Only print filenames that don\'t contain matches\.
 .
 .IP "\(bu" 4
-\fB\-p \-\-path\-to\-agignore STRING\fR: Provide a path to a specific \.agignore file
+\fB\-m \-\-max\-count NUM\fR: Skip the rest of a file after NUM matches\. Default is 10,000\.
 .
 .IP "\(bu" 4
-\fB\-\-print\-long\-lines\fR:
-Print matches on very long lines (> 2k characters by default)
+\fB\-p \-\-path\-to\-agignore STRING\fR: Provide a path to a specific \.agignore file\.
 .
 .IP "\(bu" 4
-\fB\-Q \-\-literal\fR:
-Do not parse PATTERN as a regular expression\. Try to match it literally\.
+\fB\-\-print\-long\-lines\fR: Print matches on very long lines (> 2k characters by default)
 .
 .IP "\(bu" 4
-\fB\-\-search\-binary\fR:
-Search binary files for matches\.
+\fB\-Q \-\-literal\fR: Do not parse PATTERN as a regular expression\. Try to match it literally\.
 .
 .IP "\(bu" 4
-\fB\-\-stats\fR:
-Print stats (files scanned, time taken, etc)
+\fB\-s \-\-case\-sensitive\fR: Match case sensitively\. Enabled by default\.
 .
 .IP "\(bu" 4
-\fB\-u \-\-unrestricted\fR:
-Search \fIall\fR files\. This ignores \.agignore, \.gitignore, etc\. It searches binary and hidden files as well\.
+\fB\-S \-\-smart\-case\fR: Match case sensitively if there are any uppercase letters in PATTERN, or case insensitively otherwise\.
+.
+.IP "\(bu" 4
+\fB\-\-search\-binary\fR: Search binary files for matches\.
+.
+.IP "\(bu" 4
+\fB\-\-stats\fR: Print stats (files scanned, time taken, etc)
+.
+.IP "\(bu" 4
+\fB\-t \-\-all\-text\fR: Search all text files\. This doesn\'t include hidden files\.
+.
+.IP "\(bu" 4
+\fB\-u \-\-unrestricted\fR: Search \fIall\fR files\. This ignores \.agignore, \.gitignore, etc\. It searches binary and hidden files as well\.
+.
+.IP "\(bu" 4
+\fB\-U \-\-skip\-vcs\-ignores\fR: Ignore VCS ignore files (\.gitigore, \.hgignore, svn:ignore), but still use \.agignore\.
 .
 .IP "\(bu" 4
 \fB\-v \-\-invert\-match\fR
 .
 .IP "\(bu" 4
-\fB\-w \-\-word\-regexp\fR:
-Only match whole words\.
+\fB\-w \-\-word\-regexp\fR: Only match whole words\.
 .
 .IP "" 0
 .
@@ -128,15 +119,16 @@ Only match whole words\.
 By default, ag will ignore files matched by patterns in \.gitignore, \.hgignore, or \.agignore\. Ag also ignores files matched by the svn:ignore property in subversion repositories\. Binary files are ignored by default as well\.
 .
 .P
+If you want to ignore \.gitignore, \.hgignore, and svn:ignore but still take \.agignore into account, use \fB\-U\fR\.
+.
+.P
 Use the \fB\-a\fR option to search all text files, and \fB\-u\fR to search \fIall\fR files\.
 .
 .SH "EXAMPLES"
-\fBag printf\fR:
-  Find matches for "printf" in the current directory\.
+\fBag printf\fR: Find matches for "printf" in the current directory\.
 .
 .P
-\fBag foo /bar/\fR:
-  Find matches for "foo" in path /bar/\.
+\fBag foo /bar/\fR: Find matches for "foo" in path /bar/\.
 .
 .SH "SEE ALSO"
 grep(1)

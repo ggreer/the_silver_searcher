@@ -1,8 +1,7 @@
 #include "search.h"
 #include "scandir.h"
 
-void search_buf(const pcre *re, const pcre_extra *re_extra,
-                const char *buf, const int buf_len,
+void search_buf(const char *buf, const int buf_len,
                 const char *dir_full_path) {
     int binary = 0;
     int buf_offset = 0;
@@ -84,9 +83,8 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
         }
     }
     else {
-        /* In my profiling, most of the execution time is spent in this pcre_exec */
         while (buf_offset < buf_len &&
-              (rc = pcre_exec(re, re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
+              (rc = pcre_exec(opts.re, opts.re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
             log_debug("Regex match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
             buf_offset = offset_vector[1];
             matches[matches_len].start = offset_vector[0];
@@ -112,12 +110,15 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
     }
 
     if (opts.stats) {
+        pthread_mutex_lock(&stats_mtx);
         stats.total_bytes += buf_len;
         stats.total_files++;
         stats.total_matches += matches_len;
+        pthread_mutex_unlock(&stats_mtx);
     }
 
     if (matches_len > 0) {
+        pthread_mutex_lock(&print_mtx);
         if (opts.print_filename_only) {
             print_path(dir_full_path, '\n');
         }
@@ -129,6 +130,7 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
                 print_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
             }
         }
+        pthread_mutex_unlock(&print_mtx);
     }
     else {
         log_debug("No match in %s", dir_full_path);
@@ -138,29 +140,20 @@ void search_buf(const pcre *re, const pcre_extra *re_extra,
     free(offset_vector);
 }
 
-void search_stdin(const pcre *re, const pcre_extra *re_extra) {
-    search_stream(re, re_extra, stdin, "");
-}
-
 /* TODO: this will only match single lines. multi-line regexes silently don't match */
-void search_stream(const pcre *re, const pcre_extra *re_extra, FILE *stream, const char *path) {
+void search_stream(FILE *stream, const char *path) {
     char *line = NULL;
     ssize_t line_len = 0;
     size_t line_cap = 0;
 
-    opts.print_break = 0;
-    opts.print_heading = 0;
-    opts.print_line_numbers = 0;
-    opts.search_stream = 1;
-
     while ((line_len = getline(&line, &line_cap, stream)) > 0) {
-        search_buf(re, re_extra, line, line_len, path);
+        search_buf(line, line_len, path);
     }
 
     free(line);
 }
 
-void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_full_path) {
+void search_file(const char *file_full_path) {
     int fd = -1;
     off_t f_len = 0;
     char *buf = NULL;
@@ -188,7 +181,7 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
     if (statbuf.st_mode & S_IFIFO) {
         log_debug("%s is a named pipe. stream searching", file_full_path);
         pipe = fdopen(fd, "r");
-        search_stream(re, re_extra, pipe, file_full_path);
+        search_stream(pipe, file_full_path);
         fclose(pipe);
     }
     else {
@@ -205,7 +198,7 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
             goto cleanup;
         }
 
-        search_buf(re, re_extra, buf, (int)f_len, file_full_path);
+        search_buf(buf, (int)f_len, file_full_path);
     }
 
     cleanup:;
@@ -215,40 +208,68 @@ void search_file(const pcre *re, const pcre_extra *re_extra, const char *file_fu
     }
 }
 
+void *search_file_worker() {
+    work_queue_t *queue_item;
+
+    while (TRUE) {
+        pthread_mutex_lock(&work_queue_mtx);
+        if (work_queue == NULL) {
+            if (done_adding_files) {
+                pthread_mutex_unlock(&work_queue_mtx);
+                break;
+            }
+            pthread_cond_wait(&files_ready, &work_queue_mtx);
+            pthread_mutex_unlock(&work_queue_mtx);
+            continue;
+        }
+        queue_item = work_queue;
+        work_queue = work_queue->next;
+        if (work_queue == NULL) {
+            work_queue_tail = NULL;
+        }
+        pthread_mutex_unlock(&work_queue_mtx);
+
+        search_file(queue_item->path);
+        free(queue_item->path);
+        free(queue_item);
+    }
+
+    log_debug("Worker finished.");
+    pthread_exit(NULL);
+    return NULL;
+}
+
 /* TODO: Append matches to some data structure instead of just printing them out.
  * Then ag can have sweet summaries of matches/files scanned/time/etc.
  */
-void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const char* path, const int depth) {
+void search_dir(ignores *ig, const char* path, const int depth) {
     struct dirent **dir_list = NULL;
     struct dirent *dir = NULL;
     int results = 0;
 
-    int fd = -1;
-    off_t f_len = 0;
-    char *buf = NULL;
     char *dir_full_path = NULL;
     const char *ignore_file = NULL;
     size_t path_len = 0;
     int i;
 
     if (!opts.search_all_files) {
-        /* find agignore/gitignore/hgignore/etc files to load ignore patterns from */
-        for (i = 0; ignore_pattern_files[i] != NULL; i++) {
-            ignore_file = ignore_pattern_files[i];
-            path_len = (size_t)(strlen(path) + strlen(ignore_file) + 2); /* 2 for slash and null char */
-            dir_full_path = malloc(path_len);
-            strlcpy(dir_full_path, path, path_len);
-            strlcat(dir_full_path, "/", path_len);
-            strlcat(dir_full_path, ignore_file, path_len);
-            if (strcmp(SVN_DIR, ignore_file) == 0) {
-                load_svn_ignore_patterns(ig, dir_full_path);
-            }
-            else {
-                load_ignore_patterns(ig, dir_full_path);
-            }
-            free(dir_full_path);
-            dir_full_path = NULL;
+    /* find agignore/gitignore/hgignore/etc files to load ignore patterns from */
+    for (i = 0; opts.skip_vcs_ignores ? (i == 0) : (ignore_pattern_files[i] != NULL); i++) {
+        ignore_file = ignore_pattern_files[i];
+        path_len = (size_t)(strlen(path) + strlen(ignore_file) + 2); /* 2 for slash and null char */
+        dir_full_path = malloc(path_len);
+        strlcpy(dir_full_path, path, path_len);
+        strlcat(dir_full_path, "/", path_len);
+        strlcat(dir_full_path, ignore_file, path_len);
+        if (strcmp(SVN_DIR, ignore_file) == 0) {
+            load_svn_ignore_patterns(ig, dir_full_path);
         }
+        else {
+            load_ignore_patterns(ig, dir_full_path);
+        }
+        free(dir_full_path);
+        dir_full_path = NULL;
+    }
     }
 
     if (opts.path_to_agignore) {
@@ -268,7 +289,7 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
             if (depth == 0 && opts.paths_len == 1) {
                 opts.print_heading = -1;
             }
-            search_file(re, re_extra, path);
+            search_file(path);
         }
         else {
             log_err("Error opening directory %s: %s", path, strerror(errno));
@@ -279,8 +300,10 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
     int offset_vector[3];
     int rc = 0;
     struct stat stDirInfo;
+    work_queue_t *queue_item;
 
     for (i = 0; i < results; i++) {
+        queue_item = NULL;
         dir = dir_list[i];
         /* TODO: this is copy-pasted from about 30 lines above */
         path_len = (size_t)(strlen(path) + strlen(dir->d_name) + 2); /* 2 for slash and null char */
@@ -334,18 +357,33 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
                 }
                 else if (opts.match_files) {
                     log_debug("match_files: file_search_regex matched for %s.", dir_full_path);
+                    pthread_mutex_lock(&print_mtx);
                     print_path(dir_full_path, '\n');
+                    pthread_mutex_unlock(&print_mtx);
                     goto cleanup;
                 }
             }
 
-            search_file(re, re_extra, dir_full_path);
+            queue_item = malloc(sizeof(work_queue_t));
+            queue_item->path = dir_full_path;
+            queue_item->next = NULL;
+            pthread_mutex_lock(&work_queue_mtx);
+            if (work_queue_tail == NULL) {
+                work_queue = queue_item;
+            }
+            else {
+                work_queue_tail->next = queue_item;
+            }
+            work_queue_tail = queue_item;
+            pthread_mutex_unlock(&work_queue_mtx);
+            pthread_cond_broadcast(&files_ready);
+            log_debug("%s added to work queue", dir_full_path);
         }
         else if (opts.recurse_dirs) {
             if (depth < opts.max_search_depth) {
                 log_debug("Searching dir %s", dir_full_path);
                 ignores *child_ig = init_ignore(ig);
-                search_dir(child_ig, re, re_extra, dir_full_path, depth + 1);
+                search_dir(child_ig, dir_full_path, depth + 1);
                 cleanup_ignore(child_ig);
             }
             else {
@@ -354,16 +392,12 @@ void search_dir(ignores *ig, const pcre *re, const pcre_extra *re_extra, const c
         }
 
         cleanup:;
-        if (fd != -1) {
-            munmap(buf, f_len);
-            close(fd);
-            fd = -1;
-        }
-
         free(dir);
         dir = NULL;
-        free(dir_full_path);
-        dir_full_path = NULL;
+        if (queue_item == NULL) {
+            free(dir_full_path);
+            dir_full_path = NULL;
+        }
     }
 
     search_dir_cleanup:;

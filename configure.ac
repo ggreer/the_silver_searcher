@@ -1,4 +1,4 @@
-AC_INIT([the_silver_searcher], [0.10pre], [https://github.com/ggreer/the_silver_searcher/issues], [the_silver_searcher], [https://github.com/ggreer/the_silver_searcher])
+AC_INIT([the_silver_searcher], [0.12pre], [https://github.com/ggreer/the_silver_searcher/issues], [the_silver_searcher], [https://github.com/ggreer/the_silver_searcher])
 AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PREREQ([2.59])
@@ -15,6 +15,8 @@ PKG_CHECK_MODULES([PCRE], [libpcre])
 # Run CFLAGS="-g" ./configure if you want debug symbols
 CFLAGS="$CFLAGS $PCRE_CFLAGS -Wall -Wextra -std=c89 -D_GNU_SOURCE"
 LDFLAGS="$LDFLAGS"
+
+AC_CHECK_HEADERS([pthread.h])
 
 AC_CHECK_DECL([PCRE_CONFIG_JIT], [AC_DEFINE([USE_PCRE_JIT], [], [Use PCRE JIT])], [], [#include <pcre.h>])
 
