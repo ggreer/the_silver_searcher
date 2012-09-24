@@ -275,8 +275,7 @@ void search_dir(ignores *ig, const char* path, const int depth) {
     }
 
     results = ag_scandir(path, &dir_list, &filename_filter, ig);
-    if (results == 0)
-    {
+    if (results == 0) {
         log_debug("No results found in directory %s", path);
         goto search_dir_cleanup;
     }
