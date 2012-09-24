@@ -26,7 +26,7 @@ int ag_scandir(const char *dirname,
     }
 
     while ((entry = readdir(dirp)) != NULL) {
-        if ((*filter)(entry, baton) == FALSE) {
+        if ((*filter)(dirname, entry, baton) == FALSE) {
             continue;
         }
         if (results_len >= names_len) {
@@ -36,11 +36,23 @@ int ag_scandir(const char *dirname,
                 goto fail;
             }
         }
+#if defined (__SVR4) && defined (__sun)
+	/*
+	 * The d_name member of the dirent struct is declared as char[1] on
+	 * Solaris, we need to actually allocate enough space for the whole
+	 * string.
+	 */
+        d = malloc(sizeof(struct dirent) + strlen(entry->d_name));
+#else
         d = malloc(sizeof(struct dirent));
+#endif
         if (d == NULL) {
             goto fail;
         }
         memcpy(d, entry, sizeof(struct dirent));
+#if defined (__SVR4) && defined (__sun)
+        strcpy(d->d_name, entry->d_name);
+#endif
         names[results_len] = d;
         results_len++;
     }
