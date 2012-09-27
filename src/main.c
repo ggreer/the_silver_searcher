@@ -78,7 +78,11 @@ int main(int argc, char **argv) {
             pcre_opts = pcre_opts | PCRE_CASELESS;
         }
         if (opts.word_regexp) {
-            build_word_regex();
+            char *word_regexp_query;
+            asprintf(&word_regexp_query, "\\b%s\\b", opts.query);
+            free(opts.query);
+            opts.query = word_regexp_query;
+            opts.query_len = strlen(opts.query);
         }
         compile_study(&opts.re, &opts.re_extra, opts.query, pcre_opts, study_opts);
     }

@@ -116,10 +116,8 @@ void load_ignore_patterns(ignores *ig, const char *path) {
 
 void load_svn_ignore_patterns(ignores *ig, const char *path) {
     FILE *fp = NULL;
-    int path_len = strlen(path);
-    char *dir_prop_base = malloc(path_len + strlen(SVN_DIR_PROP_BASE) + 1);
-    strlcpy(dir_prop_base, path, path_len + 1);
-    strlcat(dir_prop_base, SVN_DIR_PROP_BASE, path_len + strlen(SVN_DIR_PROP_BASE) + 1);
+    char *dir_prop_base;
+    asprintf(&dir_prop_base, "%s/%s", path, SVN_DIR_PROP_BASE);
 
     fp = fopen(dir_prop_base, "r");
     if (fp == NULL) {
@@ -253,10 +251,8 @@ int filename_filter(const struct dirent *dir, void *baton) {
     }
 
     if (dir->d_type == DT_DIR && filename[strlen(filename) - 1] != '/') {
-        int fn_len = strlen(filename) + 2;
-        char *temp = malloc(fn_len);
-        strlcpy(temp, filename, fn_len);
-        strlcat(temp, "/", fn_len);
+        char *temp;
+        asprintf(&temp, "%s/", filename);
         int rv = filename_ignore_search(ig, temp);
         free(temp);
         if (rv) {
