@@ -20,7 +20,7 @@ AC_CHECK_HEADERS([pthread.h])
 
 AC_CHECK_DECL([PCRE_CONFIG_JIT], [AC_DEFINE([USE_PCRE_JIT], [], [Use PCRE JIT])], [], [#include <pcre.h>])
 
-AC_CHECK_FUNCS(getline strlcpy strndup)
+AC_CHECK_FUNCS(getline strndup)
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_HEADERS([src/config.h])

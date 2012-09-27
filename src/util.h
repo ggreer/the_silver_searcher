@@ -54,9 +54,6 @@ int is_whitespace(const char ch);
 
 int contains_uppercase(const char* s);
 
-#ifndef HAVE_STRLCPY
-size_t strlcpy(char *dest, const char *src, size_t size);
-#endif
 #ifndef HAVE_GETLINE
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 #endif
