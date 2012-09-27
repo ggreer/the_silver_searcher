@@ -131,7 +131,7 @@ void load_svn_ignore_patterns(ignores *ig, const char *path) {
     char *key = malloc(32); /* Sane start for max key length. */
     size_t key_len = 0;
     size_t bytes_read = 0;
-    char *entry_line = NULL;
+    char *entry_line;
     size_t line_len;
     int matches;
 
@@ -169,11 +169,9 @@ void load_svn_ignore_patterns(ignores *ig, const char *path) {
             }
         }
         if (line_len > 0) {
-            entry_line = malloc((size_t)line_len + 1);
-            strlcpy(entry_line, patterns, line_len + 1);
+            entry_line = strndup(patterns, line_len);
             add_ignore_pattern(ig, entry_line);
             free(entry_line);
-            entry_line = NULL;
         }
         patterns += line_len + 1;
     }
