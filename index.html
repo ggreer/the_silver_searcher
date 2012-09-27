@@ -14,29 +14,33 @@
     </p>
     <ul>
       <li>
-        <a href="https://github.com/ggreer/the_silver_searcher">The Silver Searcher</a>
+        <a href="https://github.com/ggreer/the_silver_searcher">The Silver Searcher</a> (or <a href="http://en.wikipedia.org/wiki/Silver">Ag</a> for short)
         <p>
-          A mostly-compatible clone of Ack. Written in C, mostly by <a href="http://geoff.greer.fm/">Geoff Greer</a>. It uses tricks like <a href="http://en.wikipedia.org/wiki/POSIX_Threads">pthreads</a>, <a href="http://en.wikipedia.org/wiki/Memory-mapped_file">memory-mapped IO</a>, <a href="http://en.wikipedia.org/wiki/Boyer%E2%80%93Moore%E2%80%93Horspool_algorithm">Boyer-Moore-Horspool strstr()</a>, and <a href="http://sljit.sourceforge.net/pcre.html">PCRE's JIT</a> to improve performance. It also supports some extra features, such as obeying gitignore/hgignore/svn:ignore. Geoff <a href="http://geoff.greer.fm/2012/09/07/the-silver-searcher-adding-pthreads/">has</a> <a href="http://geoff.greer.fm/2012/09/03/profiling-ag-writing-my-own-scandir/">written</a> <a href="http://geoff.greer.fm/2012/08/25/the-silver-searcher-benchmarking-revisions/">many</a> <a href="http://geoff.greer.fm/2012/02/08/profiling-with-gprof/">posts</a> <a href="http://geoff.greer.fm/2012/01/23/making-programs-faster-profiling/">on</a> <a href="http://geoff.greer.fm/2012/01/20/building-for-others/">improving</a> <a href="http://geoff.greer.fm/2011/12/27/the-silver-searcher-better-than-ack/">Ag</a>.
+          A mostly-compatible clone of Ack. Written in C, mostly by <a href="http://geoff.greer.fm/">Geoff Greer</a>. It uses tricks like <a href="http://en.wikipedia.org/wiki/POSIX_Threads">pthreads</a>, <a href="http://en.wikipedia.org/wiki/Memory-mapped_file">memory-mapped IO</a>, <a href="http://en.wikipedia.org/wiki/Boyer%E2%80%93Moore%E2%80%93Horspool_algorithm">Boyer-Moore-Horspool strstr()</a>, and <a href="http://sljit.sourceforge.net/pcre.html">PCRE's JIT</a> to improve performance. It also supports some extra features, such as obeying gitignore/hgignore/svn:ignore. Geoff <a href="http://geoff.greer.fm/2012/09/07/the-silver-searcher-adding-pthreads/">has</a> <a href="http://geoff.greer.fm/2012/09/03/profiling-ag-writing-my-own-scandir/">written</a> <a href="http://geoff.greer.fm/2012/08/25/the-silver-searcher-benchmarking-revisions/">many</a> <a href="http://geoff.greer.fm/2012/02/08/profiling-with-gprof/">posts</a> <a href="http://geoff.greer.fm/2012/01/23/making-programs-faster-profiling/">about</a> <a href="http://geoff.greer.fm/2012/01/20/building-for-others/">improving</a> <a href="http://geoff.greer.fm/2011/12/27/the-silver-searcher-better-than-ack/">Ag</a>.
         </p>
       </li>
       <li>
         <a href="https://github.com/protocool/AckMate">AckMate</a>
         <p>
+          A <a href="http://macromates.com/">TextMate</a> plugin for Ack. There is also <a href="https://github.com/ggreer/AckMate">a fork that runs Ag</a>.
         </p>
       </li>
       <li>
         <a href="https://github.com/mileszs/ack.vim">ack.vim</a>
         <p>
+          A vim plugin for Ack. You can use Ag with this plugin as well. Just open your <code>.vimrc</code> and add  <code>let g:ackprg = 'ag --nogroup --nocolor --column'</code>.
         </p>
       </li>
       <li>
         <a href="http://ctags.sourceforge.net/">Exuberant Ctags</a>
         <p>
+          This program builds an index of functions and variables. Searching is extremely fast, but limited to what's in the index. Good for <em>very</em> large codebases.
         </p>
       </li>
       <li>
         <a href="http://git-scm.com/docs/git-grep">git-grep</a>
         <p>
+          Fast. Built into grep.
         </p>
       </li>
     </ul>
