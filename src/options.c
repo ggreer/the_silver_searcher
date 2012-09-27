@@ -318,14 +318,8 @@ void parse_options(int argc, char **argv, char **paths[]) {
 
     if (home_dir && !opts.search_all_files) {
         log_debug("Found user's home dir: %s", home_dir);
-        size_t path_len = (size_t)(strlen(home_dir) + strlen(ignore_pattern_files[0]) + 2); /* / + \0 */
-        ignore_file_path = malloc(path_len);
-        strlcpy(ignore_file_path, home_dir, path_len);
-        strlcat(ignore_file_path, "/", path_len);
-        strlcat(ignore_file_path, ignore_pattern_files[0], path_len);
-
+        asprintf(&ignore_file_path, "%s/%s", home_dir, ignore_pattern_files[0]);
         load_ignore_patterns(root_ignores, ignore_file_path);
-
         free(ignore_file_path);
     }
 

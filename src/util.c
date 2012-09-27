@@ -94,17 +94,6 @@ int invert_matches(match matches[], int matches_len, const int buf_len) {
     return (matches_len + 1);
 }
 
-void build_word_regex() {
-    opts.query_len = opts.query_len + 5; /* "\b" + "\b" + '\0' */
-    char *word_regexp_query = malloc(opts.query_len);
-    char *word_sep = "\\b";
-    strlcpy(word_regexp_query, word_sep, opts.query_len);
-    strlcat(word_regexp_query, opts.query, opts.query_len);
-    strlcat(word_regexp_query, word_sep, opts.query_len);
-    free(opts.query);
-    opts.query = word_regexp_query;
-}
-
 void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opts, const int study_opts) {
     const char *pcre_err = NULL;
     int pcre_err_offset = 0;
@@ -233,66 +222,6 @@ int contains_uppercase(const char* s) {
     }
     return FALSE;
 }
-
-#ifndef HAVE_STRLCAT
-/*
- * strlcat and strlcpy, taken from Apache Traffic Server
- */
-size_t strlcat(char *dst, const char *src, size_t siz)
-{
-    char *d = dst;
-    const char *s = src;
-    size_t n = siz;
-    size_t dlen;
-
-  /* Find the end of dst and adjust bytes left but don't go past end */
-    while (n-- != 0 && *d != '\0')
-      d++;
-    dlen = d - dst;
-    n = siz - dlen;
-
-    if (n == 0)
-      return (dlen + strlen(s));
-    while (*s != '\0') {
-      if (n != 1) {
-        *d++ = *s;
-        n--;
-      }
-      s++;
-    }
-    *d = '\0';
-
-    return (dlen + (s - src));  /* count does not include NUL */
-}
-#endif
-
-#ifndef HAVE_STRLCPY
-size_t strlcpy(char *dst, const char *src, size_t siz)
-{
-    char *d = dst;
-    const char *s = src;
-    size_t n = siz;
-
-    /* Copy as many bytes as will fit */
-    if (n != 0) {
-      while (--n != 0) {
-        if ((*d++ = *s++) == '\0')
-          break;
-      }
-    }
-
-    /* Not enough room in dst, add NUL and traverse rest of src */
-    if (n == 0) {
-      if (siz != 0)
-        *d = '\0'; /* NUL-terminate dst */
-
-      while (*s++)
-        ;
-    }
-
-    return (s - src - 1);   /* count does not include NUL */
-}
-#endif
 
 #ifndef HAVE_GETLINE
 /*

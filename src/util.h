@@ -43,7 +43,6 @@ char* boyer_moore_strncasestr(const char *s, const char *find, const size_t s_le
 strncmp_fp get_strstr(cli_options opts);
 
 int invert_matches(match matches[], int matches_len, const int buf_len);
-void build_word_regex();
 void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opts, const int study_opts);
 
 int is_binary(const void* buf, const int buf_len);
@@ -55,12 +54,6 @@ int is_whitespace(const char ch);
 
 int contains_uppercase(const char* s);
 
-#ifndef HAVE_STRLCAT
-size_t strlcat(char *dest, const char *src, size_t size);
-#endif
-#ifndef HAVE_STRLCPY
-size_t strlcpy(char *dest, const char *src, size_t size);
-#endif
 #ifndef HAVE_GETLINE
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 #endif
