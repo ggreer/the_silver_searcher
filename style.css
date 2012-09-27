@@ -1,0 +1,31 @@
+body {
+  background: #fff;
+  font-family: georgia, times, serif;
+  font-size: 125%;
+  color: #000;
+  margin: 10px;
+  text-rendering: optimizeLegibility;
+}
+a,
+a:link {
+  color: #555;
+  text-decoration: none;
+}
+a:visited {
+  color: #777;
+}
+a:hover {
+  text-decoration: underline;
+}
+a:active {
+  color: #aaa;
+}
+hr {
+  height: 1px;
+  background-color: #000;
+  border: 0;
+}
+ul {
+  list-style: none;
+  line-height: 150%;
+}
