@@ -5,14 +5,15 @@ body {
   color: #000;
   margin: 10px;
   text-rendering: optimizeLegibility;
+  max-width: 40em;
 }
 a,
 a:link {
-  color: #555;
+  color: #55b;
   text-decoration: none;
 }
 a:visited {
-  color: #777;
+  color: #88b;
 }
 a:hover {
   text-decoration: underline;
@@ -25,7 +26,14 @@ hr {
   background-color: #000;
   border: 0;
 }
+p {
+  padding-left: 1em;
+}
 ul {
+  padding: 2em 1em 1em 1em;
   list-style: none;
   line-height: 150%;
+}
+li {
+  padding-bottom: 1em;
 }
