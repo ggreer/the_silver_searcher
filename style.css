@@ -4,7 +4,6 @@ body {
   font-size: 125%;
   color: #000;
   margin: 10px;
-  text-rendering: optimizeLegibility;
   max-width: 40em;
 }
 a,
