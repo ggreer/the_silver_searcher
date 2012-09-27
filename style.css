@@ -1,5 +1,5 @@
 body {
-  background: #fff;
+  background: white;
   font-family: georgia, times, serif;
   font-size: 125%;
   color: #000;
@@ -8,13 +8,14 @@ body {
 }
 a,
 a:link {
-  color: #55b;
+  color: steelBlue;
   text-decoration: none;
 }
 a:visited {
-  color: #88b;
+  color: #9ac;
 }
 a:hover {
+  color: steelBlue;
   text-decoration: underline;
 }
 a:active {
@@ -22,7 +23,7 @@ a:active {
 }
 hr {
   height: 1px;
-  background-color: #000;
+  background-color: black;
   border: 0;
 }
 p {
@@ -35,7 +36,7 @@ ul {
   line-height: 150%;
 }
 li {
-  background-color: #eee;
+  background-color: floralwhite;
   margin-bottom: 1.5em;
   padding: 0.5em;
 }
