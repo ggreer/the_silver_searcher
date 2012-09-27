@@ -4,7 +4,7 @@
 #include <sys/dir.h>
 #include <sys/types.h>
 
-#define SVN_DIR_PROP_BASE "/dir-prop-base"
+#define SVN_DIR_PROP_BASE "dir-prop-base"
 #define SVN_DIR ".svn"
 #define SVN_PROP_IGNORE "svn:ignore"
 

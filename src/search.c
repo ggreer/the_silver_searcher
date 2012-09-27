@@ -249,17 +249,12 @@ void search_dir(ignores *ig, const char* path, const int depth) {
 
     char *dir_full_path = NULL;
     const char *ignore_file = NULL;
-    size_t path_len = 0;
     int i;
 
     /* find agignore/gitignore/hgignore/etc files to load ignore patterns from */
     for (i = 0; opts.skip_vcs_ignores ? (i == 0) : (ignore_pattern_files[i] != NULL); i++) {
         ignore_file = ignore_pattern_files[i];
-        path_len = (size_t)(strlen(path) + strlen(ignore_file) + 2); /* 2 for slash and null char */
-        dir_full_path = malloc(path_len);
-        strlcpy(dir_full_path, path, path_len);
-        strlcat(dir_full_path, "/", path_len);
-        strlcat(dir_full_path, ignore_file, path_len);
+        asprintf(&dir_full_path, "%s/%s", path, ignore_file);
         if (strcmp(SVN_DIR, ignore_file) == 0) {
             load_svn_ignore_patterns(ig, dir_full_path);
         }
@@ -302,12 +297,7 @@ void search_dir(ignores *ig, const char* path, const int depth) {
     for (i = 0; i < results; i++) {
         queue_item = NULL;
         dir = dir_list[i];
-        /* TODO: this is copy-pasted from about 30 lines above */
-        path_len = (size_t)(strlen(path) + strlen(dir->d_name) + 2); /* 2 for slash and null char */
-        dir_full_path = malloc(path_len);
-        strlcpy(dir_full_path, path, path_len);
-        strlcat(dir_full_path, "/", path_len);
-        strlcat(dir_full_path, dir->d_name, path_len);
+        asprintf(&dir_full_path, "%s/%s", path, dir->d_name);
 
         /* Some filesystems, e.g. ReiserFS, always return a type DT_UNKNOWN from readdir or scandir. */
         /* Call lstat if we find DT_UNKNOWN to get the information we need. */
