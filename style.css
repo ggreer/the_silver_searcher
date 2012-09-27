@@ -27,7 +27,8 @@ hr {
   border: 0;
 }
 p {
-  padding-left: 1em;
+  margin-left: 1em;
+  padding: 0.5em;
 }
 ul {
   padding: 1em;
@@ -35,5 +36,7 @@ ul {
   line-height: 150%;
 }
 li {
-  padding-bottom: 1.5em;
+  background-color: #eee;
+  margin-bottom: 1.5em;
+  padding: 0.5em;
 }
