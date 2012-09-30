@@ -220,8 +220,7 @@ int contains_uppercase(const char* s) {
     return FALSE;
 }
 
-int is_directory(const char *path, const struct dirent *d)
-{
+int is_directory(const char *path, const struct dirent *d) {
 #ifdef HAVE_DIRENT_DTYPE
     /* Some filesystems, e.g. ReiserFS, always return a type DT_UNKNOWN from readdir or scandir. */
     /* Call lstat if we find DT_UNKNOWN to get the information we need. */
@@ -240,8 +239,7 @@ int is_directory(const char *path, const struct dirent *d)
     return (S_ISDIR(s.st_mode));
 }
 
-int is_symlink(const char *path, const struct dirent *d)
-{
+int is_symlink(const char *path, const struct dirent *d) {
 #ifdef HAVE_DIRENT_DTYPE
     /* Some filesystems, e.g. ReiserFS, always return a type DT_UNKNOWN from readdir or scandir. */
     /* Call lstat if we find DT_UNKNOWN to get the information we need. */
@@ -261,8 +259,7 @@ int is_symlink(const char *path, const struct dirent *d)
 }
 
 #ifndef HAVE_FGETLN
-char *fgetln(FILE *fp, size_t *lenp)
-{
+char *fgetln(FILE *fp, size_t *lenp) {
     char *buf = NULL;
     int c, used = 0, len = 0;
 
@@ -325,8 +322,7 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
 /* Apache-licensed implementation of strndup for OS
  * taken from http://source-android.frandroid.com/dalvik/tools/dmtracedump/CreateTestTrace.c
  */ 
-char *strndup(const char *src, size_t len)
-{
+char *strndup(const char *src, size_t len) {
     char *dest = (char *) malloc(len + 1);
     strncpy(dest, src, len);
     dest[len] = 0;
@@ -344,8 +340,7 @@ char *strndup(const char *src, size_t len)
  *     Jonathan Leffler (http://stackoverflow.com/users/15168/jonathan-leffler)
  *     bobwood (http://stackoverflow.com/users/100480/bobwood)
  */
-int asprintf(char **ret, const char *format, ...)
-{
+int asprintf(char **ret, const char *format, ...) {
     va_list ap;
     *ret = NULL;  /* Ensure value can be passed to free() */
 
@@ -374,4 +369,3 @@ int asprintf(char **ret, const char *format, ...)
     return count;
 }
 #endif
-
