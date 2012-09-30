@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include "ignore.h"
 #include "log.h"
@@ -222,12 +223,12 @@ int filename_ignore_search(const ignores *ig, const char *filename) {
 }
 
 /* This function is REALLY HOT. It gets called for every file */
-int filename_filter(const struct dirent *dir, void *baton) {
+int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     const char *filename = dir->d_name;
     size_t i;
     ignores *ig = (ignores*) baton;
 
-    if (!opts.follow_symlinks && dir->d_type == DT_LNK) {
+    if (!opts.follow_symlinks && is_symlink(path, dir)) {
         log_debug("File %s ignored becaused it's a symlink", dir->d_name);
         return 0;
     }
@@ -248,7 +249,7 @@ int filename_filter(const struct dirent *dir, void *baton) {
         return 0;
     }
 
-    if (dir->d_type == DT_DIR && filename[strlen(filename) - 1] != '/') {
+    if (is_directory(path, dir) && filename[strlen(filename) - 1] != '/') {
         char *temp;
         asprintf(&temp, "%s/", filename);
         int rv = filename_ignore_search(ig, temp);
@@ -259,7 +260,7 @@ int filename_filter(const struct dirent *dir, void *baton) {
     }
 
     if (ig->parent != NULL) {
-        return filename_filter(dir, (void *)(ig->parent));
+        return filename_filter(path, dir, (void *)(ig->parent));
     }
 
     return 1;

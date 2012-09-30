@@ -1,7 +1,7 @@
 #ifndef IGNORE_H
 #define IGNORE_H
 
-#include <sys/dir.h>
+#include <dirent.h>
 #include <sys/types.h>
 
 #define SVN_DIR_PROP_BASE "dir-prop-base"
@@ -33,6 +33,6 @@ void load_svn_ignore_patterns(ignores *ig, const char *path);
 int ackmate_dir_match(const char* dir_name);
 
 int filename_ignore_search(const ignores *ig, const char *filename);
-int filename_filter(const struct dirent *dir, void *baton);
+int filename_filter(const char *path, const struct dirent *dir, void *baton);
 
 #endif

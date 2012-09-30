@@ -2,10 +2,10 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include <string.h>
 #include <stdlib.h>
-#include "util.h"
+#include <sys/stat.h>
 
+#include "util.h"
 
 void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], int case_sensitive) {
     size_t i;
@@ -223,6 +223,83 @@ int contains_uppercase(const char* s) {
     return FALSE;
 }
 
+int is_directory(const char *path, const struct dirent *d)
+{
+#ifdef HAVE_DIRENT_DTYPE
+    /* Some filesystems, e.g. ReiserFS, always return a type DT_UNKNOWN from readdir or scandir. */
+    /* Call lstat if we find DT_UNKNOWN to get the information we need. */
+    if (d->d_type != DT_UNKNOWN) {
+        return (d->d_type == DT_DIR);
+    }
+#endif
+    size_t path_len = (size_t)(strlen(path) + strlen(d->d_name) + 2);
+    char *full_path = malloc(path_len);
+    strlcpy(full_path, path, path_len);
+    strlcat(full_path, "/", path_len);
+    strlcat(full_path, d->d_name, path_len);
+    struct stat s;
+    if (stat(full_path, &s) != 0) {
+        free(full_path);
+        return FALSE;
+    }
+    free(full_path);
+    return (S_ISDIR(s.st_mode));
+}
+
+int is_symlink(const char *path, const struct dirent *d)
+{
+#ifdef HAVE_DIRENT_DTYPE
+    /* Some filesystems, e.g. ReiserFS, always return a type DT_UNKNOWN from readdir or scandir. */
+    /* Call lstat if we find DT_UNKNOWN to get the information we need. */
+    if (d->d_type != DT_UNKNOWN) {
+        return (d->d_type == DT_LNK);
+    }
+#endif
+    size_t path_len = (size_t)(strlen(path) + strlen(d->d_name) + 2);
+    char *full_path = malloc(path_len);
+    strlcpy(full_path, path, path_len);
+    strlcat(full_path, "/", path_len);
+    strlcat(full_path, d->d_name, path_len);
+    struct stat s;
+    if (lstat(full_path, &s) != 0) {
+        free(full_path);
+        return FALSE;
+    }
+    free(full_path);
+    return (S_ISLNK(s.st_mode));
+}
+
+#ifndef HAVE_FGETLN
+char *fgetln(FILE *fp, size_t *lenp)
+{
+    char *buf = NULL;
+    int c, used = 0, len = 0;
+
+    flockfile(fp);
+    while ((c = getc_unlocked(fp)) != EOF) {
+        if (!buf || len > used) {
+            size_t nsize;
+            char *newbuf;
+            nsize = used + BUFSIZ;
+            if(!(newbuf = realloc(buf, nsize))) {
+                funlockfile(fp);
+                if(buf) free(buf);
+                return NULL;
+            }
+            buf = newbuf;
+            used = nsize;
+        }
+        buf[len++] = c;
+        if (c == '\n') {
+            break;
+        }
+    }
+    funlockfile(fp);
+    *lenp = len;
+    return buf;
+}
+#endif
+
 #ifndef HAVE_GETLINE
 /*
  * Do it yourself getline() implementation
@@ -244,10 +321,11 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
             return -1;
         }
         *lineptr = newlnptr;
-        *n = len * 2 ;
+        *n = len * 2;
     }
 
     memcpy(*lineptr, srcln, len);
+    (*lineptr)[len] = '\0';
     return len;
 }
 #endif
@@ -264,3 +342,45 @@ char *strndup(const char *src, size_t len)
     return dest;
 }
 #endif
+
+#ifndef HAVE_ASPRINTF
+/*
+ * Creative Commons licensed implementation of asprintf from Stack Overflow
+ * Licence: http://creativecommons.org/licenses/by-sa/3.0/
+ * Source: http://stackoverflow.com/questions/4899221
+ * Contributing Users:
+ *     Sylvain Defresne (http://stackoverflow.com/users/5353/sylvain-defresne)
+ *     Jonathan Leffler (http://stackoverflow.com/users/15168/jonathan-leffler)
+ *     bobwood (http://stackoverflow.com/users/100480/bobwood)
+ */
+int asprintf(char **ret, const char *format, ...)
+{
+    va_list ap;
+    *ret = NULL;  /* Ensure value can be passed to free() */
+
+    va_start(ap, format);
+    int count = vsnprintf(NULL, 0, format, ap);
+    va_end(ap);
+
+    if (count >= 0)
+    {
+        char* buffer = malloc(count + 1);
+        if (buffer == NULL)
+            return -1;
+
+        va_start(ap, format);
+        count = vsnprintf(buffer, count + 1, format, ap);
+        va_end(ap);
+
+        if (count < 0)
+        {
+            free(buffer);
+            return count;
+        }
+        *ret = buffer;
+    }
+
+    return count;
+}
+#endif
+
