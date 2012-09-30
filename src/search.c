@@ -291,7 +291,6 @@ void search_dir(ignores *ig, const char* path, const int depth) {
 
     int offset_vector[3];
     int rc = 0;
-    struct stat stDirInfo;
     work_queue_t *queue_item;
 
     for (i = 0; i < results; i++) {
@@ -299,42 +298,13 @@ void search_dir(ignores *ig, const char* path, const int depth) {
         dir = dir_list[i];
         asprintf(&dir_full_path, "%s/%s", path, dir->d_name);
 
-        /* Some filesystems, e.g. ReiserFS, always return a type DT_UNKNOWN from readdir or scandir. */
-        /* Call lstat if we find DT_UNKNOWN to get the information we need. */
-        if (dir->d_type == DT_UNKNOWN) {
-            if (lstat(dir_full_path, &stDirInfo) != -1) {
-                if (S_ISDIR(stDirInfo.st_mode)) {
-                    dir->d_type = DT_DIR;
-                }
-                else if (S_ISLNK(stDirInfo.st_mode)) {
-                    dir->d_type = DT_LNK;
-                }
-            }
-            else {
-                log_err("lstat() failed on %s", dir_full_path);
-                /* If lstat fails we may as well carry on and hope for the best. */
-            }
-
-            if (!opts.follow_symlinks && dir->d_type == DT_LNK) {
-                log_debug("File %s ignored becaused it's a symlink", dir->d_name);
-                goto cleanup;
-            }
-        }
-
         /* If a link points to a directory then we need to treat it as a directory. */
-        if (dir->d_type == DT_LNK) {
-            if (stat(dir_full_path, &stDirInfo) != -1) {
-                if (S_ISDIR(stDirInfo.st_mode)) {
-                    dir->d_type = DT_DIR;
-                }
-            }
-            else {
-                log_err("stat() failed on %s", dir_full_path);
-                /* If stat fails we may as well carry on and hope for the best. */
-            }
+        if (!opts.follow_symlinks && is_symlink(path, dir)) {
+            log_debug("File %s ignored becaused it's a symlink", dir->d_name);
+            goto cleanup;
         }
 
-        if (dir->d_type != DT_DIR) {
+        if (!is_directory(path, dir)) {
             if (opts.file_search_regex) {
                 rc = pcre_exec(opts.file_search_regex, NULL, dir_full_path, strlen(dir_full_path),
                                0, 0, offset_vector, 3);

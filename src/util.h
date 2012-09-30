@@ -1,9 +1,11 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include <dirent.h>
 #include <pcre.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdio.h>
 #include <sys/time.h>
 
 #include "config.h"
@@ -54,11 +56,20 @@ int is_whitespace(const char ch);
 
 int contains_uppercase(const char* s);
 
+int is_directory(const char *path, const struct dirent *d);
+int is_symlink(const char *path, const struct dirent *d);
+
+#ifndef HAVE_FGETLN
+char * fgetln(FILE *fp, size_t *lenp);
+#endif
 #ifndef HAVE_GETLINE
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 #endif
 #ifndef HAVE_STRNDUP
 char * strndup (const char *s, size_t n);
+#endif
+#ifndef HAVE_ASPRINTF
+int asprintf(char **ret, const char *format, ...);
 #endif
 
 #endif
