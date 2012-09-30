@@ -30,6 +30,8 @@ typedef struct {
     int follow_symlinks;
     int invert_match;
     int literal;
+    int literal_starts_wordchar;
+    int literal_ends_wordchar;
     int max_matches_per_file;
     int max_search_depth;
     char *path_to_agignore;
