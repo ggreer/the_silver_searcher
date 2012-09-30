@@ -192,25 +192,22 @@ int binary_search(const char* needle, char **haystack, int start, int end) {
     return mid;
 }
 
-int is_whitespace(const char ch) {
+static int wordchar_table[256];
+
+void init_wordchar_table(void) {
     int i;
-    char whitespace_chars[] = {
-        ' ',
-        '\f',
-        '\t',
-        '\n',
-        '\r',
-        '\v',
-        '\0'
-    };
-
-    for (i = 0; whitespace_chars[i] != '\0'; i++) {
-        if (ch == whitespace_chars[i]) {
-            return TRUE;
-        }
+    for (i = 0; i < 256; ++i) {
+        char ch = (char) i;
+        wordchar_table[i] =
+            ('a' <= ch && ch <= 'z') ||
+            ('A' <= ch && ch <= 'Z') ||
+            ('0' <= ch && ch <= '9') ||
+            ch == '_';
     }
+}
 
-    return FALSE;
+int is_wordchar(char ch) {
+    return wordchar_table[(unsigned char) ch];
 }
 
 int contains_uppercase(const char* s) {
@@ -223,6 +220,19 @@ int contains_uppercase(const char* s) {
     return FALSE;
 }
 
+static char *get_full_path(const char *path, const struct dirent *d)
+{
+    const char *name = d->d_name;
+    size_t path_len = strlen(path);
+    size_t name_len = strlen(name);
+    char *full_path = malloc(path_len + name_len + 2);
+    memcpy(full_path, path, path_len);
+    full_path[path_len] = '/';
+    memcpy(full_path + path_len + 1, name, name_len);
+    full_path[path_len + 1 + name_len] = '\0';
+    return full_path;
+}
+
 int is_directory(const char *path, const struct dirent *d)
 {
 #ifdef HAVE_DIRENT_DTYPE
@@ -232,11 +242,7 @@ int is_directory(const char *path, const struct dirent *d)
         return (d->d_type == DT_DIR);
     }
 #endif
-    size_t path_len = (size_t)(strlen(path) + strlen(d->d_name) + 2);
-    char *full_path = malloc(path_len);
-    strlcpy(full_path, path, path_len);
-    strlcat(full_path, "/", path_len);
-    strlcat(full_path, d->d_name, path_len);
+    char *full_path = get_full_path(path, d);
     struct stat s;
     if (stat(full_path, &s) != 0) {
         free(full_path);
@@ -255,11 +261,7 @@ int is_symlink(const char *path, const struct dirent *d)
         return (d->d_type == DT_LNK);
     }
 #endif
-    size_t path_len = (size_t)(strlen(path) + strlen(d->d_name) + 2);
-    char *full_path = malloc(path_len);
-    strlcpy(full_path, path, path_len);
-    strlcat(full_path, "/", path_len);
-    strlcat(full_path, d->d_name, path_len);
+    char *full_path = get_full_path(path, d);
     struct stat s;
     if (lstat(full_path, &s) != 0) {
         free(full_path);

@@ -244,6 +244,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
             case 'R':
             case 'r':
                 opts.recurse_dirs = 1;
+                break;
             case 'S':
                 opts.casing = CASE_SMART;
                 break;
