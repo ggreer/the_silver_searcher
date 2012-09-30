@@ -192,25 +192,22 @@ int binary_search(const char* needle, char **haystack, int start, int end) {
     return mid;
 }
 
-int is_whitespace(const char ch) {
+static int wordchar_table[256];
+
+void init_wordchar_table(void) {
     int i;
-    char whitespace_chars[] = {
-        ' ',
-        '\f',
-        '\t',
-        '\n',
-        '\r',
-        '\v',
-        '\0'
-    };
-
-    for (i = 0; whitespace_chars[i] != '\0'; i++) {
-        if (ch == whitespace_chars[i]) {
-            return TRUE;
-        }
+    for (i = 0; i < 256; ++i) {
+        char ch = (char) i;
+        wordchar_table[i] =
+            ('a' <= ch && ch <= 'z') ||
+            ('A' <= ch && ch <= 'Z') ||
+            ('0' <= ch && ch <= '9') ||
+            ch == '_';
     }
+}
 
-    return FALSE;
+int is_wordchar(char ch) {
+    return wordchar_table[(unsigned char) ch];
 }
 
 int contains_uppercase(const char* s) {

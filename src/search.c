@@ -36,28 +36,22 @@ void search_buf(const char *buf, const int buf_len,
             }
 
             if (opts.word_regexp) {
-                int word_start = FALSE;
-                int word_end = FALSE;
                 const char *start = match_ptr;
                 const char *end = match_ptr + opts.query_len;
 
-                if (start == buf) {
-                    /* Start of string. */
-                    word_start = TRUE;
+                /* Check whether both start and end of the match lie on a word
+                 * boundary
+                 */
+                if ((start == buf ||
+                     is_wordchar(*(start - 1)) != opts.literal_starts_wordchar)
+                    &&
+                    (end == buf + buf_len ||
+                     is_wordchar(*end) != opts.literal_ends_wordchar))
+                {
+                    /* It's a match */
                 }
-                else if (is_whitespace(*(start - 1))) {
-                    word_start = TRUE;
-                }
-
-                if (*end == '\0') {
-                    /* End of string. */
-                    word_end = TRUE;
-                }
-                else if (is_whitespace(*end)) {
-                    word_end = TRUE;
-                }
-                /* Skip if we're not a word. */
-                if (!(word_start && word_end)) {
+                else {
+                    /* It's not a match */
                     match_ptr += opts.query_len;
                     buf_offset = end - buf;
                     continue;
