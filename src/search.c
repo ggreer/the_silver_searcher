@@ -3,27 +3,37 @@
 
 void search_buf(const char *buf, const int buf_len,
                 const char *dir_full_path) {
-    int binary = 0;
+    int binary = -1;  /* 1 = yes, 0 = no, -1 = don't know */
     int buf_offset = 0;
-    match *matches = NULL;
-    size_t matches_size = 100;
-    int matches_len = 0;
-    int *offset_vector = NULL;
-    int rc = 0;
 
-    /* Who needs duck typing when you have void cast? :) */
-    if (is_binary((void*)buf, buf_len)) {
-        if (opts.search_binary_files) {
-            binary = 1;
-        }
-        else {
+    int matches_len = 0;
+    match *matches;
+    size_t matches_size;
+    size_t matches_spare;
+
+    if (opts.invert_match) {
+        /* If we are going to invert the set of matches at the end, we will need
+         * one extra match struct, even if there are no matches at all. So make
+         * sure we have a nonempty array; and make sure we always have spare
+         * capacity for one extra.
+         * */
+        matches_size = 100;
+        matches = malloc(matches_size * sizeof(match));
+        matches_spare = 1;
+    }
+    else {
+        matches_size = 0;
+        matches = NULL;
+        matches_spare = 0;
+    }
+
+    if (!opts.search_binary_files) {
+        binary = is_binary((void*) buf, buf_len);
+        if (binary) {
             log_debug("File %s is binary. Skipping...", dir_full_path);
             return;
         }
     }
-
-    matches = malloc(sizeof(match) * matches_size);
-    offset_vector = malloc(sizeof(int) * matches_size * 3);
 
     if (opts.literal) {
         const char *match_ptr = buf;
@@ -58,41 +68,47 @@ void search_buf(const char *buf, const int buf_len,
                 }
             }
 
+            if ((size_t)matches_len + matches_spare >= matches_size) {
+                matches_size = matches ? matches_size * 2 : 100;
+                matches = realloc(matches, matches_size * sizeof(match));
+                log_debug("Too many matches in %s. Reallocating matches to %zu.", dir_full_path, matches_size);
+            }
+
             matches[matches_len].start = match_ptr - buf;
             matches[matches_len].end = matches[matches_len].start + opts.query_len;
             buf_offset = matches[matches_len].end;
             log_debug("Match found. File %s, offset %i bytes.", dir_full_path, matches[matches_len].start);
             matches_len++;
             match_ptr += opts.query_len;
+
             if (matches_len >= opts.max_matches_per_file) {
                 log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
                 break;
-            }
-            else if ((size_t)matches_len >= matches_size - 1) {
-                matches_size = matches_size * 2;
-                matches = realloc(matches, matches_size * sizeof(match));
-                log_debug("Too many matches in %s. Reallocating matches to %u.", dir_full_path, matches_size);
             }
         }
     }
     else {
+        int rc;
+        int offset_vector[3];
         while (buf_offset < buf_len &&
               (rc = pcre_exec(opts.re, opts.re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
             log_debug("Regex match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
             buf_offset = offset_vector[1];
+
+            /* TODO: copy-pasted from above. FIXME */
+            if ((size_t)matches_len + matches_spare >= matches_size) {
+                matches_size = matches ? matches_size * 2 : 100;
+                matches = realloc(matches, matches_size * sizeof(match));
+                log_debug("Too many matches in %s. Reallocating matches to %zu.", dir_full_path, matches_size);
+            }
+
             matches[matches_len].start = offset_vector[0];
             matches[matches_len].end = offset_vector[1];
             matches_len++;
-            /* TODO: copy-pasted from above. FIXME */
+
             if (matches_len >= opts.max_matches_per_file) {
                 log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
                 break;
-            }
-            else if ((size_t)matches_len >= matches_size - 1) {
-                matches_size = matches_size * 2;
-                matches = realloc(matches, matches_size * sizeof(match));
-                offset_vector = realloc(offset_vector, sizeof(int) * matches_size * 3);
-                log_debug("Too many matches in %s. Reallocating matches to %u.", dir_full_path, matches_size);
             }
         }
     }
@@ -110,6 +126,9 @@ void search_buf(const char *buf, const int buf_len,
     }
 
     if (matches_len > 0) {
+        if (binary == -1 && !opts.print_filename_only) {
+            binary = is_binary((void*) buf, buf_len);
+        }
         pthread_mutex_lock(&print_mtx);
         if (opts.print_filename_only) {
             print_path(dir_full_path, '\n');
@@ -123,13 +142,11 @@ void search_buf(const char *buf, const int buf_len,
             }
         }
         pthread_mutex_unlock(&print_mtx);
+        free(matches);
     }
     else {
         log_debug("No match in %s", dir_full_path);
     }
-
-    free(matches);
-    free(offset_vector);
 }
 
 /* TODO: this will only match single lines. multi-line regexes silently don't match */
