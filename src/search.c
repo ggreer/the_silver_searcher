@@ -68,11 +68,10 @@ void search_buf(const char *buf, const int buf_len,
                 log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
                 break;
             }
-            else if ((size_t)matches_len >= matches_size) {
+            else if ((size_t)matches_len >= matches_size - 1) {
                 matches_size = matches_size * 2;
                 matches = realloc(matches, matches_size);
                 log_debug("Too many matches in %s. Reallocating matches to %u.", dir_full_path, matches_size);
-                break;
             }
         }
     }
@@ -89,12 +88,11 @@ void search_buf(const char *buf, const int buf_len,
                 log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
                 break;
             }
-            else if ((size_t)matches_len >= matches_size) {
+            else if ((size_t)matches_len >= matches_size - 1) {
                 matches_size = matches_size * 2;
                 matches = realloc(matches, matches_size);
                 offset_vector = realloc(offset_vector, sizeof(int) * matches_size * 3);
                 log_debug("Too many matches in %s. Reallocating matches to %u.", dir_full_path, matches_size);
-                break;
             }
         }
     }
