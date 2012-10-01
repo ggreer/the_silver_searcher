@@ -70,7 +70,7 @@ void search_buf(const char *buf, const int buf_len,
             }
             else if ((size_t)matches_len >= matches_size - 1) {
                 matches_size = matches_size * 2;
-                matches = realloc(matches, matches_size);
+                matches = realloc(matches, matches_size * sizeof(match));
                 log_debug("Too many matches in %s. Reallocating matches to %u.", dir_full_path, matches_size);
             }
         }
@@ -90,7 +90,7 @@ void search_buf(const char *buf, const int buf_len,
             }
             else if ((size_t)matches_len >= matches_size - 1) {
                 matches_size = matches_size * 2;
-                matches = realloc(matches, matches_size);
+                matches = realloc(matches, matches_size * sizeof(match));
                 offset_vector = realloc(offset_vector, sizeof(int) * matches_size * 3);
                 log_debug("Too many matches in %s. Reallocating matches to %u.", dir_full_path, matches_size);
             }
