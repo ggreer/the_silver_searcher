@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
         gettimeofday(&(stats.time_end), NULL);
         time_diff = ((long)stats.time_end.tv_sec * 1000000 + stats.time_end.tv_usec) -
                     ((long)stats.time_start.tv_sec * 1000000 + stats.time_start.tv_usec);
-        time_diff = time_diff / 1000000;
+        time_diff /= 1000000;
 
         printf("%ld matches\n%ld files searched\n%ld bytes searched\n%f seconds\n", stats.total_matches, stats.total_files, stats.total_bytes, time_diff);
     }

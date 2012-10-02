@@ -30,7 +30,7 @@ int ag_scandir(const char *dirname,
             continue;
         }
         if (results_len >= names_len) {
-            names_len = names_len * 2;
+            names_len *= 2;
             names = realloc(names, sizeof(struct dirent*) * names_len);
             if (names == NULL) {
                 goto fail;
