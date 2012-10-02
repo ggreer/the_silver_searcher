@@ -17,10 +17,8 @@ void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], 
     f_len--;
 
     for (i = 0; i < f_len; i++) {
-        if (case_sensitive) {
-            skip_lookup[(unsigned char)find[i]] = f_len - i;
-        } else {
-            skip_lookup[(unsigned char)tolower(find[i])] = f_len - i;
+        skip_lookup[(unsigned char)find[i]] = f_len - i;
+        if (!case_sensitive) {
             skip_lookup[(unsigned char)toupper(find[i])] = f_len - i;
         }
     }
@@ -59,7 +57,7 @@ char* boyer_moore_strncasestr(const char *s, const char *find, const size_t s_le
     }
 
     while (pos <= (s_len - f_len)) {
-        for (i = f_len - 1; tolower(s[pos + i]) == tolower(find[i]); i--) {
+        for (i = f_len - 1; tolower(s[pos + i]) == find[i]; i--) {
             if (i == 0) {
                 return (char *)(&(s[pos]));
             }

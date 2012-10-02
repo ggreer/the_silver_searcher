@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include <sys/time.h>
 #include <unistd.h>
 
@@ -72,6 +73,13 @@ int main(int argc, char **argv) {
     }
 
     if (opts.literal) {
+        if (opts.casing == CASE_INSENSITIVE) {
+            /* Search routine needs the query to be lowercase */
+            char *c = opts.query;
+            for (; *c != '\0'; ++c) {
+                *c = (char) tolower(*c);
+            }
+        }
         generate_skip_lookup(opts.query, opts.query_len, skip_lookup, opts.casing == CASE_SENSITIVE);
         if (opts.word_regexp) {
             init_wordchar_table();
