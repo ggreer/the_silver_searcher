@@ -333,7 +333,7 @@ void search_dir(ignores *ig, const char* path, const int depth) {
             }
             work_queue_tail = queue_item;
             pthread_mutex_unlock(&work_queue_mtx);
-            pthread_cond_broadcast(&files_ready);
+            pthread_cond_signal(&files_ready);
             log_debug("%s added to work queue", dir_full_path);
         } else if (opts.recurse_dirs) {
             if (depth < opts.max_search_depth) {
