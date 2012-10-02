@@ -6,6 +6,14 @@ void search_buf(const char *buf, const int buf_len,
     int binary = -1;  /* 1 = yes, 0 = no, -1 = don't know */
     int buf_offset = 0;
 
+    if (!opts.search_binary_files) {
+        binary = is_binary((void*) buf, buf_len);
+        if (binary) {
+            log_debug("File %s is binary. Skipping...", dir_full_path);
+            return;
+        }
+    }
+
     int matches_len = 0;
     match *matches;
     size_t matches_size;
@@ -25,14 +33,6 @@ void search_buf(const char *buf, const int buf_len,
         matches_size = 0;
         matches = NULL;
         matches_spare = 0;
-    }
-
-    if (!opts.search_binary_files) {
-        binary = is_binary((void*) buf, buf_len);
-        if (binary) {
-            log_debug("File %s is binary. Skipping...", dir_full_path);
-            return;
-        }
     }
 
     if (opts.literal) {
