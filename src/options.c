@@ -395,7 +395,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
             path = strdup(argv[i]);
             path_len = strlen(path);
             /* kill trailing slash */
-            if (path_len > 0 && path[path_len - 1] == '/') {
+            if (path_len > 1 && path[path_len - 1] == '/') {
               path[path_len - 1] = '\0';
             }
             (*paths)[i] = path;
