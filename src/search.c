@@ -142,10 +142,13 @@ void search_buf(const char *buf, const int buf_len,
             print_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
         }
         pthread_mutex_unlock(&print_mtx);
-        free(matches);
     }
     else {
         log_debug("No match in %s", dir_full_path);
+    }
+
+    if (matches_size > 0) {
+        free(matches);
     }
 }
 
