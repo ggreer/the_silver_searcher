@@ -197,10 +197,15 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 opts.before = atoi(optarg);
                 break;
             case 'C':
-                opts.context = atoi(optarg);
-                if (opts.context == 0 && errno == EINVAL) {
-                    /* This arg must be the search string instead of the context length */
-                    optind--;
+                if (optarg) {
+                    opts.context = atoi(optarg);
+                    if (opts.context == 0 && errno == EINVAL) {
+                        /* This arg must be the search string instead of the context length */
+                        optind--;
+                        opts.context = DEFAULT_CONTEXT_LEN;
+                    }
+                }
+                else {
                     opts.context = DEFAULT_CONTEXT_LEN;
                 }
                 break;
