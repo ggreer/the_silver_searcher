@@ -12,7 +12,7 @@ void search_buf(const char *buf, const int buf_len,
     int rc = 0;
 
     /* Who needs duck typing when you have void cast? :) */
-    if (!opts.search_stream && is_binary((void*)buf, buf_len)) {
+    if (is_binary((void*)buf, buf_len)) {
         if (opts.search_binary_files) {
             binary = 1;
         }
