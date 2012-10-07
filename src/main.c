@@ -29,6 +29,7 @@ int main(int argc, char **argv) {
     work_queue_tail = NULL;
     memset(&stats, 0, sizeof(stats));
     root_ignores = init_ignore(NULL);
+    out_fd = stdout;
 #ifdef USE_PCRE_JIT
     int has_jit = 0;
     pcre_config(PCRE_CONFIG_JIT, &has_jit);
@@ -122,6 +123,9 @@ int main(int argc, char **argv) {
         printf("%ld matches\n%ld files searched\n%ld bytes searched\n%f seconds\n", stats.total_matches, stats.total_files, stats.total_bytes, time_diff);
     }
 
+    if (opts.pager) {
+        pclose(out_fd);
+    }
     pthread_cond_destroy(&files_ready);
     pthread_mutex_destroy(&work_queue_mtx);
     pthread_mutex_destroy(&stats_mtx);

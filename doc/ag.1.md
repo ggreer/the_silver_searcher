@@ -53,6 +53,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Skip the rest of a file after NUM matches. Default is 10,000.
   * `-p --path-to-agignore STRING`:
     Provide a path to a specific .agignore file.
+  * `--pager COMMAND`:
+    Use a pager such as less. Use `--nopager` to override. This option is also ignored if output is piped to another program.
   * `--print-long-lines`:
     Print matches on very long lines (> 2k characters by default)
   * `-Q --literal`:
@@ -77,7 +79,7 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
 
 ## IGNORING FILES
 
-By default, ag will ignore files matched by patterns in .gitignore, .hgignore, or .agignore. Ag also ignores files matched by the svn:ignore property in subversion repositories. Binary files are ignored by default as well.
+By default, ag will ignore files matched by patterns in .gitignore, .hgignore, or .agignore. These files can be anywhere in the directories being searched. Ag also ignores files matched by the svn:ignore property in subversion repositories. Finally, ag looks in $HOME/.agignore for ignore patterns. Binary files are ignored by default as well.
 
 If you want to ignore .gitignore, .hgignore, and svn:ignore but still take .agignore into account, use `-U`.
 

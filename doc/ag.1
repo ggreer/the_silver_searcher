@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "AG" "1" "September 2012" "" ""
+.TH "AG" "1" "October 2012" "" ""
 .
 .SH "NAME"
 \fBag\fR \- The Silver Searcher\. Like ack, but faster\.
@@ -81,6 +81,9 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 \fB\-p \-\-path\-to\-agignore STRING\fR: Provide a path to a specific \.agignore file\.
 .
 .IP "\(bu" 4
+\fB\-\-pager COMMAND\fR: Use a pager such as less\. Use \fB\-\-nopager\fR to override\. This option is also ignored if output is piped to another program\.
+.
+.IP "\(bu" 4
 \fB\-\-print\-long\-lines\fR: Print matches on very long lines (> 2k characters by default)
 .
 .IP "\(bu" 4
@@ -116,7 +119,7 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 .IP "" 0
 .
 .SH "IGNORING FILES"
-By default, ag will ignore files matched by patterns in \.gitignore, \.hgignore, or \.agignore\. Ag also ignores files matched by the svn:ignore property in subversion repositories\. Binary files are ignored by default as well\.
+By default, ag will ignore files matched by patterns in \.gitignore, \.hgignore, or \.agignore\. These files can be anywhere in the directories being searched\. Ag also ignores files matched by the svn:ignore property in subversion repositories\. Finally, ag looks in $HOME/\.agignore for ignore patterns\. Binary files are ignored by default as well\.
 .
 .P
 If you want to ignore \.gitignore, \.hgignore, and svn:ignore but still take \.agignore into account, use \fB\-U\fR\.
