@@ -2,6 +2,7 @@
 #include <stdarg.h>
 
 #include "log.h"
+#include "util.h"
 
 static enum log_level log_threshold = LOG_LEVEL_ERR;
 
@@ -43,7 +44,7 @@ void vplog(const unsigned int level, const char *fmt, va_list args) {
         return;
     }
 
-    FILE *stream = stdout;
+    FILE *stream = out_fd;
 
     switch(level) {
         case LOG_LEVEL_DEBUG:

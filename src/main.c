@@ -29,6 +29,7 @@ int main(int argc, char **argv) {
     work_queue_tail = NULL;
     memset(&stats, 0, sizeof(stats));
     root_ignores = init_ignore(NULL);
+    out_fd = stdout;
 #ifdef USE_PCRE_JIT
     int has_jit = 0;
     pcre_config(PCRE_CONFIG_JIT, &has_jit);

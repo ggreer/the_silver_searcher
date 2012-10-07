@@ -51,7 +51,6 @@ typedef struct {
     int stats;
     char *query;
     int query_len;
-    char *pager;
     int paths_len;
     int parallel;
     int word_regexp;

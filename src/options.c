@@ -292,11 +292,11 @@ void parse_options(int argc, char **argv, char **paths[]) {
                     break;
                 }
                 else if (strcmp(longopts[opt_index].name, "nopager") == 0) {
-                    opts.pager = NULL;
+                    out_fd = stdout;
                     break;
                 }
                 else if (strcmp(longopts[opt_index].name, "pager") == 0) {
-                    opts.pager = optarg;
+                    out_fd = popen(optarg, "w");
                     break;
                 }
                 else if (strcmp(longopts[opt_index].name, "workers") == 0) {

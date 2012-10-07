@@ -12,6 +12,8 @@
 #include "log.h"
 #include "options.h"
 
+FILE *out_fd;
+
 #ifndef TRUE
 #define TRUE 1
 #endif
