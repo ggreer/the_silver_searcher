@@ -149,6 +149,8 @@ void parse_options(int argc, char **argv, char **paths[]) {
         { "nofollow", no_argument, &opts.follow_symlinks, 0 },
         { "nogroup", no_argument, &group, 0 },
         { "noheading", no_argument, &opts.print_heading, 0 },
+        { "nopager", no_argument, NULL, 0 },
+        { "pager", required_argument, NULL, 0 },
         { "parallel", no_argument, &opts.parallel, 1},
         { "path-to-agignore", required_argument, NULL, 'p'},
         { "print-long-lines", no_argument, &opts.print_long_lines, 1 },
@@ -287,6 +289,14 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 }
                 else if (strcmp(longopts[opt_index].name, "ignore") == 0) {
                     add_ignore_pattern(root_ignores, optarg);
+                    break;
+                }
+                else if (strcmp(longopts[opt_index].name, "nopager") == 0) {
+                    opts.pager = NULL;
+                    break;
+                }
+                else if (strcmp(longopts[opt_index].name, "pager") == 0) {
+                    opts.pager = optarg;
                     break;
                 }
                 else if (strcmp(longopts[opt_index].name, "workers") == 0) {
