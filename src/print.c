@@ -136,7 +136,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                         fprintf(out_fd, "%i:", (matches[last_printed_match].start - prev_line_offset) + 1);
                     }
 
-                    if (j < matches[last_printed_match].end && opts.color) {
+                    if (i > matches[last_printed_match].start && i <= matches[last_printed_match].end && opts.color) {
                         fprintf(out_fd, "%s", colors_match);
                     }
                     for (j = prev_line_offset; j <= i; j++) {
