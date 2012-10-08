@@ -36,7 +36,6 @@ void print_binary_file_matches(const char* path) {
     fprintf(out_fd, "Binary file %s matches.\n", path);
 }
 
-/* TODO: doesn't work for matches across lines */
 void print_file_matches(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len) {
     int line = 1;
     char **context_prev_lines = NULL;
@@ -50,6 +49,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
     int last_printed_match = 0;
     char sep = '-';
     int i, j;
+    int in_a_match = FALSE;
 
     if (opts.ackmate) {
         sep = ':';
@@ -67,9 +67,11 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
         if (cur_match < matches_len && i == matches[cur_match].end) {
             /* We found the end of a match. */
             cur_match++;
+            in_a_match = FALSE;
         }
 
         if (cur_match < matches_len && i == matches[cur_match].start) {
+            in_a_match = TRUE;
             /* We found the start of a match */
             if (cur_match > 0 && opts.context && lines_since_last_match > (opts.before + opts.after + 1)) {
                 fprintf(out_fd, "--\n");
@@ -127,6 +129,10 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                         last_printed_match == cur_match - 1 ? fputc(':', out_fd) : fputc(',', out_fd);
                     }
                     j = prev_line_offset;
+                    /* print up to current char */
+                    for (; j <= i; j++) {
+                        fputc(buf[j], out_fd);
+                    }
                 }
                 else {
                     print_line_number(line, ':');
@@ -134,29 +140,27 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                         fprintf(out_fd, "%i:", (matches[last_printed_match].start - prev_line_offset) + 1);
                     }
 
-                    for (j = prev_line_offset; j < matches[last_printed_match].start; j++) {
+                    if (in_a_match && opts.color) {
+                        fprintf(out_fd, "%s", colors_match);
+                    }
+                    for (j = prev_line_offset; j <= i; j++) {
+                        if (j == matches[last_printed_match].end) {
+                            if (opts.color) {
+                                fprintf(out_fd, "%s", colors_reset);
+                            }
+                            last_printed_match++;
+                        }
+                        if (j == matches[last_printed_match].start) {
+                            if (opts.color) {
+                                fprintf(out_fd, "%s", colors_match);
+                            }
+                        }
                         fputc(buf[j], out_fd);
                     }
-                    for (; last_printed_match < cur_match; last_printed_match++) {
-                        for (; j < matches[last_printed_match].start; j++) {
-                            fputc(buf[j], out_fd);
-                        }
-                        if (opts.color) {
-                            fprintf(out_fd, "%s", colors_match);
-                        }
-                        for (; j < matches[last_printed_match].end; j++) {
-                            fputc(buf[j], out_fd);
-                        }
-                        if (opts.color) {
-                            fprintf(out_fd, "%s", colors_reset);
-                        }
+                    if (opts.color) {
+                        fprintf(out_fd, "%s", colors_reset);
                     }
                 }
-                /* print up to current char */
-                for (; j < i; j++) {
-                    fputc(buf[j], out_fd);
-                }
-                fputc('\n', out_fd);
             }
             else if (lines_since_last_match <= opts.after) {
                 /* print context after matching line */
@@ -173,7 +177,9 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
 
             prev_line_offset = i + 1; /* skip the newline */
             line++;
-            lines_since_last_match++;
+            if (!in_a_match) {
+                lines_since_last_match++;
+            }
         }
     }
 
