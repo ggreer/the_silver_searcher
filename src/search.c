@@ -30,8 +30,7 @@ void search_buf(const char *buf, const int buf_len,
         matches_size = 100;
         matches = malloc(matches_size * sizeof(match));
         matches_spare = 1;
-    }
-    else {
+    } else {
         matches_size = 0;
         matches = NULL;
         matches_spare = 0;
@@ -61,8 +60,7 @@ void search_buf(const char *buf, const int buf_len,
                      is_wordchar(*end) != opts.literal_ends_wordchar))
                 {
                     /* It's a match */
-                }
-                else {
+                } else {
                     /* It's not a match */
                     match_ptr += opts.query_len;
                     buf_offset = end - buf;
@@ -88,8 +86,7 @@ void search_buf(const char *buf, const int buf_len,
                 break;
             }
         }
-    }
-    else {
+    } else {
         int rc;
         int offset_vector[3];
         while (buf_offset < buf_len &&
@@ -134,16 +131,13 @@ void search_buf(const char *buf, const int buf_len,
         pthread_mutex_lock(&print_mtx);
         if (opts.print_filename_only) {
             print_path(dir_full_path, '\n');
-        }
-        else if (binary) {
+        } else if (binary) {
             print_binary_file_matches(dir_full_path);
-        }
-        else {
+        } else {
             print_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
         }
         pthread_mutex_unlock(&print_mtx);
-    }
-    else {
+    } else {
         log_debug("No match in %s", dir_full_path);
     }
 
@@ -195,8 +189,7 @@ void search_file(const char *file_full_path) {
         pipe = fdopen(fd, "r");
         search_stream(pipe, file_full_path);
         fclose(pipe);
-    }
-    else {
+    } else {
         f_len = statbuf.st_size;
 
         if (f_len == 0) {
@@ -269,8 +262,7 @@ void search_dir(ignores *ig, const char* path, const int depth) {
         asprintf(&dir_full_path, "%s/%s", path, ignore_file);
         if (strcmp(SVN_DIR, ignore_file) == 0) {
             load_svn_ignore_patterns(ig, dir_full_path);
-        }
-        else {
+        } else {
             load_ignore_patterns(ig, dir_full_path);
         }
         free(dir_full_path);
@@ -285,8 +277,7 @@ void search_dir(ignores *ig, const char* path, const int depth) {
     if (results == 0) {
         log_debug("No results found in directory %s", path);
         goto search_dir_cleanup;
-    }
-    else if (results == -1) {
+    } else if (results == -1) {
         if (errno == ENOTDIR) {
             /* Not a directory. Probably a file. */
             /* If we're only searching one file, don't print the filename header at the top. */
@@ -294,8 +285,7 @@ void search_dir(ignores *ig, const char* path, const int depth) {
                 opts.print_heading = -1;
             }
             search_file(path);
-        }
-        else {
+        } else {
             log_err("Error opening directory %s: %s", path, strerror(errno));
         }
         goto search_dir_cleanup;
@@ -323,8 +313,7 @@ void search_dir(ignores *ig, const char* path, const int depth) {
                 if (rc < 0) { /* no match */
                     log_debug("Skipping %s due to file_search_regex.", dir_full_path);
                     goto cleanup;
-                }
-                else if (opts.match_files) {
+                } else if (opts.match_files) {
                     log_debug("match_files: file_search_regex matched for %s.", dir_full_path);
                     pthread_mutex_lock(&print_mtx);
                     print_path(dir_full_path, '\n');
@@ -339,23 +328,20 @@ void search_dir(ignores *ig, const char* path, const int depth) {
             pthread_mutex_lock(&work_queue_mtx);
             if (work_queue_tail == NULL) {
                 work_queue = queue_item;
-            }
-            else {
+            } else {
                 work_queue_tail->next = queue_item;
             }
             work_queue_tail = queue_item;
             pthread_mutex_unlock(&work_queue_mtx);
             pthread_cond_broadcast(&files_ready);
             log_debug("%s added to work queue", dir_full_path);
-        }
-        else if (opts.recurse_dirs) {
+        } else if (opts.recurse_dirs) {
             if (depth < opts.max_search_depth) {
                 log_debug("Searching dir %s", dir_full_path);
                 ignores *child_ig = init_ignore(ig);
                 search_dir(child_ig, dir_full_path, depth + 1);
                 cleanup_ignore(child_ig);
-            }
-            else {
+            } else {
                 log_err("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
             }
         }

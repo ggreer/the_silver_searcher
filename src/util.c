@@ -19,8 +19,7 @@ void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], 
     for (i = 0; i < f_len; i++) {
         if (case_sensitive) {
             skip_lookup[(unsigned char)find[i]] = f_len - i;
-        }
-        else {
+        } else {
             skip_lookup[(unsigned char)tolower(find[i])] = f_len - i;
             skip_lookup[(unsigned char)toupper(find[i])] = f_len - i;
         }
@@ -101,8 +100,7 @@ int invert_matches(match matches[], int matches_len, const int buf_len) {
             matches[i].end = matches[i+1].start;
         }
         matches_len--;
-    }
-    else {
+    } else {
         for (i = matches_len; i >= 0; i--) {
             matches[i].end = matches[i].start;
             matches[i].start = i == 0 ? 0 : matches[i-1].end;
@@ -147,8 +145,7 @@ int is_binary(const void* buf, const int buf_len) {
         if (buf_c[i] == '\0') {
             /* NULL char. It's binary */
             return 1;
-        }
-        else if ((buf_c[i] < 7 || buf_c[i] > 14) && (buf_c[i] < 32 || buf_c[i] > 127)) {
+        } else if ((buf_c[i] < 7 || buf_c[i] > 14) && (buf_c[i] < 32 || buf_c[i] > 127)) {
             suspicious_bytes++;
             /* Disk IO is so slow that it's worthwhile to do this calculation after every suspicious byte. */
             /* This is true even on a 1.6Ghz Atom with an Intel 320 SSD. */
@@ -207,8 +204,7 @@ int binary_search(const char* needle, char **haystack, int start, int end) {
     rc = strcmp(needle, haystack[mid]);
     if (rc < 0) {
         return binary_search(needle, haystack, start, mid);
-    }
-    else if (rc > 0) {
+    } else if (rc > 0) {
         return binary_search(needle, haystack, mid + 1, end);
     }
 
