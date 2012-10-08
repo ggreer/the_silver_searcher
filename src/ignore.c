@@ -72,8 +72,7 @@ void add_ignore_pattern(ignores *ig, const char* pattern) {
         ig->regexes = realloc(ig->regexes, ig->regexes_len * sizeof(char*));
         ig->regexes[ig->regexes_len - 1] = strdup(pattern);
         log_debug("added regex ignore pattern %s", pattern);
-    }
-    else {
+    } else {
         /* a balanced binary tree is best for performance, but I'm lazy */
         ig->names_len++;
         ig->names = realloc(ig->names, ig->names_len * sizeof(char*));
