@@ -84,14 +84,37 @@ strncmp_fp get_strstr(cli_options opts) {
 int invert_matches(match matches[], int matches_len, const int buf_len) {
     int i;
 
-    /* this will totally screw-up if a match starts at the very beginning or end of a file */
-    matches[matches_len].start = buf_len-1;
-    for (i = matches_len; i >= 0; i--) {
-        matches[i].end = matches[i].start;
-        matches[i].start = i == 0 ? 0 : matches[i-1].end;
+    if (matches_len == 0) {
+        matches[0].start = 0;
+        matches[0].end = buf_len;
+        return 1;
     }
 
-    return (matches_len + 1);
+    if (matches_len == 1 && matches[0].start == 0 && matches[0].end == buf_len) {
+        /* entire buffer is a match */
+        return 0;
+    }
+
+    if (matches[0].start == 0) {
+        for (i = 0; i < matches_len; i++) {
+            matches[i].start = matches[i].end;
+            matches[i].end = matches[i+1].start;
+        }
+        matches_len--;
+    }
+    else {
+        for (i = matches_len; i >= 0; i--) {
+            matches[i].end = matches[i].start;
+            matches[i].start = i == 0 ? 0 : matches[i-1].end;
+        }
+    }
+
+    matches[matches_len].end = buf_len;
+    if (matches[matches_len].start != matches[matches_len].end) {
+        matches_len++;
+    }
+
+    return matches_len;
 }
 
 void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opts, const int study_opts) {
