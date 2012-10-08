@@ -120,12 +120,12 @@ void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opt
     int pcre_err_offset = 0;
 
     *re = pcre_compile(q, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
-    if (re == NULL) {
+    if (*re == NULL) {
         log_err("pcre_compile failed at position %i. Error: %s", pcre_err_offset, pcre_err);
         exit(2);
     }
     *re_extra = pcre_study(*re, study_opts, &pcre_err);
-    if (re_extra == NULL) {
+    if (*re_extra == NULL) {
         log_debug("pcre_study returned nothing useful. Error: %s", pcre_err);
     }
 }
