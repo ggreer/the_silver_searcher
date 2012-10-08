@@ -20,12 +20,10 @@ void print_path(const char* path, const char sep) {
 
     if (opts.ackmate) {
         fprintf(out_fd, ":%s%c", path, sep);
-    }
-    else {
+    } else {
         if (opts.color) {
             fprintf(out_fd, "%s%s%s%c", colors_path, path, colors_reset, sep);
-        }
-        else {
+        } else {
             fprintf(out_fd, "%s%c", path, sep);
         }
     }
@@ -83,8 +81,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                 lines_to_print = lines_since_last_match - (opts.after + 1);
                 if (lines_to_print < 0) {
                     lines_to_print = 0;
-                }
-                else if (lines_to_print > opts.before) {
+                } else if (lines_to_print > opts.before) {
                     lines_to_print = opts.before;
                 }
 
@@ -133,8 +130,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                     for (; j <= i; j++) {
                         fputc(buf[j], out_fd);
                     }
-                }
-                else {
+                } else {
                     print_line_number(line, ':');
                     if (opts.column) {
                         fprintf(out_fd, "%i:", (matches[last_printed_match].start - prev_line_offset) + 1);
@@ -161,8 +157,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                         fprintf(out_fd, "%s", colors_reset);
                     }
                 }
-            }
-            else if (lines_since_last_match <= opts.after) {
+            } else if (lines_since_last_match <= opts.after) {
                 /* print context after matching line */
                 if (opts.print_heading == 0) {
                     print_path(path, ':');
@@ -199,8 +194,7 @@ void print_line_number(const int line, const char sep) {
 
     if (opts.color) {
         fprintf(out_fd, "%s%i%s%c", colors_line_number, line, colors_reset, sep);
-    }
-    else {
+    } else {
         fprintf(out_fd, "%i%c", line, sep);
     }
 }

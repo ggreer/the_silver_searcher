@@ -78,8 +78,7 @@ int main(int argc, char **argv) {
             opts.literal_starts_wordchar = is_wordchar(opts.query[0]);
             opts.literal_ends_wordchar = is_wordchar(opts.query[opts.query_len - 1]);
         }
-    }
-    else {
+    } else {
         if (opts.casing == CASE_INSENSITIVE) {
             pcre_opts = pcre_opts | PCRE_CASELESS;
         }
@@ -95,8 +94,7 @@ int main(int argc, char **argv) {
 
     if (opts.search_stream) {
         search_stream(stdin, "");
-    }
-    else {
+    } else {
         for (i = 0; i < workers_len; i++) {
             pthread_create(&(workers[i]), NULL, &search_file_worker, NULL);
         }

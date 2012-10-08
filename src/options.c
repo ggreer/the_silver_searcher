@@ -206,8 +206,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
                         optind--;
                         opts.context = DEFAULT_CONTEXT_LEN;
                     }
-                }
-                else {
+                } else {
                     opts.context = DEFAULT_CONTEXT_LEN;
                 }
                 break;
@@ -282,25 +281,20 @@ void parse_options(int argc, char **argv, char **paths[]) {
                 if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0) {
                     compile_study(&opts.ackmate_dir_filter, &opts.ackmate_dir_filter_extra, optarg, 0, 0);
                     break;
-                }
-                else if (strcmp(longopts[opt_index].name, "depth") == 0) {
+                } else if (strcmp(longopts[opt_index].name, "depth") == 0) {
                     opts.max_search_depth = atoi(optarg);
                     break;
-                }
-                else if (strcmp(longopts[opt_index].name, "ignore") == 0) {
+                } else if (strcmp(longopts[opt_index].name, "ignore") == 0) {
                     add_ignore_pattern(root_ignores, optarg);
                     break;
-                }
-                else if (strcmp(longopts[opt_index].name, "nopager") == 0) {
+                } else if (strcmp(longopts[opt_index].name, "nopager") == 0) {
                     out_fd = stdout;
                     opts.pager = NULL;
                     break;
-                }
-                else if (strcmp(longopts[opt_index].name, "pager") == 0) {
+                } else if (strcmp(longopts[opt_index].name, "pager") == 0) {
                     opts.pager = optarg;
                     break;
-                }
-                else if (strcmp(longopts[opt_index].name, "workers") == 0) {
+                } else if (strcmp(longopts[opt_index].name, "workers") == 0) {
                     opts.workers = atoi(optarg);
                     break;
                 }
@@ -367,8 +361,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
     if (group) {
         opts.print_heading = 1;
         opts.print_break = 1;
-    }
-    else {
+    } else {
         opts.print_heading = 0;
         opts.print_break = 0;
     }
@@ -385,8 +378,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         opts.query = strdup(argv[0]);
         argc--;
         argv++;
-    }
-    else {
+    } else {
         opts.query = strdup(".");
     }
     opts.query_len = strlen(opts.query);
@@ -418,8 +410,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         (*paths)[i] = NULL;
         /* Make sure we search these paths instead of stdin. */
         opts.search_stream = 0;
-    }
-    else {
+    } else {
         path = strdup(".");
         *paths = malloc(sizeof(char*) * 2);
         (*paths)[0] = path;
