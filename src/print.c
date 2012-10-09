@@ -48,6 +48,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
     char sep = '-';
     int i, j;
     int in_a_match = FALSE;
+    int printing_a_match = FALSE;
 
     if (opts.ackmate) {
         sep = ':';
@@ -136,7 +137,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                         fprintf(out_fd, "%i:", (matches[last_printed_match].start - prev_line_offset) + 1);
                     }
 
-                    if (i > matches[last_printed_match].start && i <= matches[last_printed_match].end && opts.color) {
+                    if (printing_a_match && opts.color) {
                         fprintf(out_fd, "%s", colors_match);
                     }
                     for (j = prev_line_offset; j <= i; j++) {
@@ -144,16 +145,18 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                             if (opts.color) {
                                 fprintf(out_fd, "%s", colors_reset);
                             }
+                            printing_a_match = FALSE;
                             last_printed_match++;
                         }
                         if (j == matches[last_printed_match].start) {
                             if (opts.color) {
                                 fprintf(out_fd, "%s", colors_match);
                             }
+                            printing_a_match = TRUE;
                         }
                         fputc(buf[j], out_fd);
                     }
-                    if (opts.color) {
+                    if (printing_a_match && opts.color) {
                         fprintf(out_fd, "%s", colors_reset);
                     }
                 }
