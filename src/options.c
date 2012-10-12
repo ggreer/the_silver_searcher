@@ -11,7 +11,7 @@
 #include "log.h"
 #include "util.h"
 
-/* TODO: printf()ing this is not going to scale */
+/* TODO: try to obey out_fd? */
 void usage() {
     printf("Usage: ag [OPTIONS] PATTERN [PATH]\n\
 \n\
