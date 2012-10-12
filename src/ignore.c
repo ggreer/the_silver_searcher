@@ -64,7 +64,7 @@ void add_ignore_pattern(ignores *ig, const char* pattern) {
 
     /* Strip off the leading ./ so that matches are more likely. */
     if (strncmp(pattern, "./", 2) == 0) {
-        pattern += 2; /* TODO: this totally breaks on systems without 1 byte chars */
+        pattern += 2;
     }
 
     if (is_fnmatch(pattern)) {
@@ -101,7 +101,7 @@ void load_ignore_patterns(ignores *ig, const char *path) {
     size_t line_cap = 0;
 
     while ((line_len = getline(&line, &line_cap, fp)) > 0) {
-        if (line_len == 0 || line[0] == '\n') {
+        if (line_len == 0 || line[0] == '\n' || line[0] == '#') {
             continue;
         }
         if (line[line_len-1] == '\n') {
