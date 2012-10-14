@@ -70,7 +70,7 @@ void add_ignore_pattern(ignores *ig, const char* pattern) {
     if (is_fnmatch(pattern)) {
         ig->regexes_len++;
         ig->regexes = ag_realloc(ig->regexes, ig->regexes_len * sizeof(char*));
-        ig->regexes[ig->regexes_len - 1] = strdup(pattern);
+        ig->regexes[ig->regexes_len - 1] = ag_strdup(pattern);
         log_debug("added regex ignore pattern %s", pattern);
     } else {
         /* a balanced binary tree is best for performance, but I'm lazy */
@@ -82,7 +82,7 @@ void add_ignore_pattern(ignores *ig, const char* pattern) {
             }
             ig->names[i] = ig->names[i-1];
         }
-        ig->names[i] = strdup(pattern);
+        ig->names[i] = ag_strdup(pattern);
         log_debug("added literal ignore pattern %s", pattern);
     }
 }
@@ -169,7 +169,7 @@ void load_svn_ignore_patterns(ignores *ig, const char *path) {
             }
         }
         if (line_len > 0) {
-            entry_line = strndup(patterns, line_len);
+            entry_line = ag_strndup(patterns, line_len);
             add_ignore_pattern(ig, entry_line);
             free(entry_line);
         }

@@ -379,11 +379,11 @@ void parse_options(int argc, char **argv, char **paths[]) {
     }
 
     if (needs_query) {
-        opts.query = strdup(argv[0]);
+        opts.query = ag_strdup(argv[0]);
         argc--;
         argv++;
     } else {
-        opts.query = strdup(".");
+        opts.query = ag_strdup(".");
     }
     opts.query_len = strlen(opts.query);
 
@@ -403,7 +403,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
     if (argc > 0) {
         *paths = ag_calloc(sizeof(char*), argc + 1);
         for (i = 0; i < argc; i++) {
-            path = strdup(argv[i]);
+            path = ag_strdup(argv[i]);
             path_len = strlen(path);
             /* kill trailing slash */
             if (path_len > 1 && path[path_len - 1] == '/') {
@@ -415,7 +415,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         /* Make sure we search these paths instead of stdin. */
         opts.search_stream = 0;
     } else {
-        path = strdup(".");
+        path = ag_strdup(".");
         *paths = ag_malloc(sizeof(char*) * 2);
         (*paths)[0] = path;
         (*paths)[1] = NULL;
