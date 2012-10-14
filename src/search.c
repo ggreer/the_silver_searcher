@@ -28,7 +28,7 @@ void search_buf(const char *buf, const int buf_len,
          * capacity for one extra.
          * */
         matches_size = 100;
-        matches = malloc(matches_size * sizeof(match));
+        matches = ag_malloc(matches_size * sizeof(match));
         matches_spare = 1;
     } else {
         matches_size = 0;
@@ -70,8 +70,8 @@ void search_buf(const char *buf, const int buf_len,
 
             if ((size_t)matches_len + matches_spare >= matches_size) {
                 matches_size = matches ? matches_size * 2 : 100;
-                matches = realloc(matches, matches_size * sizeof(match));
                 log_debug("Too many matches in %s. Reallocating matches to %zu.", dir_full_path, matches_size);
+                matches = ag_realloc(matches, matches_size * sizeof(match));
             }
 
             matches[matches_len].start = match_ptr - buf;
@@ -97,8 +97,8 @@ void search_buf(const char *buf, const int buf_len,
             /* TODO: copy-pasted from above. FIXME */
             if ((size_t)matches_len + matches_spare >= matches_size) {
                 matches_size = matches ? matches_size * 2 : 100;
-                matches = realloc(matches, matches_size * sizeof(match));
                 log_debug("Too many matches in %s. Reallocating matches to %zu.", dir_full_path, matches_size);
+                matches = ag_realloc(matches, matches_size * sizeof(match));
             }
 
             matches[matches_len].start = offset_vector[0];
@@ -322,7 +322,7 @@ void search_dir(ignores *ig, const char* path, const int depth) {
                 }
             }
 
-            queue_item = malloc(sizeof(work_queue_t));
+            queue_item = ag_malloc(sizeof(work_queue_t));
             queue_item->path = dir_full_path;
             queue_item->next = NULL;
             pthread_mutex_lock(&work_queue_mtx);

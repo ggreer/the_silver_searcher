@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
     }
     log_debug("Using %i workers", workers_len);
     done_adding_files = FALSE;
-    workers = calloc(workers_len, sizeof(pthread_t));
+    workers = ag_calloc(workers_len, sizeof(pthread_t));
     if (pthread_cond_init(&files_ready, NULL)) {
         log_err("pthread_cond_init failed!");
         exit(2);
@@ -96,7 +96,24 @@ int main(int argc, char **argv) {
         search_stream(stdin, "");
     } else {
         for (i = 0; i < workers_len; i++) {
-            pthread_create(&(workers[i]), NULL, &search_file_worker, NULL);
+            int ptc_rc = pthread_create(&(workers[i]), NULL, &search_file_worker,
+                    NULL);
+            if (ptc_rc != 0) {
+                char errbuf[512];
+#ifdef STRERROR_R_CHAR_P
+                char *errmsg = strerror_r(ptc_rc, errbuf, sizeof(errbuf));
+                if (errmsg != NULL) {
+#else
+                int se_rc = strerror_r(ptc_rc, errbuf, sizeof(errbuf));
+                if (se_rc == 0) {
+                    char *errmsg = errbuf;
+#endif
+                    log_err("Failed to create worker thread: %s", errmsg);
+                } else {
+                    log_err("Failed to create worker thread");
+                }
+                exit(1);
+            }
         }
         for (i = 0; paths[i] != NULL; i++) {
             log_debug("searching path %s for %s", paths[i], opts.query);

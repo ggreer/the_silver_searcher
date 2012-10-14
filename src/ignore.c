@@ -30,7 +30,7 @@ const char *ignore_pattern_files[] = {
 const int fnmatch_flags = 0 & FNM_PATHNAME;
 
 ignores *init_ignore(ignores *parent) {
-    ignores *ig = malloc(sizeof(ignores));
+    ignores *ig = ag_malloc(sizeof(ignores));
     ig->names = NULL;
     ig->names_len = 0;
     ig->regexes = NULL;
@@ -69,13 +69,13 @@ void add_ignore_pattern(ignores *ig, const char* pattern) {
 
     if (is_fnmatch(pattern)) {
         ig->regexes_len++;
-        ig->regexes = realloc(ig->regexes, ig->regexes_len * sizeof(char*));
+        ig->regexes = ag_realloc(ig->regexes, ig->regexes_len * sizeof(char*));
         ig->regexes[ig->regexes_len - 1] = strdup(pattern);
         log_debug("added regex ignore pattern %s", pattern);
     } else {
         /* a balanced binary tree is best for performance, but I'm lazy */
         ig->names_len++;
-        ig->names = realloc(ig->names, ig->names_len * sizeof(char*));
+        ig->names = ag_realloc(ig->names, ig->names_len * sizeof(char*));
         for (i = ig->names_len - 1; i > 0; i--) {
             if (strcmp(pattern, ig->names[i-1]) > 0) {
                 break;
@@ -128,7 +128,7 @@ void load_svn_ignore_patterns(ignores *ig, const char *path) {
 
     char *entry = NULL;
     size_t entry_len = 0;
-    char *key = malloc(32); /* Sane start for max key length. */
+    char *key = ag_malloc(32); /* Sane start for max key length. */
     size_t key_len = 0;
     size_t bytes_read = 0;
     char *entry_line;
@@ -136,7 +136,7 @@ void load_svn_ignore_patterns(ignores *ig, const char *path) {
     int matches;
 
     while (fscanf(fp, "K %zu\n", &key_len) == 1) {
-        key = realloc(key, (key_len + 1) * sizeof(char));
+        key = ag_realloc(key, (key_len + 1) * sizeof(char));
         bytes_read = fread(key, 1, key_len, fp);
         key[key_len] = '\0';
         matches = fscanf(fp, "\nV %zu\n", &entry_len);
@@ -152,7 +152,7 @@ void load_svn_ignore_patterns(ignores *ig, const char *path) {
             continue;
         }
         /* Aww yeah. Time to ignore stuff */
-        entry = malloc(entry_len + 1);
+        entry = ag_malloc(entry_len + 1);
         bytes_read = fread(entry, 1, entry_len, fp);
         entry[bytes_read] = '\0';
         log_debug("entry: %s", entry);

@@ -314,6 +314,10 @@ void parse_options(int argc, char **argv, char **paths[]) {
 
     if (opts.pager) {
         out_fd = popen(opts.pager, "w");
+        if (!out_fd) {
+            perror("Failed to run pager");
+            exit(1);
+        }
     }
 
     if (help) {
@@ -397,7 +401,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
     char *path = NULL;
     opts.paths_len = argc;
     if (argc > 0) {
-        *paths = calloc(sizeof(char*), argc + 1);
+        *paths = ag_calloc(sizeof(char*), argc + 1);
         for (i = 0; i < argc; i++) {
             path = strdup(argv[i]);
             path_len = strlen(path);
@@ -412,7 +416,7 @@ void parse_options(int argc, char **argv, char **paths[]) {
         opts.search_stream = 0;
     } else {
         path = strdup(".");
-        *paths = malloc(sizeof(char*) * 2);
+        *paths = ag_malloc(sizeof(char*) * 2);
         (*paths)[0] = path;
         (*paths)[1] = NULL;
     }

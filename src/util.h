@@ -22,6 +22,12 @@ FILE *out_fd;
 #define FALSE 0
 #endif
 
+void *ag_malloc(size_t size);
+void *ag_realloc(void *ptr, size_t size);
+void *ag_calloc(size_t nelem, size_t elsize);
+char *ag_strdup(const char *s);
+char *ag_strndup(const char *s, size_t size);
+
 typedef struct {
     int start; /* Byte at which the match starts */
     int end; /* and where it ends */
