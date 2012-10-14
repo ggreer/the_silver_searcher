@@ -26,7 +26,7 @@ void search_buf(const char *buf, const int buf_len,
          * one extra match struct, even if there are no matches at all. So make
          * sure we have a nonempty array; and make sure we always have spare
          * capacity for one extra.
-         * */
+         */
         matches_size = 100;
         matches = malloc(matches_size * sizeof(match));
         matches_spare = 1;
