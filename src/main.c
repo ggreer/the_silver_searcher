@@ -98,22 +98,7 @@ int main(int argc, char **argv) {
         for (i = 0; i < workers_len; i++) {
             int ptc_rc = pthread_create(&(workers[i]), NULL, &search_file_worker,
                     NULL);
-            if (ptc_rc != 0) {
-                char errbuf[512];
-#ifdef STRERROR_R_CHAR_P
-                char *errmsg = strerror_r(ptc_rc, errbuf, sizeof(errbuf));
-                if (errmsg != NULL) {
-#else
-                int se_rc = strerror_r(ptc_rc, errbuf, sizeof(errbuf));
-                if (se_rc == 0) {
-                    char *errmsg = errbuf;
-#endif
-                    log_err("Failed to create worker thread: %s", errmsg);
-                } else {
-                    log_err("Failed to create worker thread");
-                }
-                exit(1);
-            }
+            check_err(ptc_rc, "create worker thread");
         }
         for (i = 0; paths[i] != NULL; i++) {
             log_debug("searching path %s for %s", paths[i], opts.query);

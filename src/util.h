@@ -28,6 +28,8 @@ void *ag_calloc(size_t nelem, size_t elsize);
 char *ag_strdup(const char *s);
 char *ag_strndup(const char *s, size_t size);
 
+void check_err(int err, const char *action);
+
 typedef struct {
     int start; /* Byte at which the match starts */
     int end; /* and where it ends */
