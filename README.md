@@ -47,6 +47,17 @@ For debs, rpms, and static builds, see the [downloads page](https://github.com/g
 1. Install dependencies (Automake, pkg-config, PCRE):
     * Ubuntu: `apt-get install -y automake pkg-config libpcre3-dev`
     * OS X: Install [homebrew](http://mxcl.github.com/homebrew/), then `brew install automake pkg-config pcre`
+    * FreeBSD: you may need to install automake by port system:
+        ```
+        cd /usr/ports/devel/automake
+        make install
+        ```
+
+        then you can install others by pkg_add:
+
+        ```
+        pkg_add -r pkg-config pcre
+        ```
     * Windows: It's complicated. See [this wiki page](https://github.com/ggreer/the_silver_searcher/wiki/Windows).
 2. Run the build script (which just runs aclocal, automake, etc):
     * `./build.sh`
