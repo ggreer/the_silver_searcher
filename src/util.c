@@ -17,17 +17,15 @@ void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], 
     f_len--;
 
     for (i = 0; i < f_len; i++) {
-        if (case_sensitive) {
-            skip_lookup[(unsigned char)find[i]] = f_len - i;
-        } else {
-            skip_lookup[(unsigned char)tolower(find[i])] = f_len - i;
+        skip_lookup[(unsigned char)find[i]] = f_len - i;
+        if (!case_sensitive) {
             skip_lookup[(unsigned char)toupper(find[i])] = f_len - i;
         }
     }
 }
 
 /* Boyer-Moore-Horspool strstr */
-char* boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]) {
+const char* boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]) {
     size_t i;
     size_t pos = 0;
 
@@ -39,7 +37,7 @@ char* boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, c
     while (pos <= (s_len - f_len)) {
         for (i = f_len - 1; s[pos + i] == find[i]; i--) {
             if (i == 0) {
-                return (char *)(&(s[pos]));
+                return &(s[pos]);
             }
         }
         pos += skip_lookup[(unsigned char)s[pos + f_len - 1]];
@@ -49,7 +47,7 @@ char* boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, c
 }
 
 /* Copy-pasted from above. Yes I know this is bad. One day I might even fix it. */
-char* boyer_moore_strncasestr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]) {
+const char* boyer_moore_strncasestr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]) {
     size_t i;
     size_t pos = 0;
 
@@ -59,9 +57,9 @@ char* boyer_moore_strncasestr(const char *s, const char *find, const size_t s_le
     }
 
     while (pos <= (s_len - f_len)) {
-        for (i = f_len - 1; tolower(s[pos + i]) == tolower(find[i]); i--) {
+        for (i = f_len - 1; tolower(s[pos + i]) == find[i]; i--) {
             if (i == 0) {
-                return (char *)(&(s[pos]));
+                return &(s[pos]);
             }
         }
         pos += skip_lookup[(unsigned char)s[pos + f_len - 1]];
