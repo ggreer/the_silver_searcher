@@ -7,6 +7,7 @@
 #include "log.h"
 #include "options.h"
 #include "print.h"
+#include "util.h"
 
 int first_file_match = 1;
 
@@ -60,7 +61,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
         print_path(path, '\n');
     }
 
-    context_prev_lines = calloc(sizeof(char*), (opts.before + 1));
+    context_prev_lines = ag_calloc(sizeof(char*), (opts.before + 1));
 
     for (i = 0; i <= buf_len && (cur_match < matches_len || lines_since_last_match <= opts.after); i++) {
         if (cur_match < matches_len && i == matches[cur_match].end) {
@@ -106,7 +107,8 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                 free(context_prev_lines[last_prev_line]);
             }
             /* We don't want to strcpy the \n */
-            context_prev_lines[last_prev_line] = strndup(&buf[prev_line_offset], i - prev_line_offset);
+            context_prev_lines[last_prev_line] =
+                ag_strndup(&buf[prev_line_offset], i - prev_line_offset);
             last_prev_line = (last_prev_line + 1) % opts.before;
         }
 

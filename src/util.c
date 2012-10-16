@@ -6,6 +6,71 @@
 #include <sys/stat.h>
 
 #include "util.h"
+#include "config.h"
+
+void *ag_malloc(size_t size) {
+    void *mem = malloc(size);
+    if (!mem) {
+        log_err("Out of memory");
+        exit(1);
+    }
+    return mem;
+}
+
+void *ag_realloc(void *ptr, size_t size) {
+    void *mem = realloc(ptr, size);
+    if (!mem) {
+        log_err("Out of memory");
+        exit(1);
+    }
+    return mem;
+}
+
+void *ag_calloc(size_t nelem, size_t elsize) {
+    void *mem = calloc(nelem, elsize);
+    if (!mem) {
+        log_err("Out of memory");
+        exit(1);
+    }
+    return mem;
+}
+
+char *ag_strdup(const char *s) {
+    char *str = strdup(s);
+    if (!str) {
+        log_err("Out of memory");
+        exit(1);
+    }
+    return str;
+}
+
+char *ag_strndup(const char *s, size_t size) {
+    char *str = strndup(s, size);
+    if (!str) {
+        log_err("Out of memory");
+        exit(1);
+    }
+    return str;
+}
+
+void check_err(int err, const char *action) {
+    if (err != 0) {
+        char errbuf[512];
+#ifdef STRERROR_R_CHAR_P
+        char *errmsg = strerror_r(err, errbuf, sizeof(errbuf));
+        if (errmsg != NULL) {
+#else
+        int se_rc = strerror_r(err, errbuf, sizeof(errbuf));
+        if (se_rc == 0) {
+            char *errmsg = errbuf;
+#endif
+            log_err("Failed to %s: %s", action, errmsg);
+        } else {
+            log_err("Failed to %s", action);
+        }
+        exit(1);
+    }
+}
 
 void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], int case_sensitive) {
     size_t i;
@@ -330,6 +395,14 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
     }
 
     memcpy(*lineptr, srcln, len);
+
+#ifndef HAVE_FGETLN
+    /* Our own implementation of fgetln() returns a malloc()d buffer that we
+     * must free
+     */
+    free(srcln);
+#endif
+
     (*lineptr)[len] = '\0';
     return len;
 }
@@ -338,9 +411,11 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
 #ifndef HAVE_STRNDUP
 /* Apache-licensed implementation of strndup for OS
  * taken from http://source-android.frandroid.com/dalvik/tools/dmtracedump/CreateTestTrace.c
+ * modified to check for malloc() failure
  */ 
 char *strndup(const char *src, size_t len) {
     char *dest = (char *) malloc(len + 1);
+    if (!dest) return NULL;
     strncpy(dest, src, len);
     dest[len] = 0;
     return dest;

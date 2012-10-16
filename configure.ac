@@ -23,6 +23,7 @@ AC_CHECK_DECL([PCRE_CONFIG_JIT], [AC_DEFINE([USE_PCRE_JIT], [], [Use PCRE JIT])]
 AC_CHECK_MEMBER([struct dirent.d_type], [AC_DEFINE([HAVE_DIRENT_DTYPE], [], [Have dirent struct member d_type])], [], [[#include <dirent.h>]])
 
 AC_CHECK_FUNCS(asprintf fgetln getline strndup)
+AC_FUNC_STRERROR_R
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_HEADERS([src/config.h])

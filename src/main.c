@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
     }
     log_debug("Using %i workers", workers_len);
     done_adding_files = FALSE;
-    workers = calloc(workers_len, sizeof(pthread_t));
+    workers = ag_calloc(workers_len, sizeof(pthread_t));
     if (pthread_cond_init(&files_ready, NULL)) {
         log_err("pthread_cond_init failed!");
         exit(2);
@@ -104,7 +104,9 @@ int main(int argc, char **argv) {
         search_stream(stdin, "");
     } else {
         for (i = 0; i < workers_len; i++) {
-            pthread_create(&(workers[i]), NULL, &search_file_worker, NULL);
+            int ptc_rc = pthread_create(&(workers[i]), NULL, &search_file_worker,
+                    NULL);
+            check_err(ptc_rc, "create worker thread");
         }
         for (i = 0; paths[i] != NULL; i++) {
             log_debug("searching path %s for %s", paths[i], opts.query);
