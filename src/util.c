@@ -184,8 +184,7 @@ void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opt
 
     *re = pcre_compile(q, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
     if (*re == NULL) {
-        log_err("pcre_compile failed at position %i. Error: %s", pcre_err_offset, pcre_err);
-        exit(2);
+        die("pcre_compile failed at position %i. Error: %s", pcre_err_offset, pcre_err);
     }
     *re_extra = pcre_study(*re, study_opts, &pcre_err);
     if (*re_extra == NULL) {
