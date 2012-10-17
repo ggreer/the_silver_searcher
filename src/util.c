@@ -444,9 +444,12 @@ int vasprintf(char **ret, const char *fmt, va_list args) {
     int rv;
     *ret = NULL;
     va_list args2;
+    /* vsnprintf can destroy args, so we need to copy it for the second call */
 #ifdef __va_copy
+    /* non-standard macro, but usually exists */
     __va_copy(args2, args);
 #elif va_copy
+    /* C99 macro. We compile with -std=c89 but you never know */
     va_copy(args2, args);
 #else
     /* Ancient compiler. This usually works but there are no guarantees. */
