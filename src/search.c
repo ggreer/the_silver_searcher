@@ -259,7 +259,7 @@ void search_dir(ignores *ig, const char* path, const int depth) {
     /* find agignore/gitignore/hgignore/etc files to load ignore patterns from */
     for (i = 0; opts.skip_vcs_ignores ? (i == 0) : (ignore_pattern_files[i] != NULL); i++) {
         ignore_file = ignore_pattern_files[i];
-        asprintf(&dir_full_path, "%s/%s", path, ignore_file);
+        ag_asprintf(&dir_full_path, "%s/%s", path, ignore_file);
         if (strcmp(SVN_DIR, ignore_file) == 0) {
             load_svn_ignore_patterns(ig, dir_full_path);
         } else {
@@ -298,7 +298,7 @@ void search_dir(ignores *ig, const char* path, const int depth) {
     for (i = 0; i < results; i++) {
         queue_item = NULL;
         dir = dir_list[i];
-        asprintf(&dir_full_path, "%s/%s", path, dir->d_name);
+        ag_asprintf(&dir_full_path, "%s/%s", path, dir->d_name);
 
         /* If a link points to a directory then we need to treat it as a directory. */
         if (!opts.follow_symlinks && is_symlink(path, dir)) {

@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
         }
         if (opts.word_regexp) {
             char *word_regexp_query;
-            asprintf(&word_regexp_query, "\\b%s\\b", opts.query);
+            ag_asprintf(&word_regexp_query, "\\b%s\\b", opts.query);
             free(opts.query);
             opts.query = word_regexp_query;
             opts.query_len = strlen(opts.query);
