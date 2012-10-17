@@ -459,9 +459,7 @@ int vasprintf(char **ret, const char *fmt, va_list args) {
     if (rv < 0) {
         return rv;
     }
-
-    rv++; /* vsnprintf doesn't count \0 */
-    *ret = malloc(rv);
+    *ret = malloc(++rv); /* vsnprintf doesn't count \0 */
     if (*ret == NULL) {
         return -1;
     }
