@@ -184,8 +184,7 @@ void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opt
 
     *re = pcre_compile(q, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
     if (*re == NULL) {
-        log_err("pcre_compile failed at position %i. Error: %s", pcre_err_offset, pcre_err);
-        exit(2);
+        die("pcre_compile failed at position %i. Error: %s", pcre_err_offset, pcre_err);
     }
     *re_extra = pcre_study(*re, study_opts, &pcre_err);
     if (*re_extra == NULL) {
@@ -312,7 +311,7 @@ int is_directory(const char *path, const struct dirent *d) {
 #endif
     char *full_path;
     struct stat s;
-    asprintf(&full_path, "%s/%s", path, d->d_name);
+    ag_asprintf(&full_path, "%s/%s", path, d->d_name);
     if (stat(full_path, &s) != 0) {
         free(full_path);
         return FALSE;
@@ -331,13 +330,30 @@ int is_symlink(const char *path, const struct dirent *d) {
 #endif
     char *full_path;
     struct stat s;
-    asprintf(&full_path, "%s/%s", path, d->d_name);
+    ag_asprintf(&full_path, "%s/%s", path, d->d_name);
     if (lstat(full_path, &s) != 0) {
         free(full_path);
         return FALSE;
     }
     free(full_path);
     return (S_ISLNK(s.st_mode));
+}
+
+void ag_asprintf(char **ret, const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    if (vasprintf(ret, fmt, args) == -1) {
+        die("vasprintf returned -1");
+    }
+    va_end(args);
+}
+
+void die(const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    vplog(LOG_LEVEL_ERR, fmt, args);
+    va_end(args);
+    exit(2);
 }
 
 #ifndef HAVE_FGETLN
@@ -422,42 +438,36 @@ char *strndup(const char *src, size_t len) {
 }
 #endif
 
-#ifndef HAVE_ASPRINTF
-/*
- * Creative Commons licensed implementation of asprintf from Stack Overflow
- * Licence: http://creativecommons.org/licenses/by-sa/3.0/
- * Source: http://stackoverflow.com/questions/4899221
- * Contributing Users:
- *     Sylvain Defresne (http://stackoverflow.com/users/5353/sylvain-defresne)
- *     Jonathan Leffler (http://stackoverflow.com/users/15168/jonathan-leffler)
- *     bobwood (http://stackoverflow.com/users/100480/bobwood)
- */
-int asprintf(char **ret, const char *format, ...) {
-    va_list ap;
-    *ret = NULL;  /* Ensure value can be passed to free() */
-
-    va_start(ap, format);
-    int count = vsnprintf(NULL, 0, format, ap);
-    va_end(ap);
-
-    if (count >= 0)
-    {
-        char* buffer = malloc(count + 1);
-        if (buffer == NULL)
-            return -1;
-
-        va_start(ap, format);
-        count = vsnprintf(buffer, count + 1, format, ap);
-        va_end(ap);
-
-        if (count < 0)
-        {
-            free(buffer);
-            return count;
-        }
-        *ret = buffer;
+#ifndef HAVE_VASPRINTF
+int vasprintf(char **ret, const char *fmt, va_list args) {
+    int rv;
+    *ret = NULL;
+    va_list args2;
+    /* vsnprintf can destroy args, so we need to copy it for the second call */
+#ifdef __va_copy
+    /* non-standard macro, but usually exists */
+    __va_copy(args2, args);
+#elif va_copy
+    /* C99 macro. We compile with -std=c89 but you never know */
+    va_copy(args2, args);
+#else
+    /* Ancient compiler. This usually works but there are no guarantees. */
+    memcpy(args2, args, sizeof(va_list));
+#endif
+    rv = vsnprintf(NULL, 0, fmt, args);
+    va_end(args);
+    if (rv < 0) {
+        return rv;
     }
-
-    return count;
+    *ret = malloc(++rv); /* vsnprintf doesn't count \0 */
+    if (*ret == NULL) {
+        return -1;
+    }
+    rv = vsnprintf(*ret, rv, fmt, args2);
+    va_end(args2);
+    if (rv < 0) {
+        free(*ret);
+    }
+    return rv;
 }
 #endif

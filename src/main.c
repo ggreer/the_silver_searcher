@@ -52,20 +52,16 @@ int main(int argc, char **argv) {
     done_adding_files = FALSE;
     workers = ag_calloc(workers_len, sizeof(pthread_t));
     if (pthread_cond_init(&files_ready, NULL)) {
-        log_err("pthread_cond_init failed!");
-        exit(2);
+        die("pthread_cond_init failed!");
     }
     if (pthread_mutex_init(&print_mtx, NULL)) {
-        log_err("pthread_mutex_init failed!");
-        exit(2);
+        die("pthread_mutex_init failed!");
     }
     if (pthread_mutex_init(&stats_mtx, NULL)) {
-        log_err("pthread_mutex_init failed!");
-        exit(2);
+        die("pthread_mutex_init failed!");
     }
     if (pthread_mutex_init(&work_queue_mtx, NULL)) {
-        log_err("pthread_mutex_init failed!");
-        exit(2);
+        die("pthread_mutex_init failed!");
     }
 
     if (opts.casing == CASE_SMART) {
@@ -92,7 +88,7 @@ int main(int argc, char **argv) {
         }
         if (opts.word_regexp) {
             char *word_regexp_query;
-            asprintf(&word_regexp_query, "\\b%s\\b", opts.query);
+            ag_asprintf(&word_regexp_query, "\\b%s\\b", opts.query);
             free(opts.query);
             opts.query = word_regexp_query;
             opts.query_len = strlen(opts.query);
@@ -116,8 +112,7 @@ int main(int argc, char **argv) {
         pthread_cond_broadcast(&files_ready);
         for (i = 0; i < workers_len; i++) {
             if (pthread_join(workers[i], NULL)) {
-                log_err("pthread_join failed!");
-                exit(2);
+                die("pthread_join failed!");
             }
         }
     }

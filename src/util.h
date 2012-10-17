@@ -70,6 +70,10 @@ int contains_uppercase(const char* s);
 int is_directory(const char *path, const struct dirent *d);
 int is_symlink(const char *path, const struct dirent *d);
 
+void die(const char *fmt, ...);
+
+void ag_asprintf(char **ret, const char *fmt, ...);
+
 #ifndef HAVE_FGETLN
 char * fgetln(FILE *fp, size_t *lenp);
 #endif
@@ -79,8 +83,8 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 #ifndef HAVE_STRNDUP
 char * strndup (const char *s, size_t n);
 #endif
-#ifndef HAVE_ASPRINTF
-int asprintf(char **ret, const char *format, ...);
+#ifndef HAVE_VASPRINTF
+int vasprintf(char **ret, const char *fmt, va_list args);
 #endif
 
 #endif
