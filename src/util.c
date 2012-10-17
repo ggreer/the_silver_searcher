@@ -441,22 +441,34 @@ char *strndup(const char *src, size_t len) {
 
 #ifndef HAVE_VASPRINTF
 int vasprintf(char **ret, const char *fmt, va_list args) {
-    int chars;
+    int rv;
     *ret = NULL;
-    chars = vsnprintf(NULL, 0, fmt, args);
-    if (chars < 0) {
-        die("vsnprintf() error");
+    va_list args2;
+#ifdef __va_copy
+    __va_copy(args2, args);
+#elif va_copy
+    va_copy(args2, args);
+#else
+    /* Ancient compiler. This usually works but there are no guarantees. */
+    memcpy(args2, args, sizeof(va_list));
+#endif
+    rv = vsnprintf(NULL, 0, fmt, args);
+    va_end(args);
+    if (rv < 0) {
+        return rv;
     }
 
-    chars++; /* room for \0 */
-    *ret = malloc(chars);
+    rv++; /* vsnprintf doesn't count \0 */
+    *ret = malloc(rv);
     if (*ret == NULL) {
-        die("malloc() failed!");
+        return -1;
     }
-    chars = vsnprintf(*ret, chars, fmt, args);
-    if (chars < 0) {
-        die("vsnprintf() error");
+    rv = vsnprintf(*ret, rv, fmt, args2);
+    va_end(args2);
+    if (rv < 0) {
+        free(*ret);
+        return rv;
     }
-    return chars;
+    return rv;
 }
 #endif
