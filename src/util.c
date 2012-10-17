@@ -469,7 +469,6 @@ int vasprintf(char **ret, const char *fmt, va_list args) {
     va_end(args2);
     if (rv < 0) {
         free(*ret);
-        return rv;
     }
     return rv;
 }
