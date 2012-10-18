@@ -100,9 +100,10 @@ int main(int argc, char **argv) {
         search_stream(stdin, "");
     } else {
         for (i = 0; i < workers_len; i++) {
-            int ptc_rc = pthread_create(&(workers[i]), NULL, &search_file_worker,
-                    NULL);
-            check_err(ptc_rc, "create worker thread");
+            int rv = pthread_create(&(workers[i]), NULL, &search_file_worker, NULL);
+            if (rv != 0) {
+                die("error in pthread_create(): %s", strerror(rv));
+            }
         }
         for (i = 0; paths[i] != NULL; i++) {
             log_debug("searching path %s for %s", paths[i], opts.query);

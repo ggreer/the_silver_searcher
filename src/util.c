@@ -53,25 +53,6 @@ char *ag_strndup(const char *s, size_t size) {
     return str;
 }
 
-void check_err(int err, const char *action) {
-    if (err != 0) {
-        char errbuf[512];
-#ifdef STRERROR_R_CHAR_P
-        char *errmsg = strerror_r(err, errbuf, sizeof(errbuf));
-        if (errmsg != NULL) {
-#else
-        int se_rc = strerror_r(err, errbuf, sizeof(errbuf));
-        if (se_rc == 0) {
-            char *errmsg = errbuf;
-#endif
-            log_err("Failed to %s: %s", action, errmsg);
-        } else {
-            log_err("Failed to %s", action);
-        }
-        exit(1);
-    }
-}
-
 void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], int case_sensitive) {
     size_t i;
 
