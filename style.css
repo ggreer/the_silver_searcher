@@ -6,6 +6,12 @@ body {
   margin: 10px;
   max-width: 40em;
 }
+#wrapper {
+    margin: 0 auto;
+    max-width: 37em;
+    min-width: 27em;
+    width: 90%;
+}
 a,
 a:link {
   color: steelBlue;
