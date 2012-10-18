@@ -4,7 +4,7 @@ body {
   font-size: 125%;
   color: #000;
   margin: 10px;
-  max-width: 40em;
+  width: 100%;
 }
 #wrapper {
     margin: 0 auto;
