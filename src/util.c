@@ -8,49 +8,33 @@
 #include "util.h"
 #include "config.h"
 
+#define CHECK_AND_RETURN(ptr) \
+if (ptr == NULL) { die("Memory allocation failed."); }\
+return ptr;
+
 void *ag_malloc(size_t size) {
-    void *mem = malloc(size);
-    if (!mem) {
-        log_err("Out of memory");
-        exit(1);
-    }
-    return mem;
+    void *ptr = malloc(size);
+    CHECK_AND_RETURN(ptr)
 }
 
 void *ag_realloc(void *ptr, size_t size) {
-    void *mem = realloc(ptr, size);
-    if (!mem) {
-        log_err("Out of memory");
-        exit(1);
-    }
-    return mem;
+    void *new_ptr = realloc(ptr, size);
+    CHECK_AND_RETURN(new_ptr)
 }
 
-void *ag_calloc(size_t nelem, size_t elsize) {
-    void *mem = calloc(nelem, elsize);
-    if (!mem) {
-        log_err("Out of memory");
-        exit(1);
-    }
-    return mem;
+void *ag_calloc(size_t count, size_t size) {
+    void *ptr = calloc(count, size);
+    CHECK_AND_RETURN(ptr)
 }
 
 char *ag_strdup(const char *s) {
     char *str = strdup(s);
-    if (!str) {
-        log_err("Out of memory");
-        exit(1);
-    }
-    return str;
+    CHECK_AND_RETURN(str)
 }
 
 char *ag_strndup(const char *s, size_t size) {
     char *str = strndup(s, size);
-    if (!str) {
-        log_err("Out of memory");
-        exit(1);
-    }
-    return str;
+    CHECK_AND_RETURN(str)
 }
 
 void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], int case_sensitive) {
