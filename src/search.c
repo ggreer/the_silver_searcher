@@ -218,14 +218,13 @@ void *search_file_worker() {
 
     while (TRUE) {
         pthread_mutex_lock(&work_queue_mtx);
-        if (work_queue == NULL) {
+        while (work_queue == NULL) {
             if (done_adding_files) {
                 pthread_mutex_unlock(&work_queue_mtx);
-                break;
+                log_debug("Worker finished.");
+                pthread_exit(NULL);
             }
             pthread_cond_wait(&files_ready, &work_queue_mtx);
-            pthread_mutex_unlock(&work_queue_mtx);
-            continue;
         }
         queue_item = work_queue;
         work_queue = work_queue->next;
@@ -238,10 +237,6 @@ void *search_file_worker() {
         free(queue_item->path);
         free(queue_item);
     }
-
-    log_debug("Worker finished.");
-    pthread_exit(NULL);
-    return NULL;
 }
 
 /* TODO: Append matches to some data structure instead of just printing them out.
@@ -333,7 +328,7 @@ void search_dir(ignores *ig, const char* path, const int depth) {
             }
             work_queue_tail = queue_item;
             pthread_mutex_unlock(&work_queue_mtx);
-            pthread_cond_broadcast(&files_ready);
+            pthread_cond_signal(&files_ready);
             log_debug("%s added to work queue", dir_full_path);
         } else if (opts.recurse_dirs) {
             if (depth < opts.max_search_depth) {
