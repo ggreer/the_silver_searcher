@@ -44,9 +44,16 @@ int main(int argc, char **argv) {
     parse_options(argc, argv, &paths);
     log_debug("PCRE Version: %s", pcre_version());
 
-    workers_len = (int)sysconf(_SC_NPROCESSORS_ONLN);
     if (opts.workers) {
         workers_len = opts.workers;
+    } else {
+        /* Experiments show that two worker threads appear to be optimal, both
+         * on dual-core and quad-core systems. See
+         * http://geoff.greer.fm/2012/09/07/the-silver-searcher-adding-pthreads/.
+         * On single-core CPUs, more than one worker thread makes no sense.
+         */
+        int ncpus = (int)sysconf(_SC_NPROCESSORS_ONLN);
+        workers_len = (ncpus >= 2) ? 2 : 1;
     }
     log_debug("Using %i workers", workers_len);
     done_adding_files = FALSE;
