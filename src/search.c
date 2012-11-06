@@ -242,7 +242,7 @@ void *search_file_worker() {
 /* TODO: Append matches to some data structure instead of just printing them out.
  * Then ag can have sweet summaries of matches/files scanned/time/etc.
  */
-void search_dir(ignores *ig, const char* path, const int depth) {
+void search_dir(ignores *ig, const char *base_path, const char *path, const int depth) {
     struct dirent **dir_list = NULL;
     struct dirent *dir = NULL;
     int results = 0;
@@ -334,7 +334,7 @@ void search_dir(ignores *ig, const char* path, const int depth) {
             if (depth < opts.max_search_depth) {
                 log_debug("Searching dir %s", dir_full_path);
                 ignores *child_ig = init_ignore(ig);
-                search_dir(child_ig, dir_full_path, depth + 1);
+                search_dir(child_ig, base_path, dir_full_path, depth + 1);
                 cleanup_ignore(child_ig);
             } else {
                 log_err("Skipping %s. Use the --depth option to search deeper.", dir_full_path);

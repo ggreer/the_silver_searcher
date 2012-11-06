@@ -222,7 +222,9 @@ int filename_ignore_search(const ignores *ig, const char *filename) {
             log_debug("file %s ignored because name matches regex pattern %s", filename, ig->regexes[i]);
             return 1;
         }
+        log_debug("pattern %s doesn't match file %s", ig->regexes[i], filename);
     }
+    log_debug("file %s not ignored", filename);
     return 0;
 }
 
