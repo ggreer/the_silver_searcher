@@ -8,6 +8,7 @@
 #include "ignore.h"
 #include "log.h"
 #include "options.h"
+#include "scandir.h"
 #include "util.h"
 
 /* TODO: build a huge-ass list of files we want to ignore by default (build cache stuff, pyc files, etc) */
@@ -67,6 +68,7 @@ void add_ignore_pattern(ignores *ig, const char* pattern) {
         pattern += 2;
     }
 
+    /* TODO: de-dupe these patterns */
     if (is_fnmatch(pattern)) {
         ig->regexes_len++;
         ig->regexes = ag_realloc(ig->regexes, ig->regexes_len * sizeof(char*));
@@ -201,6 +203,10 @@ int filename_ignore_search(const ignores *ig, const char *filename) {
     size_t i;
     int match_pos;
 
+    if (strncmp(filename, "./", 2) == 0) {
+        filename += 2;
+    }
+
     match_pos = binary_search(filename, ig->names, 0, ig->names_len);
     if (match_pos >= 0) {
         log_debug("file %s ignored because name matches static pattern %s", filename, ig->names[match_pos]);
@@ -217,15 +223,33 @@ int filename_ignore_search(const ignores *ig, const char *filename) {
             log_debug("file %s ignored because name matches regex pattern %s", filename, ig->regexes[i]);
             return 1;
         }
+        log_debug("pattern %s doesn't match file %s", ig->regexes[i], filename);
     }
+    log_debug("file %s not ignored", filename);
     return 0;
+}
+
+int path_ignore_search(const ignores *ig, const char *path, const char *filename) {
+    char *temp;
+
+    if (filename_ignore_search(ig, filename)) {
+        return 0;
+    }
+    ag_asprintf(&temp, "%s/%s", path, filename);
+    int rv = filename_ignore_search(ig, temp);
+    free(temp);
+    return rv;
 }
 
 /* This function is REALLY HOT. It gets called for every file */
 int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     const char *filename = dir->d_name;
     size_t i;
-    ignores *ig = (ignores*) baton;
+    scandir_baton_t *scandir_baton = (scandir_baton_t*) baton;
+    const ignores *ig = scandir_baton->ig;
+    const char *base_path = scandir_baton->base_path;
+    const char *path_start = path;
+    char *temp;
 
     if (!opts.follow_symlinks && is_symlink(path, dir)) {
         log_debug("File %s ignored becaused it's a symlink", dir->d_name);
@@ -244,14 +268,20 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     if (opts.search_all_files && !opts.path_to_agignore) {
         return 1;
     }
-    if (filename_ignore_search(ig, filename)) {
+
+    for (i = 0; base_path[i] == path[i] && i < strlen(base_path); i++) {
+        /* base_path always ends with "/\0" while path doesn't, so this is safe */
+        path_start = path + i + 2;
+    }
+    log_debug("path_start is %s", path_start);
+
+    if (path_ignore_search(ig, path_start, filename)) {
         return 0;
     }
 
     if (is_directory(path, dir) && filename[strlen(filename) - 1] != '/') {
-        char *temp;
         ag_asprintf(&temp, "%s/", filename);
-        int rv = filename_ignore_search(ig, temp);
+        int rv = path_ignore_search(ig, path_start, temp);
         free(temp);
         if (rv) {
             return 0;
@@ -259,7 +289,8 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     }
 
     if (ig->parent != NULL) {
-        return filename_filter(path, dir, (void *)(ig->parent));
+        scandir_baton->ig = ig->parent;
+        return filename_filter(path, dir, (void *)scandir_baton);
     }
 
     return 1;

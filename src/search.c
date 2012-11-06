@@ -242,9 +242,10 @@ void *search_file_worker() {
 /* TODO: Append matches to some data structure instead of just printing them out.
  * Then ag can have sweet summaries of matches/files scanned/time/etc.
  */
-void search_dir(ignores *ig, const char* path, const int depth) {
+void search_dir(ignores *ig, const char *base_path, const char *path, const int depth) {
     struct dirent **dir_list = NULL;
     struct dirent *dir = NULL;
+    scandir_baton_t scandir_baton;
     int results = 0;
 
     char *dir_full_path = NULL;
@@ -268,7 +269,9 @@ void search_dir(ignores *ig, const char* path, const int depth) {
         load_ignore_patterns(ig, opts.path_to_agignore);
     }
 
-    results = ag_scandir(path, &dir_list, &filename_filter, ig);
+    scandir_baton.ig = ig;
+    scandir_baton.base_path = base_path;
+    results = ag_scandir(path, &dir_list, &filename_filter, &scandir_baton);
     if (results == 0) {
         log_debug("No results found in directory %s", path);
         goto search_dir_cleanup;
@@ -334,7 +337,7 @@ void search_dir(ignores *ig, const char* path, const int depth) {
             if (depth < opts.max_search_depth) {
                 log_debug("Searching dir %s", dir_full_path);
                 ignores *child_ig = init_ignore(ig);
-                search_dir(child_ig, dir_full_path, depth + 1);
+                search_dir(child_ig, base_path, dir_full_path, depth + 1);
                 cleanup_ignore(child_ig);
             } else {
                 log_err("Skipping %s. Use the --depth option to search deeper.", dir_full_path);

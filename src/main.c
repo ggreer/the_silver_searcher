@@ -16,6 +16,7 @@
 
 
 int main(int argc, char **argv) {
+    char **base_paths = NULL;
     char **paths = NULL;
     int i;
     int pcre_opts = PCRE_MULTILINE;
@@ -41,7 +42,7 @@ int main(int argc, char **argv) {
 
     gettimeofday(&(stats.time_start), NULL);
 
-    parse_options(argc, argv, &paths);
+    parse_options(argc, argv, &base_paths, &paths);
     log_debug("PCRE Version: %s", pcre_version());
 
     workers_len = (int)sysconf(_SC_NPROCESSORS_ONLN);
@@ -107,7 +108,7 @@ int main(int argc, char **argv) {
         }
         for (i = 0; paths[i] != NULL; i++) {
             log_debug("searching path %s for %s", paths[i], opts.query);
-            search_dir(root_ignores, paths[i], 0);
+            search_dir(root_ignores, base_paths[i], paths[i], 0);
         }
         done_adding_files = TRUE;
         pthread_cond_broadcast(&files_ready);
