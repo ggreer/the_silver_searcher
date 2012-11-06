@@ -281,7 +281,7 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
 
     if (is_directory(path, dir) && filename[strlen(filename) - 1] != '/') {
         ag_asprintf(&temp, "%s/", filename);
-        int rv = path_ignore_search(ig, path, temp);
+        int rv = path_ignore_search(ig, path_start, temp);
         free(temp);
         if (rv) {
             return 0;
