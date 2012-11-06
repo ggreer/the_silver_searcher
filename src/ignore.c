@@ -233,7 +233,7 @@ int path_ignore_search(const ignores *ig, const char *path, const char *filename
     char *temp;
 
     if (filename_ignore_search(ig, filename)) {
-        return 0;
+        return 1;
     }
     ag_asprintf(&temp, "%s/%s", path, filename);
     int rv = filename_ignore_search(ig, temp);
