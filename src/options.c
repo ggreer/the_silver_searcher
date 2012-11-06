@@ -418,6 +418,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     } else {
         path = ag_strdup(".");
         *paths = ag_malloc(sizeof(char*) * 2);
+        *base_paths = ag_malloc(sizeof(char*) * 2);
         (*paths)[0] = path;
         (*base_paths)[0] = realpath(path, NULL);
         i = 1;
