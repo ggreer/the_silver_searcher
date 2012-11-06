@@ -67,6 +67,7 @@ void add_ignore_pattern(ignores *ig, const char* pattern) {
         pattern += 2;
     }
 
+    /* TODO: de-dupe these patterns */
     if (is_fnmatch(pattern)) {
         ig->regexes_len++;
         ig->regexes = ag_realloc(ig->regexes, ig->regexes_len * sizeof(char*));
@@ -225,6 +226,18 @@ int filename_ignore_search(const ignores *ig, const char *filename) {
     return 0;
 }
 
+int path_ignore_search(const ignores *ig, const char *path, const char *filename) {
+    char *temp;
+
+    if (filename_ignore_search(ig, filename)) {
+        return 0;
+    }
+    ag_asprintf(&temp, "%s/%s", path, filename);
+    int rv = filename_ignore_search(ig, temp);
+    free(temp);
+    return rv;
+}
+
 /* This function is REALLY HOT. It gets called for every file */
 int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     const char *filename = dir->d_name;
@@ -249,24 +262,18 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     if (opts.search_all_files && !opts.path_to_agignore) {
         return 1;
     }
-    if (filename_ignore_search(ig, filename)) {
+
+    if (path_ignore_search(ig, path, filename)) {
         return 0;
     }
 
     if (is_directory(path, dir) && filename[strlen(filename) - 1] != '/') {
         ag_asprintf(&temp, "%s/", filename);
-        int rv = filename_ignore_search(ig, temp);
+        int rv = path_ignore_search(ig, path, temp);
         free(temp);
         if (rv) {
             return 0;
         }
-    }
-
-    ag_asprintf(&temp, "%s/%s", path, filename);
-    int rv = filename_ignore_search(ig, temp);
-    free(temp);
-    if (rv) {
-        return 0;
     }
 
     if (ig->parent != NULL) {
