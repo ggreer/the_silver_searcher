@@ -248,6 +248,7 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     scandir_baton_t *scandir_baton = (scandir_baton_t*) baton;
     const ignores *ig = scandir_baton->ig;
     const char *base_path = scandir_baton->base_path;
+    const char *path_start = path;
     char *temp;
 
     if (!opts.follow_symlinks && is_symlink(path, dir)) {
@@ -268,7 +269,13 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         return 1;
     }
 
-    if (path_ignore_search(ig, path, filename)) {
+    for (i = 0; base_path[i] == path[i] && i < strlen(base_path); i++) {
+        path_start = path + i;
+    }
+    path_start+=2;
+    log_debug("path is %s", path_start);
+
+    if (path_ignore_search(ig, path_start, filename)) {
         return 0;
     }
 
