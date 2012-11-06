@@ -245,9 +245,8 @@ int path_ignore_search(const ignores *ig, const char *path, const char *filename
 int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     const char *filename = dir->d_name;
     size_t i;
-    scandir_baton_t *scandir_baton = (scandir_baton_t*) baton;
-    const ignores *ig = scandir_baton->ig;
-    const char *base_path = scandir_baton->base_path;
+    const ignores *ig = ((scandir_baton_t *)baton)->ig;
+    const char *base_path = ((scandir_baton_t *)baton)->base_path;
     const char *path_start = path;
     char *temp;
 
@@ -289,8 +288,10 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     }
 
     if (ig->parent != NULL) {
-        scandir_baton->ig = ig->parent;
-        return filename_filter(path, dir, (void *)scandir_baton);
+        scandir_baton_t baton_copy;
+        baton_copy.ig = ig->parent;
+        baton_copy.base_path = base_path;
+        return filename_filter(path, dir, (void *)(&baton_copy));
     }
 
     return 1;
