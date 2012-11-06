@@ -270,9 +270,8 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     }
 
     for (i = 0; base_path[i] == path[i] && i < strlen(base_path); i++) {
-        path_start = path + i;
+        path_start = path + i + 2;
     }
-    path_start+=2;
     log_debug("path is %s", path_start);
 
     if (path_ignore_search(ig, path_start, filename)) {
