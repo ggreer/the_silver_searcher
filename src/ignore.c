@@ -201,6 +201,10 @@ int filename_ignore_search(const ignores *ig, const char *filename) {
     size_t i;
     int match_pos;
 
+    if (strncmp(filename, "./", 2) == 0) {
+        filename += 2;
+    }
+
     match_pos = binary_search(filename, ig->names, 0, ig->names_len);
     if (match_pos >= 0) {
         log_debug("file %s ignored because name matches static pattern %s", filename, ig->names[match_pos]);
@@ -226,6 +230,7 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     const char *filename = dir->d_name;
     size_t i;
     ignores *ig = (ignores*) baton;
+    char *temp;
 
     if (!opts.follow_symlinks && is_symlink(path, dir)) {
         log_debug("File %s ignored becaused it's a symlink", dir->d_name);
@@ -249,13 +254,19 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     }
 
     if (is_directory(path, dir) && filename[strlen(filename) - 1] != '/') {
-        char *temp;
         ag_asprintf(&temp, "%s/", filename);
         int rv = filename_ignore_search(ig, temp);
         free(temp);
         if (rv) {
             return 0;
         }
+    }
+
+    ag_asprintf(&temp, "%s/%s", path, filename);
+    int rv = filename_ignore_search(ig, temp);
+    free(temp);
+    if (rv) {
+        return 0;
     }
 
     if (ig->parent != NULL) {
