@@ -8,6 +8,7 @@
 #include "ignore.h"
 #include "log.h"
 #include "options.h"
+#include "scandir.h"
 #include "util.h"
 
 /* TODO: build a huge-ass list of files we want to ignore by default (build cache stuff, pyc files, etc) */
@@ -244,7 +245,9 @@ int path_ignore_search(const ignores *ig, const char *path, const char *filename
 int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     const char *filename = dir->d_name;
     size_t i;
-    ignores *ig = (ignores*) baton;
+    scandir_baton_t *scandir_baton = (scandir_baton_t*) baton;
+    const ignores *ig = scandir_baton->ig;
+    const char *base_path = scandir_baton->base_path;
     char *temp;
 
     if (!opts.follow_symlinks && is_symlink(path, dir)) {
@@ -279,7 +282,8 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     }
 
     if (ig->parent != NULL) {
-        return filename_filter(path, dir, (void *)(ig->parent));
+        scandir_baton->ig = ig->parent;
+        return filename_filter(path, dir, (void *)scandir_baton);
     }
 
     return 1;

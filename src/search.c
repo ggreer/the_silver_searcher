@@ -245,6 +245,7 @@ void *search_file_worker() {
 void search_dir(ignores *ig, const char *base_path, const char *path, const int depth) {
     struct dirent **dir_list = NULL;
     struct dirent *dir = NULL;
+    scandir_baton_t scandir_baton;
     int results = 0;
 
     char *dir_full_path = NULL;
@@ -268,7 +269,9 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
         load_ignore_patterns(ig, opts.path_to_agignore);
     }
 
-    results = ag_scandir(path, &dir_list, &filename_filter, ig);
+    scandir_baton.ig = ig;
+    scandir_baton.base_path = base_path;
+    results = ag_scandir(path, &dir_list, &filename_filter, &scandir_baton);
     if (results == 0) {
         log_debug("No results found in directory %s", path);
         goto search_dir_cleanup;
