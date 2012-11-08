@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <dirent.h>
 #include <fnmatch.h>
 #include <stdio.h>
@@ -62,17 +63,25 @@ void cleanup_ignore(ignores *ig) {
 
 void add_ignore_pattern(ignores *ig, const char* pattern) {
     int i;
+    int pattern_len;
 
     /* Strip off the leading ./ so that matches are more likely. */
     if (strncmp(pattern, "./", 2) == 0) {
         pattern += 2;
     }
 
+    /* Kill trailing whitespace */
+    for (pattern_len = strlen(pattern); pattern_len > 0; pattern--) {
+        if (!isspace(pattern[i])) {
+            break;
+        }
+    }
+
     /* TODO: de-dupe these patterns */
     if (is_fnmatch(pattern)) {
         ig->regexes_len++;
         ig->regexes = ag_realloc(ig->regexes, ig->regexes_len * sizeof(char*));
-        ig->regexes[ig->regexes_len - 1] = ag_strdup(pattern);
+        ig->regexes[ig->regexes_len - 1] = ag_strndup(pattern, pattern_len);
         log_debug("added regex ignore pattern %s", pattern);
     } else {
         /* a balanced binary tree is best for performance, but I'm lazy */
@@ -84,7 +93,7 @@ void add_ignore_pattern(ignores *ig, const char* pattern) {
             }
             ig->names[i] = ig->names[i-1];
         }
-        ig->names[i] = ag_strdup(pattern);
+        ig->names[i] = ag_strndup(pattern, pattern_len);
         log_debug("added literal ignore pattern %s", pattern);
     }
 }
