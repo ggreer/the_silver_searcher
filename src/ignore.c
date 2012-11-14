@@ -77,6 +77,11 @@ void add_ignore_pattern(ignores *ig, const char* pattern) {
         }
     }
 
+    if (pattern_len == 0) {
+        log_debug("Pattern is empty. Not adding any ignores.");
+        return;
+    }
+
     /* TODO: de-dupe these patterns */
     if (is_fnmatch(pattern)) {
         ig->regexes_len++;
