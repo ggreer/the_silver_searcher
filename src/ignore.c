@@ -71,8 +71,8 @@ void add_ignore_pattern(ignores *ig, const char* pattern) {
     }
 
     /* Kill trailing whitespace */
-    for (pattern_len = strlen(pattern); pattern_len > 0; pattern--) {
-        if (!isspace(pattern[i])) {
+    for (pattern_len = strlen(pattern); pattern_len > 0; pattern_len--) {
+        if (!isspace(pattern[pattern_len-1])) {
             break;
         }
     }
