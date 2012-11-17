@@ -18,6 +18,7 @@ const char *colors_line_number = "\e[1;33m"; /* yellow with black background */
 
 void print_path(const char* path, const char sep) {
     log_debug("printing path");
+    path = normalize_path(path);
 
     if (opts.ackmate) {
         fprintf(out_fd, ":%s%c", path, sep);
@@ -31,6 +32,7 @@ void print_path(const char* path, const char sep) {
 }
 
 void print_binary_file_matches(const char* path) {
+    path = normalize_path(path);
     print_file_separator();
     fprintf(out_fd, "Binary file %s matches.\n", path);
 }
@@ -210,4 +212,12 @@ void print_file_separator() {
         fprintf(out_fd, "\n");
     }
     first_file_match = 0;
+}
+
+const char* normalize_path(const char* path) {
+	if (strlen(path) >= 3 && path[0] == '.' && path[1] == '/') {
+		return path + 2;
+	} else {
+		return path;
+	}
 }
