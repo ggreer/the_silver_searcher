@@ -22,39 +22,47 @@ Example: ag -i foo /bar/\n\
 \n\
 Search options:\n\
 \n\
---ackmate: Output results in a format parseable by AckMate.\n\
--a --all-types: Search all files. This doesn't include hidden files, and also doesn't respect any ignore files.\n\
--A --after [LINES]: Print lines before match. Defaults to 2.\n\
--B --before [LINES]: Print lines after match. Defaults to 2.\n\
---[no]break: Print a newline between matches in different files. Enabled by default.\n\
---[no]color: Print color codes in results. Enabled by default.\n\
---column: Print column numbers in results.\n\
--C --context [LINES]: Print lines before and after matches. Defaults to 2.\n\
--D --debug: Ridiculous debugging. Probably not useful.\n\
---depth NUM: Search up to NUM directories deep. Default is 25.\n\
--f --follow: Follow symlinks.\n\
---[no]group: Same as --[no]break --[no]heading\n\
--g PATTERN: Print filenames that match PATTERN\n\
--G, --file-search-regex PATTERN: Only search file names matching PATTERN\n\
+--ackmate               Output results in a format parseable by AckMate.\n\
+-a --all-types          Search all files. This doesn't include hidden files,\n\
+                        and also doesn't respect any ignore files.\n\
+-A --after [LINES]      Print lines before match. Defaults to 2.\n\
+-B --before [LINES]     Print lines after match. Defaults to 2.\n\
+--[no]break             Print a newline between matches in different files.\n\
+                        Enabled by default.\n\
+--[no]color             Print color codes in results. Enabled by default.\n\
+--column                Print column numbers in results.\n\
+-C --context [LINES]    Print lines before and after matches. Defaults to 2.\n\
+-D --debug              Ridiculous debugging. Probably not useful.\n\
+--depth NUM             Search up to NUM directories deep. Default is 25.\n\
+-f --follow             Follow symlinks.\n\
+--[no]group             Same as --[no]break --[no]heading\n\
+-g PATTERN              Print filenames that match PATTERN\n\
+-G, --file-search-regex PATTERN Only search file names matching PATTERN\n\
 --[no]heading\n\
---hidden: Search hidden files. This option obeys ignore files.\n\
--i, --ignore-case: Match case insensitively\n\
---ignore PATTERN: Ignore files/directories matching this pattern. Literal file and directory names are also allowed.\n\
--l --files-with-matches: Only print filenames containing matches, not matching lines.\n\
--L --files-without-matches: Only print filenames that don't contain matches.\n\
--m --max-count NUM: Skip the rest of a file after NUM matches. Default is 10,000.\n\
--p --path-to-agignore STRING: Provide a path to a specific .agignore file\n\
---print-long-lines: Print matches on very long lines (> 2k characters by default)\n\
--Q --literal: Do not parse PATTERN as a regular expression. Try to match it literally.\n\
--s --case-sensitive: Match case sensitively. Enabled by default.\n\
--S --smart-case: Match case sensitively if there are any uppercase letters in PATTERN, or case insensitively otherwise.\n\
---search-binary: Search binary files for matches.\n\
---stats: Print stats (files scanned, time taken, etc)\n\
--t --all-text: Search all text files. This doesn't include hidden files.\n\
--u --unrestricted: Search *all* files. This ignores .agignore, .gitignore, etc. It searches binary and hidden files as well.\n\
--U --skip-vcs-ignores: Ignore VCS ignore files (.gitigore, .hgignore, svn:ignore), but still use .agignore.\n\
+--hidden                Search hidden files. This option obeys ignore files.\n\
+-i, --ignore-case       Match case insensitively\n\
+--ignore PATTERN        Ignore files/directories matching this pattern.\n\
+                        Literal file and directory names are also allowed.\n\
+-l --files-with-matches Only print filenames containing matches, not matching lines.\n\
+-L --files-without-matches\n\
+                        Only print filenames that don't contain matches.\n\
+-m --max-count NUM      Skip the rest of a file after NUM matches. Default is 10,000.\n\
+-p --path-to-agignore STRING\n\
+                        Provide a path to a specific .agignore file\n\
+--print-long-lines      Print matches on very long lines (> 2k characters by default)\n\
+-Q --literal            Do not parse PATTERN as a regular expression.\n\
+-s --case-sensitive     Match case sensitively. Enabled by default.\n\
+-S --smart-case         Match case sensitively if there are any uppercase letters\n\
+                        in PATTERN, or case insensitively otherwise.\n\
+--search-binary         Search binary files for matches.\n\
+--stats                 Print stats (files scanned, time taken, etc)\n\
+-t --all-text           Search all text files. This doesn't include hidden files.\n\
+-u --unrestricted       Search *all* files. This ignores .agignore, .gitignore, etc.\n\
+                        It searches binary and hidden files as well.\n\
+-U --skip-vcs-ignores   Ignore VCS ignore files (.gitigore, .hgignore, svnignore),\n\
+                        but still use .agignore.\n\
 -v --invert-match\n\
--w --word-regexp: Only match whole words.\n\
+-w --word-regexp        Only match whole words.\n\
 \n");
 }
 
