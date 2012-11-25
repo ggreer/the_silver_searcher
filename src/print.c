@@ -215,9 +215,9 @@ void print_file_separator() {
 }
 
 const char* normalize_path(const char* path) {
-	if (strlen(path) >= 3 && path[0] == '.' && path[1] == '/') {
-		return path + 2;
-	} else {
-		return path;
-	}
+    if (strlen(path) >= 3 && path[0] == '.' && path[1] == '/') {
+        return path + 2;
+    } else {
+        return path;
+    }
 }
