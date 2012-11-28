@@ -15,8 +15,8 @@
 void usage() {
     printf("Usage: ag [OPTIONS] PATTERN [PATH]\n\
 \n\
-Recursively search for PATTERN in PATH.\n\
-Like grep or ack, but faster.\n\
+    Recursively search for PATTERN in PATH.\n\
+    Like grep or ack, but faster.\n\
 \n\
 Example: ag -i foo /bar/\n\
 \n\
