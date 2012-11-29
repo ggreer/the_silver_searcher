@@ -11,6 +11,10 @@
 #include "log.h"
 #include "util.h"
 
+const char *colors_path = "\e[1;32m";   /* bold green */
+const char *colors_match = "\e[30;43m"; /* black with yellow background */
+const char *colors_line_number = "\e[1;33m"; /* yellow with black background */
+
 /* TODO: try to obey out_fd? */
 void usage() {
     printf("Usage: ag [OPTIONS] PATTERN [PATH]\n\
@@ -81,9 +85,16 @@ void init_options() {
     opts.print_heading = TRUE;
     opts.print_line_numbers = TRUE;
     opts.recurse_dirs = TRUE;
+    opts.colors_path = ag_strdup(colors_path);
+    opts.colors_match = ag_strdup(colors_match);
+    opts.colors_line_number = ag_strdup(colors_line_number);
 }
 
 void cleanup_options() {
+    free(opts.colors_path);
+    free(opts.colors_match);
+    free(opts.colors_line_number);
+
     if (opts.query) {
         free(opts.query);
     }

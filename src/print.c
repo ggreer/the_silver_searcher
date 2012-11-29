@@ -12,9 +12,6 @@
 int first_file_match = 1;
 
 const char *colors_reset = "\e[0m\e[K";
-const char *colors_path = "\e[1;32m";   /* bold green */
-const char *colors_match = "\e[30;43m"; /* black with yellow background */
-const char *colors_line_number = "\e[1;33m"; /* yellow with black background */
 
 void print_path(const char* path, const char sep) {
     log_debug("printing path");
@@ -24,7 +21,7 @@ void print_path(const char* path, const char sep) {
         fprintf(out_fd, ":%s%c", path, sep);
     } else {
         if (opts.color) {
-            fprintf(out_fd, "%s%s%s%c", colors_path, path, colors_reset, sep);
+            fprintf(out_fd, "%s%s%s%c", opts.colors_path, path, colors_reset, sep);
         } else {
             fprintf(out_fd, "%s%c", path, sep);
         }
@@ -142,7 +139,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                     }
 
                     if (printing_a_match && opts.color) {
-                        fprintf(out_fd, "%s", colors_match);
+                        fprintf(out_fd, "%s", opts.colors_match);
                     }
                     for (j = prev_line_offset; j <= i; j++) {
                         if (j == matches[last_printed_match].end) {
@@ -154,7 +151,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                         }
                         if (j == matches[last_printed_match].start) {
                             if (opts.color) {
-                                fprintf(out_fd, "%s", colors_match);
+                                fprintf(out_fd, "%s", opts.colors_match);
                             }
                             printing_a_match = TRUE;
                         }
@@ -200,7 +197,7 @@ void print_line_number(const int line, const char sep) {
     log_debug("printing line number");
 
     if (opts.color) {
-        fprintf(out_fd, "%s%i%s%c", colors_line_number, line, colors_reset, sep);
+        fprintf(out_fd, "%s%i%s%c", opts.colors_line_number, line, colors_reset, sep);
     } else {
         fprintf(out_fd, "%i%c", line, sep);
     }
