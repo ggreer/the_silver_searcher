@@ -321,13 +321,13 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                     opts.workers = atoi(optarg);
                     break;
                 } else if (strcmp(longopts[opt_index].name, "color-line-number") == 0) {
-                    opts.color_line_number = optarg;
+                    ag_asprintf(&opts.color_line_number, "\e%s", optarg);
                     break;
                 } else if (strcmp(longopts[opt_index].name, "color-match") == 0) {
-                    opts.color_match = optarg;
+                    ag_asprintf(&opts.color_match, "\e%s", optarg);
                     break;
                 } else if (strcmp(longopts[opt_index].name, "color-path") == 0) {
-                    opts.color_path = optarg;
+                    ag_asprintf(&opts.color_path, "\e%s", optarg);
                     break;
                 }
 
