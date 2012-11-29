@@ -1,21 +1,21 @@
 # The Silver Searcher #
 
-An attempt to make something better than ack, which itself is better than grep.
+An attempt to make something better than `ack` (which itself is better than `grep`).
 
 ## Why use Ag? ##
 
-* It searches through code about 3x-5x faster than Ack.
-* It ignores files matched by patterns in your .gitignore and .hgignore.
-* If there are files in your source repo that you don't want to search, just add their patterns to a .agignore file. \*cough\* extern \*cough\*
-* The binary name is 33% shorter than Ack!
+* It searches code about 3–5× faster than `ack`.
+* It ignores file patterns from your `.gitignore` and `.hgignore`.
+* If there are files in your source repo you don't want to search, just add their patterns to a `.agignore` file. \*cough\* extern \*cough\*
+* The command name is 33% shorter than `ack`!
 
 ## How is it so fast? ##
 
 * Searching for literals (no regex) uses [Boyer-Moore-Horspool strstr](http://en.wikipedia.org/wiki/Boyer%E2%80%93Moore%E2%80%93Horspool_algorithm).
-* Files are mmap()ed instead of read into a buffer.
+* Files are `mmap()`ed instead of read into a buffer.
 * If you're building with PCRE 8.21 or greater, regex searches use [the JIT compiler](http://sljit.sourceforge.net/pcre.html).
-* Ag calls pcre_study() before executing the regex on a jillion files.
-* Instead of calling fnmatch() on every pattern in your ignore files, non-regex patterns are loaded into an array and binary searched.
+* Ag calls `pcre_study()` before executing the regex on a jillion files.
+* Instead of calling `fnmatch()` on every pattern in your ignore files, non-regex patterns are loaded into an array and binary searched.
 * Ag uses [Pthreads](http://en.wikipedia.org/wiki/POSIX_Threads) to take advantage of multiple CPU cores and search files in parallel.
 
 [This blog post](http://geoff.greer.fm/2012/01/23/making-programs-faster-profiling/) gives an idea of how I go about improving performance.
