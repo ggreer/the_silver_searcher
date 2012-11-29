@@ -25,6 +25,9 @@ typedef struct {
     pcre *file_search_regex;
     pcre_extra *file_search_regex_extra;
     int color;
+    char *color_line_number;
+    char *color_match;
+    char *color_path;
     int column;
     int context;
     int follow_symlinks;

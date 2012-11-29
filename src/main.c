@@ -137,6 +137,11 @@ int main(int argc, char **argv) {
     pthread_mutex_destroy(&print_mtx);
     cleanup_ignore(root_ignores);
     free(workers);
+    for (i = 0; paths[i] != NULL; i++) {
+        free(paths[i]);
+        free(base_paths[i]);
+    }
+    free(base_paths);
     free(paths);
     return 0;
 }
