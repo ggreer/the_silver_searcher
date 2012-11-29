@@ -322,15 +322,15 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                     break;
                 } else if (strcmp(longopts[opt_index].name, "color-line-number") == 0) {
                     free(opts.color_line_number);
-                    ag_asprintf(&opts.color_line_number, "\e%s", optarg);
+                    ag_asprintf(&opts.color_line_number, "\e[%sm", optarg);
                     break;
                 } else if (strcmp(longopts[opt_index].name, "color-match") == 0) {
                     free(opts.color_match);
-                    ag_asprintf(&opts.color_match, "\e%s", optarg);
+                    ag_asprintf(&opts.color_match, "\e[%sm", optarg);
                     break;
                 } else if (strcmp(longopts[opt_index].name, "color-path") == 0) {
                     free(opts.color_path);
-                    ag_asprintf(&opts.color_path, "\e%s", optarg);
+                    ag_asprintf(&opts.color_path, "\e[%sm", optarg);
                     break;
                 }
 
