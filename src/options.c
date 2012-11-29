@@ -11,9 +11,9 @@
 #include "log.h"
 #include "util.h"
 
-const char *color_path = "\e[1;32m";   /* bold green */
-const char *color_match = "\e[30;43m"; /* black with yellow background */
 const char *color_line_number = "\e[1;33m"; /* yellow with black background */
+const char *color_match = "\e[30;43m"; /* black with yellow background */
+const char *color_path = "\e[1;32m";   /* bold green */
 
 /* TODO: try to obey out_fd? */
 void usage() {
