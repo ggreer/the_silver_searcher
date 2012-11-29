@@ -142,20 +142,18 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                         fprintf(out_fd, "%s", opts.color_match);
                     }
                     for (j = prev_line_offset; j <= i; j++) {
-                        if (last_printed_match < matches_len) {
-                            if (j == matches[last_printed_match].end) {
-                                if (opts.color) {
-                                    fprintf(out_fd, "%s", color_reset);
-                                }
-                                printing_a_match = FALSE;
-                                last_printed_match++;
+                        if (j == matches[last_printed_match].end && last_printed_match < matches_len) {
+                            if (opts.color) {
+                                fprintf(out_fd, "%s", color_reset);
                             }
-                            if (j == matches[last_printed_match].start) {
-                                if (opts.color) {
-                                    fprintf(out_fd, "%s", opts.color_match);
-                                }
-                                printing_a_match = TRUE;
+                            printing_a_match = FALSE;
+                            last_printed_match++;
+                        }
+                        if (j == matches[last_printed_match].start && last_printed_match < matches_len) {
+                            if (opts.color) {
+                                fprintf(out_fd, "%s", opts.color_match);
                             }
+                            printing_a_match = TRUE;
                         }
                         fputc(buf[j], out_fd);
                     }
