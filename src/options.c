@@ -11,9 +11,9 @@
 #include "log.h"
 #include "util.h"
 
-const char *colors_path = "\e[1;32m";   /* bold green */
-const char *colors_match = "\e[30;43m"; /* black with yellow background */
-const char *colors_line_number = "\e[1;33m"; /* yellow with black background */
+const char *color_path = "\e[1;32m";   /* bold green */
+const char *color_match = "\e[30;43m"; /* black with yellow background */
+const char *color_line_number = "\e[1;33m"; /* yellow with black background */
 
 /* TODO: try to obey out_fd? */
 void usage() {
@@ -85,15 +85,15 @@ void init_options() {
     opts.print_heading = TRUE;
     opts.print_line_numbers = TRUE;
     opts.recurse_dirs = TRUE;
-    opts.colors_path = ag_strdup(colors_path);
-    opts.colors_match = ag_strdup(colors_match);
-    opts.colors_line_number = ag_strdup(colors_line_number);
+    opts.color_path = ag_strdup(color_path);
+    opts.color_match = ag_strdup(color_match);
+    opts.color_line_number = ag_strdup(color_line_number);
 }
 
 void cleanup_options() {
-    free(opts.colors_path);
-    free(opts.colors_match);
-    free(opts.colors_line_number);
+    free(opts.color_path);
+    free(opts.color_match);
+    free(opts.color_line_number);
 
     if (opts.query) {
         free(opts.query);
@@ -145,6 +145,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "break", no_argument, &opts.print_break, 1 },
         { "case-sensitive", no_argument, NULL, 's' },
         { "color", no_argument, &opts.color, 1 },
+        { "color-path", required_argument, NULL, 0 },
+        { "color-match", required_argument, NULL, 0 },
+        { "color-line-number", required_argument, NULL, 0 },
         { "column", no_argument, &opts.column, 1 },
         { "context", optional_argument, NULL, 'C' },
         { "debug", no_argument, NULL, 'D' },
@@ -317,7 +320,17 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 } else if (strcmp(longopts[opt_index].name, "workers") == 0) {
                     opts.workers = atoi(optarg);
                     break;
+                } else if (strcmp(longopts[opt_index].name, "color-line-number") == 0) {
+                    opts.color_line_number = optarg;
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "color-match") == 0) {
+                    opts.color_match = optarg;
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "color-path") == 0) {
+                    opts.color_path = optarg;
+                    break;
                 }
+
                 /* Continue to usage if we don't recognize the option */
                 if (longopts[opt_index].flag != 0) {
                     break;
