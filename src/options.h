@@ -65,8 +65,9 @@ typedef struct {
 cli_options opts;
 
 void init_options();
-void parse_options(int argc, char **argv, char **base_paths[], char **paths[]);
+void parse_options(int argc0, char **argv0, char **base_paths[], char **paths[]);
 void cleanup_options();
+void ag_options(int argc0, char **argv0, int *argc, char ***argv);
 
 void usage();
 

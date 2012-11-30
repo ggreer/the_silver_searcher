@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -120,7 +121,42 @@ void cleanup_options() {
     }
 }
 
-void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
+void ag_options(int argc0, char **argv0, int *argc, char ***argv) {
+    const char *ag_options = getenv("AG_OPTIONS");
+    char *copy;
+    char *s;
+    int i;
+
+    *argc = 0;
+    *argv = NULL;
+
+    /* first, argv[0] */
+    *argv = realloc(*argv, sizeof(char*) * ((*argc) + 1));
+    (*argv)[(*argc)++] = ag_strdup(argv0[0]);
+    --argc0;
+    ++argv0;
+
+    /* ag_options */
+    if (ag_options) {
+        copy = ag_strdup(ag_options);
+        s = strtok(copy, " \t\r\n");
+        while (s) {
+            /* grow array, append str and advance */
+            *argv = realloc(*argv, sizeof(char*) * ((*argc) + 1));
+            (*argv)[(*argc)++] = ag_strdup(s);
+            s = strtok(NULL, " \t\r\n");
+        }
+        free(copy);
+    }
+
+    /* now the rest of argv */
+    *argv = realloc(*argv, sizeof(char*) * ((*argc) + argc0));
+    for (i = 0; i < argc0; ++i) {
+        (*argv)[(*argc)++] = ag_strdup(argv0[i]);
+    }
+}
+
+void parse_options(int argc0, char **argv0, char **base_paths[], char **paths[]) {
     int ch;
     int i;
     int path_len = 0;
@@ -132,6 +168,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     const char *home_dir = getenv("HOME");
     char *ignore_file_path = NULL;
     int needs_query = 1;
+    int argc;
+    char **argv = NULL;
 
     init_options();
 
@@ -189,6 +227,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "workers", required_argument, NULL, 0 },
         { NULL, 0, NULL, 0 }
     };
+
+    /* prepend AG_OPTIONS to argc/argv, then append argv0 */
+    ag_options(argc0, argv0, &argc, &argv);
 
     if (argc < 2) {
         usage();
