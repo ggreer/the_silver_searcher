@@ -66,7 +66,7 @@ void add_ignore_pattern(ignores *ig, const char* pattern) {
     int pattern_len;
 
     /* Skip leading / — which, in .gitignore, doesn't mean filesystem root. */
-    if (strncmp(pattern, "/", 1) == 0) {
+    if ('/' == pattern[0]) {
         pattern += 1;
     }
 
