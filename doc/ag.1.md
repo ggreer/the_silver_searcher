@@ -14,7 +14,7 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `--ackmate`:
     Output results in a format parseable by [AckMate](https://github.com/protocool/AckMate).
   * `-a --all-types`:
-    Search all files. This doesn't include hidden files.
+    Search all files. This doesn't include hidden files, and also doesn't respect any ignore files
   * `-A --after [LINES]`:
     Print lines before match. Defaults to 2.
   * `-B --before [LINES]`:
@@ -29,32 +29,61 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Print lines before and after matches. Defaults to 2.
   * `-D --debug`:
     Output ridiculous amounts of debugging info. Probably not useful.
+  * `--depth NUM`:
+    Search up to NUM directories deep. Default is 25.
   * `-f --follow`:
     Follow symlinks.
   * `--[no]group`
+  * `-g PATTERN`:
+    Print filenames matching PATTERN.
   * `-G`, `--file-search-regex PATTERN`:
     Only search filenames matching PATTERN.
-  * `-i`, `--ignore-case`
   * `--[no]heading`
+  * `--hidden`:
+    Search hidden files. This option obeys ignore files.
+  * `--ignore PATTERN`:
+    Ignore files/directories matching this pattern. Literal file and directory names are also allowed.
+  * `-i --ignore-case`:
+    Match case insensitively.
   * `-l --files-with-matches`:
     Only print filenames containing matches, not matching lines.
-  * `--literal`:
-    Do not parse PATTERN as a regular expression. Try to match it literally.
+  * `-L --files-without-matches`:
+    Only print filenames that don't contain matches.
   * `-m --max-count NUM`:
-    Stop searching files after NUM matches.
+    Skip the rest of a file after NUM matches. Default is 10,000.
+  * `-p --path-to-agignore STRING`:
+    Provide a path to a specific .agignore file.
+  * `--pager COMMAND`:
+    Use a pager such as less. Use `--nopager` to override. This option is also ignored if output is piped to another program.
   * `--print-long-lines`:
     Print matches on very long lines (> 2k characters by default)
+  * `-Q --literal`:
+    Do not parse PATTERN as a regular expression. Try to match it literally.
+  * `-s --case-sensitive`:
+    Match case sensitively. Enabled by default.
+  * `-S --smart-case`:
+    Match case sensitively if there are any uppercase letters in PATTERN, or case insensitively otherwise.
   * `--search-binary`:
     Search binary files for matches.
   * `--stats`:
     Print stats (files scanned, time taken, etc)
+  * `-t --all-text`:
+    Search all text files. This doesn't include hidden files.
   * `-u --unrestricted`:
     Search *all* files. This ignores .agignore, .gitignore, etc. It searches binary and hidden files as well.
+  * `-U --skip-vcs-ignores`:
+    Ignore VCS ignore files (.gitigore, .hgignore, svn:ignore), but still use .agignore.
   * `-v --invert-match`
+  * `-w --word-regexp`:
+    Only match whole words.
 
 ## IGNORING FILES
 
-Ag will ignore files matched by patterns in .gitignore, .hgignore, or .aginore. Ag also ignores binary files by default.
+By default, ag will ignore files matched by patterns in .gitignore, .hgignore, or .agignore. These files can be anywhere in the directories being searched. Ag also ignores files matched by the svn:ignore property in subversion repositories. Finally, ag looks in $HOME/.agignore for ignore patterns. Binary files are ignored by default as well.
+
+If you want to ignore .gitignore, .hgignore, and svn:ignore but still take .agignore into account, use `-U`.
+
+Use the `-a` option to search all text files, and `-u` to search *all* files.
 
 ## EXAMPLES
 

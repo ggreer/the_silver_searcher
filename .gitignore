@@ -2,11 +2,14 @@
 *.o
 .deps
 .dirstamp
+.DS_Store
 aclocal.m4
 ag
 autom4te.cache
 cachegrind.out.*
 callgrind.out.*
+clang_output_*
+compile
 config.log
 config.status
 configure
@@ -18,3 +21,4 @@ Makefile.in
 missing
 src/config.h*
 stamp-h1
+*.plist

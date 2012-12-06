@@ -2,6 +2,7 @@
 #include <stdarg.h>
 
 #include "log.h"
+#include "util.h"
 
 static enum log_level log_threshold = LOG_LEVEL_ERR;
 
@@ -9,7 +10,6 @@ void set_log_level(enum log_level threshold) {
     log_threshold = threshold;
 }
 
-/* Maybe these should be macros? */
 void log_debug(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
@@ -43,17 +43,17 @@ void vplog(const unsigned int level, const char *fmt, va_list args) {
         return;
     }
 
-    FILE *stream = stdout;
+    FILE *stream = out_fd;
 
     switch(level) {
         case LOG_LEVEL_DEBUG:
-            printf("DEBUG: ");
+            fprintf(stream, "DEBUG: ");
         break;
         case LOG_LEVEL_MSG:
-            printf("MSG: ");
+            fprintf(stream, "MSG: ");
         break;
         case LOG_LEVEL_WARN:
-            printf("WARN: ");
+            fprintf(stream, "WARN: ");
         break;
         case LOG_LEVEL_ERR:
             stream = stderr;

@@ -1,8 +1,8 @@
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS}
 
 bin_PROGRAMS = ag
-ag_SOURCES = src/ignore.c src/log.c src/options.c src/print.c src/search.c src/util.c src/main.c
-ag_LDADD = ${PCRE_LIBS}
+ag_SOURCES = src/ignore.c src/log.c src/options.c src/print.c src/scandir.c src/search.c src/util.c src/main.c
+ag_LDADD = ${PCRE_LIBS} -lpthread
 
 man_MANS = doc/ag.1
 

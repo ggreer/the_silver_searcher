@@ -1,16 +1,21 @@
+#include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <xlocale.h>
 
 #include "config.h"
+#include "ignore.h"
 #include "options.h"
 #include "log.h"
 #include "util.h"
 
-/* TODO: printf()ing this is not going to scale */
+const char *color_line_number = "\e[1;33m"; /* yellow with black background */
+const char *color_match = "\e[30;43m"; /* black with yellow background */
+const char *color_path = "\e[1;32m";   /* bold green */
+
+/* TODO: try to obey out_fd? */
 void usage() {
     printf("Usage: ag [OPTIONS] PATTERN [PATH]\n\
 \n\
@@ -21,26 +26,48 @@ Example: ag -i foo /bar/\n\
 \n\
 Search options:\n\
 \n\
---ackmate: Output results in a format parseable by AckMate.\n\
--A --after [LINES]: Print lines before match. Defaults to 2.\n\
--B --before [LINES]: Print lines after match. Defaults to 2.\n\
---[no]break: Print a newline between matches in different files. Enabled by default.\n\
---[no]color: Print color codes in results. Enabled by default.\n\
---column: Print column numbers in results.\n\
--C --context [LINES]: Print lines before and after matches. Defaults to 2.\n\
--D --debug: Ridiculous debugging. Probably not useful.\n\
--f --follow: Follow symlinks.\n\
---[no]group: Same as --[no]break --[no]heading\n\
--G, --file-search-regex\n\
--i, --ignore-case\n\
---invert-match\n\
+--ackmate               Print results in AckMate-parseable format\n\
+-a --all-types          Search all files (doesn't include hidden files\n\
+                        or patterns from ignore files)\n\
+-A --after [LINES]      Print lines before match (Default: 2)\n\
+-B --before [LINES]     Print lines after match (Default: 2)\n\
+--[no]break             Print newlines between matches in different files\n\
+                        (Enabled by default)\n\
+--[no]color             Print color codes in results (Enabled by default)\n\
+--column                Print column numbers in results\n\
+-C --context [LINES]    Print lines before and after matches (Default: 2)\n\
+-D --debug              Ridiculous debugging (probably not useful)\n\
+--depth NUM             Search up to NUM directories deep (Default: 25)\n\
+-f --follow             Follow symlinks\n\
+--[no]group             Same as --[no]break --[no]heading\n\
+-g PATTERN              Print filenames matching PATTERN\n\
+-G, --file-search-regex PATTERN Limit search to filenames matching PATTERN\n\
 --[no]heading\n\
--l --files-with-matches: Only print filenames containing matches, not matching lines.\n\
---literal: Do not parse PATTERN as a regular expression. Try to match it literally.\n\
--m --max-count NUM: Stop searching files after NUM matches.\n\
---print-long-lines: Print matches on very long lines (> 2k characters by default)\n\
---search-binary: Search binary files for matches.\n\
---stats: Print stats (files scanned, time taken, etc)\n\
+--hidden                Search hidden files (obeys .*ignore files)\n\
+-i, --ignore-case       Match case insensitively\n\
+--ignore PATTERN        Ignore files/directories matching PATTERN\n\
+                        (literal file/directory names also allowed)\n\
+-l --files-with-matches Only print filenames that contain matches\n\
+                        (don't print the matching lines)\n\
+-L --files-without-matches\n\
+                        Only print filenames that don't contain matches\n\
+-m --max-count NUM      Skip the rest of a file after NUM matches (Default: 10,000)\n\
+-p --path-to-agignore STRING\n\
+                        Use .agignore file at STRING\n\
+--print-long-lines      Print matches on very long lines (Default: >2k characters)\n\
+-Q --literal            Don't parse PATTERN as a regular expression\n\
+-s --case-sensitive     Match case sensitively (Enabled by default)\n\
+-S --smart-case         Match case insensitively unless PATTERN contains\n\
+                        uppercase characters\n\
+--search-binary         Search binary files for matches\n\
+--stats                 Print stats (files scanned, time taken, etc.)\n\
+-t --all-text           Search all text files (doesn't include hidden files)\n\
+-u --unrestricted       Search all files (ignore .agignore, .gitignore, etc.;\n\
+                        searches binary and hidden files as well)\n\
+-U --skip-vcs-ignores   Ignore VCS ignore files\n\
+                        (.gitigore, .hgignore, .svnignore; still obey .agignore)\n\
+-v --invert-match\n\
+-w --word-regexp        Only match whole words\n\
 \n");
 }
 
@@ -49,74 +76,117 @@ void print_version() {
 }
 
 void init_options() {
-    memset(&opts, 0, sizeof(&opts));
+    memset(&opts, 0, sizeof(opts));
     opts.casing = CASE_SENSITIVE;
     opts.color = TRUE;
+    opts.max_matches_per_file = 10000;
+    opts.max_search_depth = 25;
     opts.print_break = TRUE;
     opts.print_heading = TRUE;
     opts.print_line_numbers = TRUE;
     opts.recurse_dirs = TRUE;
+    opts.color_path = ag_strdup(color_path);
+    opts.color_match = ag_strdup(color_match);
+    opts.color_line_number = ag_strdup(color_line_number);
 }
 
 void cleanup_options() {
+    free(opts.color_path);
+    free(opts.color_match);
+    free(opts.color_line_number);
+
+    if (opts.query) {
+        free(opts.query);
+    }
+
+    pcre_free(opts.re);
+    if (opts.re_extra) {
+         /* Using pcre_free_study on pcre_extra* can segfault on some versions of PCRE */
+        pcre_free(opts.re_extra);
+    }
+
     if (opts.ackmate_dir_filter) {
         pcre_free(opts.ackmate_dir_filter);
-        pcre_free(opts.ackmate_dir_filter_extra); /* Using pcre_free_study here segfaults on some versions of PCRE */
+    }
+    if (opts.ackmate_dir_filter_extra) {
+        pcre_free(opts.ackmate_dir_filter_extra);
     }
 
     if (opts.file_search_regex) {
         pcre_free(opts.file_search_regex);
-        pcre_free(opts.file_search_regex_extra); /* Using pcre_free_study here segfaults on some versions of PCRE */
+    }
+    if (opts.file_search_regex_extra) {
+        pcre_free(opts.file_search_regex_extra);
     }
 }
 
-void parse_options(int argc, char **argv, char **query, char **path) {
+void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     int ch;
-    const char *pcre_err = NULL;
-    int pcre_err_offset = 0;
+    int i;
     int path_len = 0;
     int useless = 0;
     int group = 1;
     int help = 0;
     int version = 0;
     int opt_index = 0;
+    const char *home_dir = getenv("HOME");
+    char *ignore_file_path = NULL;
+    int needs_query = 1;
 
     init_options();
 
     struct option longopts[] = {
-        { "ackmate", no_argument, &(opts.ackmate), 1 },
+        { "ackmate", no_argument, &opts.ackmate, 1 },
         { "ackmate-dir-filter", required_argument, NULL, 0 },
         { "after", required_argument, NULL, 'A' },
+        { "all-text", no_argument, NULL, 't' },
         { "all-types", no_argument, NULL, 'a' },
         { "before", required_argument, NULL, 'B' },
-        { "break", no_argument, &(opts.print_break), 1 },
-        { "nobreak", no_argument, &(opts.print_break), 0 },
-        { "color", no_argument, &(opts.color), 1 },
-        { "nocolor", no_argument, &(opts.color), 0 },
-        { "column", no_argument, &(opts.column), 1 },
-        { "context", optional_argument, &(opts.context), 2 },
+        { "break", no_argument, &opts.print_break, 1 },
+        { "case-sensitive", no_argument, NULL, 's' },
+        { "color", no_argument, &opts.color, 1 },
+        { "color-path", required_argument, NULL, 0 },
+        { "color-match", required_argument, NULL, 0 },
+        { "color-line-number", required_argument, NULL, 0 },
+        { "column", no_argument, &opts.column, 1 },
+        { "context", optional_argument, NULL, 'C' },
         { "debug", no_argument, NULL, 'D' },
-        { "follow", no_argument, &(opts.follow_symlinks), 1 },
+        { "depth", required_argument, NULL, 0 },
         { "file-search-regex", required_argument, NULL, 'G' },
-        { "group", no_argument, &(group), 1 },
-        { "nogroup", no_argument, &(group), 0 },
-        { "invert-match", no_argument, &(opts.invert_match), 1 },
-        { "nofollow", no_argument, &(opts.follow_symlinks), 0 },
-        { "heading", no_argument, &(opts.print_heading), 1 },
-        { "noheading", no_argument, &(opts.print_heading), 0 },
-        { "no-recurse", no_argument, NULL, 'n' },
-        { "help", no_argument, &help, 1 },
-        { "ignore-case", no_argument, NULL, 'i' },
         { "files-with-matches", no_argument, NULL, 'l' },
-        { "literal", no_argument, &(opts.literal), 1 },
+        { "files-without-matches", no_argument, NULL, 'L' },
+        { "follow", no_argument, &opts.follow_symlinks, 1 },
+        { "group", no_argument, &group, 1 },
+        { "heading", no_argument, &opts.print_heading, 1 },
+        { "help", no_argument, NULL, 'h' },
+        { "hidden", no_argument, &opts.search_hidden_files, 1 },
+        { "ignore", required_argument, NULL, 0 },
+        { "ignore-case", no_argument, NULL, 'i' },
+        { "invert-match", no_argument, &opts.invert_match, 1 },
+        { "literal", no_argument, NULL, 'Q' },
         { "match", no_argument, &useless, 0 },
-        { "print-long-lines", no_argument, &(opts.print_long_lines), 1 },
-        { "search-binary", no_argument, &(opts.search_binary_files), 1 },
-        { "smart-case", no_argument, &useless, 0 },
-        { "nosmart-case", no_argument, &useless, 0 },
-        { "stats", no_argument, &(opts.stats), 1 },
+        { "max-count", required_argument, NULL, 'm' },
+        { "no-recurse", no_argument, NULL, 'n' },
+        { "nobreak", no_argument, &opts.print_break, 0 },
+        { "nocolor", no_argument, &opts.color, 0 },
+        { "nofollow", no_argument, &opts.follow_symlinks, 0 },
+        { "nogroup", no_argument, &group, 0 },
+        { "noheading", no_argument, &opts.print_heading, 0 },
+        { "nopager", no_argument, NULL, 0 },
+        { "pager", required_argument, NULL, 0 },
+        { "parallel", no_argument, &opts.parallel, 1},
+        { "path-to-agignore", required_argument, NULL, 'p'},
+        { "print-long-lines", no_argument, &opts.print_long_lines, 1 },
+        { "recurse", no_argument, NULL, 'r' },
+        { "search-binary", no_argument, &opts.search_binary_files, 1 },
+        { "search-files", no_argument, &opts.search_stream, 0 },
+        { "skip-vcs-ignores", no_argument, NULL, 'U' },
+        { "smart-case", no_argument, NULL, 'S' },
+        { "stats", no_argument, &opts.stats, 1 },
         { "unrestricted", no_argument, NULL, 'u' },
         { "version", no_argument, &version, 1 },
+        { "word-regexp", no_argument, NULL, 'w' },
+        { "workers", required_argument, NULL, 0 },
         { NULL, 0, NULL, 0 }
     };
 
@@ -125,8 +195,9 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         exit(1);
     }
 
+    /* stdin isn't a tty. something's probably being piped to ag */
     if (!isatty(fileno(stdin))) {
-        opts.search_stdin = 1;
+        opts.search_stream = 1;
     }
 
     /* If we're not outputting to a terminal. change output to:
@@ -138,8 +209,7 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         group = 0;
     }
 
-    /* TODO: check for insane params. nobody is going to want 5000000 lines of context, for example (on second thought, somebody might?) */
-    while ((ch = getopt_long(argc, argv, "A:aB:C:G:DfilnvVu", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:np:QRrSsvVtuUw", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 opts.after = atoi(optarg);
@@ -152,26 +222,29 @@ void parse_options(int argc, char **argv, char **query, char **path) {
                 opts.before = atoi(optarg);
                 break;
             case 'C':
-                opts.context = atoi(optarg);
+                if (optarg) {
+                    opts.context = atoi(optarg);
+                    if (opts.context == 0 && errno == EINVAL) {
+                        /* This arg must be the search string instead of the context length */
+                        optind--;
+                        opts.context = DEFAULT_CONTEXT_LEN;
+                    }
+                } else {
+                    opts.context = DEFAULT_CONTEXT_LEN;
+                }
                 break;
             case 'D':
                 set_log_level(LOG_LEVEL_DEBUG);
                 break;
             case 'f':
-                opts.print_filename_only = 1;
+                opts.follow_symlinks = 1;
                 break;
+            case 'g':
+                needs_query = 0;
+                opts.match_files = 1;
+                /* Fall through and build regex */
             case 'G':
-                opts.file_search_regex = pcre_compile(optarg, 0, &pcre_err, &pcre_err_offset, NULL);
-                if (opts.file_search_regex == NULL) {
-                  log_err("pcre_compile of file-search-regex failed at position %i. Error: %s", pcre_err_offset, pcre_err);
-                  exit(1);
-                }
-
-                opts.file_search_regex_extra = pcre_study(opts.file_search_regex, 0, &pcre_err);
-                if (opts.file_search_regex_extra == NULL) {
-                  log_err("pcre_study of file-search-regex failed. Error: %s", pcre_err);
-                  exit(1);
-                }
+                compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, optarg, 0, 0);
                 break;
             case 'h':
                 help = 1;
@@ -179,15 +252,44 @@ void parse_options(int argc, char **argv, char **query, char **path) {
             case 'i':
                 opts.casing = CASE_INSENSITIVE;
                 break;
+            case 'L':
+                opts.invert_match = 1;
+                /* fall through */
             case 'l':
                 opts.print_filename_only = 1;
+                break;
+            case 'm':
+                opts.max_matches_per_file = atoi(optarg);
                 break;
             case 'n':
                 opts.recurse_dirs = 0;
                 break;
+            case 'p':
+                opts.path_to_agignore = optarg;
+                break;
+            case 'Q':
+                opts.literal = 1;
+                break;
+            case 'R':
+            case 'r':
+                opts.recurse_dirs = 1;
+                break;
+            case 'S':
+                opts.casing = CASE_SMART;
+                break;
+            case 's':
+                opts.casing = CASE_SENSITIVE;
+                break;
+            case 't':
+                opts.search_all_files = 1;
+                break;
             case 'u':
                 opts.search_binary_files = 1;
-                opts.search_unrestricted = 1;
+                opts.search_all_files = 1;
+                opts.search_hidden_files = 1;
+                break;
+            case 'U':
+                opts.skip_vcs_ignores = 1;
                 break;
             case 'v':
                 opts.invert_match = 1;
@@ -195,21 +297,43 @@ void parse_options(int argc, char **argv, char **query, char **path) {
             case 'V':
                 version = 1;
                 break;
+            case 'w':
+                opts.word_regexp = 1;
+                break;
             case 0: /* Long option */
-                if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0)
-                {
-                    opts.ackmate_dir_filter = pcre_compile(optarg, 0, &pcre_err, &pcre_err_offset, NULL);
-                    if (opts.ackmate_dir_filter == NULL) {
-                        log_err("pcre_compile of ackmate-dir-filter failed at position %i. Error: %s", pcre_err_offset, pcre_err);
-                        exit(1);
-                    }
-                    opts.ackmate_dir_filter_extra = pcre_study(opts.ackmate_dir_filter, 0, &pcre_err);
-                    if (opts.ackmate_dir_filter_extra == NULL) {
-                      log_err("pcre_study of ackmate-dir-filter failed. Error: %s", pcre_err);
-                      exit(1);
-                    }
+                if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0) {
+                    compile_study(&opts.ackmate_dir_filter, &opts.ackmate_dir_filter_extra, optarg, 0, 0);
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "depth") == 0) {
+                    opts.max_search_depth = atoi(optarg);
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "ignore") == 0) {
+                    add_ignore_pattern(root_ignores, optarg);
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "nopager") == 0) {
+                    out_fd = stdout;
+                    opts.pager = NULL;
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "pager") == 0) {
+                    opts.pager = optarg;
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "workers") == 0) {
+                    opts.workers = atoi(optarg);
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "color-line-number") == 0) {
+                    free(opts.color_line_number);
+                    ag_asprintf(&opts.color_line_number, "\e[%sm", optarg);
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "color-match") == 0) {
+                    free(opts.color_match);
+                    ag_asprintf(&opts.color_match, "\e[%sm", optarg);
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "color-path") == 0) {
+                    free(opts.color_path);
+                    ag_asprintf(&opts.color_path, "\e[%sm", optarg);
                     break;
                 }
+
                 /* Continue to usage if we don't recognize the option */
                 if (longopts[opt_index].flag != 0) {
                     break;
@@ -224,6 +348,14 @@ void parse_options(int argc, char **argv, char **query, char **path) {
     argc -= optind;
     argv += optind;
 
+    if (opts.pager) {
+        out_fd = popen(opts.pager, "w");
+        if (!out_fd) {
+            perror("Failed to run pager");
+            exit(1);
+        }
+    }
+
     if (help) {
         usage();
         exit(0);
@@ -234,9 +366,16 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         exit(0);
     }
 
-    if (argc == 0) {
+    if (needs_query && argc == 0) {
         log_err("What do you want to search for?");
         exit(1);
+    }
+
+    if (home_dir && !opts.search_all_files) {
+        log_debug("Found user's home dir: %s", home_dir);
+        ag_asprintf(&ignore_file_path, "%s/%s", home_dir, ignore_pattern_files[0]);
+        load_ignore_patterns(root_ignores, ignore_file_path);
+        free(ignore_file_path);
     }
 
     if (opts.context > 0) {
@@ -248,43 +387,78 @@ void parse_options(int argc, char **argv, char **query, char **path) {
         opts.color = 0;
         opts.print_break = 1;
         group = 1;
-        opts.search_stdin = 0;
+        opts.search_stream = 0;
+    }
+
+    if (opts.parallel) {
+        opts.search_stream = 0;
+    }
+
+    if (opts.print_heading == 0 || opts.print_break == 0) {
+        goto skip_group;
     }
 
     if (group) {
         opts.print_heading = 1;
         opts.print_break = 1;
-    }
-    else {
+    } else {
         opts.print_heading = 0;
         opts.print_break = 0;
     }
 
-    if (opts.search_stdin) {
-        opts.print_break = 1;
+    skip_group:;
+
+    if (opts.search_stream) {
+        opts.print_break = 0;
         opts.print_heading = 0;
         opts.print_line_numbers = 0;
     }
 
-    opts.query = strdup(argv[0]);
+    if (needs_query) {
+        opts.query = ag_strdup(argv[0]);
+        argc--;
+        argv++;
+    } else {
+        opts.query = ag_strdup(".");
+    }
     opts.query_len = strlen(opts.query);
 
-    *query = opts.query;
+    log_debug("Query is %s", opts.query);
 
     if (opts.query_len == 0) {
         log_err("Error: No query. What do you want to search for?");
         exit(1);
     }
 
-    if (argc > 1) {
-      *path = strdup(argv[1]);
-      path_len = strlen(*path);
-      /* kill trailing slash */
-      if (path_len > 0 && (*path)[path_len - 1] == '/') {
-        (*path)[path_len - 1] = '\0';
-      }
+    if (!is_regex(opts.query)) {
+        opts.literal = 1;
     }
-    else {
-      *path = strdup(".");
+
+    char *path = NULL;
+    opts.paths_len = argc;
+    if (argc > 0) {
+        *paths = ag_calloc(sizeof(char*), argc + 1);
+        *base_paths = ag_calloc(sizeof(char*), argc + 1);
+        for (i = 0; i < argc; i++) {
+            path = ag_strdup(argv[i]);
+            path_len = strlen(path);
+            /* kill trailing slash */
+            if (path_len > 1 && path[path_len - 1] == '/') {
+              path[path_len - 1] = '\0';
+            }
+            (*paths)[i] = path;
+            (*base_paths)[i] = realpath(path, NULL);
+        }
+        /* Make sure we search these paths instead of stdin. */
+        opts.search_stream = 0;
+    } else {
+        path = ag_strdup(".");
+        *paths = ag_malloc(sizeof(char*) * 2);
+        *base_paths = ag_malloc(sizeof(char*) * 2);
+        (*paths)[0] = path;
+        (*base_paths)[0] = realpath(path, NULL);
+        i = 1;
     }
+    (*paths)[i] = NULL;
+    (*base_paths)[i] = NULL;
 }
