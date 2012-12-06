@@ -46,10 +46,6 @@ make %{?_smp_mflags}
 %install
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
-rm -rf %{buildroot}/usr/share/doc
-
-%post -p /sbin/ldconfig
-%postun -p /sbin/ldconfig
 
 %clean
 rm -rf %{buildroot}
