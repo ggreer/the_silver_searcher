@@ -24,6 +24,7 @@ const char *evil_hardcoded_ignore_files[] = {
 const char *ignore_pattern_files[] = {
     ".agignore",
     ".gitignore",
+    ".git/info/exclude",
     ".hgignore",
     ".svn",
     NULL
