@@ -6,7 +6,7 @@ Summary:	A code-searching tool similar to ack, but faster
 Group:		Applications/Utilities
 License:	Apache v2.0
 URL:		https://github.com/ggreer/%{name}
-Source0:	https://github.com/downloads/ggreer/%{name}/%{name}-${version}.tar.gz
+Source0:	https://github.com/downloads/ggreer/%{name}/%{name}-%{version}.tar.gz
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 BuildRequires:	pkgconfig, autoconf, pcre-devel
