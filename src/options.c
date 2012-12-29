@@ -34,6 +34,9 @@ Search options:\n\
 --[no]break             Print newlines between matches in different files\n\
                         (Enabled by default)\n\
 --[no]color             Print color codes in results (Enabled by default)\n\
+--color-line-number     Color codes for line numbers (Default: 1;33)\n\
+--color-match           Color codes for result match numbers (Default: 30;43)\n\
+--color-path            Color codes for path names (Default: 1;32)\n\
 --column                Print column numbers in results\n\
 -C --context [LINES]    Print lines before and after matches (Default: 2)\n\
 -D --debug              Ridiculous debugging (probably not useful)\n\
