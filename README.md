@@ -2,12 +2,14 @@
 
 An attempt to make something better than `ack` (which itself is better than `grep`).
 
-## Why use Ag? ##
+
+## What's so great about Ag? ##
 
 * It searches code about 3–5× faster than `ack`.
 * It ignores file patterns from your `.gitignore` and `.hgignore`.
 * If there are files in your source repo you don't want to search, just add their patterns to a `.agignore` file. \*cough\* extern \*cough\*
 * The command name is 33% shorter than `ack`!
+
 
 ## How is it so fast? ##
 
@@ -18,7 +20,8 @@ An attempt to make something better than `ack` (which itself is better than `gre
 * Instead of calling `fnmatch()` on every pattern in your ignore files, non-regex patterns are loaded into an array and binary searched.
 * Ag uses [Pthreads](http://en.wikipedia.org/wiki/POSIX_Threads) to take advantage of multiple CPU cores and search files in parallel.
 
-[This blog post](http://geoff.greer.fm/2012/01/23/making-programs-faster-profiling/) gives an idea of how I go about improving performance.
+I've written several blog posts showing how I've improved performance. These include how I [added pthreads](http://geoff.greer.fm/2012/09/07/the-silver-searcher-adding-pthreads/), [wrote my own `scandir()`](http://geoff.greer.fm/2012/09/03/profiling-ag-writing-my-own-scandir/), [benchmarked every revision to find performance regressions](http://geoff.greer.fm/2012/08/25/the-silver-searcher-benchmarking-revisions/), and profiled with [gprof](http://geoff.greer.fm/2012/02/08/profiling-with-gprof/) and [Valgrind](http://geoff.greer.fm/2012/01/23/making-programs-faster-profiling/).
+
 
 ## Installation ##
 
@@ -30,7 +33,8 @@ OS X:
 
     brew install the_silver_searcher
 
-For debs, rpms, and static builds, see the [downloads page](https://github.com/ggreer/the_silver_searcher/downloads).
+I don't want to maintain debs and rpms, but I'd be more than happy to put some links here if anyone else makes them.
+
 
 ## Building from source ##
 
@@ -44,6 +48,7 @@ For debs, rpms, and static builds, see the [downloads page](https://github.com/g
 3. Make install:
     * `sudo make install`
 
+
 ## Current development status ##
 
 It's quite stable now. Most changes are new features, minor bug fixes, or performance improvements. It's much faster than Ack in my benchmarks.
@@ -52,7 +57,10 @@ It's quite stable now. Most changes are new features, minor bug fixes, or perfor
 
     ag blahblahblah ~/code  1.39s user 1.81s system 229% cpu 1.396 total
 
-You can use Ag with [my fork](https://github.com/ggreer/AckMate) of the popular ackmate plugin, which lets you use both Ack and Ag for searching in Textmate. You can also move or delete `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and run `ln -s /usr/local/bin/ag "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
+
+## Editor Integration ##
+
+TextMate users can use Ag with [my fork](https://github.com/ggreer/AckMate) of the popular AckMate plugin, which lets you use both Ack and Ag for searching. If you already have AckMate you just want to replace Ack with Ag, move or delete `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and run `ln -s /usr/local/bin/ag "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
 
 You can use Ag with [ack.vim][] by adding the following line to your `.vimrc`:
 
@@ -60,7 +68,14 @@ You can use Ag with [ack.vim][] by adding the following line to your `.vimrc`:
 
 [ack.vim]: https://github.com/mileszs/ack.vim
 
+
+## Contributing ##
+
+I like when people send pull requests. It validates my existence. If you want to help out, check the [issue list](https://github.com/ggreer/the_silver_searcher/issues?sort=updated&state=open) or search the codebase for `TODO`. Don't worry if you lack experience writing C. If I think a pull request isn't ready to be merged, I'll give feedback in comments. Once everything looks good, I'll comment on your pull request with a cool animated gif and hit the merge button.
+
+
 ## TODO ##
+
 A special thanks goes out to Alex Davies. He has given me some excellent recommendations to improve Ag. Many of these things are still on my list:
 
 * Optimizations
@@ -77,6 +92,7 @@ A special thanks goes out to Alex Davies. He has given me some excellent recomme
 
 
 ## Other stuff you might like ##
+
 * [Ack](https://github.com/petdance/ack) - Better than grep
 * [AckMate](https://github.com/protocool/AckMate) - An ack-powered replacement for TextMate's slow built-in search.
 * [ack.vim](https://github.com/mileszs/ack.vim)
