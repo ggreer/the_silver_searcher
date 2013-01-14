@@ -33,8 +33,7 @@ OS X:
 
     brew install the_silver_searcher
 
-I don't want to maintain debs and rpms, but I'd be more than happy to put some links here if anyone else makes them.
-
+If you want a CentOS rpm or Ubuntu deb, take a look at [Vikram Dighe's packages](http://swiftsignal.com/packages/).
 
 ## Building from source ##
 
