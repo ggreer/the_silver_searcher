@@ -271,6 +271,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
 
     scandir_baton.ig = ig;
     scandir_baton.base_path = base_path;
+    scandir_baton.level = 0;
     results = ag_scandir(path, &dir_list, &filename_filter, &scandir_baton);
     if (results == 0) {
         log_debug("No results found in directory %s", path);

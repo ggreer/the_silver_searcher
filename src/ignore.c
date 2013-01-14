@@ -66,11 +66,6 @@ void add_ignore_pattern(ignores *ig, const char* pattern) {
     int i;
     int pattern_len;
 
-    /* Skip leading / — which, in .gitignore, doesn't mean filesystem root. */
-    if ('/' == pattern[0]) {
-        pattern += 1;
-    }
-
     /* Strip off the leading ./ so that matches are more likely. */
     if (strncmp(pattern, "./", 2) == 0) {
         pattern += 2;
@@ -308,6 +303,26 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         }
     }
 
+    /* TODO: copy-pasted from above */
+    if (scandir_baton->level == 0) {
+        char *temp2; /* horrible variable name, I know */
+        ag_asprintf(&temp, "/%s", filename);
+        if (path_ignore_search(ig, path_start, temp)) {
+            return 0;
+        }
+
+        if (is_directory(path, dir) && temp[strlen(filename) - 1] != '/') {
+            ag_asprintf(&temp2, "%s/", temp);
+            int rv = path_ignore_search(ig, path_start, temp2);
+            free(temp2);
+            if (rv) {
+                return 0;
+            }
+        }
+        free(temp);
+    }
+
+    scandir_baton->level++;
     if (ig->parent != NULL) {
         scandir_baton->ig = ig->parent;
         return filename_filter(path, dir, (void *)scandir_baton);
