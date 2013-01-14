@@ -199,7 +199,7 @@ void load_svn_ignore_patterns(ignores *ig, const char *path) {
     fclose(fp);
 }
 
-int ackmate_dir_match(const char* dir_name) {
+static int ackmate_dir_match(const char* dir_name) {
     int rc = 0;
 
     if (opts.ackmate_dir_filter != NULL) {
@@ -214,7 +214,7 @@ int ackmate_dir_match(const char* dir_name) {
     return 0;
 }
 
-int filename_ignore_search(const ignores *ig, const char *filename) {
+static int filename_ignore_search(const ignores *ig, const char *filename) {
     size_t i;
     int match_pos;
 
@@ -244,7 +244,7 @@ int filename_ignore_search(const ignores *ig, const char *filename) {
     return 0;
 }
 
-int path_ignore_search(const ignores *ig, const char *path, const char *filename) {
+static int path_ignore_search(const ignores *ig, const char *path, const char *filename) {
     char *temp;
 
     if (filename_ignore_search(ig, filename)) {
