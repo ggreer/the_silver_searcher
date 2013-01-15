@@ -59,7 +59,11 @@ It's quite stable now. Most changes are new features, minor bug fixes, or perfor
 
 ## Editor Integration ##
 
+### TextMate ###
+
 TextMate users can use Ag with [my fork](https://github.com/ggreer/AckMate) of the popular AckMate plugin, which lets you use both Ack and Ag for searching. If you already have AckMate you just want to replace Ack with Ag, move or delete `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and run `ln -s /usr/local/bin/ag "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
+
+### Vim ###
 
 You can use Ag with [ack.vim][] by adding the following line to your `.vimrc`:
 
@@ -67,6 +71,11 @@ You can use Ag with [ack.vim][] by adding the following line to your `.vimrc`:
 
 [ack.vim]: https://github.com/mileszs/ack.vim
 
+### Emacs ###
+
+You can use use [ag.el][] as an Emacs fronted to Ag.
+
+[ag.el]: https://github.com/Wilfred/ag.el
 
 ## Contributing ##
 
