@@ -38,6 +38,7 @@ Search options:\n\
 --color-match           Color codes for result match numbers (Default: 30;43)\n\
 --color-path            Color codes for path names (Default: 1;32)\n\
 --column                Print column numbers in results\n\
+--line-numbers          Print line numbers even for streams\n\
 -C --context [LINES]    Print lines before and after matches (Default: 2)\n\
 -D --debug              Ridiculous debugging (probably not useful)\n\
 --depth NUM             Search up to NUM directories deep (Default: 25)\n\
@@ -168,6 +169,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "ignore-dir", required_argument, NULL, 0 },
         { "ignore-case", no_argument, NULL, 'i' },
         { "invert-match", no_argument, &opts.invert_match, 1 },
+        { "line-numbers", no_argument, &opts.print_line_numbers, 2 },
         { "literal", no_argument, NULL, 'Q' },
         { "match", no_argument, &useless, 0 },
         { "max-count", required_argument, NULL, 'm' },
@@ -419,7 +421,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     if (opts.search_stream) {
         opts.print_break = 0;
         opts.print_heading = 0;
-        opts.print_line_numbers = 0;
+        if (opts.print_line_numbers != 2)
+            opts.print_line_numbers = 0;
     }
 
     if (needs_query) {
