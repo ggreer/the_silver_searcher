@@ -153,7 +153,7 @@ void load_svn_ignore_patterns(ignores *ig, const char *path) {
     int matches;
 
     while (fscanf(fp, "K %zu\n", &key_len) == 1) {
-        key = ag_realloc(key, (key_len + 1) * sizeof(char));
+        key = ag_realloc(key, key_len + 1);
         bytes_read = fread(key, 1, key_len, fp);
         key[key_len] = '\0';
         matches = fscanf(fp, "\nV %zu\n", &entry_len);
