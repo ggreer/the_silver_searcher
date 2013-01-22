@@ -73,7 +73,7 @@ Search options:\n\
                         (.gitigore, .hgignore, .svnignore; still obey .agignore)\n\
 -v --invert-match\n\
 -w --word-regexp        Only match whole words\n\
--z --search-zip         Search contents of zip files\n\
+-z --search-zip         Search contents of compressed (e.g., gzip) files\n\
 \n");
 }
 
