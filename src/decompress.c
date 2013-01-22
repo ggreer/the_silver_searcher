@@ -43,7 +43,7 @@ static void* decompress_zlib(const void* buf, const int buf_len,
         result_size *= 2;
         result = (unsigned char*)realloc(result, result_size * sizeof(unsigned char));
         if(result == NULL) {
-            log_error("Unable to allocate memory to decompress file %s", dir_full_path);
+            log_err("Unable to allocate memory to decompress file %s", dir_full_path);
             inflateEnd(&stream);
             goto error_out;
         }
