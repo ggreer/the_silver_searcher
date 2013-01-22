@@ -62,7 +62,6 @@ static void* decompress_zlib(const void* buf, const int buf_len,
                     goto error_out;
                 }
                 case Z_NEED_DICT:
-                    ret = Z_DATA_ERROR;
                 case Z_DATA_ERROR:
                 case Z_MEM_ERROR: {
                     log_err("Found mem/data error while decompressing zlib stream: %s", stream.msg);

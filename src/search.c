@@ -7,7 +7,7 @@
  */
 void search_buf(const char *buf, const int buf_len,
                 const char *dir_full_path) {
-    const char* _buf = buf;
+    char* _buf = (char*)buf;
     int _buf_len = buf_len;
     ag_compression_type zip_type = AG_NO_COMPRESSION;
 
