@@ -18,9 +18,18 @@ void search_buf(const char *buf, const int buf_len,
             return;
         }
         _buf = decompress(zip_type, buf, buf_len, dir_full_path, &_buf_len);
+        if(_buf == NULL || _buf_len == 0) {
+            log_warn("Cannot decompress zipped file %s", dir_full_path);
+            return;
+        }
     }
 
     search_nonzipped_buf(_buf, _buf_len, dir_full_path);
+
+    /* Check if this is the _buf we allocated in decompress. If so, free it */
+    if(_buf != buf) {
+        free(_buf);
+    }
 }
 
 void search_nonzipped_buf(const char *buf, const int buf_len,
