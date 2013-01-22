@@ -17,6 +17,7 @@ static void* decompress_zlib(const void* buf, const int buf_len,
     int ret = 0;
     unsigned char* result = NULL;
     size_t result_size = 0;
+    size_t pagesize = 0;
     z_stream stream;
 
     log_debug("Decompressing zlib file %s", dir_full_path);
@@ -37,37 +38,40 @@ static void* decompress_zlib(const void* buf, const int buf_len,
     stream.avail_in = buf_len;
     stream.next_in = (void*)buf;
 
-    result_size = buf_len;
+    pagesize = getpagesize();
+    result_size = ((buf_len + pagesize - 1) & ~(pagesize - 1));
     do {
-        /* Double the buffer size and realloc */
-        result_size *= 2;
-        result = (unsigned char*)realloc(result, result_size * sizeof(unsigned char));
-        if(result == NULL) {
-            log_err("Unable to allocate memory to decompress file %s", dir_full_path);
-            inflateEnd(&stream);
-            goto error_out;
-        }
+        do {
+            /* Double the buffer size and realloc */
+            result_size *= 2;
+            result = (unsigned char*)realloc(result, result_size * sizeof(unsigned char));
+            if(result == NULL) {
+                log_err("Unable to allocate %d bytes to decompress file %s", result_size * sizeof(unsigned char), dir_full_path);
+                inflateEnd(&stream);
+                goto error_out;
+            }
 
-        stream.avail_out = *new_buf_len;
-        stream.next_out = &result[stream.total_out];
-        ret = inflate(&stream, Z_SYNC_FLUSH);
-        log_debug("inflate ret = %d", ret);
-        switch(ret) {
-            case Z_STREAM_ERROR: {
-                log_err("Found stream error while decompressing zlib stream: %s", stream.msg);
-                inflateEnd(&stream);
-                goto error_out;
+            stream.avail_out = result_size / 2;
+            stream.next_out = &result[stream.total_out];
+            ret = inflate(&stream, Z_SYNC_FLUSH);
+            log_debug("inflate ret = %d", ret);
+            switch(ret) {
+                case Z_STREAM_ERROR: {
+                    log_err("Found stream error while decompressing zlib stream: %s", stream.msg);
+                    inflateEnd(&stream);
+                    goto error_out;
+                }
+                case Z_NEED_DICT:
+                    ret = Z_DATA_ERROR;
+                case Z_DATA_ERROR:
+                case Z_MEM_ERROR: {
+                    log_err("Found mem/data error while decompressing zlib stream: %s", stream.msg);
+                    inflateEnd(&stream);
+                    goto error_out;
+                }
             }
-            case Z_NEED_DICT:
-                ret = Z_DATA_ERROR;
-            case Z_DATA_ERROR:
-            case Z_MEM_ERROR: {
-                log_err("Found mem/data error while decompressing zlib stream: %s", stream.msg);
-                inflateEnd(&stream);
-                goto error_out;
-            }
-        }
-    } while(stream.avail_out == 0);
+        } while(stream.avail_out == 0);
+    } while(ret == Z_OK);
 
     *new_buf_len = stream.total_out;
     inflateEnd(&stream);
