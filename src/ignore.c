@@ -17,6 +17,9 @@
 const char *evil_hardcoded_ignore_files[] = {
     ".",
     "..",
+    /* add cscope/ctags default files */
+    "cscope.out", 
+    "tags",
     NULL
 };
 
