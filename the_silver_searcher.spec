@@ -1,3 +1,6 @@
+%define _bashcompdir %_sysconfdir/bash_completion.d
+
+
 Name:		the_silver_searcher
 Version:	0.13.1
 Release:	1%{?dist}
@@ -55,6 +58,7 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 %{_bindir}/*
 %{_mandir}/*
+%{_bashcompdir}/*
 
 
 %changelog
