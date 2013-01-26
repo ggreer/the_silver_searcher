@@ -106,3 +106,4 @@ A special thanks goes out to Alex Davies. He has given me some excellent recomme
 * [ack.vim](https://github.com/mileszs/ack.vim)
 * [Exuberant Ctags](http://ctags.sourceforge.net/) - Faster than Ag, but it builds an index beforehand. Good for *really* big codebases.
 * [Git-grep](http://git-scm.com/docs/git-grep) - As fast as Ag but only works on git repos.
+* [Sack](https://github.com/sampson-chen/sack) - A utility that wraps Ack and Ag. It removes a lot of repetition from searching and opening matching files.
