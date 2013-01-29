@@ -6,7 +6,7 @@ ag_LDADD = ${PCRE_LIBS} -lpthread
 
 man_MANS = doc/ag.1
 
-bashcompdir = $(sysconf)/bash_completion.d
+bashcompdir = $(pkgdatadir)/completions
 bashcomp_DATA = ag.bashcomp.sh
 
 # Uncomment this line to output gprof profiling info. This hurts performance.
