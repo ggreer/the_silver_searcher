@@ -41,6 +41,13 @@ typedef struct {
     struct timeval time_end;
 } ag_stats;
 
+typedef enum {
+    AG_NO_COMPRESSION,
+    AG_GZIP,
+    AG_COMPRESS,
+    AG_ZIP
+} ag_compression_type;
+
 ag_stats stats;
 
 typedef const char *(*strncmp_fp)(const char*, const char*, const size_t, const size_t, const size_t[]);
@@ -54,6 +61,9 @@ strncmp_fp get_strstr(cli_options opts);
 
 int invert_matches(match matches[], int matches_len, const int buf_len);
 void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opts, const int study_opts);
+
+void* decompress(const ag_compression_type zip_type, const void* buf, const int buf_len, const char* dir_full_path, int* new_buf_len);
+ag_compression_type is_zipped(const void* buf, const int buf_len);
 
 int is_binary(const void* buf, const int buf_len);
 int is_regex(const char* query);
