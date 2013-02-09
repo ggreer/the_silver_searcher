@@ -45,9 +45,12 @@ int main(int argc, char **argv) {
     parse_options(argc, argv, &base_paths, &paths);
     log_debug("PCRE Version: %s", pcre_version());
 
-    workers_len = (int)sysconf(_SC_NPROCESSORS_ONLN);
+    workers_len = (int)sysconf(_SC_NPROCESSORS_ONLN) - 1;
     if (opts.workers) {
         workers_len = opts.workers;
+    }
+    if (workers_len < 1) {
+        workers_len = 1;
     }
     log_debug("Using %i workers", workers_len);
     done_adding_files = FALSE;
