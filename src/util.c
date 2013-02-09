@@ -174,13 +174,6 @@ int is_binary(const void* buf, const int buf_len) {
     }
 
     for (i = 0; i < total_bytes; i++) {
-        /* Disk IO is so slow that it's worthwhile to do this calculation after every suspicious byte. */
-        /* This is true even on a 1.6Ghz Atom with an Intel 320 SSD. */
-        /* Read at least 32 bytes before making a decision */
-        if (i >= 32 && (suspicious_bytes * 100) / total_bytes > 10) {
-            return 1;
-        }
-
         if (buf_c[i] == '\0') {
             /* NULL char. It's binary */
             return 1;
@@ -199,6 +192,12 @@ int is_binary(const void* buf, const int buf_len) {
                 }
             }
             suspicious_bytes++;
+            /* Disk IO is so slow that it's worthwhile to do this calculation after every suspicious byte. */
+            /* This is true even on a 1.6Ghz Atom with an Intel 320 SSD. */
+            /* Read at least 32 bytes before making a decision */
+            if (i >= 32 && (suspicious_bytes * 100) / total_bytes > 10) {
+                return 1;
+            }
         }
     }
     if ((suspicious_bytes * 100) / total_bytes > 10) {
