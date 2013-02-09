@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
     }
 
     if (opts.casing == CASE_SMART) {
-        opts.casing = contains_uppercase(opts.query) ? CASE_SENSITIVE : CASE_INSENSITIVE;
+        opts.casing = is_lowercase(opts.query) ? CASE_INSENSITIVE : CASE_SENSITIVE;
     }
 
     if (opts.literal) {

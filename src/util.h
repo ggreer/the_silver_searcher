@@ -73,7 +73,7 @@ int binary_search(const char* needle, char **haystack, int start, int end);
 void init_wordchar_table(void);
 int is_wordchar(char ch);
 
-int contains_uppercase(const char* s);
+int is_lowercase(const char* s);
 
 int is_directory(const char *path, const struct dirent *d);
 int is_symlink(const char *path, const struct dirent *d);

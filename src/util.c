@@ -279,14 +279,14 @@ int is_wordchar(char ch) {
     return wordchar_table[(unsigned char) ch];
 }
 
-int contains_uppercase(const char* s) {
+int is_lowercase(const char* s) {
     int i;
     for (i = 0; s[i] != '\0'; i++) {
-        if (isupper(s[i])) {
-            return TRUE;
+        if (!isascii(s[i]) || isupper(s[i])) {
+            return FALSE;
         }
     }
-    return FALSE;
+    return TRUE;
 }
 
 int is_directory(const char *path, const struct dirent *d) {
