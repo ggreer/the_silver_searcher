@@ -240,6 +240,7 @@ void search_file(const char *file_full_path) {
             goto cleanup;
         }
 
+        posix_madvise(buf, f_len, POSIX_MADV_SEQUENTIAL | POSIX_MADV_WILLNEED);
         search_buf(buf, (int)f_len, file_full_path);
     }
 
