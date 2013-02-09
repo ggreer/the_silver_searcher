@@ -49,6 +49,7 @@ typedef struct {
     int search_all_files;
     int skip_vcs_ignores;
     int search_binary_files;
+    int search_zip_files;
     int search_hidden_files;
     int search_stream; /* true if tail -F blah | ag */
     int stats;

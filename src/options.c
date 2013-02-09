@@ -73,6 +73,7 @@ Search options:\n\
                         (.gitigore, .hgignore, .svnignore; still obey .agignore)\n\
 -v --invert-match\n\
 -w --word-regexp        Only match whole words\n\
+-z --search-zip         Search contents of compressed (e.g., gzip) files\n\
 \n");
 }
 
@@ -186,6 +187,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "print-long-lines", no_argument, &opts.print_long_lines, 1 },
         { "recurse", no_argument, NULL, 'r' },
         { "search-binary", no_argument, &opts.search_binary_files, 1 },
+        { "search-zip", no_argument, &opts.search_zip_files, 1 },
         { "search-files", no_argument, &opts.search_stream, 0 },
         { "skip-vcs-ignores", no_argument, NULL, 'U' },
         { "smart-case", no_argument, NULL, 'S' },
@@ -216,7 +218,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         group = 0;
     }
 
-    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:np:QRrSsvVtuUw", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:np:QRrSsvVtuUwz", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 opts.after = atoi(optarg);
@@ -224,6 +226,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             case 'a':
                 opts.search_all_files = 1;
                 opts.search_binary_files = 1;
+                opts.search_zip_files = 1;
                 break;
             case 'B':
                 opts.before = atoi(optarg);
@@ -291,6 +294,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.search_all_files = 1;
                 break;
             case 'u':
+                opts.search_zip_files = 1;
                 opts.search_binary_files = 1;
                 opts.search_all_files = 1;
                 opts.search_hidden_files = 1;
@@ -306,6 +310,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'w':
                 opts.word_regexp = 1;
+                break;
+            case 'z':
+                opts.search_zip_files = 1;
                 break;
             case 0: /* Long option */
                 if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0) {
