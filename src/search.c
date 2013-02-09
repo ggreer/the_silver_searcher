@@ -11,16 +11,14 @@ void search_buf(const char *buf, const int buf_len,
     int _buf_len = buf_len;
     ag_compression_type zip_type = AG_NO_COMPRESSION;
 
-    zip_type = is_zipped((void*)_buf, _buf_len);
-    if (zip_type != AG_NO_COMPRESSION) {
-        if(!opts.search_zip_files) {
-            log_debug("File %s is zipped. Skipping...", dir_full_path);
-            return;
-        }
-        _buf = decompress(zip_type, buf, buf_len, dir_full_path, &_buf_len);
-        if(_buf == NULL || _buf_len == 0) {
-            log_warn("Cannot decompress zipped file %s", dir_full_path);
-            return;
+    if(opts.search_zip_files) {
+        zip_type = is_zipped((void*)_buf, _buf_len);
+        if (zip_type != AG_NO_COMPRESSION) {
+            _buf = decompress(zip_type, buf, buf_len, dir_full_path, &_buf_len);
+            if(_buf == NULL || _buf_len == 0) {
+                log_err("Cannot decompress zipped file %s", dir_full_path);
+                return;
+            }
         }
     }
 
