@@ -226,7 +226,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         if (rv != 0) {
             die("Error fstat()ing stdout");
         }
-        statbuf;
+        opts.stdout_inode = statbuf.st_ino;
     }
 
     while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:np:QRrSsvVtuUwz", longopts, &opt_index)) != -1) {
