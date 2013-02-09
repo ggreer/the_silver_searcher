@@ -5,7 +5,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <xlocale.h>
 
 #include "config.h"
 #include "ignore.h"
