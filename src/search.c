@@ -1,36 +1,8 @@
 #include "search.h"
 #include "scandir.h"
 
-/* Thin wrapper around search_nonzipped_buf (the workhorse). This just checks
- * a few bytes in the buf to see if it's zipped or not. If it is, decompress in
- * memory. Otherwise, pass it on through to search_nonzipped_buf
- */
+
 void search_buf(const char *buf, const int buf_len,
-                const char *dir_full_path) {
-    char* _buf = (char*)buf;
-    int _buf_len = buf_len;
-    ag_compression_type zip_type = AG_NO_COMPRESSION;
-
-    if(opts.search_zip_files) {
-        zip_type = is_zipped((void*)_buf, _buf_len);
-        if (zip_type != AG_NO_COMPRESSION) {
-            _buf = decompress(zip_type, buf, buf_len, dir_full_path, &_buf_len);
-            if(_buf == NULL || _buf_len == 0) {
-                log_err("Cannot decompress zipped file %s", dir_full_path);
-                return;
-            }
-        }
-    }
-
-    search_nonzipped_buf(_buf, _buf_len, dir_full_path);
-
-    /* Check if this is the _buf we allocated in decompress. If so, free it */
-    if(_buf != buf) {
-        free(_buf);
-    }
-}
-
-void search_nonzipped_buf(const char *buf, const int buf_len,
                 const char *dir_full_path) {
     int binary = -1;  /* 1 = yes, 0 = no, -1 = don't know */
     int buf_offset = 0;
@@ -182,10 +154,7 @@ void search_stream(FILE *stream, const char *path) {
     size_t line_cap = 0;
 
     while ((line_len = getline(&line, &line_cap, stream)) > 0) {
-        /* Don't try to determine if this is zipped since it's line based.
-         * TODO: if this moves to being non-zipped based, change to search_buf
-         */
-        search_nonzipped_buf(line, line_len, path);
+        search_buf(line, line_len, path);
     }
 
     free(line);
@@ -238,6 +207,21 @@ void search_file(const char *file_full_path) {
         if (buf == MAP_FAILED) {
             log_err("File %s failed to load: %s.", file_full_path, strerror(errno));
             goto cleanup;
+        }
+
+        if(opts.search_zip_files) {
+            ag_compression_type zip_type = is_zipped(buf, f_len);
+            if (zip_type != AG_NO_COMPRESSION) {
+                int _buf_len = (int)f_len;
+                char *_buf = decompress(zip_type, buf, f_len, file_full_path, &_buf_len);
+                if(_buf == NULL || _buf_len == 0) {
+                    log_err("Cannot decompress zipped file %s", file_full_path);
+                    goto cleanup;
+                }
+                search_buf(_buf, _buf_len, file_full_path);
+                free(_buf);
+                goto cleanup;
+            }
         }
 
         search_buf(buf, (int)f_len, file_full_path);
