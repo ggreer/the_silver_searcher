@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "config.h"
@@ -216,6 +217,15 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     if (!isatty(fileno(stdout))) {
         opts.color = 0;
         group = 0;
+
+        /* Don't search the file that stdout is redirected to */
+        struct stat statbuf;
+        int rv;
+        rv = fstat(fileno(stdout), &statbuf);
+        if (rv != 0) {
+            die("Error fstat()ing stdout");
+        }
+        opts.stdout_inode = statbuf.st_ino;
     }
 
     while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:np:QRrSsvVtuUwz", longopts, &opt_index)) != -1) {

@@ -2,6 +2,8 @@
 #define OPTIONS_H
 
 #include <getopt.h>
+#include <sys/stat.h>
+
 #include <pcre.h>
 
 #define DEFAULT_CONTEXT_LEN 2
@@ -53,6 +55,7 @@ typedef struct {
     int search_hidden_files;
     int search_stream; /* true if tail -F blah | ag */
     int stats;
+    ino_t stdout_inode;
     char *query;
     int query_len;
     char *pager;

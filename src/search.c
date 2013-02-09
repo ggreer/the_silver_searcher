@@ -211,6 +211,11 @@ void search_file(const char *file_full_path) {
         goto cleanup;
     }
 
+    if (opts.stdout_inode != 0 && opts.stdout_inode == statbuf.st_ino) {
+        log_debug("Skipping %s because stdout is redirected to it", file_full_path);
+        goto cleanup;
+    }
+
     if ((statbuf.st_mode & S_IFMT) == 0) {
         log_err("%s is not a file. Mode %u. Skipping...", file_full_path, statbuf.st_mode);
         goto cleanup;
