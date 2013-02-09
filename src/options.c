@@ -226,7 +226,6 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             case 'a':
                 opts.search_all_files = 1;
                 opts.search_binary_files = 1;
-                opts.search_zip_files = 1;
                 break;
             case 'B':
                 opts.before = atoi(optarg);
@@ -294,7 +293,6 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.search_all_files = 1;
                 break;
             case 'u':
-                opts.search_zip_files = 1;
                 opts.search_binary_files = 1;
                 opts.search_all_files = 1;
                 opts.search_hidden_files = 1;
