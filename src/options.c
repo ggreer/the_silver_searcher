@@ -40,6 +40,7 @@ Search options:\n\
 --color-match           Color codes for result match numbers (Default: 30;43)\n\
 --color-path            Color codes for path names (Default: 1;32)\n\
 --column                Print column numbers in results\n\
+--line-numbers          Print line numbers even for streams\n\
 -C --context [LINES]    Print lines before and after matches (Default: 2)\n\
 -D --debug              Ridiculous debugging (probably not useful)\n\
 --depth NUM             Search up to NUM directories deep (Default: 25)\n\
@@ -74,6 +75,7 @@ Search options:\n\
                         (.gitigore, .hgignore, .svnignore; still obey .agignore)\n\
 -v --invert-match\n\
 -w --word-regexp        Only match whole words\n\
+-z --search-zip         Search contents of compressed (e.g., gzip) files\n\
 \n");
 }
 
@@ -170,6 +172,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "ignore-dir", required_argument, NULL, 0 },
         { "ignore-case", no_argument, NULL, 'i' },
         { "invert-match", no_argument, &opts.invert_match, 1 },
+        { "line-numbers", no_argument, &opts.print_line_numbers, 2 },
         { "literal", no_argument, NULL, 'Q' },
         { "match", no_argument, &useless, 0 },
         { "max-count", required_argument, NULL, 'm' },
@@ -186,6 +189,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "print-long-lines", no_argument, &opts.print_long_lines, 1 },
         { "recurse", no_argument, NULL, 'r' },
         { "search-binary", no_argument, &opts.search_binary_files, 1 },
+        { "search-zip", no_argument, &opts.search_zip_files, 1 },
         { "search-files", no_argument, &opts.search_stream, 0 },
         { "skip-vcs-ignores", no_argument, NULL, 'U' },
         { "smart-case", no_argument, NULL, 'S' },
@@ -225,7 +229,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         statbuf;
     }
 
-    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:np:QRrSsvVtuUw", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:np:QRrSsvVtuUwz", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 opts.after = atoi(optarg);
@@ -315,6 +319,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'w':
                 opts.word_regexp = 1;
+                break;
+            case 'z':
+                opts.search_zip_files = 1;
                 break;
             case 0: /* Long option */
                 if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0) {
@@ -430,7 +437,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     if (opts.search_stream) {
         opts.print_break = 0;
         opts.print_heading = 0;
-        opts.print_line_numbers = 0;
+        if (opts.print_line_numbers != 2)
+            opts.print_line_numbers = 0;
     }
 
     if (needs_query) {

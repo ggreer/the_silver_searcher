@@ -85,7 +85,7 @@ By default, ag will ignore files matched by patterns in .gitignore, .hgignore, o
 
 If you want to ignore .gitignore, .hgignore, and svn:ignore but still take .agignore into account, use `-U`.
 
-Use the `-a` option to search all text files, and `-u` to search *all* files.
+Use the `-t` option to search all text files, `-a` to search all files, and `-u` to search all including hidden files.
 
 ## EXAMPLES
 
