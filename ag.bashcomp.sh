@@ -43,6 +43,7 @@ _ag() {
     --line-numbers
     --literal
     --max-count
+    --no-numbers
     --path-to-agignore
     --print-long-lines
     --search-binary
