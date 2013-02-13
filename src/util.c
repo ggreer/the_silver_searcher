@@ -291,9 +291,10 @@ int is_lowercase(const char* s) {
 int is_directory(const char *path, const struct dirent *d) {
 #ifdef HAVE_DIRENT_DTYPE
     /* Some filesystems, e.g. ReiserFS, always return a type DT_UNKNOWN from readdir or scandir. */
-    /* Call lstat if we find DT_UNKNOWN to get the information we need. */
-    if (d->d_type != DT_UNKNOWN) {
-        return (d->d_type == DT_DIR);
+    /* Call stat if we don't find DT_DIR to get the information we need. */
+    /* Also works for symbolic links to directories. */
+    if (d->d_type == DT_DIR) {
+        return TRUE;
     }
 #endif
     char *full_path;
