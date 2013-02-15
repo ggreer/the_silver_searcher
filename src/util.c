@@ -354,9 +354,10 @@ char *fgetln(FILE *fp, size_t *lenp) {
             size_t nsize;
             char *newbuf;
             nsize = used + BUFSIZ;
-            if(!(newbuf = realloc(buf, nsize))) {
+            if (!(newbuf = realloc(buf, nsize))) {
                 funlockfile(fp);
-                if(buf) free(buf);
+                if (buf)
+                    free(buf);
                 return NULL;
             }
             buf = newbuf;
