@@ -10,8 +10,6 @@
  *    Not copyrighted -- provided to the public domain
  *    Version 1.4  11 December 2005  Mark Adler 
  */
-
-
 static void* decompress_zlib(const void* buf, const int buf_len,
                              const char* dir_full_path, int* new_buf_len) {
     int ret = 0;
@@ -30,7 +28,7 @@ static void* decompress_zlib(const void* buf, const int buf_len,
     stream.next_in = Z_NULL;
 
     /* Add 32 to allow zlib and gzip format detection */
-    if(inflateInit2(&stream, 32 + 15) != Z_OK) {
+    if (inflateInit2(&stream, 32 + 15) != Z_OK) {
         log_err("Unable to initialize zlib: %s", stream.msg);
         goto error_out;
     }
@@ -45,7 +43,7 @@ static void* decompress_zlib(const void* buf, const int buf_len,
             /* Double the buffer size and realloc */
             result_size *= 2;
             result = (unsigned char*)realloc(result, result_size * sizeof(unsigned char));
-            if(result == NULL) {
+            if (result == NULL) {
                 log_err("Unable to allocate %d bytes to decompress file %s", result_size * sizeof(unsigned char), dir_full_path);
                 inflateEnd(&stream);
                 goto error_out;
@@ -75,11 +73,11 @@ static void* decompress_zlib(const void* buf, const int buf_len,
     *new_buf_len = stream.total_out;
     inflateEnd(&stream);
 
-    if(ret == Z_STREAM_END) {
+    if (ret == Z_STREAM_END) {
         return result;
     }
 
-error_out:
+    error_out:;
     *new_buf_len = 0;
     return NULL;
 }
@@ -139,17 +137,16 @@ ag_compression_type is_zipped(const void* buf, const int buf_len) {
 
     const unsigned char *buf_c = buf;
 
-    if(buf_len == 0) {
+    if (buf_len == 0)
         return AG_NO_COMPRESSION;
-    }
 
     /* Check for gzip & compress */
-    if(buf_len >= 2) {
-        if(buf_c[0] == 0x1F) {
-            if(buf_c[1] == 0x8B) {
+    if (buf_len >= 2) {
+        if (buf_c[0] == 0x1F) {
+            if (buf_c[1] == 0x8B) {
                 log_debug("Found gzip-based stream");
                 return AG_GZIP;
-            } else if(buf_c[1] == 0x9B) {
+            } else if (buf_c[1] == 0x9B) {
                 log_debug("Found compress-based stream");
                 return AG_COMPRESS;
             }
@@ -157,8 +154,8 @@ ag_compression_type is_zipped(const void* buf, const int buf_len) {
     }
 
     /* Check for zip */
-    if(buf_len >= 4) {
-        if(buf_c[0] == 0x50 && buf_c[1] == 0x4B && buf_c[2] == 0x03 && buf_c[3] == 0x04)
+    if (buf_len >= 4) {
+        if (buf_c[0] == 0x50 && buf_c[1] == 0x4B && buf_c[2] == 0x03 && buf_c[3] == 0x04)
         {
             log_debug("Found zip-based stream");
             return AG_ZIP;
