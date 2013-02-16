@@ -192,6 +192,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "search-binary", no_argument, &opts.search_binary_files, 1 },
         { "search-zip", no_argument, &opts.search_zip_files, 1 },
         { "search-files", no_argument, &opts.search_stream, 0 },
+        { "silent", no_argument, NULL, 0 },
         { "skip-vcs-ignores", no_argument, NULL, 'U' },
         { "smart-case", no_argument, NULL, 'S' },
         { "stats", no_argument, &opts.stats, 1 },
@@ -361,6 +362,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 } else if (strcmp(longopts[opt_index].name, "color-path") == 0) {
                     free(opts.color_path);
                     ag_asprintf(&opts.color_path, "\e[%sm", optarg);
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "silent") == 0) {
+                    set_log_level(LOG_LEVEL_NONE);
                     break;
                 }
 
