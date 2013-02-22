@@ -1,7 +1,6 @@
 #include "search.h"
 #include "scandir.h"
 
-
 void search_buf(const char *buf, const int buf_len,
                 const char *dir_full_path) {
     int binary = -1;  /* 1 = yes, 0 = no, -1 = don't know */
@@ -260,6 +259,55 @@ void *search_file_worker() {
     }
 }
 
+static int check_symloop_enter(const char *path, dirkey_t *outkey) {
+    struct stat buf;
+    symdir_t *item_found = NULL;
+    symdir_t *new_item = NULL;
+
+    outkey->dev = 0;
+    outkey->ino = 0;
+
+    int res = stat(path, &buf);
+    if (res != 0) {
+        log_err("Error stat()ing: %s", path);
+        return SYMLOOP_ERROR;
+    }
+
+    outkey->dev = buf.st_dev;
+    outkey->ino = buf.st_ino;
+
+    HASH_FIND(hh, symhash, outkey, sizeof(dirkey_t), item_found);
+    if (item_found) {
+        return SYMLOOP_LOOP;
+    }     
+
+    new_item = (symdir_t*)malloc(sizeof(symdir_t));
+    memcpy(&new_item->key, outkey, sizeof(dirkey_t));
+    HASH_ADD(hh, symhash, key, sizeof(dirkey_t), new_item);
+    return SYMLOOP_OK;
+}
+
+
+static int check_symloop_leave(dirkey_t *dirkey) {
+
+    symdir_t *item_found = NULL;
+
+    if (dirkey->dev == 0 && dirkey->ino == 0) {
+        return SYMLOOP_ERROR;
+    }
+
+    HASH_FIND(hh, symhash, dirkey, sizeof(dirkey_t), item_found);
+    if (!item_found) {
+        printf("item not found! weird stuff...\n");
+        return SYMLOOP_ERROR;
+    }
+
+    HASH_DELETE(hh, symhash, item_found);
+    free(item_found);
+    return SYMLOOP_OK;
+}
+
+
 /* TODO: Append matches to some data structure instead of just printing them out.
  * Then ag can have sweet summaries of matches/files scanned/time/etc.
  */
@@ -272,6 +320,16 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
     char *dir_full_path = NULL;
     const char *ignore_file = NULL;
     int i;
+
+    int symres;
+    dirkey_t current_dirkey;
+
+    symres = check_symloop_enter(path, &current_dirkey);
+    if (symres == SYMLOOP_LOOP)
+    {
+        log_err("Recursive directory loop: %s", path);
+        return;
+    }
 
     /* find agignore/gitignore/hgignore/etc files to load ignore patterns from */
     for (i = 0; opts.skip_vcs_ignores ? (i == 0) : (ignore_pattern_files[i] != NULL); i++) {
@@ -376,6 +434,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
     }
 
     search_dir_cleanup:;
+    check_symloop_leave(&current_dirkey);
     free(dir_list);
     dir_list = NULL;
 }
