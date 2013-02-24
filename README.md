@@ -90,9 +90,8 @@ A special thanks goes out to Alex Davies. He has given me some excellent recomme
   * Profile `read()` against `mmap()`. Remember that's `read()` not `fread()`.
   * Write a benchmarking script that tweaks various settings to find what's fastest.
 * Features
-  * Symlink loop detection.
   * Behave better when matching in files with really long lines.
-    * Report "match found at position X of line N" if line is > 10k chars.
+  * Report "match found at position X of line N" if line is > 10k chars.
 * Windows support
   * `readdir()` and `stat()` are much slower on Windows. Use `FindNextFile()` instead.
   * Support Visual Studio instead of autotools?
