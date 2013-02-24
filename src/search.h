@@ -20,6 +20,7 @@
 #include "options.h"
 #include "print.h"
 #include "util.h"
+#include "uthash.h"
 
 size_t skip_lookup[256];
 
@@ -36,6 +37,24 @@ pthread_cond_t files_ready;
 pthread_mutex_t print_mtx;
 pthread_mutex_t stats_mtx;
 pthread_mutex_t work_queue_mtx;
+
+
+/* For symlink loop detection */
+#define SYMLOOP_ERROR   (-1)
+#define SYMLOOP_OK      (0)
+#define SYMLOOP_LOOP    (1)
+
+typedef struct {
+    dev_t dev;
+    ino_t ino;
+} dirkey_t;
+
+typedef struct {
+    dirkey_t key;
+    UT_hash_handle hh;
+} symdir_t;
+
+symdir_t *symhash;
 
 void search_buf(const char *buf, const int buf_len,
                 const char *dir_full_path);

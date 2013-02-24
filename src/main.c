@@ -107,6 +107,7 @@ int main(int argc, char **argv) {
         }
         for (i = 0; paths[i] != NULL; i++) {
             log_debug("searching path %s for %s", paths[i], opts.query);
+            symhash = NULL;
             search_dir(root_ignores, base_paths[i], paths[i], 0);
         }
         done_adding_files = TRUE;
