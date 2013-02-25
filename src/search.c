@@ -279,7 +279,7 @@ static int check_symloop_enter(const char *path, dirkey_t *outkey) {
     HASH_FIND(hh, symhash, outkey, sizeof(dirkey_t), item_found);
     if (item_found) {
         return SYMLOOP_LOOP;
-    }     
+    }
 
     new_item = (symdir_t*)malloc(sizeof(symdir_t));
     memcpy(&new_item->key, outkey, sizeof(dirkey_t));
@@ -287,9 +287,7 @@ static int check_symloop_enter(const char *path, dirkey_t *outkey) {
     return SYMLOOP_OK;
 }
 
-
 static int check_symloop_leave(dirkey_t *dirkey) {
-
     symdir_t *item_found = NULL;
 
     if (dirkey->dev == 0 && dirkey->ino == 0) {
@@ -298,7 +296,7 @@ static int check_symloop_leave(dirkey_t *dirkey) {
 
     HASH_FIND(hh, symhash, dirkey, sizeof(dirkey_t), item_found);
     if (!item_found) {
-        printf("item not found! weird stuff...\n");
+        log_err("item not found! weird stuff...\n");
         return SYMLOOP_ERROR;
     }
 
@@ -306,7 +304,6 @@ static int check_symloop_leave(dirkey_t *dirkey) {
     free(item_found);
     return SYMLOOP_OK;
 }
-
 
 /* TODO: Append matches to some data structure instead of just printing them out.
  * Then ag can have sweet summaries of matches/files scanned/time/etc.
@@ -325,8 +322,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
     dirkey_t current_dirkey;
 
     symres = check_symloop_enter(path, &current_dirkey);
-    if (symres == SYMLOOP_LOOP)
-    {
+    if (symres == SYMLOOP_LOOP) {
         log_err("Recursive directory loop: %s", path);
         return;
     }
