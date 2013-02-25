@@ -264,6 +264,7 @@ static int check_symloop_enter(const char *path, dirkey_t *outkey) {
     symdir_t *item_found = NULL;
     symdir_t *new_item = NULL;
 
+    memset(outkey, 0, sizeof(dirkey_t));
     outkey->dev = 0;
     outkey->ino = 0;
 
