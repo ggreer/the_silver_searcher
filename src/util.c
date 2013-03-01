@@ -8,6 +8,12 @@
 #include "util.h"
 #include "config.h"
 
+#ifdef _WIN32
+#define flockfile(x)
+#define funlockfile(x)
+#define getc_unlocked(x) getc(x)
+#endif
+
 #define CHECK_AND_RETURN(ptr) \
 if (ptr == NULL) { die("Memory allocation failed."); }\
 return ptr;
@@ -309,6 +315,9 @@ int is_directory(const char *path, const struct dirent *d) {
 }
 
 int is_symlink(const char *path, const struct dirent *d) {
+#ifdef _WIN32
+    return 0;
+#else
 #ifdef HAVE_DIRENT_DTYPE
     /* Some filesystems, e.g. ReiserFS, always return a type DT_UNKNOWN from readdir or scandir. */
     /* Call lstat if we find DT_UNKNOWN to get the information we need. */
@@ -325,6 +334,7 @@ int is_symlink(const char *path, const struct dirent *d) {
     }
     free(full_path);
     return (S_ISLNK(s.st_mode));
+#endif
 }
 
 void ag_asprintf(char **ret, const char *fmt, ...) {
