@@ -14,6 +14,9 @@
 #include "search.h"
 #include "util.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 int main(int argc, char **argv) {
     char **base_paths = NULL;
@@ -45,7 +48,15 @@ int main(int argc, char **argv) {
     parse_options(argc, argv, &base_paths, &paths);
     log_debug("PCRE Version: %s", pcre_version());
 
+#ifdef _WIN32
+    {
+        SYSTEM_INFO si;
+        GetSystemInfo(&si);
+        workers_len = si.dwNumberOfProcessors;
+    }
+#else
     workers_len = (int)sysconf(_SC_NPROCESSORS_ONLN);
+#endif
     if (opts.literal)
         workers_len--;
     if (opts.workers)
