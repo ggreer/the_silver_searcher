@@ -1,6 +1,5 @@
 #include <ctype.h>
 #include <dirent.h>
-#include <fnmatch.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,6 +10,14 @@
 #include "options.h"
 #include "scandir.h"
 #include "util.h"
+
+#ifdef _WIN32
+# include <shlwapi.h>
+# define fnmatch(x, y, z) (!PathMatchSpec(y,x))
+#else
+# include <fnmatch.h>
+const int fnmatch_flags = 0 & FNM_PATHNAME;
+#endif
 
 /* TODO: build a huge-ass list of files we want to ignore by default (build cache stuff, pyc files, etc) */
 
@@ -29,8 +36,6 @@ const char *ignore_pattern_files[] = {
     ".svn",
     NULL
 };
-
-const int fnmatch_flags = 0 & FNM_PATHNAME;
 
 ignores *init_ignore(ignores *parent) {
     ignores *ig = ag_malloc(sizeof(ignores));
