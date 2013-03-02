@@ -66,10 +66,11 @@ _ag() {
   '
   shtopt='
     -a -A -B -C -D
-    -f -g -G -i -h
+    -f -g -G -h -i
     -l -L -m -n -p
-    -Q -r -s -S -t
-    -u -U -v -w
+    -Q -r -R -s -S
+    -t -u -U -v -V
+    -w -z
   '
 
   # these options require an argument
