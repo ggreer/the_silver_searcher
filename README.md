@@ -77,8 +77,8 @@ A special thanks goes out to Alex Davies. He has given me some excellent recomme
 
 
 ## Other stuff you might like ##
+* [Ag.vim](https://github.com/rking/ag.vim) - Vim plugin so you can `:Ag` and hop through the results list
 * [Ack](https://github.com/petdance/ack) - Better than grep
 * [AckMate](https://github.com/protocool/AckMate) - An ack-powered replacement for TextMate's slow built-in search.
-* [ack.vim](https://github.com/mileszs/ack.vim)
 * [Exuberant Ctags](http://ctags.sourceforge.net/) - Faster than Ag, but it builds an index beforehand. Good for *really* big codebases.
 * [Git-grep](http://git-scm.com/docs/git-grep) - As fast as Ag but only works on git repos.
