@@ -38,7 +38,7 @@ If you want a CentOS rpm or Ubuntu deb, take a look at [Vikram Dighe's packages]
 ## Building from source ##
 
 1. Install dependencies (Automake, pkg-config, PCRE):
-    * Ubuntu: `apt-get install -y automake pkg-config libpcre3-dev`
+    * Ubuntu: `apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev`
     * OS X: Install [homebrew](http://mxcl.github.com/homebrew/), then `brew install automake pkg-config pcre`
     * FreeBSD: Install automake using ports: `cd /usr/ports/devel/automake && make install` ...then install dependencies with pkg\_add: `pkg_add -r pkg-config pcre`
     * Windows: It's complicated. See [this wiki page](https://github.com/ggreer/the_silver_searcher/wiki/Windows).
