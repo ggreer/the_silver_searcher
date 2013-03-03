@@ -144,6 +144,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     const char *home_dir = getenv("HOME");
     char *ignore_file_path = NULL;
     int needs_query = 1;
+    struct stat statbuf;
+    int rv;
 
     init_options();
 
@@ -212,8 +214,11 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         exit(1);
     }
 
-    /* stdin isn't a tty. something's probably being piped to ag */
-    if (!isatty(fileno(stdin))) {
+    rv = fstat(fileno(stdin), &statbuf);
+    if (rv != 0) {
+        die("Error fstat()ing stdin");
+    }
+    if (S_ISFIFO(statbuf.st_mode)) {
         opts.search_stream = 1;
     }
 
@@ -226,8 +231,6 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         group = 0;
 
         /* Don't search the file that stdout is redirected to */
-        struct stat statbuf;
-        int rv;
         rv = fstat(fileno(stdout), &statbuf);
         if (rv != 0) {
             die("Error fstat()ing stdout");
