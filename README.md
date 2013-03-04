@@ -33,6 +33,10 @@ OS X:
 
     brew install the_silver_searcher
 
+ArchLinux:
+
+    pacman -S the_silver_searcher
+
 If you want a CentOS rpm or Ubuntu deb, take a look at [Vikram Dighe's packages](http://swiftsignal.com/packages/).
 
 ## Building from source ##
