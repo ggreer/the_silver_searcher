@@ -211,7 +211,13 @@ void search_file(const char *file_full_path) {
               CloseHandle(hmmap);
         }
         if (buf == NULL) {
-            log_err("File %s failed to load: %s.", file_full_path, strerror(errno));
+            FormatMessageA(
+                FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                FORMAT_MESSAGE_FROM_SYSTEM |
+                FORMAT_MESSAGE_IGNORE_INSERTS,
+                NULL, GetLastError(), 0, (void*) &buf, 0, NULL);
+            log_err("File %s failed to load: %s.", file_full_path, buf);
+            LocalFree((void*)buf);
             goto cleanup;
         }
 #else

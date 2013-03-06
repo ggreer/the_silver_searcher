@@ -12,6 +12,19 @@
 #include "log.h"
 #include "util.h"
 
+#ifdef _WIN32
+char* realpath(const char *path, char *resolved_path) {
+    char tmp[MAX_PATH + 1], *p;
+    strncpy(tmp, path, sizeof(tmp)-1);
+    p = tmp;
+    while(*p) {
+        if (*p == '/') *p = '\\';
+        p++;
+    }
+    return _fullpath((char*) tmp, resolved_path, MAX_PATH);
+}
+#endif
+
 const char *color_line_number = "\e[1;33m"; /* yellow with black background */
 const char *color_match = "\e[30;43m"; /* black with yellow background */
 const char *color_path = "\e[1;32m";   /* bold green */
