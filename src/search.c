@@ -217,6 +217,7 @@ void search_file(const char *file_full_path) {
                 FORMAT_MESSAGE_IGNORE_INSERTS,
                 NULL, GetLastError(), 0, (void*) &buf, 0, NULL);
             log_err("File %s failed to load: %s.", file_full_path, buf);
+            LocalFree((void*)buf);
             goto cleanup;
         }
 #else
