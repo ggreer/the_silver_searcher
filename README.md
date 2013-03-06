@@ -51,6 +51,10 @@ If you want a CentOS rpm or Ubuntu deb, take a look at [Vikram Dighe's packages]
 3. Make install:
     * `sudo make install`
 
+On windows:
+
+    mingw32-make -f Makefile.w32
+
 
 ## Current development status ##
 
