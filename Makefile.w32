@@ -1,0 +1,17 @@
+SRC = \
+	src/decompress.c \
+	src/ignore.c \
+	src/log.c \
+	src/main.c \
+	src/options.c \
+	src/print.c \
+	src/scandir.c \
+	src/search.c \
+	src/util.c
+OBJ = $(subst .c,.o,$(SRC))
+
+ag.exe : $(OBJ)
+	gcc -o $@ $(OBJ) -lz -lpthread -lpcre -lshlwapi
+
+.c.o : 
+	gcc -c -Isrc $< -o $@
