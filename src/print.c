@@ -130,7 +130,8 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                     j = prev_line_offset;
                     /* print up to current char */
                     for (; j <= i; j++) {
-                        fputc(buf[j], out_fd);
+                        if (buf[j] != '\r')
+                            fputc(buf[j], out_fd);
                     }
                 } else {
                     print_line_number(line, ':');
@@ -142,6 +143,8 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                         fprintf(out_fd, "%s", opts.color_match);
                     }
                     for (j = prev_line_offset; j <= i; j++) {
+                        if (buf[j] == '\r')
+                            continue;
                         if (j == matches[last_printed_match].end && last_printed_match < matches_len) {
                             if (opts.color) {
                                 fprintf(out_fd, "%s", color_reset);
@@ -169,7 +172,8 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                 print_line_number(line, sep);
 
                 for (j = prev_line_offset; j < i; j++) {
-                    fputc(buf[j], out_fd);
+                    if (buf[j] != '\r')
+                        fputc(buf[j], out_fd);
                 }
                 fputc('\n', out_fd);
             }
