@@ -205,7 +205,7 @@ void search_file(const char *file_full_path) {
 #ifdef _WIN32
         {
             HANDLE hmmap = CreateFileMapping(
-                (HANDLE)_get_osfhandle(fd), 0, PAGE_READONLY, 0, f_len, "ag");
+                (HANDLE)_get_osfhandle(fd), 0, PAGE_READONLY, 0, f_len, NULL);
             buf = (char*) MapViewOfFile(hmmap, FILE_SHARE_READ, 0, 0, f_len);
             if (hmmap != NULL)
               CloseHandle(hmmap);
