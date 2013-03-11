@@ -346,6 +346,8 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
     struct dirent *dir = NULL;
     scandir_baton_t scandir_baton;
     int results = 0;
+    FILE *gitconfig_file = NULL;
+    char *gitconfig_res = malloc(64);
 
     char *dir_full_path = NULL;
     const char *ignore_file = NULL;
@@ -372,6 +374,19 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
         free(dir_full_path);
         dir_full_path = NULL;
     }
+
+    /* load gitignore specified by core.excludesfile */
+    gitconfig_file = popen("git config -z --get core.excludesfile", "r");
+    if (gitconfig_file != NULL) {
+        i = 64;
+        while (fread(gitconfig_res, 1, 64, gitconfig_file) == 64) {
+            i += 64;
+            gitconfig_res = realloc(gitconfig_res, i);
+        }
+        load_ignore_patterns(ig, gitconfig_res);
+        pclose(gitconfig_file);
+    }
+    free(gitconfig_res);
 
     if (opts.path_to_agignore) {
         load_ignore_patterns(ig, opts.path_to_agignore);
