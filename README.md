@@ -32,6 +32,10 @@ Gentoo:
 OS X:
 
     brew install the_silver_searcher
+    
+or
+
+    port install the_silver_searcher
 
 ArchLinux:
 
@@ -43,7 +47,9 @@ If you want a CentOS rpm or Ubuntu deb, take a look at [Vikram Dighe's packages]
 
 1. Install dependencies (Automake, pkg-config, PCRE):
     * Ubuntu: `apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev`
-    * OS X: Install [homebrew](http://mxcl.github.com/homebrew/), then `brew install automake pkg-config pcre`
+    * OS X:
+        - Install [homebrew](http://mxcl.github.com/homebrew/), then `brew install automake pkg-config pcre`
+        - Or install [macports](http://macports.org), then `port install automake pkgconfig pcre`
     * FreeBSD: Install automake using ports: `cd /usr/ports/devel/automake && make install` ...then install dependencies with pkg\_add: `pkg_add -r pkg-config pcre`
     * Windows: It's complicated. See [this wiki page](https://github.com/ggreer/the_silver_searcher/wiki/Windows).
 2. Run the build script (which just runs aclocal, automake, etc):
