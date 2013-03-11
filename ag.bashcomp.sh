@@ -35,6 +35,7 @@ _ag() {
     --nogroup
     --heading
     --noheading
+    --help
     --hidden
     --ignore
     --ignore-case
@@ -44,21 +45,32 @@ _ag() {
     --literal
     --max-count
     --no-numbers
+    --pager
+    --nopager
+    --parallel
     --path-to-agignore
     --print-long-lines
+    --recurse
+    --no-recurse
     --search-binary
+    --search-files
+    --search-zip
+    --silent
     --skip-vcs-ignores
     --smart-case
     --stats
     --unrestricted
+    --version
     --word-regexp
+    --workers
   '
   shtopt='
     -a -A -B -C -D
-    -f -g -G -i -l
-    -L -m -p -Q -s
-    -S -t -u -U -v
-    -w
+    -f -g -G -h -i
+    -l -L -m -n -p
+    -Q -r -R -s -S
+    -t -u -U -v -V
+    -w -z
   '
 
   # these options require an argument
@@ -75,7 +87,11 @@ _ag() {
     --path-to-agignore) # file completion
               _filedir
               return 0;;
-    --after|--before|--color-*|--context|--depth|--file-search-regex|--ignore|--max-count)
+    --pager) # command completion
+              COMPREPLY=( $(compgen -c -- "${cur}") )
+              return 0;;
+    --ackmate-dir-filter|--after|--before|--color-*|--context|--depth\
+    |--file-search-regex|--ignore|--max-count|--workers)
               return 0;;
   esac
 

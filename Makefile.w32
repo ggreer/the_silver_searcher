@@ -1,0 +1,26 @@
+SRCS = \
+	src/decompress.c \
+	src/ignore.c \
+	src/log.c \
+	src/main.c \
+	src/options.c \
+	src/print.c \
+	src/scandir.c \
+	src/search.c \
+	src/util.c
+OBJS = $(subst .c,.o,$(SRCS))
+
+CFLAGS = -O2
+LIBS = -lz -lpthread -lpcre -lshlwapi
+TARGET = ag.exe
+
+all : $(TARGET)
+
+$(TARGET) : $(OBJS)
+	gcc -o $@ $(OBJS) $(LIBS)
+
+.c.o : 
+	gcc -c $(CFLAGS) -Isrc $< -o $@
+
+clean :
+	rm -f src/*.o $(TARGET)

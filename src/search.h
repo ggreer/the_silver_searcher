@@ -9,7 +9,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/mman.h>
+#ifdef _WIN32
+# include <windows.h>
+#else
+# include <sys/mman.h>
+#endif
 #include <sys/stat.h>
 #include <unistd.h>
 

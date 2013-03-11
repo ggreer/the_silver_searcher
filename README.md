@@ -33,12 +33,16 @@ OS X:
 
     brew install the_silver_searcher
 
+ArchLinux:
+
+    pacman -S the_silver_searcher
+
 If you want a CentOS rpm or Ubuntu deb, take a look at [Vikram Dighe's packages](http://swiftsignal.com/packages/).
 
 ## Building from source ##
 
 1. Install dependencies (Automake, pkg-config, PCRE):
-    * Ubuntu: `apt-get install -y automake pkg-config libpcre3-dev`
+    * Ubuntu: `apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev`
     * OS X: Install [homebrew](http://mxcl.github.com/homebrew/), then `brew install automake pkg-config pcre`
     * FreeBSD: Install automake using ports: `cd /usr/ports/devel/automake && make install` ...then install dependencies with pkg\_add: `pkg_add -r pkg-config pcre`
     * Windows: It's complicated. See [this wiki page](https://github.com/ggreer/the_silver_searcher/wiki/Windows).
@@ -46,6 +50,10 @@ If you want a CentOS rpm or Ubuntu deb, take a look at [Vikram Dighe's packages]
     * `./build.sh`
 3. Make install:
     * `sudo make install`
+
+On windows:
+
+    mingw32-make -f Makefile.w32
 
 
 ## Current development status ##
@@ -105,6 +113,7 @@ A special thanks goes out to Alex Davies. He has given me some excellent recomme
 * [Ack](https://github.com/petdance/ack) - Better than grep
 * [AckMate](https://github.com/protocool/AckMate) - An ack-powered replacement for TextMate's slow built-in search.
 * [ack.vim](https://github.com/mileszs/ack.vim)
+* [ag.vim]( https://github.com/rking/ag.vim)
 * [Exuberant Ctags](http://ctags.sourceforge.net/) - Faster than Ag, but it builds an index beforehand. Good for *really* big codebases.
 * [Git-grep](http://git-scm.com/docs/git-grep) - As fast as Ag but only works on git repos.
 * [Sack](https://github.com/sampson-chen/sack) - A utility that wraps Ack and Ag. It removes a lot of repetition from searching and opening matching files.

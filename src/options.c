@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/param.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -11,6 +12,19 @@
 #include "options.h"
 #include "log.h"
 #include "util.h"
+
+#ifdef _WIN32
+char* realpath(const char *path, char *resolved_path) {
+    char tmp[MAX_PATH + 1], *p;
+    strncpy(tmp, path, sizeof(tmp)-1);
+    p = tmp;
+    while(*p) {
+        if (*p == '/') *p = '\\';
+        p++;
+    }
+    return _fullpath((char*) tmp, resolved_path, MAX_PATH);
+}
+#endif
 
 const char *color_line_number = "\e[1;33m"; /* yellow with black background */
 const char *color_match = "\e[30;43m"; /* black with yellow background */
@@ -88,7 +102,11 @@ void print_version() {
 void init_options() {
     memset(&opts, 0, sizeof(opts));
     opts.casing = CASE_SENSITIVE;
+#ifdef _WIN32
+    opts.color = FALSE;
+#else
     opts.color = TRUE;
+#endif
     opts.max_matches_per_file = 10000;
     opts.max_search_depth = 25;
     opts.print_break = TRUE;
@@ -477,6 +495,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     char *path = NULL;
+    char *tmp = NULL;
     opts.paths_len = argc;
     if (argc > 0) {
         *paths = ag_calloc(sizeof(char*), argc + 1);
@@ -489,7 +508,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
               path[path_len - 1] = '\0';
             }
             (*paths)[i] = path;
-            (*base_paths)[i] = realpath(path, NULL);
+            tmp = ag_malloc(PATH_MAX);
+            (*base_paths)[i] = realpath(path, tmp);
         }
         /* Make sure we search these paths instead of stdin. */
         opts.search_stream = 0;
@@ -498,7 +518,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         *paths = ag_malloc(sizeof(char*) * 2);
         *base_paths = ag_malloc(sizeof(char*) * 2);
         (*paths)[0] = path;
-        (*base_paths)[0] = realpath(path, NULL);
+        tmp = ag_malloc(PATH_MAX);
+        (*base_paths)[0] = realpath(path, tmp);
         i = 1;
     }
     (*paths)[i] = NULL;
