@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/param.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -487,6 +488,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     char *path = NULL;
+    char *tmp = NULL;
     opts.paths_len = argc;
     if (argc > 0) {
         *paths = ag_calloc(sizeof(char*), argc + 1);
@@ -499,7 +501,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
               path[path_len - 1] = '\0';
             }
             (*paths)[i] = path;
-            (*base_paths)[i] = realpath(path, NULL);
+            tmp = ag_malloc(PATH_MAX);
+            (*base_paths)[i] = realpath(path, tmp);
         }
         /* Make sure we search these paths instead of stdin. */
         opts.search_stream = 0;
@@ -508,7 +511,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         *paths = ag_malloc(sizeof(char*) * 2);
         *base_paths = ag_malloc(sizeof(char*) * 2);
         (*paths)[0] = path;
-        (*base_paths)[0] = realpath(path, NULL);
+        tmp = ag_malloc(PATH_MAX);
+        (*base_paths)[0] = realpath(path, tmp);
         i = 1;
     }
     (*paths)[i] = NULL;
