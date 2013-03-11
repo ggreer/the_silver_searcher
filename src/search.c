@@ -347,7 +347,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
     scandir_baton_t scandir_baton;
     int results = 0;
     FILE *gitconfig_file = NULL;
-    char *gitconfig_res = malloc(64);
+    char *gitconfig_res = ag_malloc(64);
 
     char *dir_full_path = NULL;
     const char *ignore_file = NULL;
@@ -381,7 +381,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
         i = 64;
         while (fread(gitconfig_res, 1, 64, gitconfig_file) == 64) {
             i += 64;
-            gitconfig_res = realloc(gitconfig_res, i);
+            gitconfig_res = ag_realloc(gitconfig_res, i);
         }
         load_ignore_patterns(ig, gitconfig_res);
         pclose(gitconfig_file);
