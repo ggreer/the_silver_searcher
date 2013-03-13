@@ -430,6 +430,23 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         free(ignore_file_path);
     }
 
+    if (!opts.skip_vcs_ignores) {
+        FILE *gitconfig_file = NULL;
+        char *gitconfig_res = ag_malloc(64);
+
+        gitconfig_file = popen("git config -z --get core.excludesfile", "r");
+        if (gitconfig_file != NULL) {
+            i = 64;
+            while (fread(gitconfig_res, 1, 64, gitconfig_file) == 64) {
+                i += 64;
+                gitconfig_res = ag_realloc(gitconfig_res, i);
+            }
+            load_ignore_patterns(root_ignores, gitconfig_res);
+            pclose(gitconfig_file);
+        }
+        free(gitconfig_res);
+    }
+
     if (opts.context > 0) {
         opts.before = opts.context;
         opts.after = opts.context;
