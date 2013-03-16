@@ -109,7 +109,7 @@ void add_ignore_pattern(ignores *ig, const char* pattern) {
     }
 }
 
-/* For loading git/svn/hg ignore patterns */
+/* For loading git/hg ignore patterns */
 void load_ignore_patterns(ignores *ig, const char *path) {
     FILE *fp = NULL;
     fp = fopen(path, "r");
