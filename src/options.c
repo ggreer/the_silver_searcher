@@ -297,6 +297,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 /* fall through */
             case 'l':
                 opts.print_filename_only = 1;
+                needs_query = 0;
                 break;
             case 'm':
                 opts.max_matches_per_file = atoi(optarg);

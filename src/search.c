@@ -36,7 +36,13 @@ void search_buf(const char *buf, const int buf_len,
         matches_spare = 0;
     }
 
-    if (opts.literal) {
+    if (opts.query_len == 1 && opts.query[0] == '.') {
+        matches_size = 1;
+        matches = ag_malloc(matches_size * sizeof(match));
+        matches[0].start = 0;
+        matches[0].end = buf_len;
+        matches_len = 1;
+    } else if (opts.literal) {
         const char *match_ptr = buf;
         strncmp_fp ag_strnstr_fp = get_strstr(opts);
 
