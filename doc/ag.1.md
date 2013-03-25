@@ -48,7 +48,7 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `-i --ignore-case`:
     Match case insensitively.
   * `-l --files-with-matches`:
-    Only print filenames containing matches, not matching lines.
+    Only print filenames containing matches, not matching lines. An empty query will print all files that would be searched.
   * `-L --files-without-matches`:
     Only print filenames that don't contain matches.
   * `-m --max-count NUM`:
