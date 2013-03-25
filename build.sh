@@ -1,5 +1,7 @@
 #!/bin/sh
 
+cd `dirname $0`
+
 AC_SEARCH_OPTS=""
 # For those of us with pkg-config and other tools in /usr/local
 PATH=$PATH:/usr/local/bin
@@ -15,5 +17,5 @@ aclocal $AC_SEARCH_OPTS && \
 autoconf && \
 autoheader && \
 automake --add-missing && \
-./configure && \
+./configure $@ && \
 make
