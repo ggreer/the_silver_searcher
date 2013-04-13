@@ -32,7 +32,7 @@ Gentoo:
 OS X:
 
     brew install the_silver_searcher
-    
+
 or
 
     port install the_silver_searcher

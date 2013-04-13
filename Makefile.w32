@@ -19,7 +19,7 @@ all : $(TARGET)
 $(TARGET) : $(OBJS)
 	gcc -o $@ $(OBJS) $(LIBS)
 
-.c.o : 
+.c.o :
 	gcc -c $(CFLAGS) -Isrc $< -o $@
 
 clean :
