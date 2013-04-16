@@ -15,14 +15,15 @@
 
 #ifdef _WIN32
 char* realpath(const char *path, char *resolved_path) {
-    char tmp[MAX_PATH + 1], *p;
+    char *p;
+    char tmp[MAX_PATH + 1];
     strncpy(tmp, path, sizeof(tmp)-1);
     p = tmp;
     while(*p) {
         if (*p == '/') *p = '\\';
         p++;
     }
-    return _fullpath((char*) tmp, resolved_path, MAX_PATH);
+    return _fullpath(resolved_path, tmp, MAX_PATH);
 }
 #endif
 
