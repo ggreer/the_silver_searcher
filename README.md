@@ -1,6 +1,6 @@
 # The Silver Searcher #
 
-An attempt to make something better than `ack` (which itself is better than `grep`).
+A code searching tool similar to `ack`, with a focus on speed.
 
 
 ## What's so great about Ag? ##
