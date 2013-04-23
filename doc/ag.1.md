@@ -16,9 +16,9 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `-a --all-types`:
     Search all files. This doesn't include hidden files, and also doesn't respect any ignore files
   * `-A --after [LINES]`:
-    Print lines before match. Defaults to 2.
-  * `-B --before [LINES]`:
     Print lines after match. Defaults to 2.
+  * `-B --before [LINES]`:
+    Print lines before match. Defaults to 2.
   * `--[no]break`:
     Print a newline between matches in different files. Enabled by default.
   * `--[no]color`:
