@@ -270,7 +270,7 @@ int binary_search(const char* needle, char **haystack, int start, int end) {
  * (where this is defined to be either a letter or an underscore).
  * NB. ASCII defines '0'=48, '9'=57, 'A'=65, 'Z'=90, '_'=95, 'a'=97, 'z'=122.
  */
-static unsigned char wordchar_table[256] = {
+static const unsigned char wordchar_table[256] = {
     0, 0, 0, 0, 0, 0, 0, 0,    /*   0-7   */
     0, 0, 0, 0, 0, 0, 0, 0,    /*   8-15  */
     0, 0, 0, 0, 0, 0, 0, 0,    /*  16-23  */
