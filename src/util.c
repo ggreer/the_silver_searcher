@@ -266,19 +266,29 @@ int binary_search(const char* needle, char **haystack, int start, int end) {
     return mid;
 }
 
-static int wordchar_table[256];
-
-void init_wordchar_table(void) {
-    int i;
-    for (i = 0; i < 256; ++i) {
-        char ch = (char) i;
-        wordchar_table[i] =
-            ('a' <= ch && ch <= 'z') ||
-            ('A' <= ch && ch <= 'Z') ||
-            ('0' <= ch && ch <= '9') ||
-            ch == '_';
-    }
-}
+/* Use an array to quickly determine if a character is a 'word character'
+ * (where this is defined to be either a letter or an underscore).
+ * NB. ASCII defines '0'=48, '9'=57, 'A'=65, 'Z'=90, '_'=95, 'a'=97, 'z'=122.
+ */
+static unsigned char wordchar_table[256] = {
+    0, 0, 0, 0, 0, 0, 0, 0,    /*   0-7   */
+    0, 0, 0, 0, 0, 0, 0, 0,    /*   8-15  */
+    0, 0, 0, 0, 0, 0, 0, 0,    /*  16-23  */
+    0, 0, 0, 0, 0, 0, 0, 0,    /*  24-31  */
+    0, 0, 0, 0, 0, 0, 0, 0,    /*  32-39  */
+    0, 0, 0, 0, 0, 0, 0, 0,    /*  40-47  */
+    1, 1, 1, 1, 1, 1, 1, 1,    /*  48-55  */
+    1, 1, 0, 0, 0, 0, 0, 0,    /*  56-63  */
+    0, 1, 1, 1, 1, 1, 1, 1,    /*  64-71  */
+    1, 1, 1, 1, 1, 1, 1, 1,    /*  72-79  */
+    1, 1, 1, 1, 1, 1, 1, 1,    /*  80-87  */
+    1, 1, 1, 0, 0, 0, 0, 1,    /*  88-95  */
+    0, 1, 1, 1, 1, 1, 1, 1,    /*  96-103 */
+    1, 1, 1, 1, 1, 1, 1, 1,    /* 104-111 */
+    1, 1, 1, 1, 1, 1, 1, 1,    /* 112-119 */
+    1, 1, 1, 0, 0, 0, 0, 0,    /* 120-127 */
+    /* The rest are 0. */
+};
 
 int is_wordchar(char ch) {
     return wordchar_table[(unsigned char) ch];

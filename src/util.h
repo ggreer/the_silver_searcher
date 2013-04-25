@@ -70,7 +70,6 @@ int is_regex(const char* query);
 int is_fnmatch(const char* filename);
 int binary_search(const char* needle, char **haystack, int start, int end);
 
-void init_wordchar_table(void);
 int is_wordchar(char ch);
 
 int is_lowercase(const char* s);
