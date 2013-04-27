@@ -156,6 +156,7 @@ static void* decompress_lzma(const void* buf, const int buf_len,
     *new_buf_len = stream.total_out;
 
     if (lzrt == LZMA_STREAM_END) {
+        lzma_end(&stream);
         return result;
     }
 
