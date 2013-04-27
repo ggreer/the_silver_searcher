@@ -1,6 +1,16 @@
+#include <string.h>
 #include <zlib.h>
 
 #include "decompress.h"
+
+#ifdef HAVE_LZMA_H
+#include <lzma.h>
+#endif
+
+
+/*  http://tukaani.org/xz/xz-file-format.txt */
+const uint8_t XZ_HEADER_MAGIC[6] = { 0xFD, '7', 'z', 'X', 'Z', 0x00 };
+const uint8_t LZMA_HEADER_SOMETIMES[3] = { 0x5D, 0x00, 0x00 };
 
 /* Code in decompress_zlib from
  *
@@ -98,6 +108,65 @@ static void* decompress_zip(const void* buf, const int buf_len,
     return NULL;
 }
 
+static void* decompress_lzma(const void* buf, const int buf_len,
+                             const char* dir_full_path, int* new_buf_len) {
+    lzma_stream stream = LZMA_STREAM_INIT;
+    lzma_ret lzrt;
+    unsigned char* result = NULL;
+    size_t result_size = 0;
+    size_t pagesize = 0;
+
+    stream.avail_in = buf_len;
+    stream.next_in = (void*)buf;
+
+    lzrt = lzma_auto_decoder(&stream, -1, 0);
+
+    if (lzrt != LZMA_OK) {
+        log_err("Unable to initialize lzma_auto_decoder: %d", lzrt);
+        goto error_out;
+    }
+
+    pagesize = getpagesize();
+    result_size = ((buf_len + pagesize - 1) & ~(pagesize - 1));
+    do {
+        do {
+            /* Double the buffer size and realloc */
+            result_size *= 2;
+            result = (unsigned char*)realloc(result, result_size * sizeof(unsigned char));
+            if (result == NULL) {
+                log_err("Unable to allocate %d bytes to decompress file %s", result_size * sizeof(unsigned char), dir_full_path);
+                goto error_out;
+            }
+
+            stream.avail_out = result_size / 2;
+            stream.next_out = &result[stream.total_out];
+            lzrt = lzma_code(&stream, LZMA_RUN);
+            log_debug("lzma_code ret = %d", lzrt);
+            switch(lzrt) {
+                case LZMA_OK:
+                case LZMA_STREAM_END:
+                    break;
+                default:
+                    log_err("Found mem/data error while decompressing xz/lzma stream: %d", lzrt);
+                    goto error_out;
+            }
+        } while(stream.avail_out == 0);
+    } while(lzrt == LZMA_OK);
+
+    *new_buf_len = stream.total_out;
+
+    if (lzrt == LZMA_STREAM_END) {
+        return result;
+    }
+
+
+    error_out:
+    lzma_end(&stream);
+    *new_buf_len = 0;
+    return NULL;
+}
+
+
 
 /* This function is very hot. It's called on every file when zip is enabled. */
 void* decompress(const ag_compression_type zip_type, const void* buf, const int buf_len,
@@ -110,6 +179,8 @@ void* decompress(const ag_compression_type zip_type, const void* buf, const int 
              return decompress_lwz(buf, buf_len, dir_full_path, new_buf_len);
         case AG_ZIP:
              return decompress_zip(buf, buf_len, dir_full_path, new_buf_len);
+        case AG_XZ:
+             return decompress_lzma(buf, buf_len, dir_full_path, new_buf_len);
         case AG_NO_COMPRESSION:
             log_err("File %s is not compressed", dir_full_path);
             break;
@@ -161,6 +232,23 @@ ag_compression_type is_zipped(const void* buf, const int buf_len) {
             return AG_ZIP;
         }
     }
+
+#ifdef HAVE_LZMA_H
+    if (buf_len >= 6) {
+        if (memcmp(XZ_HEADER_MAGIC, buf_c, 6) == 0) {
+            log_debug("Found xz based stream");
+            return AG_XZ;
+        }
+    }
+
+    /* LZMA doesn't really have a header: http://www.mail-archive.com/xz-devel@tukaani.org/msg00003.html */
+    if (buf_len >= 3) {
+        if (memcmp(LZMA_HEADER_SOMETIMES, buf_c, 3) == 0) {
+            log_debug("Found lzma-based stream");
+            return AG_XZ;
+       }
+    }
+#endif
 
     return AG_NO_COMPRESSION;
 }
