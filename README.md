@@ -45,8 +45,8 @@ If you want a CentOS rpm or Ubuntu deb, take a look at [Vikram Dighe's packages]
 
 ## Building from source ##
 
-1. Install dependencies (Automake, pkg-config, PCRE):
-    * Ubuntu: `apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev`
+1. Install dependencies (Automake, pkg-config, PCRE, LZMA):
+    * Ubuntu: `apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev`
     * OS X:
         - Install [homebrew](http://mxcl.github.com/homebrew/), then `brew install automake pkg-config pcre`
         - Or install [macports](http://macports.org), then `port install automake pkgconfig pcre`
