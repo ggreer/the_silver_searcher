@@ -168,7 +168,7 @@ int is_binary(const char *buf, const int buf_len) {
     const unsigned char *s = (const unsigned char *) buf;
     int suspicious_bytes = 0;
     int total_bytes = buf_len > 512 ? 512 : buf_len;
-    int valid_utf8 = 1;
+    int check_for_valid_utf8 = 1;
     int i;
 
     if (buf_len == 0) {
@@ -200,33 +200,35 @@ int is_binary(const char *buf, const int buf_len) {
                 }
                 /* Assert: c is in (1..8) or (14..31) */
             }
-        } else if (c == 127) {
-            /* ASCII DEL. Treat as suspicious. */
-        } else if (valid_utf8) {
-            /* Assert: (c > 127)
-             * Maybe it's the first of a multibyte UTF-8 character.
-             * NB. RFC 3629 states "The octet values C0, C1, F5 to FF never appear". */
+        } else if (check_for_valid_utf8) {
+            if (c == 127) {
+                /* ASCII DEL. Treat as suspicious. */
+            } else {
+                /* Assert: (c > 127)
+                 * Maybe it's the first of a multibyte UTF-8 character.
+                 * NB. RFC 3629 states "The octet values C0, C1, F5 to FF never appear". */
 
 /* A valid continuation byte matches 10xxxxxx. */
-#define not_utf8_continuation_byte(c) (((c) & 0xC0) != 0x80)
+#define utf8_continuation_byte(c) (((c) & 0xC0) == 0x80)
 
-            if (c >= 0xc2) {
-                if (c < 0xe0)   /* start byte 110xxxxx */
-                    goto check_2_byte_utf8_char;
-                if (c < 0xf0)   /* start byte 1110xxxx */
-                    goto check_3_byte_utf8_char;
-                if (c < 0xf5) { /* start byte 11110xxx */
-                    if (not_utf8_continuation_byte(s[++i])) goto not_utf8;
-                  check_3_byte_utf8_char:
-                    if (not_utf8_continuation_byte(s[++i])) goto not_utf8;
-                  check_2_byte_utf8_char:
-                    if (not_utf8_continuation_byte(s[++i])) goto not_utf8;
+                if (c >= 0xc2) {
+                    if (c < 0xe0)   /* start byte 110xxxxx */
+                        goto check_2_byte_utf8_char;
+                    if (c < 0xf0)   /* start byte 1110xxxx */
+                        goto check_3_byte_utf8_char;
+                    if (c < 0xf5) { /* start byte 11110xxx */
+                        if (!utf8_continuation_byte(s[++i])) goto not_utf8;
+check_3_byte_utf8_char:
+                        if (!utf8_continuation_byte(s[++i])) goto not_utf8;
+check_2_byte_utf8_char:
+                        if (!utf8_continuation_byte(s[++i])) goto not_utf8;
 
-                    continue; /* A valid UTF-8 multibyte character. */
+                        continue; /* A valid UTF-8 multibyte character. */
+                    }
                 }
-            }
 not_utf8:
-            valid_utf8 = 0;
+                check_for_valid_utf8 = 0;
+            }
         }
         /* If we get here then we're suspicious it's binary! */
         ++suspicious_bytes;
