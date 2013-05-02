@@ -72,7 +72,7 @@ void add_ignore_pattern(ignores *ig, const char* pattern) {
     int pattern_len;
 
     /* Strip off the leading ./ so that matches are more likely. */
-    if (pattern[0] == '.' && pattern[1] == '/') {
+    if (strncmp(pattern, "./", 2) == 0) {
         pattern += 2;
     }
 
