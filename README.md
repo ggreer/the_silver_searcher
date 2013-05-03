@@ -2,6 +2,7 @@
 
 A code searching tool similar to `ack`, with a focus on speed.
 
+### Note: I'm going to be busy with other things for a while. Don't take it personally if your pull request or issue languishes. I still want to improve Ag, but I have other priorities right now. ###
 
 ## What's so great about Ag? ##
 
