@@ -49,7 +49,8 @@ int ag_scandir(const char *dirname,
         if (d == NULL) {
             goto fail;
         }
-        memcpy(d, entry, sizeof(struct dirent));
+        memset(d, 0, sizeof(struct dirent));
+        memcpy(d, entry, entry->d_reclen);
 #if defined (__SVR4) && defined (__sun)
         strcpy(d->d_name, entry->d_name);
 #endif
