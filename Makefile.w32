@@ -10,8 +10,9 @@ SRCS = \
 	src/util.c
 OBJS = $(subst .c,.o,$(SRCS))
 
-CFLAGS = -O2
-LIBS = -lz -lpthread -lpcre -lshlwapi
+VERSION=
+CFLAGS = -O2 -Isrc/win32 -DPACKAGE_VERSION=\"0.15pre\"
+LIBS = -lz -lpthread -lpcre -llzma -lshlwapi
 TARGET = ag.exe
 
 all : $(TARGET)
