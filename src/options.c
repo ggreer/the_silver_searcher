@@ -12,6 +12,7 @@
 #include "options.h"
 #include "log.h"
 #include "util.h"
+#include "lang.h"
 
 #ifdef _WIN32
 char* realpath(const char *path, char *resolved_path) {
@@ -91,6 +92,7 @@ Search options:\n\
 -v --invert-match\n\
 -w --word-regexp        Only match whole words\n\
 -z --search-zip         Search contents of compressed (e.g., gzip) files\n\
+--{language}            Search source code only in a particular language (as per ack)\n\
 \n");
 }
 
@@ -221,6 +223,60 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "version", no_argument, &version, 1 },
         { "word-regexp", no_argument, NULL, 'w' },
         { "workers", required_argument, NULL, 0 },
+
+        /* languages */
+        { "actionscript", no_argument, NULL, 0 },
+        { "ada", no_argument, NULL, 0 },
+        { "asm", no_argument, NULL, 0 },
+        { "batch", no_argument, NULL, 0 },
+        { "cc", no_argument, NULL, 0 },
+        { "cfmx", no_argument, NULL, 0 },
+        { "clojure", no_argument, NULL, 0 },
+        { "cpp", no_argument, NULL, 0 },
+        { "csharp", no_argument, NULL, 0 },
+        { "css", no_argument, NULL, 0 },
+        { "delphi", no_argument, NULL, 0 },
+        { "elisp", no_argument, NULL, 0 },
+        { "erlang", no_argument, NULL, 0 },
+        { "fortran", no_argument, NULL, 0 },
+        { "go", no_argument, NULL, 0 },
+        { "groovy", no_argument, NULL, 0 },
+        { "haskell", no_argument, NULL, 0 },
+        { "hh", no_argument, NULL, 0 },
+        { "html", no_argument, NULL, 0 },
+        { "java", no_argument, NULL, 0 },
+        { "js", no_argument, NULL, 0 },
+        { "jsp", no_argument, NULL, 0 },
+        { "lisp", no_argument, NULL, 0 },
+        { "lua", no_argument, NULL, 0 },
+        { "m4", no_argument, NULL, 0 },
+        { "make", no_argument, NULL, 0 },
+        { "mason", no_argument, NULL, 0 },
+        { "objc", no_argument, NULL, 0 },
+        { "objcpp", no_argument, NULL, 0 },
+        { "ocaml", no_argument, NULL, 0 },
+        { "parrot", no_argument, NULL, 0 },
+        { "perl", no_argument, NULL, 0 },
+        { "php", no_argument, NULL, 0 },
+        { "plone", no_argument, NULL, 0 },
+        { "python", no_argument, NULL, 0 },
+        { "rake", no_argument, NULL, 0 },
+        { "ruby", no_argument, NULL, 0 },
+        { "salt", no_argument, NULL, 0 },
+        { "scala", no_argument, NULL, 0 },
+        { "scheme", no_argument, NULL, 0 },
+        { "shell", no_argument, NULL, 0 },
+        { "smalltalk", no_argument, NULL, 0 },
+        { "sql", no_argument, NULL, 0 },
+        { "tcl", no_argument, NULL, 0 },
+        { "tex", no_argument, NULL, 0 },
+        { "tt", no_argument, NULL, 0 },
+        { "vb", no_argument, NULL, 0 },
+        { "verilog", no_argument, NULL, 0 },
+        { "vhdl", no_argument, NULL, 0 },
+        { "vim", no_argument, NULL, 0 },
+        { "yaml", no_argument, NULL, 0 },
+        { "xml", no_argument, NULL, 0 },
         { NULL, 0, NULL, 0 }
     };
 
@@ -288,6 +344,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.match_files = 1;
                 /* Fall through and build regex */
             case 'G':
+                if (opts.file_search_regex) {
+                    log_err("search-by-language is incompatible with -G");
+                }
+
                 compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, optarg, 0, 0);
                 break;
             case 'h':
@@ -388,7 +448,27 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 } else if (strcmp(longopts[opt_index].name, "silent") == 0) {
                     set_log_level(LOG_LEVEL_NONE);
                     break;
+                } else {
+                    const char* option = longopts[opt_index].name;
+                    if (opts.file_search_regex) {
+                        log_err("option %s is incompatible with -G", option);
+                    }
+                    language_specification* spec;
+                    int matched = 0;
+                    for (spec = languages; spec->language; ++spec) {
+                        if (strcmp(spec->language, option) == 0) {
+                            char* language_regex = make_language_regex(spec->extensions);
+                            compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, language_regex, 0, 0);
+                            free (language_regex);
+                            matched = 1;
+                            break;
+                        }
+                    }
+                    if (matched) {
+                        break;
+                    }
                 }
+
 
                 /* Continue to usage if we don't recognize the option */
                 if (longopts[opt_index].flag != 0) {
