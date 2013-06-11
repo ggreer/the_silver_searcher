@@ -15,3 +15,5 @@ into a regular expression of the form \.(extension1|extension2...)$
 Caller is responsible for freeing the returned string.
 */
 char* make_language_regex(const char** extensions);
+
+int language_count();

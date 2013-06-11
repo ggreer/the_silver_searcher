@@ -60,6 +60,14 @@ language_specification languages[] = {
     {NULL}
 };
 
+int language_count() {
+    int count = 0;
+    language_specification* cur;
+    for(cur = languages; cur->language; ++cur) {
+        ++count;
+    }
+    return count;
+}
 
 char* make_language_regex(const char** extensions) {
     int regex_capacity = 100;

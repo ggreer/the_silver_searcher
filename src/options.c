@@ -166,7 +166,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 
     init_options();
 
-    struct option longopts[] = {
+    struct option base_longopts[] = {
         { "ackmate", no_argument, &opts.ackmate, 1 },
         { "ackmate-dir-filter", required_argument, NULL, 0 },
         { "after", required_argument, NULL, 'A' },
@@ -223,62 +223,21 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "version", no_argument, &version, 1 },
         { "word-regexp", no_argument, NULL, 'w' },
         { "workers", required_argument, NULL, 0 },
-
-        /* languages */
-        { "actionscript", no_argument, NULL, 0 },
-        { "ada", no_argument, NULL, 0 },
-        { "asm", no_argument, NULL, 0 },
-        { "batch", no_argument, NULL, 0 },
-        { "cc", no_argument, NULL, 0 },
-        { "cfmx", no_argument, NULL, 0 },
-        { "clojure", no_argument, NULL, 0 },
-        { "cpp", no_argument, NULL, 0 },
-        { "csharp", no_argument, NULL, 0 },
-        { "css", no_argument, NULL, 0 },
-        { "delphi", no_argument, NULL, 0 },
-        { "elisp", no_argument, NULL, 0 },
-        { "erlang", no_argument, NULL, 0 },
-        { "fortran", no_argument, NULL, 0 },
-        { "go", no_argument, NULL, 0 },
-        { "groovy", no_argument, NULL, 0 },
-        { "haskell", no_argument, NULL, 0 },
-        { "hh", no_argument, NULL, 0 },
-        { "html", no_argument, NULL, 0 },
-        { "java", no_argument, NULL, 0 },
-        { "js", no_argument, NULL, 0 },
-        { "jsp", no_argument, NULL, 0 },
-        { "lisp", no_argument, NULL, 0 },
-        { "lua", no_argument, NULL, 0 },
-        { "m4", no_argument, NULL, 0 },
-        { "make", no_argument, NULL, 0 },
-        { "mason", no_argument, NULL, 0 },
-        { "objc", no_argument, NULL, 0 },
-        { "objcpp", no_argument, NULL, 0 },
-        { "ocaml", no_argument, NULL, 0 },
-        { "parrot", no_argument, NULL, 0 },
-        { "perl", no_argument, NULL, 0 },
-        { "php", no_argument, NULL, 0 },
-        { "plone", no_argument, NULL, 0 },
-        { "python", no_argument, NULL, 0 },
-        { "rake", no_argument, NULL, 0 },
-        { "ruby", no_argument, NULL, 0 },
-        { "salt", no_argument, NULL, 0 },
-        { "scala", no_argument, NULL, 0 },
-        { "scheme", no_argument, NULL, 0 },
-        { "shell", no_argument, NULL, 0 },
-        { "smalltalk", no_argument, NULL, 0 },
-        { "sql", no_argument, NULL, 0 },
-        { "tcl", no_argument, NULL, 0 },
-        { "tex", no_argument, NULL, 0 },
-        { "tt", no_argument, NULL, 0 },
-        { "vb", no_argument, NULL, 0 },
-        { "verilog", no_argument, NULL, 0 },
-        { "vhdl", no_argument, NULL, 0 },
-        { "vim", no_argument, NULL, 0 },
-        { "yaml", no_argument, NULL, 0 },
-        { "xml", no_argument, NULL, 0 },
         { NULL, 0, NULL, 0 }
     };
+
+    int count = language_count();
+    struct option* longopts = ag_malloc(sizeof(base_longopts) + sizeof(struct option) * count);
+    memcpy(longopts, base_longopts, sizeof(base_longopts));
+    int base = sizeof(base_longopts) / sizeof(struct option) - 1;
+    longopts[base+count-1] = longopts[base-1];
+
+    int lang;
+    for (lang = 0; lang < count; ++lang) {
+        struct option opt = { languages[lang].language,
+                              no_argument, NULL, 0 };
+        longopts[lang + base] = opt;
+    }
 
     if (argc < 2) {
         usage();
