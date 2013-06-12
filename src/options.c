@@ -78,6 +78,7 @@ Search options:\n\
 -p --path-to-agignore STRING\n\
                         Use .agignore file at STRING\n\
 --print-long-lines      Print matches on very long lines (Default: >2k characters)\n\
+--long-line-length      Length limit for long lines (for --print-long-lines)\n\
 -Q --literal            Don't parse PATTERN as a regular expression\n\
 -s --case-sensitive     Match case sensitively (Enabled by default)\n\
 -S --smart-case         Match case insensitively unless PATTERN contains\n\
@@ -117,6 +118,7 @@ void init_options() {
     opts.color_path = ag_strdup(color_path);
     opts.color_match = ag_strdup(color_match);
     opts.color_line_number = ag_strdup(color_line_number);
+    opts.long_line_length = 2000;
 }
 
 void cleanup_options() {
@@ -197,6 +199,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "invert-match", no_argument, &opts.invert_match, 1 },
         { "line-numbers", no_argument, &opts.print_line_numbers, 2 },
         { "literal", no_argument, NULL, 'Q' },
+        { "long-line-length", required_argument, &opts.long_line_length, 0},
         { "match", no_argument, &useless, 0 },
         { "max-count", required_argument, NULL, 'm' },
         { "no-numbers", no_argument, NULL, 0 },
@@ -381,6 +384,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                     break;
                 } else if (strcmp(longopts[opt_index].name, "ignore") == 0) {
                     add_ignore_pattern(root_ignores, optarg);
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "long-line-length") == 0) {
+                    opts.long_line_length = atoi(optarg);
                     break;
                 } else if (strcmp(longopts[opt_index].name, "nopager") == 0) {
                     out_fd = stdout;

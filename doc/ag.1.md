@@ -61,6 +61,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Use a pager such as less. Use `--nopager` to override. This option is also ignored if output is piped to another program.
   * `--print-long-lines`:
     Print matches on very long lines (> 2k characters by default)
+  * `--long-line-length`:
+    Length limit for long lines (for --print-long-lines)
   * `-Q --literal`:
     Do not parse PATTERN as a regular expression. Try to match it literally.
   * `-s --case-sensitive`:
