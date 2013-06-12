@@ -110,7 +110,7 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
 
   * `-o --only-matching`:
     Print only the matching part of the lines.
-  
+
   * `-p --path-to-agignore STRING`:
     Provide a path to a specific .agignore file.
 
@@ -123,6 +123,9 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
 
   * `--passthrough`:
     When searching a stream, print all lines even if they don't match.
+
+  * `--long-line-length`:
+    Length limit for long lines (for --print-long-lines)
 
   * `-Q --literal`:
     Do not parse PATTERN as a regular expression. Try to match it literally.

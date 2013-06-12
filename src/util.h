@@ -111,3 +111,6 @@ int vasprintf(char **ret, const char *fmt, va_list args);
 #endif
 
 #endif
+
+int get_line_length(const char* buf, const int buf_len,
+                    const int match_start, const int match_end);
