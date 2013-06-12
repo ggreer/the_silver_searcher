@@ -148,6 +148,9 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                             }
                             printing_a_match = FALSE;
                             last_printed_match++;
+                            if (i == buf_len && i > 0 && buf[i - 1] != '\n') {
+                                fprintf(out_fd, "\n");
+                            }
                         }
                         if (j == matches[last_printed_match].start && last_printed_match < matches_len) {
                             if (opts.color) {
