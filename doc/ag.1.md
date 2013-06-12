@@ -80,6 +80,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `-v --invert-match`
   * `-w --word-regexp`:
     Only match whole words.
+  * `--{language}`:
+    Search source code only in a particular language (as per ack).
 
 ## IGNORING FILES
 
