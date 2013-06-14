@@ -233,9 +233,51 @@ void add_ignore_pattern(ignores *ig, const char* pattern) {
     log_debug("added regex ignore pattern %s", pattern);
 }
 
-/* For loading git ignore patterns;
-   fixme: do hgignores (native regexps) too
- */
+void add_pcre_ignore_pattern(ignores *ig, const char* pattern) {
+    int pattern_len;
+
+    /* Kill trailing whitespace */
+    for (pattern_len = strlen(pattern); pattern_len > 0; pattern_len--) {
+        if (!isspace(pattern[pattern_len-1])) {
+            break;
+        }
+    }
+
+    if (pattern_len == 0) {
+        log_debug("Pattern is empty. Not adding any ignores.");
+        return;
+    }
+
+    /* hgignore regexes don't include leading slashes.  If they are
+     anchored, however, we need to include those slashes, since the
+     match string will include them.  Unanchored regexes are genuinely
+     treated as unanchored, so the pattern "get/cla" will match
+     "target/classes". */
+
+    char* adjusted_pattern = malloc(pattern_len + 2);
+    if (pattern[0] == '^') {
+        adjusted_pattern[0] = '^';
+        adjusted_pattern[1] = '/';
+        strncpy(adjusted_pattern + 2, pattern + 1, pattern_len - 1);
+    } else {
+        strncpy(adjusted_pattern, pattern, pattern_len - 1);
+    }
+
+    int pcre_opts = 0;
+    const char *pcre_err = NULL;
+    int pcre_err_offset = 0;
+    pcre* re = pcre_compile(adjusted_pattern, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
+    free(adjusted_pattern);
+
+    /* TODO: de-dupe these patterns */
+    ig->regexes_len++;
+    ig->regexes = ag_realloc(ig->regexes, ig->regexes_len * sizeof(char*));
+    ig->flags = ag_realloc(ig->flags, ig->regexes_len * sizeof(int));
+    ig->regexes[ig->regexes_len - 1] = re;
+    log_debug("added regex ignore pattern %s", pattern);
+}
+
+/* For loading git and compatible ignore patterns */
 void load_ignore_patterns(ignores *ig, const char *path) {
     FILE *fp = NULL;
     fp = fopen(path, "r");
@@ -256,6 +298,48 @@ void load_ignore_patterns(ignores *ig, const char *path) {
             line[line_len-1] = '\0'; /* kill the \n */
         }
         add_ignore_pattern(ig, line);
+    }
+
+    free(line);
+    fclose(fp);
+}
+typedef enum {
+    pcre_mode, glob_mode
+} hg_ignore_mode;
+
+/* For loading hg ignore patterns */
+void load_hg_ignore_patterns(ignores *ig, const char *path) {
+    FILE *fp = NULL;
+    fp = fopen(path, "r");
+    if (fp == NULL) {
+        log_debug("Skipping ignore file %s", path);
+        return;
+    }
+
+    char *line = NULL;
+    ssize_t line_len = 0;
+    size_t line_cap = 0;
+
+    hg_ignore_mode mode = pcre_mode;
+    while ((line_len = getline(&line, &line_cap, fp)) > 0) {
+        if (line_len == 0 || line[0] == '\n' || line[0] == '#') {
+            continue;
+        }
+        if (line[line_len-1] == '\n') {
+            line[line_len-1] = '\0'; /* kill the \n */
+        }
+        if (strcmp("syntax: regexp", line) == 0) {
+            mode = pcre_mode;
+            continue;
+        } else if (strcmp("syntax: glob", line) == 0) {
+            mode = glob_mode;
+            continue;
+        }
+        if (mode == glob_mode) {
+            add_ignore_pattern(ig, line);
+        } else {
+            add_pcre_ignore_pattern(ig, line);
+        }
     }
 
     free(line);

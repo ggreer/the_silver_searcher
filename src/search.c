@@ -393,6 +393,8 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
         ag_asprintf(&dir_full_path, "%s/%s", path, ignore_file);
         if (strcmp(SVN_DIR, ignore_file) == 0) {
             load_svn_ignore_patterns(ig, dir_full_path);
+        } else if (strcmp(HGIGNORE, ignore_file) == 0) {
+            load_hg_ignore_patterns(ig, dir_full_path);
         } else {
             load_ignore_patterns(ig, dir_full_path);
         }

@@ -9,6 +9,8 @@
 #define SVN_DIR ".svn"
 #define SVN_PROP_IGNORE "svn:ignore"
 
+#define HGIGNORE ".hgignore"
+
 #define IGNORE_FLAG_INVERT 1
 #define IGNORE_FLAG_ISDIR  2
 
@@ -31,6 +33,9 @@ void cleanup_ignore(ignores *ig);
 void add_ignore_pattern(ignores *ig, const char* pattern);
 
 void load_ignore_patterns(ignores *ig, const char *path);
+
+void load_hg_ignore_patterns(ignores *ig, const char *path);
+
 void load_svn_ignore_patterns(ignores *ig, const char *path);
 
 int filename_filter(const char *path, const struct dirent *dir, void *baton);
