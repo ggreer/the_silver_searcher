@@ -240,6 +240,8 @@ int is_fnmatch(const char* filename) {
         '?',
         '[',
         ']',
+        '{',
+        '}',
         '\0'
     };
 

@@ -2,16 +2,19 @@
 #define IGNORE_H
 
 #include <dirent.h>
+#include <pcre.h>
 #include <sys/types.h>
 
 #define SVN_DIR_PROP_BASE "dir-prop-base"
 #define SVN_DIR ".svn"
 #define SVN_PROP_IGNORE "svn:ignore"
 
+#define IGNORE_FLAG_INVERT 1
+#define IGNORE_FLAG_ISDIR  2
+
 struct ignores {
-    char **names; /* Non-regex ignore lines. Sorted so we can binary search them. */
-    size_t names_len;
-    char **regexes; /* For patterns that need fnmatch */
+    pcre **regexes; /* For patterns that need fnmatch */
+    int *flags;
     size_t regexes_len;
     struct ignores *parent;
 };

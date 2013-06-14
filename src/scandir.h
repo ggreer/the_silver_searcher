@@ -6,7 +6,9 @@
 typedef struct {
     const ignores *ig;
     const char *base_path;
-    int level;
+    /* How many directories above the current directory these ignores
+       were found */
+    unsigned int level;
 } scandir_baton_t;
 
 typedef int (*filter_fp)(const char *path, const struct dirent *, void *);

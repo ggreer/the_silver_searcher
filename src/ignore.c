@@ -11,14 +11,6 @@
 #include "scandir.h"
 #include "util.h"
 
-#ifdef _WIN32
-# include <shlwapi.h>
-# define fnmatch(x, y, z) (!PathMatchSpec(y,x))
-#else
-# include <fnmatch.h>
-const int fnmatch_flags = 0 & FNM_PATHNAME;
-#endif
-
 /* TODO: build a huge-ass list of files we want to ignore by default (build cache stuff, pyc files, etc) */
 
 const char *evil_hardcoded_ignore_files[] = {
@@ -39,9 +31,8 @@ const char *ignore_pattern_files[] = {
 
 ignores *init_ignore(ignores *parent) {
     ignores *ig = ag_malloc(sizeof(ignores));
-    ig->names = NULL;
-    ig->names_len = 0;
     ig->regexes = NULL;
+    ig->flags = NULL;
     ig->regexes_len = 0;
     ig->parent = parent;
     return ig;
@@ -57,23 +48,169 @@ void cleanup_ignore(ignores *ig) {
             }
             free(ig->regexes);
         }
-        if (ig->names) {
-            for (i = 0; i < ig->names_len; i++) {
-                free(ig->names[i]);
-            }
-            free(ig->names);
-        }
         free(ig);
     }
 }
 
+typedef enum {
+    normal, charclass, alternation
+} state;
+
+static char* resize_if_necessary (char* str, int pos, int* capacity) {
+    if (pos >= *capacity) {
+        *capacity *= 2;
+        return realloc(str, *capacity);
+    }
+    return str;
+}
+
+static pcre* glob_to_regex(const char* glob, int glob_len, int* flags) {
+
+    int capacity = glob_len + 8;
+    char* regex = malloc(capacity);
+    int pos = 0;
+
+    state st = normal;
+    int i = 0;
+    if (glob[i] == '!') {
+        *flags |= IGNORE_FLAG_INVERT;
+        i++;
+    } else if (glob[i] == '\\' && glob[i + 1] == '!') {
+        /* handle escaped ! */
+        i++;
+    }
+    if (glob[i] == '/') {
+        /* anchored regexp */
+        regex[pos++] = '^';
+    } else {
+        /* must match at start of filename or string */
+        strcpy(regex, "(/|^)");
+        pos = strlen(regex);
+    }
+
+    for (; i < glob_len; ++i) {
+        char c = glob[i];
+        switch (st) {
+        case normal:
+            switch(c) {
+            case '.':
+            case '|':
+            case '+':
+            case '^':
+            case '$':
+            case '(':
+            case ')':
+                /* escape regexp metacharacters */
+                regex = resize_if_necessary(regex, pos + 2, &capacity);
+                regex[pos++] = '\\';
+                regex[pos++] = c;
+                break;
+            case '[':
+                regex = resize_if_necessary(regex, pos + 2, &capacity);
+                regex[pos++] = '[';
+                if (glob[i+1] == '!') {
+                    regex[pos++] = '^';
+                    i++;
+                }
+                st = charclass;
+                /* We are treating an initial caret as per regex,
+                 since this is what bash does. */
+                break;
+            case '{':
+                regex = resize_if_necessary(regex, pos + 1, &capacity);
+                regex[pos++] = '(';
+                st = alternation;
+                break;
+            case '?':
+                regex = resize_if_necessary(regex, pos + 4, &capacity);
+                strcpy(regex + pos, "[^/]");
+                pos += 4;
+                break;
+            case '*':
+                regex = resize_if_necessary(regex, pos + 5, &capacity);
+                strcpy(regex + pos, "[^/]*");
+                pos += 5;
+                break;
+            default:
+                regex = resize_if_necessary(regex, pos + 1, &capacity);
+                regex[pos++] = c;
+                break;
+            }
+            break;
+        case charclass:
+            regex = resize_if_necessary(regex, pos + 1, &capacity);
+            if (c == ']') {
+                regex[pos++] = ']';
+                st = normal;
+            } else {
+                regex[pos++] = c;
+            }
+            break;
+        case alternation:
+            regex = resize_if_necessary(regex, pos + 1, &capacity);
+            switch (c) {
+            case '.':
+            case '|':
+            case '+':
+            case '^':
+            case '$':
+            case '(':
+            case ')':
+                /* escape regexp metacharacters */
+                regex = resize_if_necessary(regex, pos + 2, &capacity);
+                regex[pos++] = '\\';
+                regex[pos++] = c;
+                break;
+            case '}':
+                regex[pos++] = ')';
+                st = normal;
+                break;
+            case ',':
+                regex[pos++] = '|';
+                break;
+            default:
+                regex[pos++] = c;
+                break;
+            }
+            break;
+        }
+    }
+
+    switch(st) {
+    case charclass:
+        regex = resize_if_necessary(regex, pos + 1, &capacity);
+        regex[pos++] = ']';
+        break;
+    case alternation:
+        regex = resize_if_necessary(regex, pos + 1, &capacity);
+        regex[pos++] = ')';
+        break;
+    case normal:
+        if (regex[pos - 1] == '/') {
+            pos--;
+            *flags |= IGNORE_FLAG_ISDIR;
+        }
+        break;
+    }
+    regex = resize_if_necessary(regex, pos + 2, &capacity);
+    regex[pos++] = '$';
+    regex[pos] = 0;
+
+    int pcre_opts = 0;
+    const char *pcre_err = NULL;
+    int pcre_err_offset = 0;
+    pcre *result = pcre_compile(regex, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
+    log_debug("regex for glob %s = %s flags %d", glob, regex, *flags);
+    free(regex);
+    return result;
+}
+
 void add_ignore_pattern(ignores *ig, const char* pattern) {
-    int i;
     int pattern_len;
 
-    /* Strip off the leading ./ so that matches are more likely. */
+    /* Treat ./ the same as /. */
     if (strncmp(pattern, "./", 2) == 0) {
-        pattern += 2;
+        pattern += 1;
     }
 
     /* Kill trailing whitespace */
@@ -89,27 +226,16 @@ void add_ignore_pattern(ignores *ig, const char* pattern) {
     }
 
     /* TODO: de-dupe these patterns */
-    if (is_fnmatch(pattern)) {
-        ig->regexes_len++;
-        ig->regexes = ag_realloc(ig->regexes, ig->regexes_len * sizeof(char*));
-        ig->regexes[ig->regexes_len - 1] = ag_strndup(pattern, pattern_len);
-        log_debug("added regex ignore pattern %s", pattern);
-    } else {
-        /* a balanced binary tree is best for performance, but I'm lazy */
-        ig->names_len++;
-        ig->names = ag_realloc(ig->names, ig->names_len * sizeof(char*));
-        for (i = ig->names_len - 1; i > 0; i--) {
-            if (strcmp(pattern, ig->names[i-1]) > 0) {
-                break;
-            }
-            ig->names[i] = ig->names[i-1];
-        }
-        ig->names[i] = ag_strndup(pattern, pattern_len);
-        log_debug("added literal ignore pattern %s", pattern);
-    }
+    ig->regexes_len++;
+    ig->regexes = ag_realloc(ig->regexes, ig->regexes_len * sizeof(char*));
+    ig->flags = ag_realloc(ig->flags, ig->regexes_len * sizeof(int));
+    ig->regexes[ig->regexes_len - 1] = glob_to_regex(pattern, pattern_len, &(ig->flags[ig->regexes_len - 1]));
+    log_debug("added regex ignore pattern %s", pattern);
 }
 
-/* For loading git/hg ignore patterns */
+/* For loading git ignore patterns;
+   fixme: do hgignores (native regexps) too
+ */
 void load_ignore_patterns(ignores *ig, const char *path) {
     FILE *fp = NULL;
     fp = fopen(path, "r");
@@ -219,46 +345,40 @@ static int ackmate_dir_match(const char* dir_name) {
     return 0;
 }
 
-static int filename_ignore_search(const ignores *ig, const char *filename) {
+static int ignore_search(const ignores *ig, const char *path, const char *filename, int isdir) {
+
+    char* qualified;
+    ag_asprintf(&qualified, "%s/%s", path, filename);
+    int qualified_len = strlen(qualified);
+
+    log_debug("filter: %s -- %s = %s\n", path, filename, qualified);
+    int ignored = 0;
     size_t i;
-    int match_pos;
-
-    if (strncmp(filename, "./", 2) == 0) {
-        filename += 2;
-    }
-
-    match_pos = binary_search(filename, ig->names, 0, ig->names_len);
-    if (match_pos >= 0) {
-        log_debug("file %s ignored because name matches static pattern %s", filename, ig->names[match_pos]);
-        return 1;
-    }
-
-    if (ackmate_dir_match(filename)) {
-        log_debug("file %s ignored because name matches ackmate regex", filename);
-        return 1;
-    }
-
-    for (i = 0; i < ig->regexes_len; i++) {
-        if (fnmatch(ig->regexes[i], filename, fnmatch_flags) == 0) {
-            log_debug("file %s ignored because name matches regex pattern %s", filename, ig->regexes[i]);
-            return 1;
+    for (i = 0; i < ig->regexes_len; ++i) {
+        if (isdir || !(ig->flags[i] & IGNORE_FLAG_ISDIR)) {
+            if (pcre_exec(ig->regexes[i], NULL, qualified, qualified_len, 0, 0, NULL, 0) > -1) {
+                ignored = !(ig->flags[i] & IGNORE_FLAG_INVERT);
+                log_debug("Setting ignore on %s to %d\n", qualified, ignored);
+            }
         }
-        log_debug("pattern %s doesn't match file %s", ig->regexes[i], filename);
     }
+    if (ignored) {
+        log_debug("file %s ignored because name matches regexp pattern", qualified);
+        goto done;
+    }
+
+    /* TODO: check that this is correct given the refactor */
+    if (ackmate_dir_match(qualified)) {
+        log_debug("file %s ignored because name matches ackmate regex", filename);
+        ignored = TRUE;
+        goto done;
+    }
+
     log_debug("file %s not ignored", filename);
-    return 0;
-}
 
-static int path_ignore_search(const ignores *ig, const char *path, const char *filename) {
-    char *temp;
-
-    if (filename_ignore_search(ig, filename)) {
-        return 1;
-    }
-    ag_asprintf(&temp, "%s/%s", path, filename);
-    int rv = filename_ignore_search(ig, temp);
-    free(temp);
-    return rv;
+ done:
+    free(qualified);
+    return ignored;
 }
 
 /* This function is REALLY HOT. It gets called for every file */
@@ -269,7 +389,6 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     const ignores *ig = scandir_baton->ig;
     const char *base_path = scandir_baton->base_path;
     const char *path_start = path;
-    char *temp;
 
     if (!opts.follow_symlinks && is_symlink(path, dir)) {
         log_debug("File %s ignored becaused it's a symlink", dir->d_name);
@@ -295,42 +414,31 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     }
     log_debug("path_start is %s", path_start);
 
-    if (path_ignore_search(ig, path_start, filename)) {
+    /* The subpath is the portion of the path at which scandir_baton->ig's
+     ignores were found */
+    const char* subpath_start = path_start + strlen(path_start);
+    for (i = 0; i < scandir_baton->level; ++i) {
+        while (*subpath_start-- != '/') {
+            if (subpath_start <= path_start) {
+                log_debug("Overflowed while trying to find subpath");
+            }
+        }
+    }
+    if (scandir_baton->level)
+        subpath_start++;
+
+    int is_dir = is_directory(filename, dir);
+
+    if (ignore_search(ig, subpath_start, filename, is_dir)) {
         return 0;
     }
 
-    if (is_directory(path, dir) && filename[strlen(filename) - 1] != '/') {
-        ag_asprintf(&temp, "%s/", filename);
-        int rv = path_ignore_search(ig, path_start, temp);
-        free(temp);
-        if (rv) {
-            return 0;
-        }
-    }
-
-    /* TODO: copy-pasted from above */
-    if (scandir_baton->level == 0) {
-        char *temp2; /* horrible variable name, I know */
-        ag_asprintf(&temp, "/%s", filename);
-        if (path_ignore_search(ig, path_start, temp)) {
-            return 0;
-        }
-
-        if (is_directory(path, dir) && temp[strlen(filename) - 1] != '/') {
-            ag_asprintf(&temp2, "%s/", temp);
-            int rv = path_ignore_search(ig, path_start, temp2);
-            free(temp2);
-            if (rv) {
-                return 0;
-            }
-        }
-        free(temp);
-    }
-
-    scandir_baton->level++;
     if (ig->parent != NULL) {
-        scandir_baton->ig = ig->parent;
-        return filename_filter(path, dir, (void *)scandir_baton);
+        scandir_baton_t new_baton = *scandir_baton;
+        new_baton.level ++;
+        new_baton.ig = ig->parent;
+        int result = filename_filter(path, dir, (void *)&new_baton);
+        return result;
     }
 
     return 1;
