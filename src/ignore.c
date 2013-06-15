@@ -435,12 +435,11 @@ static int ignore_search(const ignores *ig, const char *path, const char *filena
     ag_asprintf(&qualified, "%s/%s", path, filename);
     int qualified_len = strlen(qualified);
 
-    log_debug("filter: %s -- %s = %s\n", path, filename, qualified);
     int ignored = 0;
     size_t i;
     for (i = 0; i < ig->regexes_len; ++i) {
         if (isdir || !(ig->flags[i] & IGNORE_FLAG_ISDIR)) {
-            if (pcre_exec(ig->regexes[i], NULL, qualified, qualified_len, 0, 0, NULL, 0) > -1) {
+            if (ignored == (ig->flags[i] & IGNORE_FLAG_INVERT) && pcre_exec(ig->regexes[i], NULL, qualified, qualified_len, 0, 0, NULL, 0) > -1) {
                 ignored = !(ig->flags[i] & IGNORE_FLAG_INVERT);
                 log_debug("Setting ignore on %s to %d\n", qualified, ignored);
             }
