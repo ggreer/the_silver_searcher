@@ -435,19 +435,31 @@ static int ignore_search(const ignores *ig, const char *path, const char *filena
     ag_asprintf(&qualified, "%s/%s", path, filename);
     int qualified_len = strlen(qualified);
 
-    int ignored = 0;
     size_t i;
-    for (i = 0; i < ig->regexes_len; ++i) {
-        if (isdir || !(ig->flags[i] & IGNORE_FLAG_ISDIR)) {
-            if (ignored == (ig->flags[i] & IGNORE_FLAG_INVERT) && pcre_exec(ig->regexes[i], NULL, qualified, qualified_len, 0, 0, NULL, 0) > -1) {
-                ignored = !(ig->flags[i] & IGNORE_FLAG_INVERT);
-                log_debug("Setting ignore on %s to %d\n", qualified, ignored);
+    int ignored = FALSE;
+
+    /* Gitignore commands are supposed to be processed in-order.  A
+       match on an ordinary pattern ignores the file, while a match on
+       a !patttern unignores an ignored file.  We process the commands
+       in reverse order, which allows us to short-circuit out once
+       we find a single match on either an ignored or !ignored file.
+
+     */
+    for (i = ig->regexes_len - 1; i < ig->regexes_len; --i) {
+        if (ignored != !(ig->flags[i] & IGNORE_FLAG_INVERT) &&
+            (isdir || !(ig->flags[i] & IGNORE_FLAG_ISDIR))) {
+            if (pcre_exec(ig->regexes[i], NULL, qualified, qualified_len, 0, 0, NULL, 0) > -1) {
+                if (ig->flags[i] & IGNORE_FLAG_INVERT) {
+                    log_debug("file %s not ignored because name matches regexp pattern", qualified);
+                    ignored = 0;
+                    goto done;
+                } else {
+                    log_debug("file %s ignored because name matches regexp pattern", qualified);
+                    ignored = 1;
+                    goto done;
+                }
             }
         }
-    }
-    if (ignored) {
-        log_debug("file %s ignored because name matches regexp pattern", qualified);
-        goto done;
     }
 
     /* TODO: check that this is correct given the refactor */
