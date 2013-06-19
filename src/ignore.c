@@ -235,6 +235,7 @@ void add_ignore_pattern(ignores *ig, const char* pattern) {
     ig->flags = ag_realloc(ig->flags, ig->regexes_len * sizeof(int));
     pcre* re = glob_to_regex(pattern, pattern_len, &(ig->flags[ig->regexes_len - 1]));
     ig->regexes[ig->regexes_len - 1] = re;
+    ig->flags[ig->regexes_len - 1] = 0;
 
     const char* pcre_err = NULL;
     ig->extra[ig->regexes_len - 1] = pcre_study(re, 0, &pcre_err);
