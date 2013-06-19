@@ -380,10 +380,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                     opts.print_line_numbers = FALSE;
                     break;
                 } else if (strcmp(longopts[opt_index].name, "ignore-dir") == 0) {
-                    add_ignore_pattern(root_ignores, optarg);
+                    add_ignore_pattern_string(root_ignores, optarg);
                     break;
                 } else if (strcmp(longopts[opt_index].name, "ignore") == 0) {
-                    add_ignore_pattern(root_ignores, optarg);
+                    add_ignore_pattern_string(root_ignores, optarg);
                     break;
                 } else if (strcmp(longopts[opt_index].name, "long-line-length") == 0) {
                     opts.long_line_length = atoi(optarg);

@@ -31,7 +31,9 @@ extern const char *ignore_pattern_files[];
 ignores *init_ignore(ignores *parent);
 void cleanup_ignore(ignores *ig);
 
-void add_ignore_pattern(ignores *ig, const char* pattern);
+void add_ignore_pattern(char **buf, int *capacity, const char *pattern);
+
+void add_ignore_pattern_string(ignores *ig, const char *pattern);
 
 void load_ignore_patterns(ignores *ig, const char *path);
 

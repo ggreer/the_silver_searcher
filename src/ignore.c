@@ -62,24 +62,20 @@ typedef enum {
 static char* resize_if_necessary (char* str, int pos, int* capacity) {
     if (pos >= *capacity) {
         *capacity *= 2;
-        return realloc(str, *capacity);
+        return ag_realloc(str, *capacity);
     }
     return str;
 }
 
-static pcre* glob_to_regex(const char* glob, int glob_len, int* flags) {
+static char* glob_to_regex(const char* glob, int glob_len) {
 
-    int capacity = glob_len + 8;
+    int capacity = glob_len + 10;
     char* regex = malloc(capacity);
     int pos = 0;
 
     state st = normal;
     int i = 0;
-    if (glob[i] == '!') {
-        *flags |= IGNORE_FLAG_INVERT;
-        i++;
-    } else if (glob[i] == '\\' && glob[i + 1] == '!') {
-        /* handle escaped ! */
+    if (glob[i] == '!' || (glob[i] == '\\' && glob[i + 1] == '!')) {
         i++;
     }
     if (glob[i] == '/') {
@@ -87,7 +83,7 @@ static pcre* glob_to_regex(const char* glob, int glob_len, int* flags) {
         regex[pos++] = '^';
     } else {
         /* must match at start of filename or string */
-        strcpy(regex, "(/|^)");
+        strcpy(regex, "(?:/|^)");
         pos = strlen(regex);
     }
 
@@ -191,24 +187,16 @@ static pcre* glob_to_regex(const char* glob, int glob_len, int* flags) {
     case normal:
         if (regex[pos - 1] == '/') {
             pos--;
-            *flags |= IGNORE_FLAG_ISDIR;
         }
         break;
     }
-    regex = resize_if_necessary(regex, pos + 2, &capacity);
-    regex[pos++] = '$';
+    regex = resize_if_necessary(regex, pos + 1, &capacity);
     regex[pos] = 0;
 
-    int pcre_opts = 0;
-    const char *pcre_err = NULL;
-    int pcre_err_offset = 0;
-    pcre *result = pcre_compile(regex, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
-    log_debug("regex for glob %s = %s flags %d", glob, regex, *flags);
-    free(regex);
-    return result;
+    return regex;
 }
 
-void add_ignore_pattern(ignores *ig, const char* pattern) {
+void add_ignore_pattern(char **buf, int *capacity, const char* pattern) {
     int pattern_len;
 
     /* Treat ./ the same as /. */
@@ -228,21 +216,40 @@ void add_ignore_pattern(ignores *ig, const char* pattern) {
         return;
     }
 
-    /* TODO: de-dupe these patterns */
-    ig->regexes_len++;
-    ig->regexes = ag_realloc(ig->regexes, ig->regexes_len * sizeof(pcre*));
-    ig->extra = ag_realloc(ig->extra, ig->regexes_len * sizeof(pcre_extra*));
-    ig->flags = ag_realloc(ig->flags, ig->regexes_len * sizeof(int));
-    pcre* re = glob_to_regex(pattern, pattern_len, &(ig->flags[ig->regexes_len - 1]));
-    ig->regexes[ig->regexes_len - 1] = re;
-    ig->flags[ig->regexes_len - 1] = 0;
+    if (*buf == NULL) {
+        *buf = glob_to_regex(pattern, pattern_len);
+        *capacity = strlen(*buf);
+    } else {
+        char* regex = glob_to_regex(pattern, pattern_len);
+        int len = strlen(regex);
+        int old_len = strlen(*buf);
+        if (len + old_len + 2 > *capacity) {
+            *capacity *= len + old_len + 2;
+            *buf = ag_realloc(*buf, *capacity);
+        }
+        (*buf)[old_len] = '|';
+        (*buf)[old_len + 1] = 0;
+        strcpy(*buf+old_len+1,regex);
+        free(regex);
+    }
 
-    const char* pcre_err = NULL;
-    ig->extra[ig->regexes_len - 1] = pcre_study(re, 0, &pcre_err);
     log_debug("added regex ignore pattern %s", pattern);
+
+    return;
 }
 
-void add_pcre_ignore_pattern(ignores *ig, const char* pattern) {
+int ignore_pattern_flags(char* pattern) {
+    int flags = 0;
+    if (pattern[0] == '!') {
+        flags |= IGNORE_FLAG_INVERT;
+    }
+    if (pattern[strlen(pattern) - 1] == '/') {
+        flags |= IGNORE_FLAG_ISDIR;
+    }
+    return flags;
+}
+
+void add_pcre_ignore_pattern(char **buf, int* capacity, const char* pattern) {
     int pattern_len;
 
     /* Kill trailing whitespace */
@@ -272,20 +279,56 @@ void add_pcre_ignore_pattern(ignores *ig, const char* pattern) {
         strncpy(adjusted_pattern, pattern, pattern_len - 1);
     }
 
-    int pcre_opts = 0;
-    const char *pcre_err = NULL;
-    int pcre_err_offset = 0;
-    pcre* re = pcre_compile(adjusted_pattern, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
-    free(adjusted_pattern);
+    if (*buf == NULL) {
+        *buf = adjusted_pattern;
+        *capacity = strlen(*buf);
+    } else {
+        int len = strlen(adjusted_pattern);
+        int old_len = strlen(*buf);
+        if (len + old_len + 2 > *capacity) {
+            *capacity *= len + old_len + 2;
+            *buf = ag_realloc(*buf, *capacity);
+        }
+        (*buf)[old_len] = '|';
+        (*buf)[old_len + 1] = 0;
+        strcpy(*buf+old_len+1,adjusted_pattern);
+    }
 
-    /* TODO: de-dupe these patterns */
+    log_debug("added regex ignore pattern %s", pattern);
+}
+
+void add_ignore_regex(ignores* ig, const char* pattern, int flags) {
     ig->regexes_len++;
     ig->regexes = ag_realloc(ig->regexes, ig->regexes_len * sizeof(pcre*));
     ig->extra = ag_realloc(ig->extra, ig->regexes_len * sizeof(pcre_extra*));
     ig->flags = ag_realloc(ig->flags, ig->regexes_len * sizeof(int));
+
+    int pcre_opts = PCRE_DOLLAR_ENDONLY;
+    const char *pcre_err = NULL;
+    int pcre_err_offset = 0;
+
+    /* anchor pattern to end-of-string */
+    char* anchored = NULL;
+    ag_asprintf(&anchored, "(?:%s)$", pattern);
+
+    log_debug("COMPILING %s of %d", anchored, ig->regexes_len);
+
+    pcre *re = pcre_compile(anchored, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
+    free(anchored);
+
     ig->regexes[ig->regexes_len - 1] = re;
+
     ig->extra[ig->regexes_len - 1] = pcre_study(re, 0, &pcre_err);
-    log_debug("added regex ignore pattern %s", pattern);
+
+    ig->flags[ig->regexes_len - 1] = flags;
+
+}
+
+
+void add_ignore_pattern_string(ignores* ig, const char* glob) {
+    char* regex = glob_to_regex(glob, strlen(glob));
+    add_ignore_regex(ig, regex, 0);
+    free(regex);
 }
 
 /* For loading git and compatible ignore patterns */
@@ -301,6 +344,11 @@ void load_ignore_patterns(ignores *ig, const char *path) {
     ssize_t line_len = 0;
     size_t line_cap = 0;
 
+    int last_flags = -1;
+    int flags;
+    char* pattern = NULL;
+    int capacity = 0;
+
     while ((line_len = getline(&line, &line_cap, fp)) > 0) {
         if (line_len == 0 || line[0] == '\n' || line[0] == '#') {
             continue;
@@ -308,7 +356,20 @@ void load_ignore_patterns(ignores *ig, const char *path) {
         if (line[line_len-1] == '\n') {
             line[line_len-1] = '\0'; /* kill the \n */
         }
-        add_ignore_pattern(ig, line);
+        flags = ignore_pattern_flags(line);
+        if (last_flags != -1 && flags != last_flags) {
+            add_ignore_regex(ig, pattern, flags);
+            free(pattern);
+            pattern = NULL;
+        }
+        last_flags = flags;
+
+        add_ignore_pattern(&pattern, &capacity, line);
+    }
+
+    if (last_flags != -1) {
+        add_ignore_regex(ig, pattern, flags);
+        free(pattern);
     }
 
     free(line);
@@ -331,6 +392,9 @@ void load_hg_ignore_patterns(ignores *ig, const char *path) {
     ssize_t line_len = 0;
     size_t line_cap = 0;
 
+    char* pattern = NULL;
+    int capacity = 0;
+
     hg_ignore_mode mode = pcre_mode;
     while ((line_len = getline(&line, &line_cap, fp)) > 0) {
         if (line_len == 0 || line[0] == '\n' || line[0] == '#') {
@@ -347,11 +411,14 @@ void load_hg_ignore_patterns(ignores *ig, const char *path) {
             continue;
         }
         if (mode == glob_mode) {
-            add_ignore_pattern(ig, line);
+            add_ignore_pattern(&pattern, &capacity, line);
         } else {
-            add_pcre_ignore_pattern(ig, line);
+            add_pcre_ignore_pattern(&pattern, &capacity, line);
         }
     }
+
+    add_ignore_regex(ig, pattern, 0);
+    free(pattern);
 
     free(line);
     fclose(fp);
@@ -404,6 +471,9 @@ void load_svn_ignore_patterns(ignores *ig, const char *path) {
     if (entry == NULL) {
         goto cleanup;
     }
+    char *buf = NULL;
+    int capacity;
+
     char *patterns = entry;
     while (*patterns != '\0' && patterns < (entry + bytes_read)) {
         for (line_len = 0; line_len < strlen(patterns); line_len++) {
@@ -413,11 +483,15 @@ void load_svn_ignore_patterns(ignores *ig, const char *path) {
         }
         if (line_len > 0) {
             entry_line = ag_strndup(patterns, line_len);
-            add_ignore_pattern(ig, entry_line);
+            add_ignore_pattern(&buf, &capacity, entry_line);
             free(entry_line);
         }
         patterns += line_len + 1;
     }
+
+    add_ignore_regex(ig, buf, 0);
+    free(buf);
+
     free(entry);
     cleanup:;
     free(dir_prop_base);
@@ -518,6 +592,7 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         /* base_path always ends with "/\0" while path doesn't, so this is safe */
         path_start = path + i + 1;
     }
+
     log_debug("path_start is %s", path_start);
 
     /* The subpath is the portion of the path at which scandir_baton->ig's
