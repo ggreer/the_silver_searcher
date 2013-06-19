@@ -16,6 +16,7 @@
 
 struct ignores {
     pcre **regexes; /* For patterns that need fnmatch */
+    pcre_extra **extra;
     int *flags;
     size_t regexes_len;
     struct ignores *parent;

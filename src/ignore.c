@@ -32,6 +32,7 @@ const char *ignore_pattern_files[] = {
 ignores *init_ignore(ignores *parent) {
     ignores *ig = ag_malloc(sizeof(ignores));
     ig->regexes = NULL;
+    ig->extra = NULL;
     ig->flags = NULL;
     ig->regexes_len = 0;
     ig->parent = parent;
@@ -45,8 +46,10 @@ void cleanup_ignore(ignores *ig) {
         if (ig->regexes) {
             for (i = 0; i < ig->regexes_len; i++) {
                 free(ig->regexes[i]);
+                free(ig->extra[i]);
             }
             free(ig->regexes);
+            free(ig->extra);
         }
         free(ig);
     }
@@ -227,9 +230,14 @@ void add_ignore_pattern(ignores *ig, const char* pattern) {
 
     /* TODO: de-dupe these patterns */
     ig->regexes_len++;
-    ig->regexes = ag_realloc(ig->regexes, ig->regexes_len * sizeof(char*));
+    ig->regexes = ag_realloc(ig->regexes, ig->regexes_len * sizeof(pcre*));
+    ig->extra = ag_realloc(ig->extra, ig->regexes_len * sizeof(pcre_extra*));
     ig->flags = ag_realloc(ig->flags, ig->regexes_len * sizeof(int));
-    ig->regexes[ig->regexes_len - 1] = glob_to_regex(pattern, pattern_len, &(ig->flags[ig->regexes_len - 1]));
+    pcre* re = glob_to_regex(pattern, pattern_len, &(ig->flags[ig->regexes_len - 1]));
+    ig->regexes[ig->regexes_len - 1] = re;
+
+    const char* pcre_err = NULL;
+    ig->extra[ig->regexes_len - 1] = pcre_study(re, 0, &pcre_err);
     log_debug("added regex ignore pattern %s", pattern);
 }
 
@@ -271,9 +279,11 @@ void add_pcre_ignore_pattern(ignores *ig, const char* pattern) {
 
     /* TODO: de-dupe these patterns */
     ig->regexes_len++;
-    ig->regexes = ag_realloc(ig->regexes, ig->regexes_len * sizeof(char*));
+    ig->regexes = ag_realloc(ig->regexes, ig->regexes_len * sizeof(pcre*));
+    ig->extra = ag_realloc(ig->extra, ig->regexes_len * sizeof(pcre_extra*));
     ig->flags = ag_realloc(ig->flags, ig->regexes_len * sizeof(int));
     ig->regexes[ig->regexes_len - 1] = re;
+    ig->extra[ig->regexes_len - 1] = pcre_study(re, 0, &pcre_err);
     log_debug("added regex ignore pattern %s", pattern);
 }
 
@@ -448,7 +458,7 @@ static int ignore_search(const ignores *ig, const char *path, const char *filena
     for (i = ig->regexes_len - 1; i < ig->regexes_len; --i) {
         if (ignored != !(ig->flags[i] & IGNORE_FLAG_INVERT) &&
             (isdir || !(ig->flags[i] & IGNORE_FLAG_ISDIR))) {
-            if (pcre_exec(ig->regexes[i], NULL, qualified, qualified_len, 0, 0, NULL, 0) > -1) {
+            if (pcre_exec(ig->regexes[i], ig->extra[i], qualified, qualified_len, 0, 0, NULL, 0) > -1) {
                 if (ig->flags[i] & IGNORE_FLAG_INVERT) {
                     log_debug("file %s not ignored because name matches regexp pattern", qualified);
                     ignored = 0;
