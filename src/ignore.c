@@ -505,7 +505,7 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
 
     for (i = 0; base_path[i] == path[i] && i < strlen(base_path); i++) {
         /* base_path always ends with "/\0" while path doesn't, so this is safe */
-        path_start = path + i + 2;
+        path_start = path + i + 1;
     }
     log_debug("path_start is %s", path_start);
 
