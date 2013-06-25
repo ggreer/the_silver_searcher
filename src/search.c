@@ -1,10 +1,10 @@
 #include "search.h"
 #include "scandir.h"
 
-void search_buf(const char *buf, const int buf_len,
+void search_buf(const char *buf, const off_t buf_len,
                 const char *dir_full_path) {
     int binary = -1;  /* 1 = yes, 0 = no, -1 = don't know */
-    int buf_offset = 0;
+    off_t buf_offset = 0;
 
     if (opts.search_stream) {
         binary = 0;
@@ -18,8 +18,8 @@ void search_buf(const char *buf, const int buf_len,
 
     int matches_len = 0;
     match *matches;
-    size_t matches_size;
-    size_t matches_spare;
+    off_t matches_size;
+    off_t matches_spare;
 
     if (opts.invert_match) {
         /* If we are going to invert the set of matches at the end, we will need
@@ -53,7 +53,7 @@ void search_buf(const char *buf, const int buf_len,
             }
 
             if (!opts.print_long_lines) {
-                int line_length = get_line_length(buf, buf_len, match_ptr - buf, opts.query_len + match_ptr - buf);
+                off_t line_length = get_line_length(buf, buf_len, match_ptr - buf, opts.query_len + match_ptr - buf);
                 if (line_length >= opts.long_line_length) {
                     log_debug("Too long line: %d > %d.\n", line_length, opts.long_line_length);
                     const char *end = match_ptr + opts.query_len;
@@ -85,7 +85,7 @@ void search_buf(const char *buf, const int buf_len,
                 }
             }
 
-            if ((size_t)matches_len + matches_spare >= matches_size) {
+            if ((off_t)matches_len + matches_spare >= matches_size) {
                 matches_size = matches ? matches_size * 2 : 100;
                 log_debug("Too many matches in %s. Reallocating matches to %zu.", dir_full_path, matches_size);
                 matches = ag_realloc(matches, matches_size * sizeof(match));
@@ -112,7 +112,7 @@ void search_buf(const char *buf, const int buf_len,
             buf_offset = offset_vector[1];
 
             if (!opts.print_long_lines) {
-                int line_length = get_line_length(buf, buf_len, offset_vector[0], offset_vector[1]);
+                off_t line_length = get_line_length(buf, buf_len, offset_vector[0], offset_vector[1]);
                 if (line_length >= opts.long_line_length) {
                     log_debug("Too long line: %d > %d.\n", line_length, opts.long_line_length);
                     continue;
@@ -120,7 +120,7 @@ void search_buf(const char *buf, const int buf_len,
             }
 
             /* TODO: copy-pasted from above. FIXME */
-            if ((size_t)matches_len + matches_spare >= matches_size) {
+            if ((off_t)matches_len + matches_spare >= matches_size) {
                 matches_size = matches ? matches_size * 2 : 100;
                 log_debug("Too many matches in %s. Reallocating matches to %zu.", dir_full_path, matches_size);
                 matches = ag_realloc(matches, matches_size * sizeof(match));
@@ -174,7 +174,7 @@ void search_buf(const char *buf, const int buf_len,
 /* TODO: this will only match single lines. multi-line regexes silently don't match */
 void search_stream(FILE *stream, const char *path) {
     char *line = NULL;
-    ssize_t line_len = 0;
+    off_t line_len = 0;
     size_t line_cap = 0;
 
     while ((line_len = getline(&line, &line_cap, stream)) > 0) {
@@ -258,7 +258,7 @@ void search_file(const char *file_full_path) {
         if (opts.search_zip_files) {
             ag_compression_type zip_type = is_zipped(buf, f_len);
             if (zip_type != AG_NO_COMPRESSION) {
-                int _buf_len = (int)f_len;
+                off_t _buf_len = f_len;
                 char *_buf = decompress(zip_type, buf, f_len, file_full_path, &_buf_len);
                 if (_buf == NULL || _buf_len == 0) {
                     log_err("Cannot decompress zipped file %s", file_full_path);

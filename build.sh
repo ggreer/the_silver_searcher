@@ -10,7 +10,7 @@ PATH=$PATH:/usr/local/bin
 # but have autoconf/make/etc in /usr/. AKA most mac users
 if [ -d "/usr/local/share/aclocal" ]
 then
-    AC_SEARCH_OPTS="-I /usr/local/share/aclocal"
+    AC_SEARCH_OPTS="-I /usr/local/share/aclocal -I /usr/share/aclocal"
 fi
 
 aclocal $AC_SEARCH_OPTS && \
