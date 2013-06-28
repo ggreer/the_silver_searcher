@@ -55,6 +55,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Skip the rest of a file after NUM matches. Default is 10,000.
   * `--no-numbers`:            
     Don't show line numbers
+  * `-N --files-with-numbers`:
+	Print file names and line numbers that contain matches.
   * `-p --path-to-agignore STRING`:
     Provide a path to a specific .agignore file.
   * `--pager COMMAND`:

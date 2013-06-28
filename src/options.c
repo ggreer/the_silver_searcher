@@ -74,6 +74,7 @@ Search options:\n\
                         Only print filenames that don't contain matches\n\
 -m --max-count NUM      Skip the rest of a file after NUM matches (Default: 10,000)\n\
 --no-numbers            Don't show line numbers\n\
+-N --files-and-numbers  Print file names and line numbers that contain matches\n\
 -p --path-to-agignore STRING\n\
                         Use .agignore file at STRING\n\
 --print-long-lines      Print matches on very long lines (Default: >2k characters)\n\
@@ -184,6 +185,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "file-search-regex", required_argument, NULL, 'G' },
         { "files-with-matches", no_argument, NULL, 'l' },
         { "files-without-matches", no_argument, NULL, 'L' },
+		{ "files-with-numbers", no_argument, NULL, 'N' },
         { "follow", no_argument, &opts.follow_symlinks, 1 },
         { "group", no_argument, &group, 1 },
         { "heading", no_argument, &opts.print_heading, 1 },
@@ -253,7 +255,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.stdout_inode = statbuf.st_ino;
     }
 
-    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:np:QRrSsvVtuUwz", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:np:NQRrSsvVtuUwz", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 opts.after = atoi(optarg);
@@ -308,6 +310,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             case 'n':
                 opts.recurse_dirs = 0;
                 break;
+			case 'N':
+				opts.print_files_and_numbers = 1;
+				break;
             case 'p':
                 opts.path_to_agignore = optarg;
                 break;
