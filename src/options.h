@@ -34,12 +34,14 @@ typedef struct {
     int context;
     int follow_symlinks;
     int invert_match;
+    int list_files;
     int literal;
     int literal_starts_wordchar;
     int literal_ends_wordchar;
     int max_matches_per_file;
     int max_search_depth;
     char *path_to_agignore;
+    int print0;
     int print_break;
     int print_filename_only;
     int print_heading;

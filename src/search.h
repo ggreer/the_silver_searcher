@@ -68,5 +68,6 @@ void search_file(const char *file_full_path);
 void *search_file_worker();
 
 void search_dir(ignores *ig, const char *base_path, const char *path, const int depth);
+void list_files(ignores *ig, const char *base_path, const char *path, const int depth);
 
 #endif

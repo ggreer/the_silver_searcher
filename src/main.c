@@ -107,7 +107,13 @@ int main(int argc, char **argv) {
         compile_study(&opts.re, &opts.re_extra, opts.query, pcre_opts, study_opts);
     }
 
-    if (opts.search_stream) {
+    if (opts.list_files) {
+        for (i = 0; paths[i] != NULL; i++) {
+            log_debug("listing files in %s", paths[i]);
+            symhash = NULL;
+            list_files(root_ignores, base_paths[i], paths[i], 0);
+        }
+    } else if (opts.search_stream) {
         search_stream(stdin, "");
     } else {
         for (i = 0; i < workers_len; i++) {
