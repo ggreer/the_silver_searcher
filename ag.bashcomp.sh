@@ -45,6 +45,7 @@ _ag() {
     --literal
     --max-count
     --no-numbers
+    --only-matching
     --pager
     --nopager
     --parallel
@@ -67,10 +68,10 @@ _ag() {
   shtopt='
     -a -A -B -C -D
     -f -g -G -h -i
-    -l -L -m -n -p
-    -Q -r -R -s -S
-    -t -u -U -v -V
-    -w -z
+    -l -L -m -n -o
+    -p -Q -r -R -s
+    -S -t -u -U -v
+    -V -w -z
   '
 
   # these options require an argument

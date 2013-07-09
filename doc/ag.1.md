@@ -53,6 +53,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Only print filenames that don't contain matches.
   * `-m --max-count NUM`:
     Skip the rest of a file after NUM matches. Default is 10,000.
+  * `-o --only-matching`:
+    Only print the matching part of a line.
   * `--no-numbers`:            
     Don't show line numbers
   * `-p --path-to-agignore STRING`:

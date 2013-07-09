@@ -155,10 +155,15 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                             }
                             printing_a_match = TRUE;
                         }
-                        fputc(buf[j], out_fd);
+                        if (!opts.only_matching || printing_a_match) {
+                            fputc(buf[j], out_fd);
+                        }
                     }
                     if (printing_a_match && opts.color) {
                         fprintf(out_fd, "%s", color_reset);
+                    }
+                    if (opts.only_matching) {
+                        fputc('\n', out_fd);
                     }
                 }
             } else if (lines_since_last_match <= opts.after) {
