@@ -13,7 +13,7 @@ Source0:	https://github.com/downloads/ggreer/%{name}/%{name}-%{version}.tar.gz
 Source1:	ag.bashcomp.sh
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
-BuildRequires:	pkgconfig, autoconf, pcre-devel
+BuildRequires:	pkgconfig, autoconf, pcre-devel, automake
 Requires:	pcre
 
 %description
