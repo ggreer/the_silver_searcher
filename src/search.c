@@ -445,8 +445,8 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
                 work_queue_tail->next = queue_item;
             }
             work_queue_tail = queue_item;
-            pthread_mutex_unlock(&work_queue_mtx);
             pthread_cond_signal(&files_ready);
+            pthread_mutex_unlock(&work_queue_mtx);
             log_debug("%s added to work queue", dir_full_path);
         } else if (opts.recurse_dirs) {
             if (depth < opts.max_search_depth) {
