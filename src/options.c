@@ -226,6 +226,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 
     if (argc < 2) {
         usage();
+        cleanup_ignore(root_ignores);
+        cleanup_options();
         exit(1);
     }
 
