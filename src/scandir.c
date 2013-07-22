@@ -30,9 +30,11 @@ int ag_scandir(const char *dirname,
             continue;
         }
         if (results_len >= names_len) {
+            struct dirent **tmp_names = names;
             names_len *= 2;
             names = realloc(names, sizeof(struct dirent*) * names_len);
             if (names == NULL) {
+                free(tmp_names);
                 goto fail;
             }
         }
