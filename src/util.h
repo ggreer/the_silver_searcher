@@ -65,7 +65,7 @@ void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opt
 void* decompress(const ag_compression_type zip_type, const void* buf, const int buf_len, const char* dir_full_path, int* new_buf_len);
 ag_compression_type is_zipped(const void* buf, const int buf_len);
 
-int is_binary(const void* buf, const int buf_len);
+int is_binary(const char *buf, const int buf_len);
 int is_regex(const char* query);
 int is_fnmatch(const char* filename);
 int binary_search(const char* needle, char **haystack, int start, int end);

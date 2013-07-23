@@ -164,49 +164,84 @@ void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opt
 }
 
 /* This function is very hot. It's called on every file. */
-int is_binary(const void* buf, const int buf_len) {
+int is_binary(const char *buf, const int buf_len) {
+    const unsigned char *s = (const unsigned char *) buf;
     int suspicious_bytes = 0;
     int total_bytes = buf_len > 512 ? 512 : buf_len;
-    const unsigned char *buf_c = buf;
+    int check_for_valid_utf8 = 1;
     int i;
 
     if (buf_len == 0) {
         return 0;
     }
 
-    if (buf_len >= 3 && buf_c[0] == 0xEF && buf_c[1] == 0xBB && buf_c[2] == 0xBF) {
+    if (buf_len >= 3 && s[0] == 0xEF && s[1] == 0xBB && s[2] == 0xBF) {
         /* UTF-8 BOM. This isn't binary. */
         return 0;
     }
 
     for (i = 0; i < total_bytes; i++) {
-        if (buf_c[i] == '\0') {
-            /* NULL char. It's binary */
-            return 1;
-        } else if ((buf_c[i] < 7 || buf_c[i] > 14) && (buf_c[i] < 32 || buf_c[i] > 127)) {
-            /* UTF-8 detection */
-            if (buf_c[i] > 191 && buf_c[i] < 224 && i + 1 < total_bytes) {
-                i++;
-                if (buf_c[i] < 192) {
-                    continue;
-                }
-            } else if (buf_c[i] > 223 && buf_c[i] < 239 && i + 2 < total_bytes) {
-                i++;
-                if (buf_c[i] < 192 && buf_c[i + 1] < 192) {
-                    i++;
-                    continue;
-                }
+        const unsigned char c = s[i];
+
+        /* We order the character tests such that we optimize for the case
+         * of checking ASCII text. Typically a 'binary' file will contain
+         * a NUL char early on and will return quickly; we want to minimize
+         * the time spent examining plain text. */
+
+        if (c <= 126) {
+            if (c >= 32) {
+                continue; /* ASCII text in 32..126 range. */
             }
-            suspicious_bytes++;
-            /* Disk IO is so slow that it's worthwhile to do this calculation after every suspicious byte. */
-            /* This is true even on a 1.6Ghz Atom with an Intel 320 SSD. */
-            /* Read at least 32 bytes before making a decision */
-            if (i >= 32 && (suspicious_bytes * 100) / total_bytes > 10) {
-                return 1;
+            else if (c >= 8 && c <= 13) {
+                continue; /* ASCII BS, TAB, LF, VT, FF or CR. */
+            } else {
+                if (c == 0) {
+                    return 1; /* A NUL char - it's binary. */
+                }
+                /* Assert: c is in (1..8) or (14..31) */
+            }
+        } else if (check_for_valid_utf8) {
+            if (c == 127) {
+                /* ASCII DEL. Treat as suspicious. */
+            } else {
+                /* Assert: (c > 127)
+                 * Maybe it's the first of a multibyte UTF-8 character.
+                 * NB. RFC 3629 states "The octet values C0, C1, F5 to FF never appear". */
+
+/* A valid continuation byte matches 10xxxxxx. */
+#define utf8_continuation_byte(c) (((c) & 0xC0) == 0x80)
+
+                if (c >= 0xc2) {
+                    if (c < 0xe0)   /* start byte 110xxxxx */
+                        goto check_2_byte_utf8_char;
+                    if (c < 0xf0)   /* start byte 1110xxxx */
+                        goto check_3_byte_utf8_char;
+                    if (c < 0xf5) { /* start byte 11110xxx */
+                        if (!utf8_continuation_byte(s[++i])) goto not_utf8;
+check_3_byte_utf8_char:
+                        if (!utf8_continuation_byte(s[++i])) goto not_utf8;
+check_2_byte_utf8_char:
+                        if (!utf8_continuation_byte(s[++i])) goto not_utf8;
+
+                        continue; /* A valid UTF-8 multibyte character. */
+                    }
+                }
+not_utf8:
+                check_for_valid_utf8 = 0;
             }
         }
+        /* If we get here then we're suspicious it's binary! */
+        ++suspicious_bytes;
+
+        /* Disk IO is so slow that it's worthwhile to do this calculation after every suspicious byte. */
+        /* This is true even on a 1.6Ghz Atom with an Intel 320 SSD. */
+        /* Read at least 32 bytes before making a decision */
+        if (i >= 32 && 10 * suspicious_bytes > total_bytes) {
+            return 1;
+        }
     }
-    if ((suspicious_bytes * 100) / total_bytes > 10) {
+
+    if (10 * suspicious_bytes > total_bytes) {
         return 1;
     }
 
