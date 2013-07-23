@@ -44,14 +44,14 @@ int ag_scandir(const char *dirname,
 	 * Solaris, we need to actually allocate enough space for the whole
 	 * string.
 	 */
-        d = malloc(sizeof(struct dirent) + strlen(entry->d_name) + 1);
+        d = calloc(1, sizeof(struct dirent) + strlen(entry->d_name) + 1);
 #else
-        d = malloc(sizeof(struct dirent));
+        d = calloc(1, sizeof(struct dirent));
 #endif
         if (d == NULL) {
             goto fail;
         }
-        memcpy(d, entry, sizeof(struct dirent));
+        memcpy(d, entry, entry->d_reclen);
 #if defined (__SVR4) && defined (__sun)
         strcpy(d->d_name, entry->d_name);
 #endif
