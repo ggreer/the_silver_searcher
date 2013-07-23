@@ -19,13 +19,12 @@
 const int fnmatch_flags = 0 & FNM_PATHNAME;
 #endif
 
+#if 0
 /* TODO: build a huge-ass list of files we want to ignore by default (build cache stuff, pyc files, etc) */
-
 const char *evil_hardcoded_ignore_files[] = {
-    ".",
-    "..",
     NULL
 };
+#endif
 
 /* Warning: changing the first string will break skip_vcs_ignores. */
 const char *ignore_pattern_files[] = {
@@ -271,20 +270,27 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     const char *path_start = path;
     char *temp;
 
+    if (filename[0] == '.') {
+	if ((filename[1] == '\0') /* "." */
+		|| (filename[1] == '.' && filename[2] == '\0') /* ".." */
+		|| !opts.search_hidden_files) {
+	    return 0;
+	}
+    }
+
     if (!opts.follow_symlinks && is_symlink(path, dir)) {
         log_debug("File %s ignored becaused it's a symlink", dir->d_name);
         return 0;
     }
 
+#if 0
     for (i = 0; evil_hardcoded_ignore_files[i] != NULL; i++) {
         if (strcmp(filename, evil_hardcoded_ignore_files[i]) == 0) {
             return 0;
         }
     }
+#endif
 
-    if (!opts.search_hidden_files && filename[0] == '.') {
-        return 0;
-    }
     if (opts.search_all_files && !opts.path_to_agignore) {
         return 1;
     }
