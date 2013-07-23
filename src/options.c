@@ -88,6 +88,8 @@ Search options:\n\
                         searches binary and hidden files as well)\n\
 -U --skip-vcs-ignores   Ignore VCS ignore files\n\
                         (.gitigore, .hgignore, .svnignore; still obey .agignore)\n\
+--no-recurse-vcs-ignores\n\
+                        Do not recurse upwards to find VCS ignore files\n\
 -v --invert-match\n\
 -w --word-regexp        Only match whole words\n\
 -z --search-zip         Search contents of compressed (e.g., gzip) files\n\
@@ -115,6 +117,7 @@ void init_options() {
     opts.color_path = ag_strdup(color_path);
     opts.color_match = ag_strdup(color_match);
     opts.color_line_number = ag_strdup(color_line_number);
+    opts.skip_vcs_ignores = FALSE;
 }
 
 void cleanup_options() {
@@ -215,6 +218,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "search-files", no_argument, &opts.search_stream, 0 },
         { "silent", no_argument, NULL, 0 },
         { "skip-vcs-ignores", no_argument, NULL, 'U' },
+        { "no-recurse-vcs-ignores", no_argument, NULL, 0 },
         { "smart-case", no_argument, NULL, 'S' },
         { "stats", no_argument, &opts.stats, 1 },
         { "unrestricted", no_argument, NULL, 'u' },
@@ -389,6 +393,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                     break;
                 } else if (strcmp(longopts[opt_index].name, "silent") == 0) {
                     set_log_level(LOG_LEVEL_NONE);
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "no-recurse-vcs-ignores") == 0) {
+                    opts.no_recurse_vcs_ignores = TRUE;
                     break;
                 }
 
