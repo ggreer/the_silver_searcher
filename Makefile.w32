@@ -11,7 +11,7 @@ SRCS = \
 OBJS = $(subst .c,.o,$(SRCS))
 
 VERSION=
-CFLAGS = -O2 -Isrc/win32 -DPACKAGE_VERSION=\"0.15pre\"
+CFLAGS = -O2 -Isrc/win32 -DPACKAGE_VERSION=\"0.15\"
 LIBS = -lz -lpthread -lpcre -llzma -lshlwapi
 TARGET = ag.exe
 
