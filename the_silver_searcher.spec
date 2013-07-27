@@ -10,9 +10,10 @@ Group:		Applications/Utilities
 License:	Apache v2.0
 URL:		https://github.com/ggreer/%{name}
 Source0:	https://github.com/downloads/ggreer/%{name}/%{name}-%{version}.tar.gz
+Source1:	ag.bashcomp.sh
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
-BuildRequires:	pkgconfig, autoconf, pcre-devel
+BuildRequires:	pkgconfig, autoconf, pcre-devel, automake
 Requires:	pcre
 
 %description
@@ -49,6 +50,8 @@ make %{?_smp_mflags}
 %install
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
+mkdir -p %{buildroot}%{_bashcompdir}
+cp %{_sourcedir}/ag.bashcomp.sh %{buildroot}%{_bashcompdir}
 
 %clean
 rm -rf %{buildroot}

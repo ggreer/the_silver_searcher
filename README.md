@@ -42,6 +42,20 @@ ArchLinux:
 
     pacman -S the_silver_searcher
 
+FreeBSD:
+
+Use either of the following commands depending on which [package management tool](http://www.freebsd.org/doc/en_US.ISO8859-1/books/handbook/ports.html) your system is configured for:
+
+    pkg add the_silver_searcher
+
+or
+
+    pkg_add the_silver_searcher
+
+To build Ag from source on FreeBSD:
+
+    make -C /usr/ports/textproc/the_silver_searcher install clean
+
 If you want a CentOS rpm or Ubuntu deb, take a look at [Vikram Dighe's packages](http://swiftsignal.com/packages/).
 
 ## Building from source ##
@@ -51,7 +65,6 @@ If you want a CentOS rpm or Ubuntu deb, take a look at [Vikram Dighe's packages]
     * OS X:
         - Install [homebrew](http://mxcl.github.com/homebrew/), then `brew install automake pkg-config pcre`
         - Or install [macports](http://macports.org), then `port install automake pkgconfig pcre`
-    * FreeBSD: Install automake using ports: `cd /usr/ports/devel/automake && make install` ...then install dependencies with pkg\_add: `pkg_add -r pkg-config pcre`
     * Windows: It's complicated. See [this wiki page](https://github.com/ggreer/the_silver_searcher/wiki/Windows).
 2. Run the build script (which just runs aclocal, automake, etc):
     * `./build.sh`

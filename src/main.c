@@ -121,8 +121,10 @@ int main(int argc, char **argv) {
             symhash = NULL;
             search_dir(root_ignores, base_paths[i], paths[i], 0);
         }
+        pthread_mutex_lock(&work_queue_mtx);
         done_adding_files = TRUE;
         pthread_cond_broadcast(&files_ready);
+        pthread_mutex_unlock(&work_queue_mtx);
         for (i = 0; i < workers_len; i++) {
             if (pthread_join(workers[i], NULL)) {
                 die("pthread_join failed!");
@@ -142,6 +144,7 @@ int main(int argc, char **argv) {
     if (opts.pager) {
         pclose(out_fd);
     }
+    cleanup_options();
     pthread_cond_destroy(&files_ready);
     pthread_mutex_destroy(&work_queue_mtx);
     pthread_mutex_destroy(&stats_mtx);
