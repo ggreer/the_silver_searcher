@@ -1,3 +1,4 @@
+have ag &&
 _ag() {
   local lngopt shtopt split=false
   local cur prev
