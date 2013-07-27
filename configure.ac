@@ -2,6 +2,7 @@ AC_INIT([the_silver_searcher], [0.15], [https://github.com/ggreer/the_silver_sea
 AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PREREQ([2.59])
+AC_PROG_LN_S
 
 AM_INIT_AUTOMAKE([no-define foreign subdir-objects])
 
