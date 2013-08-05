@@ -2,7 +2,7 @@
 
 A code searching tool similar to `ack`, with a focus on speed.
 
-### Note: I'm going to be busy with other things for a while. Don't take it personally if your pull request or issue languishes. I still want to improve Ag, but I have other priorities right now. ###
+### Note: I'm very busy with [Floobits](https://floobits.com/) until late August. Please don't take it personally if your pull request or issue languishes. I will go through them as soon as I have time. ###
 
 ## What's so great about Ag? ##
 
