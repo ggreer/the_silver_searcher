@@ -58,6 +58,21 @@ To build Ag from source on FreeBSD:
 
 If you want a CentOS rpm or Ubuntu deb, take a look at [Vikram Dighe's packages](http://swiftsignal.com/packages/).
 
+Debian unstable:
+
+    apt-get install silversearcher-ag
+
+Ubuntu 13.10 or later:
+
+    apt-get install silversearcher-ag
+
+Ubuntu 13.04:
+
+    apt-get install python-software-properties (if required)
+    apt-add-repository ppa:mizuno-as/silversearcher-ag
+    apt-get update
+    apt-get install silversearcher-ag
+
 ## Building from source ##
 
 1. Install dependencies (Automake, pkg-config, PCRE, LZMA):
