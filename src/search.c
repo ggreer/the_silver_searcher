@@ -173,15 +173,9 @@ void search_file(const char *file_full_path) {
     int rv = 0;
     FILE *pipe = NULL;
 
-    fd = open(file_full_path, O_RDONLY);
-    if (fd < 0) {
-        log_err("Error opening file %s: %s Skipping...", file_full_path, strerror(errno));
-        goto cleanup;
-    }
-
-    rv = fstat(fd, &statbuf);
+    rv = stat(file_full_path, &statbuf);
     if (rv != 0) {
-        log_err("Error fstat()ing file %s. Skipping...", file_full_path);
+        log_err("Error stat()ing file %s. Skipping...", file_full_path);
         goto cleanup;
     }
 
@@ -190,8 +184,14 @@ void search_file(const char *file_full_path) {
         goto cleanup;
     }
 
-    if ((statbuf.st_mode & S_IFMT) == 0) {
-        log_err("%s is not a file. Mode %u. Skipping...", file_full_path, statbuf.st_mode);
+    if (!S_ISREG(statbuf.st_mode)) {
+        log_debug("%s is not a file. Mode %u. Skipping...", file_full_path, statbuf.st_mode);
+        goto cleanup;
+    }
+
+    fd = open(file_full_path, O_RDONLY);
+    if (fd < 0) {
+        log_err("Error opening file %s: %s Skipping...", file_full_path, strerror(errno));
         goto cleanup;
     }
 
