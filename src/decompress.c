@@ -168,6 +168,9 @@ static void* decompress_lzma(const void* buf, const int buf_len,
     error_out:
     lzma_end(&stream);
     *new_buf_len = 0;
+    if (result) {
+        free(result);
+    }
     return NULL;
 }
 
