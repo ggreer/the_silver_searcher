@@ -87,7 +87,7 @@ Search options:\n\
 -u --unrestricted       Search all files (ignore .agignore, .gitignore, etc.;\n\
                         searches binary and hidden files as well)\n\
 -U --skip-vcs-ignores   Ignore VCS ignore files\n\
-                        (.gitigore, .hgignore, .svnignore; still obey .agignore)\n\
+                        (.gitignore, .hgignore, .svnignore; still obey .agignore)\n\
 -v --invert-match\n\
 -w --word-regexp        Only match whole words\n\
 -z --search-zip         Search contents of compressed (e.g., gzip) files\n\
