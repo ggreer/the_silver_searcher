@@ -25,7 +25,7 @@ AC_CHECK_MEMBER([struct dirent.d_type], [AC_DEFINE([HAVE_DIRENT_DTYPE], [], [Hav
 
 AC_CHECK_FUNCS(vasprintf fgetln getline strndup)
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile the_silver_searcher.spec])
 AC_CONFIG_HEADERS([src/config.h])
 
 AC_OUTPUT

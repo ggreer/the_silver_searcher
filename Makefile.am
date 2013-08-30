@@ -11,3 +11,5 @@ bashcomp_DATA = ag.bashcomp.sh
 
 # Uncomment this line to output gprof profiling info. This hurts performance.
 #CFLAGS=-pg
+
+EXTRA_DIST = $(ASSEMBLY_NAME).spec.in
