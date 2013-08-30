@@ -18,6 +18,8 @@ void log_msg(const char *fmt, ...);
 void log_warn(const char *fmt, ...);
 void log_err(const char *fmt, ...);
 
+#define log_file_err(...) if (opts.log_file_errors) { log_err(__VA_ARGS__); }
+
 void vplog(const unsigned int level, const char *fmt, va_list args);
 void plog(const unsigned int level, const char *fmt, ...);
 
