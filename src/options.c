@@ -12,6 +12,7 @@
 #include "options.h"
 #include "log.h"
 #include "util.h"
+#include "lang.h"
 
 #ifdef _WIN32
 char* realpath(const char *path, char *resolved_path) {
@@ -77,6 +78,7 @@ Search options:\n\
 -p --path-to-agignore STRING\n\
                         Use .agignore file at STRING\n\
 --print-long-lines      Print matches on very long lines (Default: >2k characters)\n\
+--long-line-length      Length limit for long lines (for --print-long-lines)\n\
 -Q --literal            Don't parse PATTERN as a regular expression\n\
 -s --case-sensitive     Match case sensitively (Enabled by default)\n\
 -S --smart-case         Match case insensitively unless PATTERN contains\n\
@@ -91,6 +93,7 @@ Search options:\n\
 -v --invert-match\n\
 -w --word-regexp        Only match whole words\n\
 -z --search-zip         Search contents of compressed (e.g., gzip) files\n\
+--{language}            Search source code only in a particular language (as per ack)\n\
 \n");
 }
 
@@ -115,6 +118,7 @@ void init_options() {
     opts.color_path = ag_strdup(color_path);
     opts.color_match = ag_strdup(color_match);
     opts.color_line_number = ag_strdup(color_line_number);
+    opts.long_line_length = 2000;
 }
 
 void cleanup_options() {
@@ -164,7 +168,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 
     init_options();
 
-    struct option longopts[] = {
+    struct option base_longopts[] = {
         { "ackmate", no_argument, &opts.ackmate, 1 },
         { "ackmate-dir-filter", required_argument, NULL, 0 },
         { "after", required_argument, NULL, 'A' },
@@ -195,6 +199,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "invert-match", no_argument, &opts.invert_match, 1 },
         { "line-numbers", no_argument, &opts.print_line_numbers, 2 },
         { "literal", no_argument, NULL, 'Q' },
+        { "long-line-length", required_argument, &opts.long_line_length, 0},
         { "match", no_argument, &useless, 0 },
         { "max-count", required_argument, NULL, 'm' },
         { "no-numbers", no_argument, NULL, 0 },
@@ -223,6 +228,19 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "workers", required_argument, NULL, 0 },
         { NULL, 0, NULL, 0 }
     };
+
+    int count = language_count();
+    struct option* longopts = ag_malloc(sizeof(base_longopts) + sizeof(struct option) * count);
+    memcpy(longopts, base_longopts, sizeof(base_longopts));
+    int base = sizeof(base_longopts) / sizeof(struct option) - 1;
+    longopts[base+count-1] = longopts[base-1];
+
+    int lang;
+    for (lang = 0; lang < count; ++lang) {
+        struct option opt = { languages[lang].language,
+                              no_argument, NULL, 0 };
+        longopts[lang + base] = opt;
+    }
 
     if (argc < 2) {
         usage();
@@ -290,6 +308,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.match_files = 1;
                 /* Fall through and build regex */
             case 'G':
+                if (opts.file_search_regex) {
+                    log_err("search-by-language is incompatible with -G");
+                }
+
                 compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, optarg, 0, 0);
                 break;
             case 'h':
@@ -360,10 +382,13 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                     opts.print_line_numbers = FALSE;
                     break;
                 } else if (strcmp(longopts[opt_index].name, "ignore-dir") == 0) {
-                    add_ignore_pattern(root_ignores, optarg);
+                    add_ignore_pattern_string(root_ignores, optarg);
                     break;
                 } else if (strcmp(longopts[opt_index].name, "ignore") == 0) {
-                    add_ignore_pattern(root_ignores, optarg);
+                    add_ignore_pattern_string(root_ignores, optarg);
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "long-line-length") == 0) {
+                    opts.long_line_length = atoi(optarg);
                     break;
                 } else if (strcmp(longopts[opt_index].name, "nopager") == 0) {
                     out_fd = stdout;
@@ -390,7 +415,27 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 } else if (strcmp(longopts[opt_index].name, "silent") == 0) {
                     set_log_level(LOG_LEVEL_NONE);
                     break;
+                } else {
+                    const char* option = longopts[opt_index].name;
+                    if (opts.file_search_regex) {
+                        log_err("option %s is incompatible with -G", option);
+                    }
+                    language_specification* spec;
+                    int matched = 0;
+                    for (spec = languages; spec->language; ++spec) {
+                        if (strcmp(spec->language, option) == 0) {
+                            char* language_regex = make_language_regex(spec->extensions);
+                            compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, language_regex, 0, 0);
+                            free (language_regex);
+                            matched = 1;
+                            break;
+                        }
+                    }
+                    if (matched) {
+                        break;
+                    }
                 }
+
 
                 /* Continue to usage if we don't recognize the option */
                 if (longopts[opt_index].flag != 0) {

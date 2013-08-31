@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "AG" "1" "April 2013" "" ""
+.TH "AG" "1" "June 2013" "" ""
 .
 .SH "NAME"
 \fBag\fR \- The Silver Searcher\. Like ack, but faster\.
@@ -163,6 +163,12 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 \~\~\~\~ Print matches on very long lines (> 2k characters by default)
 .
 .P
+\fB\-\-long\-line\-length\fR:
+.
+.br
+\~\~\~\~ Length limit for long lines (for \-\-print\-long\-lines)
+.
+.P
 \fB\-Q \-\-literal\fR:
 .
 .br
@@ -218,6 +224,12 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 .
 .br
 \~\~\~\~ Only match whole words\.
+.
+.P
+\fB\-\-{language}\fR:
+.
+.br
+\~\~\~\~ Search source code only in a particular language (as per ack)\.
 .
 .P
 By default, ag will ignore files matched by patterns in \.gitignore, \.hgignore, or \.agignore\. These files can be anywhere in the directories being searched\. Ag also ignores files matched by the svn:ignore property in subversion repositories\. Finally, ag looks in $HOME/\.agignore for ignore patterns\. Binary files are ignored by default as well\.

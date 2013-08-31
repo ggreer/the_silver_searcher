@@ -20,8 +20,8 @@ const uint8_t LZMA_HEADER_SOMETIMES[3] = { 0x5D, 0x00, 0x00 };
  *    Not copyrighted -- provided to the public domain
  *    Version 1.4  11 December 2005  Mark Adler 
  */
-static void* decompress_zlib(const void* buf, const int buf_len,
-                             const char* dir_full_path, int* new_buf_len) {
+static void* decompress_zlib(const void* buf, const off_t buf_len,
+                             const char* dir_full_path, off_t* new_buf_len) {
     int ret = 0;
     unsigned char* result = NULL;
     size_t result_size = 0;
@@ -94,24 +94,24 @@ static void* decompress_zlib(const void* buf, const int buf_len,
     return NULL;
 }
 
-static void* decompress_lwz(const void* buf, const int buf_len,
-                            const char* dir_full_path, int* new_buf_len) {
+static void* decompress_lzw(const void* buf, const off_t buf_len,
+                            const char* dir_full_path, off_t* new_buf_len) {
     (void)buf; (void)buf_len;
-    log_err("LWZ (UNIX compress) files not yet supported: %s", dir_full_path);
+    log_err("LZW (UNIX compress) files not yet supported: %s", dir_full_path);
     *new_buf_len = 0;
     return NULL;
 }
 
-static void* decompress_zip(const void* buf, const int buf_len,
-                            const char* dir_full_path, int* new_buf_len) {
+static void* decompress_zip(const void* buf, const off_t buf_len,
+                            const char* dir_full_path, off_t* new_buf_len) {
     (void)buf; (void)buf_len;
     log_err("Zip files not yet supported: %s", dir_full_path);
     *new_buf_len = 0;
     return NULL;
 }
 
-static void* decompress_lzma(const void* buf, const int buf_len,
-                             const char* dir_full_path, int* new_buf_len) {
+static void* decompress_lzma(const void* buf, const off_t buf_len,
+                             const char* dir_full_path, off_t* new_buf_len) {
     lzma_stream stream = LZMA_STREAM_INIT;
     lzma_ret lzrt;
     unsigned char* result = NULL;
@@ -157,7 +157,7 @@ static void* decompress_lzma(const void* buf, const int buf_len,
         } while(stream.avail_out == 0);
     } while(lzrt == LZMA_OK);
 
-    *new_buf_len = stream.total_out;
+    *new_buf_len = (off_t) stream.total_out;
 
     if (lzrt == LZMA_STREAM_END) {
         lzma_end(&stream);
@@ -177,14 +177,14 @@ static void* decompress_lzma(const void* buf, const int buf_len,
 
 
 /* This function is very hot. It's called on every file when zip is enabled. */
-void* decompress(const ag_compression_type zip_type, const void* buf, const int buf_len,
-                 const char* dir_full_path, int* new_buf_len) {
+void* decompress(const ag_compression_type zip_type, const void* buf, const off_t buf_len,
+                 const char* dir_full_path, off_t* new_buf_len) {
 
     switch(zip_type) {
         case AG_GZIP:
-             return decompress_zlib(buf, buf_len, dir_full_path, new_buf_len);
+            return decompress_zlib(buf, (unsigned int) buf_len, dir_full_path, new_buf_len);
         case AG_COMPRESS:
-             return decompress_lwz(buf, buf_len, dir_full_path, new_buf_len);
+             return decompress_lzw(buf, buf_len, dir_full_path, new_buf_len);
         case AG_ZIP:
              return decompress_zip(buf, buf_len, dir_full_path, new_buf_len);
         case AG_XZ:
@@ -202,7 +202,7 @@ void* decompress(const ag_compression_type zip_type, const void* buf, const int 
 
 
 /* This function is very hot. It's called on every file. */
-ag_compression_type is_zipped(const void* buf, const int buf_len) {
+ag_compression_type is_zipped(const void* buf, const off_t buf_len) {
     /* Zip magic numbers
      * compressed file: { 0x1F, 0x9B }
      * http://en.wikipedia.org/wiki/Compress

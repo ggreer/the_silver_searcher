@@ -35,18 +35,18 @@ void print_binary_file_matches(const char* path) {
 }
 
 void print_file_matches(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len) {
-    int line = 1;
+    off_t line = 1;
     char **context_prev_lines = NULL;
-    int prev_line = 0;
-    int last_prev_line = 0;
-    int prev_line_offset = 0;
-    int cur_match = 0;
+    off_t prev_line = 0;
+    off_t last_prev_line = 0;
+    off_t prev_line_offset = 0;
+    off_t cur_match = 0;
     /* TODO the line below contains a terrible hack */
-    int lines_since_last_match = 1000000; /* if I initialize this to INT_MAX it'll overflow */
-    int lines_to_print = 0;
-    int last_printed_match = 0;
+    off_t lines_since_last_match = 1000000; /* if I initialize this to INT_MAX it'll overflow */
+    off_t lines_to_print = 0;
+    off_t last_printed_match = 0;
     char sep = '-';
-    int i, j;
+    off_t i, j;
     int in_a_match = FALSE;
     int printing_a_match = FALSE;
 
@@ -121,7 +121,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                     /* print headers for ackmate to parse */
                     print_line_number(line, ';');
                     for (; last_printed_match < cur_match; last_printed_match++) {
-                        fprintf(out_fd, "%i %i",
+                        fprintf(out_fd, "%zi %zi",
                               (matches[last_printed_match].start - prev_line_offset),
                               (matches[last_printed_match].end - matches[last_printed_match].start)
                         );
@@ -135,21 +135,24 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                 } else {
                     print_line_number(line, ':');
                     if (opts.column) {
-                        fprintf(out_fd, "%i:", (matches[last_printed_match].start - prev_line_offset) + 1);
+                        fprintf(out_fd, "%zi:", (matches[last_printed_match].start - prev_line_offset) + 1);
                     }
 
                     if (printing_a_match && opts.color) {
                         fprintf(out_fd, "%s", opts.color_match);
                     }
                     for (j = prev_line_offset; j <= i; j++) {
-                        if (j == matches[last_printed_match].end && last_printed_match < matches_len) {
+                        if (last_printed_match < matches_len && j == matches[last_printed_match].end) {
                             if (opts.color) {
                                 fprintf(out_fd, "%s", color_reset);
                             }
                             printing_a_match = FALSE;
                             last_printed_match++;
+                            if (i == buf_len && i > 0 && buf[i - 1] != '\n') {
+                                fprintf(out_fd, "\n");
+                            }
                         }
-                        if (j == matches[last_printed_match].start && last_printed_match < matches_len) {
+                        if (last_printed_match < matches_len && j == matches[last_printed_match].start) {
                             if (opts.color) {
                                 fprintf(out_fd, "%s", opts.color_match);
                             }

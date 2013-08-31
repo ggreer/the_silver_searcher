@@ -1,4 +1,3 @@
-have ag &&
 _ag() {
   local lngopt shtopt split=false
   local cur prev
@@ -42,6 +41,7 @@ _ag() {
     --ignore-dir
     --invert-match
     --line-numbers
+    --long-line-length
     --literal
     --max-count
     --no-numbers
@@ -63,6 +63,58 @@ _ag() {
     --version
     --word-regexp
     --workers
+    --actionscript
+    --ada
+    --asm
+    --batch
+    --cc
+    --cfmx
+    --clojure
+    --cpp
+    --csharp
+    --css
+    --delphi
+    --elisp
+    --erlang
+    --fortran
+    --go
+    --groovy
+    --haskell
+    --hh
+    --html
+    --java
+    --js
+    --jsp
+    --lisp
+    --lua
+    --m4
+    --make
+    --mason
+    --objc
+    --objcpp
+    --ocaml
+    --parrot
+    --perl
+    --php
+    --plone
+    --python
+    --rake
+    --ruby
+    --salt
+    --scala
+    --scheme
+    --shell
+    --smalltalk
+    --sql
+    --tcl
+    --tex
+    --tt
+    --vb
+    --verilog
+    --vhdl
+    --vim
+    --yaml
+    --xml
   '
   shtopt='
     -a -A -B -C -D

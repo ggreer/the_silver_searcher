@@ -29,8 +29,8 @@ char *ag_strdup(const char *s);
 char *ag_strndup(const char *s, size_t size);
 
 typedef struct {
-    int start; /* Byte at which the match starts */
-    int end; /* and where it ends */
+    off_t start; /* Byte at which the match starts */
+    off_t end; /* and where it ends */
 } match;
 
 typedef struct {
@@ -59,16 +59,16 @@ const char* boyer_moore_strncasestr(const char *s, const char *find, const size_
 
 strncmp_fp get_strstr(cli_options opts);
 
-int invert_matches(match matches[], int matches_len, const int buf_len);
+int invert_matches(match matches[], int matches_len, const off_t buf_len);
 void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opts, const int study_opts);
 
-void* decompress(const ag_compression_type zip_type, const void* buf, const int buf_len, const char* dir_full_path, int* new_buf_len);
-ag_compression_type is_zipped(const void* buf, const int buf_len);
+void* decompress(const ag_compression_type zip_type, const void* buf, const off_t buf_len, const char* dir_full_path, off_t* new_buf_len);
+ag_compression_type is_zipped(const void* buf, const off_t buf_len);
 
-int is_binary(const void* buf, const int buf_len);
+int is_binary(const void* buf, const off_t buf_len);
 int is_regex(const char* query);
 int is_fnmatch(const char* filename);
-int binary_search(const char* needle, char **haystack, int start, int end);
+int binary_search(const char* needle, char **haystack, off_t start, off_t end);
 
 void init_wordchar_table(void);
 int is_wordchar(char ch);
@@ -96,3 +96,6 @@ int vasprintf(char **ret, const char *fmt, va_list args);
 #endif
 
 #endif
+
+off_t get_line_length(const char* buf, const off_t buf_len,
+                      const off_t match_start, const off_t match_end);

@@ -114,7 +114,7 @@ strncmp_fp get_strstr(cli_options opts) {
     return ag_strncmp_fp;
 }
 
-int invert_matches(match matches[], int matches_len, const int buf_len) {
+int invert_matches(match matches[], int matches_len, const off_t buf_len) {
     int i;
 
     if (matches_len == 0) {
@@ -164,11 +164,11 @@ void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opt
 }
 
 /* This function is very hot. It's called on every file. */
-int is_binary(const void* buf, const int buf_len) {
+int is_binary(const void* buf, const off_t buf_len) {
     int suspicious_bytes = 0;
-    int total_bytes = buf_len > 512 ? 512 : buf_len;
+    off_t total_bytes = buf_len > 512 ? 512 : buf_len;
     const unsigned char *buf_c = buf;
-    int i;
+    off_t i;
 
     if (buf_len == 0) {
         return 0;
@@ -240,14 +240,16 @@ int is_fnmatch(const char* filename) {
         '?',
         '[',
         ']',
+        '{',
+        '}',
         '\0'
     };
 
     return (strpbrk(filename, fnmatch_chars) != NULL);
 }
 
-int binary_search(const char* needle, char **haystack, int start, int end) {
-    int mid;
+int binary_search(const char* needle, char **haystack, off_t start, off_t end) {
+    off_t mid;
     int rc;
 
     if (start == end) {
@@ -470,3 +472,25 @@ int vasprintf(char **ret, const char *fmt, va_list args) {
     return rv;
 }
 #endif
+
+off_t get_line_length(const char* buf, const off_t buf_len,
+                      const off_t match_start, const off_t match_end) {
+    /* count the number of characters before and after the match */
+    off_t line_length = match_end - match_start;
+    const char* c;
+    for(c = buf + match_start - 1; c >= buf; --c) {
+        if (*c == '\n') {
+            break;
+        }
+        line_length ++;
+    }
+
+    for(c = buf + match_end; c < buf + buf_len; ++c) {
+        if (*c == '\n') {
+            break;
+        }
+        line_length ++;
+    }
+
+    return line_length;
+}
