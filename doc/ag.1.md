@@ -23,6 +23,12 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Print a newline between matches in different files. Enabled by default.
   * `--[no]color`:
     Print color codes in results. Enabled by default.
+  * `--color-line-number`:
+    Color codes for line numbers. Defaults to 1;33.
+  * `--color-match`:
+    Color codes for result match numbers. Defaults to 30;43.
+  * `--color-path`:
+    Color codes for path names. Defaults to 1;32.
   * `--column`:
     Print column numbers in results.
   * `-C --context [LINES]`:
