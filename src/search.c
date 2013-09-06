@@ -136,7 +136,11 @@ void search_buf(const char *buf, const int buf_len,
         }
         pthread_mutex_lock(&print_mtx);
         if (opts.print_filename_only) {
-            print_path(dir_full_path, '\n');
+            if (opts.print0) {
+                print_path(dir_full_path, '\0');
+            } else {
+                print_path(dir_full_path, '\n');
+            }
         } else if (binary) {
             print_binary_file_matches(dir_full_path);
         } else {
@@ -429,7 +433,11 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
                 } else if (opts.match_files) {
                     log_debug("match_files: file_search_regex matched for %s.", dir_full_path);
                     pthread_mutex_lock(&print_mtx);
-                    print_path(dir_full_path, '\n');
+                    if (opts.print0) {
+                        print_path(dir_full_path, '\0');
+                    } else {
+                        print_path(dir_full_path, '\n');
+                    }
                     pthread_mutex_unlock(&print_mtx);
                     goto cleanup;
                 }
@@ -453,6 +461,112 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
                 log_debug("Searching dir %s", dir_full_path);
                 ignores *child_ig = init_ignore(ig);
                 search_dir(child_ig, base_path, dir_full_path, depth + 1);
+                cleanup_ignore(child_ig);
+            } else {
+                log_err("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
+            }
+        }
+
+        cleanup:;
+        free(dir);
+        dir = NULL;
+        if (queue_item == NULL) {
+            free(dir_full_path);
+            dir_full_path = NULL;
+        }
+    }
+
+    search_dir_cleanup:;
+    check_symloop_leave(&current_dirkey);
+    free(dir_list);
+    dir_list = NULL;
+}
+
+void list_files(ignores *ig, const char *base_path, const char *path, const int depth) {
+    struct dirent **dir_list = NULL;
+    struct dirent *dir = NULL;
+    scandir_baton_t scandir_baton;
+    int results = 0;
+
+    char *dir_full_path = NULL;
+    const char *ignore_file = NULL;
+    int i;
+
+    int symres;
+    dirkey_t current_dirkey;
+
+    symres = check_symloop_enter(path, &current_dirkey);
+    if (symres == SYMLOOP_LOOP) {
+        log_err("Recursive directory loop: %s", path);
+        return;
+    }
+
+    /* find agignore/gitignore/hgignore/etc files to load ignore patterns from */
+    for (i = 0; opts.skip_vcs_ignores ? (i == 0) : (ignore_pattern_files[i] != NULL); i++) {
+        ignore_file = ignore_pattern_files[i];
+        ag_asprintf(&dir_full_path, "%s/%s", path, ignore_file);
+        if (strcmp(SVN_DIR, ignore_file) == 0) {
+            load_svn_ignore_patterns(ig, dir_full_path);
+        } else {
+            load_ignore_patterns(ig, dir_full_path);
+        }
+        free(dir_full_path);
+        dir_full_path = NULL;
+    }
+
+    if (opts.path_to_agignore) {
+        load_ignore_patterns(ig, opts.path_to_agignore);
+    }
+
+    scandir_baton.ig = ig;
+    scandir_baton.base_path = base_path;
+    scandir_baton.level = 0;
+    results = ag_scandir(path, &dir_list, &filename_filter, &scandir_baton);
+    if (results == 0) {
+        log_debug("No results found in directory %s", path);
+        goto search_dir_cleanup;
+    } else if (results == -1) {
+        if (errno == ENOTDIR) {
+            /* Not a directory. Probably a file. */
+            /* If we're only searching one file, don't print the filename header at the top. */
+            if (depth == 0 && opts.paths_len == 1) {
+                opts.print_heading = -1;
+            }
+            search_file(path);
+        } else {
+            log_err("Error opening directory %s: %s", path, strerror(errno));
+        }
+        goto search_dir_cleanup;
+    }
+
+    work_queue_t *queue_item;
+
+    for (i = 0; i < results; i++) {
+        queue_item = NULL;
+        dir = dir_list[i];
+        ag_asprintf(&dir_full_path, "%s/%s", path, dir->d_name);
+
+        /* If a link points to a directory then we need to treat it as a directory. */
+        if (!opts.follow_symlinks && is_symlink(path, dir)) {
+            log_debug("File %s ignored becaused it's a symlink", dir->d_name);
+            goto cleanup;
+        }
+
+        if (!is_directory(path, dir)) {
+            log_debug("match_files: file_search_regex matched for %s.", dir_full_path);
+            pthread_mutex_lock(&print_mtx);
+            if (opts.print0) {
+                print_path(dir_full_path, '\0');
+            } else {
+                print_path(dir_full_path, '\n');
+            }
+            pthread_mutex_unlock(&print_mtx);
+            goto cleanup;
+        } else if (opts.recurse_dirs) {
+            if (depth < opts.max_search_depth) {
+                log_debug("Searching dir %s", dir_full_path);
+                ignores *child_ig = init_ignore(ig);
+                list_files(child_ig, base_path, dir_full_path, depth + 1);
                 cleanup_ignore(child_ig);
             } else {
                 log_err("Skipping %s. Use the --depth option to search deeper.", dir_full_path);

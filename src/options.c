@@ -70,6 +70,8 @@ Search options:\n\
 --ignore-dir NAME       Alias for --ignore for compatibility with ack.\n\
 -l --files-with-matches Only print filenames that contain matches\n\
                         (don't print the matching lines)\n\
+--list-files            Only print the files that would be searched, \n\
+                        without actually doing any searching\n\
 -L --files-without-matches\n\
                         Only print filenames that don't contain matches\n\
 -m --max-count NUM      Skip the rest of a file after NUM matches (Default: 10,000)\n\
@@ -77,6 +79,8 @@ Search options:\n\
 -p --path-to-agignore STRING\n\
                         Use .agignore file at STRING\n\
 --print-long-lines      Print matches on very long lines (Default: >2k characters)\n\
+--print0                Only works in conjunction with -g, -l, -L and --list-files. \n\
+                        The filenames are output separated with a null byte instead of the usual newline.\n\
 -Q --literal            Don't parse PATTERN as a regular expression\n\
 -s --case-sensitive     Match case sensitively (Enabled by default)\n\
 -S --smart-case         Match case insensitively unless PATTERN contains\n\
@@ -194,6 +198,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "ignore-case", no_argument, NULL, 'i' },
         { "invert-match", no_argument, &opts.invert_match, 1 },
         { "line-numbers", no_argument, &opts.print_line_numbers, 2 },
+        { "list-files", no_argument, &opts.list_files, 1 },
         { "literal", no_argument, NULL, 'Q' },
         { "match", no_argument, &useless, 0 },
         { "max-count", required_argument, NULL, 'm' },
@@ -209,6 +214,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "parallel", no_argument, &opts.parallel, 1},
         { "path-to-agignore", required_argument, NULL, 'p'},
         { "print-long-lines", no_argument, &opts.print_long_lines, 1 },
+        { "print0", no_argument, &opts.print0, 1 },
         { "recurse", no_argument, NULL, 'r' },
         { "search-binary", no_argument, &opts.search_binary_files, 1 },
         { "search-zip", no_argument, &opts.search_zip_files, 1 },
@@ -389,6 +395,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                     break;
                 } else if (strcmp(longopts[opt_index].name, "silent") == 0) {
                     set_log_level(LOG_LEVEL_NONE);
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "list-files") == 0) {
+                    needs_query = 0;
                     break;
                 }
 
