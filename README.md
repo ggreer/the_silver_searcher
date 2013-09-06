@@ -71,7 +71,7 @@ Ubuntu 13.10 or later:
 
 Ubuntu 13.04:
 
-    apt-get install python-software-properties (if required)
+    apt-get install software-properties-common # (if required)
     apt-add-repository ppa:mizuno-as/silversearcher-ag
     apt-get update
     apt-get install silversearcher-ag
