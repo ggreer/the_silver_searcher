@@ -22,3 +22,4 @@ missing
 src/config.h*
 stamp-h1
 *.plist
+the_silver_searcher.spec
