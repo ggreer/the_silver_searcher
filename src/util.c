@@ -299,8 +299,8 @@ int is_directory(const char *path, const struct dirent *d) {
     /* Some filesystems, e.g. ReiserFS, always return a type DT_UNKNOWN from readdir or scandir. */
     /* Call stat if we don't find DT_DIR to get the information we need. */
     /* Also works for symbolic links to directories. */
-    if (d->d_type == DT_DIR) {
-        return TRUE;
+    if (d->d_type != DT_UNKNOWN && d->d_type != DT_LNK) {
+        return d->d_type == DT_DIR;
     }
 #endif
     char *full_path;
@@ -311,7 +311,7 @@ int is_directory(const char *path, const struct dirent *d) {
         return FALSE;
     }
     free(full_path);
-    return (S_ISDIR(s.st_mode));
+    return S_ISDIR(s.st_mode);
 }
 
 int is_symlink(const char *path, const struct dirent *d) {
@@ -333,14 +333,14 @@ int is_symlink(const char *path, const struct dirent *d) {
         return FALSE;
     }
     free(full_path);
-    return (S_ISLNK(s.st_mode));
+    return S_ISLNK(s.st_mode);
 #endif
 }
 
 int is_named_pipe(const char *path, const struct dirent *d) {
 #ifdef HAVE_DIRENT_DTYPE
-    if (d->d_type == DT_FIFO) {
-        return TRUE;
+    if (d->d_type != DT_UNKNOWN) {
+        return d->d_type == DT_FIFO;
     }
 #endif
     char *full_path;
@@ -351,7 +351,7 @@ int is_named_pipe(const char *path, const struct dirent *d) {
         return FALSE;
     }
     free(full_path);
-    return (S_ISFIFO(s.st_mode));
+    return S_ISFIFO(s.st_mode);
 }
 
 void ag_asprintf(char **ret, const char *fmt, ...) {
