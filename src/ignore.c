@@ -271,13 +271,13 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     const char *path_start = path;
     char *temp;
 
-    if (is_named_pipe(path, dir)) {
-      log_debug("%s ignored because it's a named pipe", path);
-      return 0;
-    }
-
     if (!opts.follow_symlinks && is_symlink(path, dir)) {
         log_debug("File %s ignored becaused it's a symlink", dir->d_name);
+        return 0;
+    }
+
+    if (is_named_pipe(path, dir)) {
+        log_debug("%s ignored because it's a named pipe", path);
         return 0;
     }
 
