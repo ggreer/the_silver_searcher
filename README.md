@@ -2,7 +2,10 @@
 
 A code searching tool similar to `ack`, with a focus on speed.
 
-### Note: I'm very busy with [Floobits](https://floobits.com/) until late August. Please don't take it personally if your pull request or issue languishes. I will go through them as soon as I have time. ###
+<a href="https://floobits.com/r/ggreer/the_silver_searcher/redirect">
+  <img alt="Floobits status" width="80" height="40" src="https://floobits.com/r/ggreer/the_silver_searcher.png" />
+</a>
+
 
 ## What's so great about Ag? ##
 
