@@ -6,6 +6,8 @@
 
 #include <pcre.h>
 
+#define DEFAULT_AFTER_LEN 2
+#define DEFAULT_BEFORE_LEN 2
 #define DEFAULT_CONTEXT_LEN 2
 
 enum case_behavior {
