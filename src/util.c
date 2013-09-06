@@ -337,6 +337,23 @@ int is_symlink(const char *path, const struct dirent *d) {
 #endif
 }
 
+int is_named_pipe(const char *path, const struct dirent *d) {
+#ifdef HAVE_DIRENT_DTYPE
+    if (d->d_type == DT_FIFO) {
+        return TRUE;
+    }
+#endif
+    char *full_path;
+    struct stat s;
+    ag_asprintf(&full_path, "%s/%s", path, d->d_name);
+    if (stat(full_path, &s) != 0) {
+        free(full_path);
+        return FALSE;
+    }
+    free(full_path);
+    return (S_ISFIFO(s.st_mode));
+}
+
 void ag_asprintf(char **ret, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
@@ -427,7 +444,7 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
 /* Apache-licensed implementation of strndup for OS
  * taken from http://source-android.frandroid.com/dalvik/tools/dmtracedump/CreateTestTrace.c
  * modified to check for malloc() failure
- */ 
+ */
 char *strndup(const char *src, size_t len) {
     char *dest = (char *) malloc(len + 1);
     if (!dest) return NULL;
