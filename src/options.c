@@ -33,69 +33,67 @@ const char *color_path = "\e[1;32m";   /* bold green */
 
 /* TODO: try to obey out_fd? */
 void usage() {
-    printf("Usage: ag [OPTIONS] PATTERN [PATH]\n\
-\n\
-Recursively search for PATTERN in PATH.\n\
-Like grep or ack, but faster.\n\
-\n\
-Example: ag -i foo /bar/\n\
-\n");
+    printf("\n");
+    printf("Usage: ag [OPTIONS] PATTERN [PATH]\n\n");
     
-    printf("Output options:\n\
-\n\
-   --ackmate            Print results in AckMate-parseable format\n\
--A --after [LINES]      Print lines before match (Default: 2)\n\
--B --before [LINES]     Print lines after match (Default: 2)\n\
-   --[no]break          Print newlines between matches in different files\n\
-                        (Enabled by default)\n\
-   --[no]color          Print color codes in results (Enabled by default)\n\
-   --color-line-number  Color codes for line numbers (Default: 1;33)\n\
-   --color-match        Color codes for result match numbers (Default: 30;43)\n\
-   --color-path         Color codes for path names (Default: 1;32)\n\
-   --column             Print column numbers in results\n\
-   --line-numbers       Print line numbers even for streams\n\
--C --context [LINES]    Print lines before and after matches (Default: 2)\n\
-   --[no]group          Same as --[no]break --[no]heading\n\
--g PATTERN              Print filenames matching PATTERN\n\
--l --files-with-matches Only print filenames that contain matches\n\
-                        (don't print the matching lines)\n\
--L --files-without-matches\n\
-                        Only print filenames that don't contain matches\n\
-   --no-numbers         Don't print line numbers\n\
-   --print-long-lines   Print matches on very long lines (Default: >2k characters)\n\
-   --stats              Print stats (files scanned, time taken, etc.)\n\
-\n");
+    printf("  Recursively search for PATTERN in PATH.\n");
+    printf("  Like grep or ack, but faster.\n\n");
     
-    printf("Search options:\n\
+    printf("Example:\n  ag -i foo /bar/\n\n");
+    
+    printf("\
+Output Options:\n\
+     --ackmate            Print results in AckMate-parseable format\n\
+  -A --after [LINES]      Print lines before match (Default: 2)\n\
+  -B --before [LINES]     Print lines after match (Default: 2)\n\
+     --[no]break          Print newlines between matches in different files\n\
+                          (Enabled by default)\n\
+     --[no]color          Print color codes in results (Enabled by default)\n\
+     --color-line-number  Color codes for line numbers (Default: 1;33)\n\
+     --color-match        Color codes for result match numbers (Default: 30;43)\n\
+     --color-path         Color codes for path names (Default: 1;32)\n\
+     --column             Print column numbers in results\n\
+     --[no]heading\n\
+     --line-numbers       Print line numbers even for streams\n\
+  -C --context [LINES]    Print lines before and after matches (Default: 2)\n\
+     --[no]group          Same as --[no]break --[no]heading\n\
+  -g PATTERN              Print filenames matching PATTERN\n\
+  -l --files-with-matches Only print filenames that contain matches\n\
+                          (don't print the matching lines)\n\
+  -L --files-without-matches\n\
+                          Only print filenames that don't contain matches\n\
+     --no-numbers         Don't print line numbers\n\
+     --print-long-lines   Print matches on very long lines (Default: >2k characters)\n\
+     --stats              Print stats (files scanned, time taken, etc.)\n\
 \n\
--a --all-types          Search all files (doesn't include hidden files\n\
-                        or patterns from ignore files)\n\
--D --debug              Ridiculous debugging (probably not useful)\n\
-   --depth NUM          Search up to NUM directories deep (Default: 25)\n\
--f --follow             Follow symlinks\n\
--G --file-search-regex  PATTERN Limit search to filenames matching PATTERN\n\
-   --[no]heading\n\
-   --hidden             Search hidden files (obeys .*ignore files)\n\
--i --ignore-case        Match case insensitively\n\
-   --ignore PATTERN     Ignore files/directories matching PATTERN\n\
-                        (literal file/directory names also allowed)\n\
-   --ignore-dir NAME    Alias for --ignore for compatibility with ack.\n\
--m --max-count NUM      Skip the rest of a file after NUM matches (Default: 10,000)\n\
--p --path-to-agignore STRING\n\
-                        Use .agignore file at STRING\n\
--Q --literal            Don't parse PATTERN as a regular expression\n\
--s --case-sensitive     Match case sensitively (Enabled by default)\n\
--S --smart-case         Match case insensitively unless PATTERN contains\n\
-                        uppercase characters\n\
-   --search-binary      Search binary files for matches\n\
--t --all-text           Search all text files (doesn't include hidden files)\n\
--u --unrestricted       Search all files (ignore .agignore, .gitignore, etc.;\n\
-                        searches binary and hidden files as well)\n\
--U --skip-vcs-ignores   Ignore VCS ignore files\n\
-                        (.gitignore, .hgignore, .svnignore; still obey .agignore)\n\
--v --invert-match\n\
--w --word-regexp        Only match whole words\n\
--z --search-zip         Search contents of compressed (e.g., gzip) files\n\
+Search Options:\n\
+  -a --all-types          Search all files (doesn't include hidden files\n\
+                          or patterns from ignore files)\n\
+  -D --debug              Ridiculous debugging (probably not useful)\n\
+     --depth NUM          Search up to NUM directories deep (Default: 25)\n\
+  -f --follow             Follow symlinks\n\
+  -G --file-search-regex  PATTERN Limit search to filenames matching PATTERN\n\
+     --hidden             Search hidden files (obeys .*ignore files)\n\
+  -i --ignore-case        Match case insensitively\n\
+     --ignore PATTERN     Ignore files/directories matching PATTERN\n\
+                          (literal file/directory names also allowed)\n\
+     --ignore-dir NAME    Alias for --ignore for compatibility with ack.\n\
+  -m --max-count NUM      Skip the rest of a file after NUM matches (Default: 10,000)\n\
+  -p --path-to-agignore STRING\n\
+                          Use .agignore file at STRING\n\
+  -Q --literal            Don't parse PATTERN as a regular expression\n\
+  -s --case-sensitive     Match case sensitively (Enabled by default)\n\
+  -S --smart-case         Match case insensitively unless PATTERN contains\n\
+                          uppercase characters\n\
+     --search-binary      Search binary files for matches\n\
+  -t --all-text           Search all text files (doesn't include hidden files)\n\
+  -u --unrestricted       Search all files (ignore .agignore, .gitignore, etc.;\n\
+                          searches binary and hidden files as well)\n\
+  -U --skip-vcs-ignores   Ignore VCS ignore files\n\
+                          (.gitignore, .hgignore, .svnignore; still obey .agignore)\n\
+  -v --invert-match\n\
+  -w --word-regexp        Only match whole words\n\
+  -z --search-zip         Search contents of compressed (e.g., gzip) files\n\
 \n");
 }
 
