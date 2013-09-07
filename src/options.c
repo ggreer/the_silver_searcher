@@ -39,12 +39,11 @@ Recursively search for PATTERN in PATH.\n\
 Like grep or ack, but faster.\n\
 \n\
 Example: ag -i foo /bar/\n\
-\n\
-Search options:\n\
+\n");
+    
+    printf("Output options:\n\
 \n\
    --ackmate            Print results in AckMate-parseable format\n\
--a --all-types          Search all files (doesn't include hidden files\n\
-                        or patterns from ignore files)\n\
 -A --after [LINES]      Print lines before match (Default: 2)\n\
 -B --before [LINES]     Print lines after match (Default: 2)\n\
    --[no]break          Print newlines between matches in different files\n\
@@ -56,11 +55,24 @@ Search options:\n\
    --column             Print column numbers in results\n\
    --line-numbers       Print line numbers even for streams\n\
 -C --context [LINES]    Print lines before and after matches (Default: 2)\n\
+   --[no]group          Same as --[no]break --[no]heading\n\
+-g PATTERN              Print filenames matching PATTERN\n\
+-l --files-with-matches Only print filenames that contain matches\n\
+                        (don't print the matching lines)\n\
+-L --files-without-matches\n\
+                        Only print filenames that don't contain matches\n\
+   --no-numbers         Don't print line numbers\n\
+   --print-long-lines   Print matches on very long lines (Default: >2k characters)\n\
+   --stats              Print stats (files scanned, time taken, etc.)\n\
+\n");
+    
+    printf("Search options:\n\
+\n\
+-a --all-types          Search all files (doesn't include hidden files\n\
+                        or patterns from ignore files)\n\
 -D --debug              Ridiculous debugging (probably not useful)\n\
    --depth NUM          Search up to NUM directories deep (Default: 25)\n\
 -f --follow             Follow symlinks\n\
-   --[no]group          Same as --[no]break --[no]heading\n\
--g PATTERN              Print filenames matching PATTERN\n\
 -G --file-search-regex  PATTERN Limit search to filenames matching PATTERN\n\
    --[no]heading\n\
    --hidden             Search hidden files (obeys .*ignore files)\n\
@@ -68,21 +80,14 @@ Search options:\n\
    --ignore PATTERN     Ignore files/directories matching PATTERN\n\
                         (literal file/directory names also allowed)\n\
    --ignore-dir NAME    Alias for --ignore for compatibility with ack.\n\
--l --files-with-matches Only print filenames that contain matches\n\
-                        (don't print the matching lines)\n\
--L --files-without-matches\n\
-                        Only print filenames that don't contain matches\n\
 -m --max-count NUM      Skip the rest of a file after NUM matches (Default: 10,000)\n\
-   --no-numbers         Don't show line numbers\n\
 -p --path-to-agignore STRING\n\
                         Use .agignore file at STRING\n\
-   --print-long-lines   Print matches on very long lines (Default: >2k characters)\n\
 -Q --literal            Don't parse PATTERN as a regular expression\n\
 -s --case-sensitive     Match case sensitively (Enabled by default)\n\
 -S --smart-case         Match case insensitively unless PATTERN contains\n\
                         uppercase characters\n\
    --search-binary      Search binary files for matches\n\
-   --stats              Print stats (files scanned, time taken, etc.)\n\
 -t --all-text           Search all text files (doesn't include hidden files)\n\
 -u --unrestricted       Search all files (ignore .agignore, .gitignore, etc.;\n\
                         searches binary and hidden files as well)\n\
