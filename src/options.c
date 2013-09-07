@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -108,6 +109,7 @@ void init_options() {
 #endif
     opts.max_matches_per_file = 10000;
     opts.max_search_depth = 25;
+    opts.needs_query = 1;
     opts.print_break = TRUE;
     opts.print_heading = TRUE;
     opts.print_line_numbers = TRUE;
@@ -147,18 +149,118 @@ void cleanup_options() {
     }
 }
 
+config_options *init_config_options() {
+    config_options *co = ag_malloc(2*sizeof(config_options));
+    co->options = NULL; /* empty option for getopt */
+    co->options_len = 1;
+    return co;
+}
+
+void cleanup_config_options(config_options *co) {
+    size_t i;
+
+    if (co) {
+        if (co->options) {
+            for (i = 0; i < co->options_len; i++) {
+                free(co->options[i]);
+            }
+            free(co->options);
+        }
+        free(co);
+    }
+}
+
+void load_config_file_options(config_options *co, const char *path, const struct option *longopts) {
+    size_t i;
+    FILE *fp = NULL;
+    fp = fopen(path, "r");
+    if (fp == NULL) {
+        log_debug("Skipping config file %s", path);
+        return;
+    }
+    log_debug("Loading config file %s", path);
+
+    char *line = NULL;
+    ssize_t line_len = 0;
+    size_t line_cap = 0;
+
+    while ((line_len = getline(&line, &line_cap, fp)) > 0) {
+        if (line_len == 0 || line[0] == '\n' || line[0] == '#') {
+            continue;
+        }
+        if (line[line_len-1] == '\n') {
+            line[line_len-1] = '\0'; /* kill the \n */
+        }
+        parse_config_file_option(co, line);
+    }
+
+    for (i = 0; i < co->options_len; ++i) {
+        log_debug("Read config file option [%d]: '%s'", i, co->options[i]);
+    }
+    set_options(co->options_len, co->options, longopts);
+    /* reset getopt for reading argv */
+    optind = 1;
+
+    free(line);
+    fclose(fp);
+}
+
+void parse_config_file_option(config_options *co, const char* option) {
+    size_t option_len;
+    size_t idx;
+
+    /* Kill leading whitespace */
+    for (idx = 0, option_len = strlen(option); idx < option_len; ++idx) {
+        if (!isspace(option[idx])) {
+            option = option + idx;
+            break;
+        }
+    }
+
+    /* Kill trailing whitespace */
+    for (option_len = strlen(option); option_len > 0; --option_len) {
+        if (!isspace(option[option_len - 1])) {
+            break;
+        }
+    }
+
+    /* Exclude comments */
+    if (option[0] == '#') {
+        return;
+    }
+
+    /* Split options with values */
+    for (idx = 0; idx < option_len; ++idx) {
+        if (isspace(option[idx])) {
+            add_config_file_option(co, ag_strndup(option, idx));
+            add_config_file_option(co, ag_strndup(option + idx + 1, option_len - idx));
+            return;
+        }
+    }
+
+    /* Add simple option */
+    add_config_file_option(co, ag_strndup(option, option_len));
+}
+
+void add_config_file_option(config_options *co, const char* option) {
+    size_t option_len = strlen(option);
+    if (option_len == 0 || option[0] == '#') {
+        log_debug("option is empty. Not adding to config file options.");
+        return;
+    }
+    co->options_len++;
+    co->options = ag_realloc(co->options, co->options_len * sizeof(char*));
+    co->options[co->options_len - 1] = ag_strndup(option, option_len);
+}
+
 void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
-    int ch;
     int i;
     int path_len = 0;
     int useless = 0;
     int group = 1;
-    int help = 0;
-    int version = 0;
-    int opt_index = 0;
     const char *home_dir = getenv("HOME");
+    char *config_file_path = NULL;
     char *ignore_file_path = NULL;
-    int needs_query = 1;
     struct stat statbuf;
     int rv;
 
@@ -218,7 +320,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "smart-case", no_argument, NULL, 'S' },
         { "stats", no_argument, &opts.stats, 1 },
         { "unrestricted", no_argument, NULL, 'u' },
-        { "version", no_argument, &version, 1 },
+        { "version", no_argument, &opts.version, 1 },
         { "word-regexp", no_argument, NULL, 'w' },
         { "workers", required_argument, NULL, 0 },
         { NULL, 0, NULL, 0 }
@@ -226,6 +328,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 
     if (argc < 2) {
         usage();
+        cleanup_config_options(config_file_options);
         cleanup_ignore(root_ignores);
         cleanup_options();
         exit(1);
@@ -255,153 +358,14 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.stdout_inode = statbuf.st_ino;
     }
 
-    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:np:QRrSsvVtuUwz", longopts, &opt_index)) != -1) {
-        switch (ch) {
-            case 'A':
-                opts.after = atoi(optarg);
-                break;
-            case 'a':
-                opts.search_all_files = 1;
-                opts.search_binary_files = 1;
-                break;
-            case 'B':
-                opts.before = atoi(optarg);
-                break;
-            case 'C':
-                if (optarg) {
-                    opts.context = atoi(optarg);
-                    if (opts.context == 0 && errno == EINVAL) {
-                        /* This arg must be the search string instead of the context length */
-                        optind--;
-                        opts.context = DEFAULT_CONTEXT_LEN;
-                    }
-                } else {
-                    opts.context = DEFAULT_CONTEXT_LEN;
-                }
-                break;
-            case 'D':
-                set_log_level(LOG_LEVEL_DEBUG);
-                break;
-            case 'f':
-                opts.follow_symlinks = 1;
-                break;
-            case 'g':
-                needs_query = 0;
-                opts.match_files = 1;
-                /* Fall through and build regex */
-            case 'G':
-                compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, optarg, 0, 0);
-                break;
-            case 'h':
-                help = 1;
-                break;
-            case 'i':
-                opts.casing = CASE_INSENSITIVE;
-                break;
-            case 'L':
-                opts.invert_match = 1;
-                /* fall through */
-            case 'l':
-                opts.print_filename_only = 1;
-                break;
-            case 'm':
-                opts.max_matches_per_file = atoi(optarg);
-                break;
-            case 'n':
-                opts.recurse_dirs = 0;
-                break;
-            case 'p':
-                opts.path_to_agignore = optarg;
-                break;
-            case 'Q':
-                opts.literal = 1;
-                break;
-            case 'R':
-            case 'r':
-                opts.recurse_dirs = 1;
-                break;
-            case 'S':
-                opts.casing = CASE_SMART;
-                break;
-            case 's':
-                opts.casing = CASE_SENSITIVE;
-                break;
-            case 't':
-                opts.search_all_files = 1;
-                break;
-            case 'u':
-                opts.search_binary_files = 1;
-                opts.search_all_files = 1;
-                opts.search_hidden_files = 1;
-                break;
-            case 'U':
-                opts.skip_vcs_ignores = 1;
-                break;
-            case 'v':
-                opts.invert_match = 1;
-                break;
-            case 'V':
-                version = 1;
-                break;
-            case 'w':
-                opts.word_regexp = 1;
-                break;
-            case 'z':
-                opts.search_zip_files = 1;
-                break;
-            case 0: /* Long option */
-                if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0) {
-                    compile_study(&opts.ackmate_dir_filter, &opts.ackmate_dir_filter_extra, optarg, 0, 0);
-                    break;
-                } else if (strcmp(longopts[opt_index].name, "depth") == 0) {
-                    opts.max_search_depth = atoi(optarg);
-                    break;
-                } else if (strcmp(longopts[opt_index].name, "no-numbers") == 0) {
-                    opts.print_line_numbers = FALSE;
-                    break;
-                } else if (strcmp(longopts[opt_index].name, "ignore-dir") == 0) {
-                    add_ignore_pattern(root_ignores, optarg);
-                    break;
-                } else if (strcmp(longopts[opt_index].name, "ignore") == 0) {
-                    add_ignore_pattern(root_ignores, optarg);
-                    break;
-                } else if (strcmp(longopts[opt_index].name, "nopager") == 0) {
-                    out_fd = stdout;
-                    opts.pager = NULL;
-                    break;
-                } else if (strcmp(longopts[opt_index].name, "pager") == 0) {
-                    opts.pager = optarg;
-                    break;
-                } else if (strcmp(longopts[opt_index].name, "workers") == 0) {
-                    opts.workers = atoi(optarg);
-                    break;
-                } else if (strcmp(longopts[opt_index].name, "color-line-number") == 0) {
-                    free(opts.color_line_number);
-                    ag_asprintf(&opts.color_line_number, "\e[%sm", optarg);
-                    break;
-                } else if (strcmp(longopts[opt_index].name, "color-match") == 0) {
-                    free(opts.color_match);
-                    ag_asprintf(&opts.color_match, "\e[%sm", optarg);
-                    break;
-                } else if (strcmp(longopts[opt_index].name, "color-path") == 0) {
-                    free(opts.color_path);
-                    ag_asprintf(&opts.color_path, "\e[%sm", optarg);
-                    break;
-                } else if (strcmp(longopts[opt_index].name, "silent") == 0) {
-                    set_log_level(LOG_LEVEL_NONE);
-                    break;
-                }
-
-                /* Continue to usage if we don't recognize the option */
-                if (longopts[opt_index].flag != 0) {
-                    break;
-                }
-                log_err("option %s does not take a value", longopts[opt_index].name);
-            default:
-                usage();
-                exit(1);
-        }
+    if (home_dir) {
+        log_debug("Found user's home dir: %s", home_dir);
+        ag_asprintf(&config_file_path, "%s/%s", home_dir, ".agrc");
+        load_config_file_options(config_file_options, config_file_path, longopts);
+        free(config_file_path);
     }
+
+    set_options(argc, argv, longopts);
 
     argc -= optind;
     argv += optind;
@@ -414,17 +378,17 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         }
     }
 
-    if (help) {
+    if (opts.help) {
         usage();
         exit(0);
     }
 
-    if (version) {
+    if (opts.version) {
         print_version();
         exit(0);
     }
 
-    if (needs_query && argc == 0) {
+    if (opts.needs_query && argc == 0) {
         log_err("What do you want to search for?");
         exit(1);
     }
@@ -491,7 +455,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             opts.print_line_numbers = 0;
     }
 
-    if (needs_query) {
+    if (opts.needs_query) {
         opts.query = ag_strdup(argv[0]);
         argc--;
         argv++;
@@ -541,4 +505,157 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
     (*paths)[i] = NULL;
     (*base_paths)[i] = NULL;
+}
+
+void set_options(int argc, char **argv, const struct option *longopts) {
+    int ch;
+    int opt_index = 0;
+
+    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:np:QRrSsvVtuUwz", longopts, &opt_index)) != -1) {
+        switch (ch) {
+            case 'A':
+                opts.after = atoi(optarg);
+                break;
+            case 'a':
+                opts.search_all_files = 1;
+                opts.search_binary_files = 1;
+                break;
+            case 'B':
+                opts.before = atoi(optarg);
+                break;
+            case 'C':
+                if (optarg) {
+                    opts.context = atoi(optarg);
+                    if (opts.context == 0 && errno == EINVAL) {
+                        /* This arg must be the search string instead of the context length */
+                        optind--;
+                        opts.context = DEFAULT_CONTEXT_LEN;
+                    }
+                } else {
+                    opts.context = DEFAULT_CONTEXT_LEN;
+                }
+                break;
+            case 'D':
+                set_log_level(LOG_LEVEL_DEBUG);
+                break;
+            case 'f':
+                opts.follow_symlinks = 1;
+                break;
+            case 'g':
+                opts.needs_query = 0;
+                opts.match_files = 1;
+                /* Fall through and build regex */
+            case 'G':
+                compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, optarg, 0, 0);
+                break;
+            case 'h':
+                opts.help = 1;
+                break;
+            case 'i':
+                opts.casing = CASE_INSENSITIVE;
+                break;
+            case 'L':
+                opts.invert_match = 1;
+                /* fall through */
+            case 'l':
+                opts.print_filename_only = 1;
+                break;
+            case 'm':
+                opts.max_matches_per_file = atoi(optarg);
+                break;
+            case 'n':
+                opts.recurse_dirs = 0;
+                break;
+            case 'p':
+                opts.path_to_agignore = optarg;
+                break;
+            case 'Q':
+                opts.literal = 1;
+                break;
+            case 'R':
+            case 'r':
+                opts.recurse_dirs = 1;
+                break;
+            case 'S':
+                opts.casing = CASE_SMART;
+                break;
+            case 's':
+                opts.casing = CASE_SENSITIVE;
+                break;
+            case 't':
+                opts.search_all_files = 1;
+                break;
+            case 'u':
+                opts.search_binary_files = 1;
+                opts.search_all_files = 1;
+                opts.search_hidden_files = 1;
+                break;
+            case 'U':
+                opts.skip_vcs_ignores = 1;
+                break;
+            case 'v':
+                opts.invert_match = 1;
+                break;
+            case 'V':
+                opts.version = 1;
+                break;
+            case 'w':
+                opts.word_regexp = 1;
+                break;
+            case 'z':
+                opts.search_zip_files = 1;
+                break;
+            case 0: /* Long option */
+                if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0) {
+                    compile_study(&opts.ackmate_dir_filter, &opts.ackmate_dir_filter_extra, optarg, 0, 0);
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "depth") == 0) {
+                    opts.max_search_depth = atoi(optarg);
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "no-numbers") == 0) {
+                    opts.print_line_numbers = FALSE;
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "ignore-dir") == 0) {
+                    add_ignore_pattern(root_ignores, optarg);
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "ignore") == 0) {
+                    add_ignore_pattern(root_ignores, optarg);
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "nopager") == 0) {
+                    out_fd = stdout;
+                    opts.pager = NULL;
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "pager") == 0) {
+                    opts.pager = optarg;
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "workers") == 0) {
+                    opts.workers = atoi(optarg);
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "color-line-number") == 0) {
+                    free(opts.color_line_number);
+                    ag_asprintf(&opts.color_line_number, "\e[%sm", optarg);
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "color-match") == 0) {
+                    free(opts.color_match);
+                    ag_asprintf(&opts.color_match, "\e[%sm", optarg);
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "color-path") == 0) {
+                    free(opts.color_path);
+                    ag_asprintf(&opts.color_path, "\e[%sm", optarg);
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "silent") == 0) {
+                    set_log_level(LOG_LEVEL_NONE);
+                    break;
+                }
+
+                /* Continue to usage if we don't recognize the option */
+                if (longopts[opt_index].flag != 0) {
+                    break;
+                }
+                log_err("option %s does not take a value", longopts[opt_index].name);
+            default:
+                usage();
+                exit(1);
+        }
+    }
 }

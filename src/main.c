@@ -33,6 +33,7 @@ int main(int argc, char **argv) {
     work_queue = NULL;
     work_queue_tail = NULL;
     memset(&stats, 0, sizeof(stats));
+    config_file_options = init_config_options();
     root_ignores = init_ignore(NULL);
     out_fd = stdout;
 #ifdef USE_PCRE_JIT
@@ -149,6 +150,7 @@ int main(int argc, char **argv) {
     pthread_mutex_destroy(&work_queue_mtx);
     pthread_mutex_destroy(&stats_mtx);
     pthread_mutex_destroy(&print_mtx);
+    cleanup_config_options(config_file_options);
     cleanup_ignore(root_ignores);
     free(workers);
     for (i = 0; paths[i] != NULL; i++) {

@@ -33,12 +33,14 @@ typedef struct {
     int column;
     int context;
     int follow_symlinks;
+    int help;
     int invert_match;
     int literal;
     int literal_starts_wordchar;
     int literal_ends_wordchar;
     int max_matches_per_file;
     int max_search_depth;
+    int needs_query;
     char *path_to_agignore;
     int print_break;
     int print_filename_only;
@@ -61,16 +63,32 @@ typedef struct {
     char *pager;
     int paths_len;
     int parallel;
+    int version;
     int word_regexp;
     int workers;
 } cli_options;
+
+struct config_options {
+    char **options;
+    size_t options_len;
+};
+typedef struct config_options config_options;
+
+config_options *config_file_options;
+
+config_options *init_config_options();
+void cleanup_config_options(config_options *co);
 
 /* global options. parse_options gives it sane values, everything else reads from it */
 cli_options opts;
 
 void init_options();
 void parse_options(int argc, char **argv, char **base_paths[], char **paths[]);
+void set_options(int argc, char **argv, const struct option *longopts);
 void cleanup_options();
+void load_config_file_options(config_options *co, const char *path, const struct option *longopts);
+void parse_config_file_option(config_options *co, const char* option);
+void add_config_file_option(config_options *co, const char* option);
 
 void usage();
 
