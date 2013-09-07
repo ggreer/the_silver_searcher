@@ -61,10 +61,10 @@ Search options:\n\
 -f --follow             Follow symlinks\n\
 --[no]group             Same as --[no]break --[no]heading\n\
 -g PATTERN              Print filenames matching PATTERN\n\
--G, --file-search-regex PATTERN Limit search to filenames matching PATTERN\n\
+-G --file-search-regex  PATTERN Limit search to filenames matching PATTERN\n\
 --[no]heading\n\
 --hidden                Search hidden files (obeys .*ignore files)\n\
--i, --ignore-case       Match case insensitively\n\
+-i --ignore-case        Match case insensitively\n\
 --ignore PATTERN        Ignore files/directories matching PATTERN\n\
                         (literal file/directory names also allowed)\n\
 --ignore-dir NAME       Alias for --ignore for compatibility with ack.\n\
