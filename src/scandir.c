@@ -39,7 +39,7 @@ int ag_scandir(const char *dirname,
             }
         }
 
-#ifdef __MINGW__
+#ifdef __MINGW32__
         d = malloc(sizeof(struct dirent));
 #else
         d = malloc(entry->d_reclen);
@@ -48,7 +48,7 @@ int ag_scandir(const char *dirname,
         if (d == NULL) {
             goto fail;
         }
-#ifdef __MINGW__
+#ifdef __MINGW32__
         memcpy(d, entry, sizeof(struct dirent));
 #else
         memcpy(d, entry, entry->d_reclen);
