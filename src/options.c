@@ -102,7 +102,7 @@ void init_options() {
     memset(&opts, 0, sizeof(opts));
     opts.casing = CASE_SENSITIVE;
 #ifdef _WIN32
-    opts.color = FALSE;
+    opts.color = getenv("ANSICON") ? TRUE : FALSE;
 #else
     opts.color = TRUE;
 #endif
