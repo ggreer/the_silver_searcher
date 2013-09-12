@@ -359,7 +359,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
     int dir_depth = 0;
     char *dir_prefix;
 
-    for (i = 0; i < strlen(base_path); i++) {
+    for (i = 0; i < (int)strlen(base_path); i++) {
         if (base_path[i] == '/') {
             dir_depth++;
         }
