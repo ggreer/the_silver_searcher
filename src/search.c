@@ -367,8 +367,13 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
 
     dir_depth--; /* don't recurse beyond the root directory */
 
-    dir_prefix = malloc(3 * sizeof(char) * dir_depth);
-    memset(dir_prefix, 0, 3 * sizeof(char) * dir_depth);
+    /* We are going to keep in dir_prefix pathes to parent directories like:
+     * "../", "../../", ...
+     * At most we'll need `dir_depth * strlen("../")` bytes for path
+     * and one byte for terminating zero.
+     */
+    dir_prefix = malloc(3 * sizeof(char) * dir_depth + 1);
+    memset(dir_prefix, 0, 3 * sizeof(char) * dir_depth + 1);
 
     int symres;
     dirkey_t current_dirkey;
