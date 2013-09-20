@@ -59,6 +59,16 @@ To build Ag from source on FreeBSD:
 
     make -C /usr/ports/textproc/the_silver_searcher install clean
 
+OpenBSD:
+
+Use the following command to install from packages:
+
+    pkg_add the_silver_searcher
+
+To build Ag from source on OpenBSD:
+
+    cd /usr/ports/textproc/the_silver_searcher && make install
+
 If you want a CentOS rpm or Ubuntu deb, take a look at [Vikram Dighe's packages](http://swiftsignal.com/packages/).
 
 Debian unstable:
