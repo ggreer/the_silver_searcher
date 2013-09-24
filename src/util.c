@@ -190,7 +190,7 @@ int is_binary(const void* buf, const int buf_len) {
                 if (buf_c[i] < 192) {
                     continue;
                 }
-            } else if (buf_c[i] > 223 && buf_c[i] < 239 && i + 2 < total_bytes) {
+            } else if (buf_c[i] > 223 && buf_c[i] < 240 && i + 2 < total_bytes) {
                 i++;
                 if (buf_c[i] < 192 && buf_c[i + 1] < 192) {
                     i++;
