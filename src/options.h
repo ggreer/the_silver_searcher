@@ -42,6 +42,7 @@ typedef struct {
     char *path_to_agignore;
     int print_break;
     int print_filename_only;
+	int print_files_and_numbers;
     int print_heading;
     int print_line_numbers;
     int print_long_lines; /* TODO: support this in print.c */
