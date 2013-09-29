@@ -91,9 +91,8 @@ Ubuntu 13.04:
 1. Install dependencies (Automake, pkg-config, PCRE, LZMA):
     * Ubuntu: `apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev`
     * CentOS:
-      
 
-              yum -y groupinstall "Development Tools"  
+              yum -y groupinstall "Development Tools"
               yum -y install pcre-devel xz-devel
     * OS X:
         - Install [homebrew](http://mxcl.github.com/homebrew/), then `brew install automake pkg-config pcre`
