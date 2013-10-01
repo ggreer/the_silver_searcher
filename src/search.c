@@ -364,7 +364,25 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
 
     char *dir_full_path = NULL;
     const char *ignore_file = NULL;
-    int i;
+    int i, j;
+    int dir_depth = 0;
+    char *dir_prefix;
+
+    for (i = 0; i < (int)strlen(base_path); i++) {
+        if (base_path[i] == '/') {
+            dir_depth++;
+        }
+    }
+
+    dir_depth--; /* don't recurse beyond the root directory */
+
+    /* We are going to keep in dir_prefix pathes to parent directories like:
+     * "../", "../../", ...
+     * At most we'll need `dir_depth * strlen("../")` bytes for path
+     * and one byte for terminating zero.
+     */
+    dir_prefix = malloc(3 * sizeof(char) * dir_depth + 1);
+    memset(dir_prefix, 0, 3 * sizeof(char) * dir_depth + 1);
 
     int symres;
     dirkey_t current_dirkey;
@@ -378,15 +396,21 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
     /* find agignore/gitignore/hgignore/etc files to load ignore patterns from */
     for (i = 0; opts.skip_vcs_ignores ? (i == 0) : (ignore_pattern_files[i] != NULL); i++) {
         ignore_file = ignore_pattern_files[i];
-        ag_asprintf(&dir_full_path, "%s/%s", path, ignore_file);
-        if (strcmp(SVN_DIR, ignore_file) == 0) {
-            load_svn_ignore_patterns(ig, dir_full_path);
-        } else {
-            load_ignore_patterns(ig, dir_full_path);
+        for (j = 0; opts.no_recurse_vcs_ignores ? (j == 0) : (j < dir_depth); j++) {
+            ag_asprintf(&dir_full_path, "%s%s/%s", dir_prefix, path, ignore_file);
+            if (strcmp(SVN_DIR, ignore_file) == 0) {
+                load_svn_ignore_patterns(ig, dir_full_path);
+            } else {
+                load_ignore_patterns(ig, dir_full_path);
+            }
+            free(dir_full_path);
+            dir_full_path = NULL;
+            strcat(dir_prefix, "../");
         }
-        free(dir_full_path);
-        dir_full_path = NULL;
+        memset(dir_prefix, 0, dir_depth * 3 * sizeof(char));
     }
+
+    free(dir_prefix);
 
     if (opts.path_to_agignore) {
         load_ignore_patterns(ig, opts.path_to_agignore);

@@ -49,6 +49,7 @@ typedef struct {
     pcre_extra *re_extra;
     int recurse_dirs;
     int search_all_files;
+    int no_recurse_vcs_ignores;
     int skip_vcs_ignores;
     int search_binary_files;
     int search_zip_files;
