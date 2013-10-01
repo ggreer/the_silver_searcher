@@ -16,6 +16,9 @@ m4_ifdef(
     [AM_SILENT_RULES([yes])])
 
 PKG_CHECK_MODULES([PCRE], [libpcre])
+PKG_CHECK_MODULES([BASHCOMP], [bash-completion >= 1.99], [bashcompdir=`pkg-config --variable=completionsdir bash-completion` ; bashcompdata='${builddir}/completion/ag'], [bashcompdir=/etc/bash_completion.d ; bashcompdata='${srcdir}/completion/ag.bashcomp.sh'])
+AC_SUBST([bashcompdir])
+AC_SUBST([bashcompdata])
 
 # Run CFLAGS="-g" ./configure if you want debug symbols
 CFLAGS="$CFLAGS $PCRE_CFLAGS -Wall -Wextra -std=gnu89 -D_GNU_SOURCE"
