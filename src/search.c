@@ -323,7 +323,7 @@ static int check_symloop_enter(const char *path, dirkey_t *outkey) {
         return SYMLOOP_LOOP;
     }
 
-    new_item = (symdir_t*)malloc(sizeof(symdir_t));
+    new_item = (symdir_t*)ag_malloc(sizeof(symdir_t));
     memcpy(&new_item->key, outkey, sizeof(dirkey_t));
     HASH_ADD(hh, symhash, key, sizeof(dirkey_t), new_item);
     return SYMLOOP_OK;
