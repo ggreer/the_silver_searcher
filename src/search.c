@@ -174,7 +174,7 @@ void search_stream(FILE *stream, const char *path) {
 }
 
 void search_file(const char *file_full_path) {
-    int fd = -1;
+    int fd;
     off_t f_len = 0;
     char *buf = NULL;
     struct stat statbuf;
