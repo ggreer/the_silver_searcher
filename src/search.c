@@ -93,10 +93,9 @@ void search_buf(const char *buf, const int buf_len,
             }
         }
     } else {
-        int rc;
         int offset_vector[3];
         while (buf_offset < buf_len &&
-              (rc = pcre_exec(opts.re, opts.re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
+              (pcre_exec(opts.re, opts.re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
             log_debug("Regex match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
             buf_offset = offset_vector[1];
 
