@@ -276,6 +276,11 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         return 0;
     }
 
+    if (is_named_pipe(path, dir)) {
+        log_debug("%s ignored because it's a named pipe", path);
+        return 0;
+    }
+
     for (i = 0; evil_hardcoded_ignore_files[i] != NULL; i++) {
         if (strcmp(filename, evil_hardcoded_ignore_files[i]) == 0) {
             return 0;

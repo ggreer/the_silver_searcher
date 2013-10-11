@@ -2,7 +2,10 @@
 
 A code searching tool similar to `ack`, with a focus on speed.
 
-### Note: I'm going to be busy with other things for a while. Don't take it personally if your pull request or issue languishes. I still want to improve Ag, but I have other priorities right now. ###
+<a href="https://floobits.com/r/ggreer/the_silver_searcher/redirect">
+  <img alt="Floobits status" width="80" height="40" src="https://floobits.com/r/ggreer/the_silver_searcher.png" />
+</a>
+
 
 ## What's so great about Ag? ##
 
@@ -56,12 +59,41 @@ To build Ag from source on FreeBSD:
 
     make -C /usr/ports/textproc/the_silver_searcher install clean
 
+OpenBSD:
+
+Use the following command to install from packages:
+
+    pkg_add the_silver_searcher
+
+To build Ag from source on OpenBSD:
+
+    cd /usr/ports/textproc/the_silver_searcher && make install
+
 If you want a CentOS rpm or Ubuntu deb, take a look at [Vikram Dighe's packages](http://swiftsignal.com/packages/).
+
+Debian unstable:
+
+    apt-get install silversearcher-ag
+
+Ubuntu 13.10 or later:
+
+    apt-get install silversearcher-ag
+
+Ubuntu 13.04:
+
+    apt-get install software-properties-common # (if required)
+    apt-add-repository ppa:mizuno-as/silversearcher-ag
+    apt-get update
+    apt-get install silversearcher-ag
 
 ## Building from source ##
 
 1. Install dependencies (Automake, pkg-config, PCRE, LZMA):
     * Ubuntu: `apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev`
+    * CentOS:
+
+              yum -y groupinstall "Development Tools"
+              yum -y install pcre-devel xz-devel
     * OS X:
         - Install [homebrew](http://mxcl.github.com/homebrew/), then `brew install automake pkg-config pcre`
         - Or install [macports](http://macports.org), then `port install automake pkgconfig pcre`

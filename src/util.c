@@ -185,14 +185,14 @@ int is_binary(const void* buf, const int buf_len) {
             return 1;
         } else if ((buf_c[i] < 7 || buf_c[i] > 14) && (buf_c[i] < 32 || buf_c[i] > 127)) {
             /* UTF-8 detection */
-            if (buf_c[i] > 191 && buf_c[i] < 224 && i + 1 < total_bytes) {
+            if (buf_c[i] > 193 && buf_c[i] < 224 && i + 1 < total_bytes) {
                 i++;
-                if (buf_c[i] < 192) {
+                if (buf_c[i] > 127 && buf_c[i] < 192) {
                     continue;
                 }
-            } else if (buf_c[i] > 223 && buf_c[i] < 239 && i + 2 < total_bytes) {
+            } else if (buf_c[i] > 223 && buf_c[i] < 240 && i + 2 < total_bytes) {
                 i++;
-                if (buf_c[i] < 192 && buf_c[i + 1] < 192) {
+                if (buf_c[i] > 127 && buf_c[i] < 192 && buf_c[i + 1] > 127 && buf_c[i + 1] < 192) {
                     i++;
                     continue;
                 }
@@ -299,8 +299,8 @@ int is_directory(const char *path, const struct dirent *d) {
     /* Some filesystems, e.g. ReiserFS, always return a type DT_UNKNOWN from readdir or scandir. */
     /* Call stat if we don't find DT_DIR to get the information we need. */
     /* Also works for symbolic links to directories. */
-    if (d->d_type == DT_DIR) {
-        return TRUE;
+    if (d->d_type != DT_UNKNOWN && d->d_type != DT_LNK) {
+        return d->d_type == DT_DIR;
     }
 #endif
     char *full_path;
@@ -311,7 +311,7 @@ int is_directory(const char *path, const struct dirent *d) {
         return FALSE;
     }
     free(full_path);
-    return (S_ISDIR(s.st_mode));
+    return S_ISDIR(s.st_mode);
 }
 
 int is_symlink(const char *path, const struct dirent *d) {
@@ -333,8 +333,25 @@ int is_symlink(const char *path, const struct dirent *d) {
         return FALSE;
     }
     free(full_path);
-    return (S_ISLNK(s.st_mode));
+    return S_ISLNK(s.st_mode);
 #endif
+}
+
+int is_named_pipe(const char *path, const struct dirent *d) {
+#ifdef HAVE_DIRENT_DTYPE
+    if (d->d_type != DT_UNKNOWN) {
+        return d->d_type == DT_FIFO;
+    }
+#endif
+    char *full_path;
+    struct stat s;
+    ag_asprintf(&full_path, "%s/%s", path, d->d_name);
+    if (stat(full_path, &s) != 0) {
+        free(full_path);
+        return FALSE;
+    }
+    free(full_path);
+    return S_ISFIFO(s.st_mode);
 }
 
 void ag_asprintf(char **ret, const char *fmt, ...) {
@@ -427,7 +444,7 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
 /* Apache-licensed implementation of strndup for OS
  * taken from http://source-android.frandroid.com/dalvik/tools/dmtracedump/CreateTestTrace.c
  * modified to check for malloc() failure
- */ 
+ */
 char *strndup(const char *src, size_t len) {
     char *dest = (char *) malloc(len + 1);
     if (!dest) return NULL;

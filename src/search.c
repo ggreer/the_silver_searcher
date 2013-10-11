@@ -136,7 +136,16 @@ void search_buf(const char *buf, const int buf_len,
         }
         pthread_mutex_lock(&print_mtx);
         if (opts.print_filename_only) {
-            print_path(dir_full_path, '\n');
+            /* If the --files-without-matches or -L option in passed we should
+             * not print a matching line. This option currently sets
+             * opts.print_filename_only and opts.invert_match. Unfortunately
+             * setting the latter has the side effect of making matches.len = 1
+             * on a file-without-matches which is not desired behaviour. See
+             * GitHub issue 206 for the consequences if this behaviour is not
+             * checked. */
+            if (!opts.invert_match || matches_len < 2) {
+                print_path(dir_full_path, '\n');
+            }
         } else if (binary) {
             print_binary_file_matches(dir_full_path);
         } else {
@@ -445,8 +454,8 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
                 work_queue_tail->next = queue_item;
             }
             work_queue_tail = queue_item;
-            pthread_mutex_unlock(&work_queue_mtx);
             pthread_cond_signal(&files_ready);
+            pthread_mutex_unlock(&work_queue_mtx);
             log_debug("%s added to work queue", dir_full_path);
         } else if (opts.recurse_dirs) {
             if (depth < opts.max_search_depth) {

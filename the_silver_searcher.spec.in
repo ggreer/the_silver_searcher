@@ -2,7 +2,7 @@
 
 
 Name:		the_silver_searcher
-Version:	0.13.1
+Version:	@VERSION@
 Release:	1%{?dist}
 Summary:	A code-searching tool similar to ack, but faster
 
@@ -12,7 +12,7 @@ URL:		https://github.com/ggreer/%{name}
 Source0:	https://github.com/downloads/ggreer/%{name}/%{name}-%{version}.tar.gz
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
-BuildRequires:	pkgconfig, autoconf, pcre-devel
+BuildRequires:	pkgconfig, autoconf, pcre-devel, automake
 Requires:	pcre
 
 %description
@@ -47,20 +47,26 @@ make %{?_smp_mflags}
 
 
 %install
-rm -rf %{buildroot}
-make install DESTDIR=%{buildroot}
+rm -rf ${RPM_BUILD_ROOT}
+make install DESTDIR=${RPM_BUILD_ROOT}
+mkdir -p ${RPM_BUILD_ROOT}%{_bashcompdir}
+install -m 644 ag.bashcomp.sh ${RPM_BUILD_ROOT}%{_bashcompdir}
 
 %clean
-rm -rf %{buildroot}
+rm -rf ${RPM_BUILD_ROOT}
 
 
 %files
 %defattr(-,root,root,-)
 %{_bindir}/*
 %{_mandir}/*
-%{_bashcompdir}/*
+%config %{_bashcompdir}/ag.bashcomp.sh
+%config %{_datadir}/%{name}/completions/ag.bashcomp.sh
 
 
 %changelog
+* Fri Aug 16 2013 Andrew Seidl <git@aas.io> - 0.15.0-1
+- Install bash completion file
+
 * Wed Dec 05 2012 Daniel Nelson <packetcollision@gmail.com> - 0.13.1-1
 - Initial Build

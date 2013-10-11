@@ -90,7 +90,7 @@ Search options:\n\
 -u --unrestricted       Search all files (ignore .agignore, .gitignore, etc.;\n\
                         searches binary and hidden files as well)\n\
 -U --skip-vcs-ignores   Ignore VCS ignore files\n\
-                        (.gitigore, .hgignore, .svnignore; still obey .agignore)\n\
+                        (.gitignore, .hgignore, .svnignore; still obey .agignore)\n\
 -v --invert-match\n\
 -w --word-regexp        Only match whole words\n\
 -z --search-zip         Search contents of compressed (e.g., gzip) files\n\
@@ -105,7 +105,7 @@ void init_options() {
     memset(&opts, 0, sizeof(opts));
     opts.casing = CASE_SENSITIVE;
 #ifdef _WIN32
-    opts.color = FALSE;
+    opts.color = getenv("ANSICON") ? TRUE : FALSE;
 #else
     opts.color = TRUE;
 #endif
@@ -232,6 +232,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 
     if (argc < 2) {
         usage();
+        cleanup_ignore(root_ignores);
+        cleanup_options();
         exit(1);
     }
 
