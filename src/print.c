@@ -66,7 +66,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
 
     print_file_separator();
 
-    if (opts.print_heading == TRUE) {
+    if (opts.print_heading == TRUE && opts.print_files_and_numbers == FALSE) {
         print_path(path, '\n');
     }
 
@@ -143,7 +143,9 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                     for (; j <= i && printable; j++) {
                         fputc(buf[j], out_fd);
                     }
-                } else {
+                } else if (opts.print_files_and_numbers) {
+					print_path_and_line_number(path, line, '\n');
+				} else {
                     print_line_number(line, ':');
                     if (opts.column) {
                         fprintf(out_fd, "%i:", (matches[last_printed_match].start - prev_line_offset) + 1);
@@ -213,6 +215,20 @@ void print_line_number(const int line, const char sep) {
     } else {
         fprintf(out_fd, "%i%c", line, sep);
     }
+}
+
+void print_path_and_line_number(const char* path, const int line, const char sep) {
+	if (!opts.print_files_and_numbers) {
+		return;
+	}
+    /* path = normalize_path(path); */
+
+	if (opts.color) {
+		fprintf(out_fd, "%s%s%s%s%s%i%s%c", opts.color_path, path, color_reset, 
+				opts.color_line_number, ":", line, color_reset, sep);
+	} else {
+		fprintf(out_fd, "%s%s%i%c", path, ":", line, sep);
+	}
 }
 
 void print_file_separator() {
