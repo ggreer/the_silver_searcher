@@ -34,6 +34,15 @@ void print_binary_file_matches(const char* path) {
     fprintf(out_fd, "Binary file %s matches.\n", path);
 }
 
+static void check_printable(int len, int *printable) {
+    if (len > opts.max_printable_line_length) {
+        *printable = FALSE;
+        fprintf(out_fd, "+EVIL+MARK+VERY+LONG+LINES+HERE\n");
+    } else {
+        *printable = TRUE;
+    }
+}
+
 void print_file_matches(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len) {
     int line = 1;
     char **context_prev_lines = NULL;
@@ -49,6 +58,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
     int i, j;
     int in_a_match = FALSE;
     int printing_a_match = FALSE;
+    int printable = TRUE;
 
     if (opts.ackmate) {
         sep = ':';
@@ -129,7 +139,8 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                     }
                     j = prev_line_offset;
                     /* print up to current char */
-                    for (; j <= i; j++) {
+                    check_printable(i - prev_line_offset, &printable);
+                    for (; j <= i && printable; j++) {
                         fputc(buf[j], out_fd);
                     }
                 } else {
@@ -141,7 +152,8 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                     if (printing_a_match && opts.color) {
                         fprintf(out_fd, "%s", opts.color_match);
                     }
-                    for (j = prev_line_offset; j <= i; j++) {
+                    check_printable(i - prev_line_offset, &printable);
+                    for (j = prev_line_offset; j <= i && printable; j++) {
                         if (j == matches[last_printed_match].end && last_printed_match < matches_len) {
                             if (opts.color) {
                                 fprintf(out_fd, "%s", color_reset);

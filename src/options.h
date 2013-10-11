@@ -7,6 +7,7 @@
 #include <pcre.h>
 
 #define DEFAULT_CONTEXT_LEN 2
+#define DEFAULT_MAX_PRINTABLE_LINE_LENGTH 2000
 
 enum case_behavior {
     CASE_SENSITIVE,
@@ -45,6 +46,7 @@ typedef struct {
     int print_heading;
     int print_line_numbers;
     int print_long_lines; /* TODO: support this in print.c */
+    int max_printable_line_length;
     pcre *re;
     pcre_extra *re_extra;
     int recurse_dirs;
