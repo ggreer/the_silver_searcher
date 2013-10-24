@@ -2,6 +2,9 @@
 
 A code searching tool similar to `ack`, with a focus on speed.
 
+### Attention
+I will be doing a public coding session on Saturday, October 26th at 1900UTC. That's noon Pacific Time. You can watch and chat at https://floobits.com/r/ggreer/the_silver_searcher/
+
 <a href="https://floobits.com/r/ggreer/the_silver_searcher/redirect">
   <img alt="Floobits status" width="80" height="40" src="https://floobits.com/r/ggreer/the_silver_searcher.png" />
 </a>
