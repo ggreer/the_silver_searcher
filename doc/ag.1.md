@@ -13,6 +13,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
 
   * `--ackmate`:
     Output results in a format parseable by [AckMate](https://github.com/protocool/AckMate).
+  * `--ackmate-dir-filter PATTERN`
+    Ignore files/directories matching this pattern.
   * `-a --all-types`:
     Search all files. This doesn't include hidden files, and also doesn't respect any ignore files
   * `-A --after [LINES]`:
@@ -37,7 +39,7 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Output ridiculous amounts of debugging info. Probably not useful.
   * `--depth NUM`:
     Search up to NUM directories deep. Default is 25.
-  * `-f --follow`:
+  * `-f --[no]follow`:
     Follow symlinks.
   * `--[no]group`
   * `-g PATTERN`:
@@ -47,6 +49,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `--[no]heading`
   * `--hidden`:
     Search hidden files. This option obeys ignore files.
+  * `-h --help`:
+    Display usage.
   * `--ignore PATTERN`:
     Ignore files/directories matching this pattern. Literal file and directory names are also allowed.
   * `--ignore-dir NAME`:
@@ -57,9 +61,13 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Only print filenames containing matches, not matching lines. An empty query will print all files that would be searched.
   * `-L --files-without-matches`:
     Only print filenames that don't contain matches.
+  * `--line-numbers`:
+    Print line numbers even for streams.
   * `-m --max-count NUM`:
     Skip the rest of a file after NUM matches. Default is 10,000.
-  * `--no-numbers`:            
+  * `-n --no-recurse`:
+    Do not search directories recursively.
+  * `--no-numbers`:
     Don't show line numbers
   * `-p --path-to-agignore STRING`:
     Provide a path to a specific .agignore file.
@@ -69,8 +77,12 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Print matches on very long lines (> 2k characters by default)
   * `-Q --literal`:
     Do not parse PATTERN as a regular expression. Try to match it literally.
+  * `-r -R --recurse`:
+    Search directories recursively. Enabled by default.
   * `-s --case-sensitive`:
     Match case sensitively. Enabled by default.
+  * `--silent`:
+    Disable logging.
   * `-S --smart-case`:
     Match case sensitively if there are any uppercase letters in PATTERN, or case insensitively otherwise.
   * `--search-binary`:
@@ -86,6 +98,12 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `-v --invert-match`
   * `-w --word-regexp`:
     Only match whole words.
+  * `--workers NUM`:
+    Set the number of worker threads.
+  * `-V --version`:
+    Show version information.
+  * `-z --search-zip`:
+    Search contents of compressed (e.g., gzip) files
 
 ## IGNORING FILES
 

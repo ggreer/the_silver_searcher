@@ -43,6 +43,7 @@ Example: ag -i foo /bar/\n\
 Search options:\n\
 \n\
 --ackmate               Print results in AckMate-parseable format\n\
+--ackmate-dir-filter PATTERN Ignore files/directories matching this pattern\n\
 -a --all-types          Search all files (doesn't include hidden files\n\
                         or patterns from ignore files)\n\
 -A --after [LINES]      Print lines before match (Default: 2)\n\
@@ -54,30 +55,33 @@ Search options:\n\
 --color-match           Color codes for result match numbers (Default: 30;43)\n\
 --color-path            Color codes for path names (Default: 1;32)\n\
 --column                Print column numbers in results\n\
---line-numbers          Print line numbers even for streams\n\
 -C --context [LINES]    Print lines before and after matches (Default: 2)\n\
 -D --debug              Ridiculous debugging (probably not useful)\n\
 --depth NUM             Search up to NUM directories deep (Default: 25)\n\
--f --follow             Follow symlinks\n\
+-f --[no]follow         Follow symlinks\n\
 --[no]group             Same as --[no]break --[no]heading\n\
 -g PATTERN              Print filenames matching PATTERN\n\
 -G, --file-search-regex PATTERN Limit search to filenames matching PATTERN\n\
 --[no]heading\n\
 --hidden                Search hidden files (obeys .*ignore files)\n\
--i, --ignore-case       Match case insensitively\n\
 --ignore PATTERN        Ignore files/directories matching PATTERN\n\
-                        (literal file/directory names also allowed)\n\
+(literal file/directory names also allowed)\n\
+-i, --ignore-case       Match case insensitively\n\
 --ignore-dir NAME       Alias for --ignore for compatibility with ack.\n\
 -l --files-with-matches Only print filenames that contain matches\n\
                         (don't print the matching lines)\n\
 -L --files-without-matches\n\
                         Only print filenames that don't contain matches\n\
+--line-numbers          Print line numbers even for streams\n\
 -m --max-count NUM      Skip the rest of a file after NUM matches (Default: 10,000)\n\
+-n --no-recurse         Do not search directories recursively\n\
 --no-numbers            Don't show line numbers\n\
 -p --path-to-agignore STRING\n\
                         Use .agignore file at STRING\n\
+--[no]pager COMMAND     Use a pager such as less\n\
 --print-long-lines      Print matches on very long lines (Default: >2k characters)\n\
 -Q --literal            Don't parse PATTERN as a regular expression\n\
+-r -R --recurse         Search directories recursively. Enabled by default\n\
 -s --case-sensitive     Match case sensitively (Enabled by default)\n\
 -S --smart-case         Match case insensitively unless PATTERN contains\n\
                         uppercase characters\n\
@@ -90,6 +94,8 @@ Search options:\n\
                         (.gitignore, .hgignore, .svnignore; still obey .agignore)\n\
 -v --invert-match\n\
 -w --word-regexp        Only match whole words\n\
+--workers NUM           Set the number of worker threads\n\
+-V --version            Show version information\n\
 -z --search-zip         Search contents of compressed (e.g., gzip) files\n\
 \n");
 }
