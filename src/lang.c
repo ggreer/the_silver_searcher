@@ -67,12 +67,12 @@ lang_spec_t langs[] = {
 char* make_lang_regex(const char** extensions) {
     int regex_capacity = 100;
     char* regex = ag_malloc(regex_capacity);
-
-    strcpy(regex, "\\.(");
     int regex_length = 3;
-
     int subsequent = 0;
     const char** extension;
+
+    strcpy(regex, "\\.(");
+
     for (extension = extensions; *extension; ++extension) {
         int extension_length = strlen(*extension);
         while (regex_length + extension_length + 3 + subsequent > regex_capacity) {

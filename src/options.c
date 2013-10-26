@@ -163,6 +163,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     struct stat statbuf;
     int rv;
 
+    size_t longopts_len;
+    option_t* longopts;
+    char *lang_regex = NULL;
+
     init_options();
 
     option_t base_longopts[] = {
@@ -224,18 +228,14 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "workers", required_argument, NULL, 0 },
     };
 
-    size_t longopts_len = sizeof(base_longopts) / sizeof(option_t);
-    option_t* longopts = ag_malloc(sizeof(base_longopts) + sizeof(option_t) * LANG_COUNT);
-
+    longopts_len = sizeof(base_longopts) / sizeof(option_t);
+    longopts = ag_malloc(sizeof(base_longopts) + sizeof(option_t) * LANG_COUNT);
     memcpy(longopts, base_longopts, sizeof(base_longopts));
 
-    lang_spec_t lang;
     for (i = 0; i < LANG_COUNT; i++) {
-        lang = langs[i];
-        option_t opt = { lang.name, no_argument, NULL, 0 };
+        option_t opt = { langs[i].name, no_argument, NULL, 0 };
         longopts[i + longopts_len] = opt;
     }
-
     longopts[LANG_COUNT + sizeof(base_longopts)] = (option_t){ NULL, 0, NULL, 0 };
 
     if (argc < 2) {
@@ -411,16 +411,16 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                     break;
                 }
 
-                char *ext_regex = NULL;
                 for (i = 0; i < LANG_COUNT; i++) {
                     if (strcmp(longopts[opt_index].name, langs[i].name) == 0) {
-                        ext_regex = make_lang_regex(langs[i].extensions);
-                        compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, ext_regex, 0, 0);
+                        lang_regex = make_lang_regex(langs[i].extensions);
+                        compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, lang_regex, 0, 0);
                         break;
                     }
                 }
-                if (ext_regex) {
-                    free(ext_regex);
+                if (lang_regex) {
+                    free(lang_regex);
+                    lang_regex = NULL;
                     break;
                 }
 
