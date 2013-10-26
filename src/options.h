@@ -68,6 +68,8 @@ typedef struct {
 /* global options. parse_options gives it sane values, everything else reads from it */
 cli_options opts;
 
+typedef struct option option_t;
+
 void init_options();
 void parse_options(int argc, char **argv, char **base_paths[], char **paths[]);
 void cleanup_options();

@@ -94,10 +94,10 @@ static void* decompress_zlib(const void* buf, const int buf_len,
     return NULL;
 }
 
-static void* decompress_lwz(const void* buf, const int buf_len,
+static void* decompress_lzw(const void* buf, const int buf_len,
                             const char* dir_full_path, int* new_buf_len) {
     (void)buf; (void)buf_len;
-    log_err("LWZ (UNIX compress) files not yet supported: %s", dir_full_path);
+    log_err("LZW (UNIX compress) files not yet supported: %s", dir_full_path);
     *new_buf_len = 0;
     return NULL;
 }
@@ -184,7 +184,7 @@ void* decompress(const ag_compression_type zip_type, const void* buf, const int 
         case AG_GZIP:
              return decompress_zlib(buf, buf_len, dir_full_path, new_buf_len);
         case AG_COMPRESS:
-             return decompress_lwz(buf, buf_len, dir_full_path, new_buf_len);
+             return decompress_lzw(buf, buf_len, dir_full_path, new_buf_len);
         case AG_ZIP:
              return decompress_zip(buf, buf_len, dir_full_path, new_buf_len);
         case AG_XZ:

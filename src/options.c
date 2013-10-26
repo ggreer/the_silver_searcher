@@ -10,6 +10,7 @@
 #include "config.h"
 #include "ignore.h"
 #include "options.h"
+#include "lang.h"
 #include "log.h"
 #include "util.h"
 
@@ -162,9 +163,13 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     struct stat statbuf;
     int rv;
 
+    size_t longopts_len;
+    option_t* longopts;
+    char *lang_regex = NULL;
+
     init_options();
 
-    struct option longopts[] = {
+    option_t base_longopts[] = {
         { "ackmate", no_argument, &opts.ackmate, 1 },
         { "ackmate-dir-filter", required_argument, NULL, 0 },
         { "after", required_argument, NULL, 'A' },
@@ -221,8 +226,17 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "version", no_argument, &version, 1 },
         { "word-regexp", no_argument, NULL, 'w' },
         { "workers", required_argument, NULL, 0 },
-        { NULL, 0, NULL, 0 }
     };
+
+    longopts_len = sizeof(base_longopts) / sizeof(option_t);
+    longopts = ag_malloc(sizeof(base_longopts) + sizeof(option_t) * LANG_COUNT);
+    memcpy(longopts, base_longopts, sizeof(base_longopts));
+
+    for (i = 0; i < LANG_COUNT; i++) {
+        option_t opt = { langs[i].name, no_argument, NULL, 0 };
+        longopts[i + longopts_len] = opt;
+    }
+    longopts[LANG_COUNT + sizeof(base_longopts)] = (option_t){ NULL, 0, NULL, 0 };
 
     if (argc < 2) {
         usage();
@@ -396,6 +410,20 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 if (longopts[opt_index].flag != 0) {
                     break;
                 }
+
+                for (i = 0; i < LANG_COUNT; i++) {
+                    if (strcmp(longopts[opt_index].name, langs[i].name) == 0) {
+                        lang_regex = make_lang_regex(langs[i].extensions);
+                        compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, lang_regex, 0, 0);
+                        break;
+                    }
+                }
+                if (lang_regex) {
+                    free(lang_regex);
+                    lang_regex = NULL;
+                    break;
+                }
+
                 log_err("option %s does not take a value", longopts[opt_index].name);
             default:
                 usage();
