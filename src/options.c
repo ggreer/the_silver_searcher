@@ -410,6 +410,20 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 if (longopts[opt_index].flag != 0) {
                     break;
                 }
+
+                char *ext_regex = NULL;
+                for (i = 0; i < LANG_COUNT; i++) {
+                    if (strcmp(longopts[opt_index].name, langs[i].name) == 0) {
+                        ext_regex = make_lang_regex(langs[i].extensions);
+                        compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, ext_regex, 0, 0);
+                        break;
+                    }
+                }
+                if (ext_regex) {
+                    free(ext_regex);
+                    break;
+                }
+
                 log_err("option %s does not take a value", longopts[opt_index].name);
             default:
                 usage();
