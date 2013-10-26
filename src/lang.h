@@ -1,15 +1,15 @@
 #ifndef LANG_H
 #define LANG_H
 
-#define MAX_EXTENSIONS 100
+#define MAX_EXTENSIONS 12
+#define LANG_COUNT 57
 
 typedef struct {
-    const char* language;
+    const char* name;
     const char* extensions[MAX_EXTENSIONS];
-} language_specification;
+} lang_spec_t;
 
-
-extern language_specification languages[];
+extern lang_spec_t langs[LANG_COUNT];
 
 /**
 Convert a NULL-terminated array of language extensions
@@ -17,8 +17,6 @@ into a regular expression of the form \.(extension1|extension2...)$
 
 Caller is responsible for freeing the returned string.
 */
-char* make_language_regex(const char** extensions);
-
-int language_count();
+char* make_lang_regex(const char** extensions);
 
 #endif

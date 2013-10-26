@@ -10,6 +10,7 @@
 #include "config.h"
 #include "ignore.h"
 #include "options.h"
+#include "lang.h"
 #include "log.h"
 #include "util.h"
 
@@ -164,7 +165,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 
     init_options();
 
-    struct option longopts[] = {
+    option_t base_longopts[] = {
         { "ackmate", no_argument, &opts.ackmate, 1 },
         { "ackmate-dir-filter", required_argument, NULL, 0 },
         { "after", required_argument, NULL, 'A' },
@@ -221,8 +222,21 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "version", no_argument, &version, 1 },
         { "word-regexp", no_argument, NULL, 'w' },
         { "workers", required_argument, NULL, 0 },
-        { NULL, 0, NULL, 0 }
     };
+
+    size_t longopts_len = sizeof(base_longopts) / sizeof(option_t);
+    option_t* longopts = ag_malloc(sizeof(base_longopts) + sizeof(option_t) * LANG_COUNT);
+
+    memcpy(longopts, base_longopts, sizeof(base_longopts));
+
+    lang_spec_t lang;
+    for (i = 0; i < LANG_COUNT; i++) {
+        lang = langs[i];
+        option_t opt = { lang.name, no_argument, NULL, 0 };
+        longopts[i + longopts_len] = opt;
+    }
+
+    longopts[LANG_COUNT + sizeof(base_longopts)] = (option_t){ NULL, 0, NULL, 0 };
 
     if (argc < 2) {
         usage();

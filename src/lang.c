@@ -4,7 +4,7 @@
 #include "lang.h"
 #include "util.h"
 
-language_specification languages[] = {
+lang_spec_t langs[LANG_COUNT] = {
     {"actionscript", {"as", "mxml"}},
     {"ada", {"ada", "adb", "ads"}},
     {"asm", {"asm", "s"}},
@@ -64,16 +64,7 @@ language_specification languages[] = {
     {NULL, {NULL}}
 };
 
-int language_count() {
-    int count = 0;
-    language_specification* cur;
-    for(cur = languages; cur->language; ++cur) {
-        ++count;
-    }
-    return count;
-}
-
-char* make_language_regex(const char** extensions) {
+char* make_lang_regex(const char** extensions) {
     int regex_capacity = 100;
     char* regex = ag_malloc(regex_capacity);
 
