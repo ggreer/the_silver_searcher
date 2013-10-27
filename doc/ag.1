@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "AG" "1" "September 2013" "" ""
+.TH "AG" "1" "October 2013" "" ""
 .
 .SH "NAME"
 \fBag\fR \- The Silver Searcher\. Like ack, but faster\.
@@ -17,6 +17,12 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 .
 .br
 \~\~\~\~ Output results in a format parseable by AckMate \fIhttps://github\.com/protocool/AckMate\fR\.
+.
+.P
+\fB\-\-ackmate\-dir\-filter PATTERN\fR
+.
+.br
+\~\~\~\~ Ignore files/directories matching this pattern\.
 .
 .P
 \fB\-a \-\-all\-types\fR:
@@ -91,7 +97,7 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 \~\~\~\~ Search up to NUM directories deep\. Default is 25\.
 .
 .P
-\fB\-f \-\-follow\fR:
+\fB\-f \-\-[no]follow\fR:
 .
 .br
 \~\~\~\~ Follow symlinks\.
@@ -119,6 +125,12 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 .
 .br
 \~\~\~\~ Search hidden files\. This option obeys ignore files\.
+.
+.P
+\fB\-h \-\-help\fR:
+.
+.br
+\~\~\~\~ Display usage\.
 .
 .P
 \fB\-\-ignore PATTERN\fR:
@@ -151,10 +163,22 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 \~\~\~\~ Only print filenames that don\'t contain matches\.
 .
 .P
+\fB\-\-line\-numbers\fR:
+.
+.br
+\~\~\~\~ Print line numbers even for streams\.
+.
+.P
 \fB\-m \-\-max\-count NUM\fR:
 .
 .br
 \~\~\~\~ Skip the rest of a file after NUM matches\. Default is 10,000\.
+.
+.P
+\fB\-n \-\-no\-recurse\fR:
+.
+.br
+\~\~\~\~ Do not search directories recursively\.
 .
 .P
 \fB\-\-no\-numbers\fR:
@@ -187,10 +211,22 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 \~\~\~\~ Do not parse PATTERN as a regular expression\. Try to match it literally\.
 .
 .P
+\fB\-r \-R \-\-recurse\fR:
+.
+.br
+\~\~\~\~ Search directories recursively\. Enabled by default\.
+.
+.P
 \fB\-s \-\-case\-sensitive\fR:
 .
 .br
 \~\~\~\~ Match case sensitively\. Enabled by default\.
+.
+.P
+\fB\-\-silent\fR:
+.
+.br
+\~\~\~\~ Disable logging\.
 .
 .P
 \fB\-S \-\-smart\-case\fR:
@@ -236,6 +272,24 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 .
 .br
 \~\~\~\~ Only match whole words\.
+.
+.P
+\fB\-\-workers NUM\fR:
+.
+.br
+\~\~\~\~ Set the number of worker threads\.
+.
+.P
+\fB\-V \-\-version\fR:
+.
+.br
+\~\~\~\~ Show version information\.
+.
+.P
+\fB\-z \-\-search\-zip\fR:
+.
+.br
+\~\~\~\~ Search contents of compressed (e\.g\., gzip) files
 .
 .P
 By default, ag will ignore files matched by patterns in \.gitignore, \.hgignore, or \.agignore\. These files can be anywhere in the directories being searched\. Ag also ignores files matched by the svn:ignore property in subversion repositories\. Finally, ag looks in $HOME/\.agignore for ignore patterns\. Binary files are ignored by default as well\.
