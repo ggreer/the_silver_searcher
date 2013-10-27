@@ -251,18 +251,26 @@ static int filename_ignore_search(const ignores *ig, const char *filename) {
     return 0;
 }
 
-static int path_ignore_search(const ignores *ig, const char *path, const char *filename) {
-    char *temp;
+static int path_ignore_search(const ignores *ig, const char *path, const char *filename, int level) {
+    char *temp, *index;
+    int rv = 0;
 
-    if (filename_ignore_search(ig, filename)) {
-        return 1;
-    }
     ag_asprintf(&temp, "%s/%s", path, filename);
-    int rv = filename_ignore_search(ig, temp);
+    if ('/' == temp[strlen(temp) - 1]) level++;
+
+    for (index = temp + strlen(temp) - 1, level++; level > 0 && (!rv); index--) {
+        if ('/' == *index) {
+            rv = filename_ignore_search(ig, index + 1);
+            if (! --level) {
+                /* Cater for .gitignore patterns beginning with a slash */
+                rv += filename_ignore_search(ig, index);
+            }
+        }
+    }
+
     free(temp);
     return rv;
 }
-
 /* This function is REALLY HOT. It gets called for every file */
 int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     const char *filename = dir->d_name;
@@ -304,42 +312,27 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     }
     log_debug("path_start is %s", path_start);
 
-    if (path_ignore_search(ig, path_start, filename)) {
+    if (path_ignore_search(ig, path_start, filename, scandir_baton->level)) {
         return 0;
     }
 
     if (is_directory(path, dir) && filename[filename_len - 1] != '/') {
         ag_asprintf(&temp, "%s/", filename);
-        int rv = path_ignore_search(ig, path_start, temp);
+        int rv = path_ignore_search(ig, path_start, temp, scandir_baton->level);
         free(temp);
         if (rv) {
             return 0;
         }
     }
 
-    /* TODO: copy-pasted from above */
-    if (scandir_baton->level == 0) {
-        char *temp2; /* horrible variable name, I know */
-        ag_asprintf(&temp, "/%s", filename);
-        if (path_ignore_search(ig, path_start, temp)) {
-            return 0;
-        }
-
-        if (is_directory(path, dir) && temp[filename_len - 1] != '/') {
-            ag_asprintf(&temp2, "%s/", temp);
-            int rv = path_ignore_search(ig, path_start, temp2);
-            free(temp2);
-            if (rv) {
-                return 0;
-            }
-        }
-        free(temp);
-    }
-
-    scandir_baton->level++;
     if (ig->parent != NULL) {
-        scandir_baton->ig = ig->parent;
-        return filename_filter(path, dir, (void *)scandir_baton);
+        scandir_baton_t *ignore_relay = ag_malloc(sizeof(scandir_baton_t));
+        memcpy(ignore_relay, scandir_baton, sizeof(scandir_baton_t));
+        ignore_relay->ig = ig->parent;
+        ignore_relay->level++;
+        int rv = filename_filter(path, dir, (void *)ignore_relay);
+        free(ignore_relay);
+        return rv;
     }
 
     return 1;
