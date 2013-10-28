@@ -17,5 +17,5 @@ aclocal $AC_SEARCH_OPTS && \
 autoconf && \
 autoheader && \
 automake --add-missing && \
-./configure $@ && \
+./configure "$@" && \
 make
