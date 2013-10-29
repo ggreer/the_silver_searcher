@@ -93,10 +93,9 @@ void search_buf(const char *buf, const int buf_len,
             }
         }
     } else {
-        int rc;
         int offset_vector[3];
         while (buf_offset < buf_len &&
-              (rc = pcre_exec(opts.re, opts.re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
+              (pcre_exec(opts.re, opts.re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
             log_debug("Regex match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
             buf_offset = offset_vector[1];
 
@@ -175,7 +174,7 @@ void search_stream(FILE *stream, const char *path) {
 }
 
 void search_file(const char *file_full_path) {
-    int fd = -1;
+    int fd;
     off_t f_len = 0;
     char *buf = NULL;
     struct stat statbuf;
@@ -324,7 +323,7 @@ static int check_symloop_enter(const char *path, dirkey_t *outkey) {
         return SYMLOOP_LOOP;
     }
 
-    new_item = (symdir_t*)malloc(sizeof(symdir_t));
+    new_item = (symdir_t*)ag_malloc(sizeof(symdir_t));
     memcpy(&new_item->key, outkey, sizeof(dirkey_t));
     HASH_ADD(hh, symhash, key, sizeof(dirkey_t), new_item);
     return SYMLOOP_OK;
