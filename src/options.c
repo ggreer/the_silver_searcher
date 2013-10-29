@@ -36,12 +36,12 @@ const char *color_path = "\e[1;32m";   /* bold green */
 void usage() {
     printf("\n");
     printf("Usage: ag [OPTIONS] PATTERN [PATH]\n\n");
-    
+
     printf("  Recursively search for PATTERN in PATH.\n");
     printf("  Like grep or ack, but faster.\n\n");
-    
+
     printf("Example:\n  ag -i foo /bar/\n\n");
-    
+
     printf("\
 Output Options:\n\
      --ackmate            Print results in AckMate-parseable format\n\
