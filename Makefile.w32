@@ -1,6 +1,7 @@
 SRCS = \
 	src/decompress.c \
 	src/ignore.c \
+	src/lang.c \
 	src/log.c \
 	src/main.c \
 	src/options.c \

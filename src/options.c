@@ -232,14 +232,14 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     };
 
     longopts_len = sizeof(base_longopts) / sizeof(option_t);
-    longopts = ag_malloc(sizeof(base_longopts) + sizeof(option_t) * LANG_COUNT);
+    longopts = ag_malloc(sizeof(base_longopts) + sizeof(option_t) * (LANG_COUNT + 1));
     memcpy(longopts, base_longopts, sizeof(base_longopts));
 
     for (i = 0; i < LANG_COUNT; i++) {
         option_t opt = { langs[i].name, no_argument, NULL, 0 };
         longopts[i + longopts_len] = opt;
     }
-    longopts[LANG_COUNT + sizeof(base_longopts)] = (option_t){ NULL, 0, NULL, 0 };
+    longopts[LANG_COUNT + longopts_len] = (option_t){ NULL, 0, NULL, 0 };
 
     if (argc < 2) {
         usage();
