@@ -166,7 +166,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     struct stat statbuf;
     int rv;
 
-    size_t longopts_len;
+    size_t longopts_len, full_len;
     option_t* longopts;
     char *lang_regex = NULL;
 
@@ -231,15 +231,16 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "workers", required_argument, NULL, 0 },
     };
 
-    longopts_len = sizeof(base_longopts) / sizeof(option_t);
-    longopts = ag_malloc(sizeof(base_longopts) + sizeof(option_t) * LANG_COUNT);
+    longopts_len = (sizeof(base_longopts) / sizeof(option_t));
+    full_len = (longopts_len + LANG_COUNT + 1);
+    longopts = ag_malloc(full_len * sizeof(option_t));
     memcpy(longopts, base_longopts, sizeof(base_longopts));
 
     for (i = 0; i < LANG_COUNT; i++) {
         option_t opt = { langs[i].name, no_argument, NULL, 0 };
         longopts[i + longopts_len] = opt;
     }
-    longopts[LANG_COUNT + sizeof(base_longopts)] = (option_t){ NULL, 0, NULL, 0 };
+    longopts[full_len-1] = (option_t){ NULL, 0, NULL, 0 };
 
     if (argc < 2) {
         usage();
