@@ -66,6 +66,7 @@ Output Options:\n\
      --no-numbers         Don't print line numbers\n\
      --print-long-lines   Print matches on very long lines (Default: >2k characters)\n\
      --stats              Print stats (files scanned, time taken, etc.)\n\
+  -o --only-matching      Print the non-empty matching part of the input\n\
 \n\
 Search Options:\n\
   -a --all-types          Search all files (doesn't include hidden files\n\
@@ -205,6 +206,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "literal", no_argument, NULL, 'Q' },
         { "match", no_argument, &useless, 0 },
         { "max-count", required_argument, NULL, 'm' },
+        { "only-matching", no_argument, &opts.only_matching, 'o' },
         { "no-numbers", no_argument, NULL, 0 },
         { "no-recurse", no_argument, NULL, 'n' },
         { "nobreak", no_argument, &opts.print_break, 0 },
@@ -273,7 +275,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.stdout_inode = statbuf.st_ino;
     }
 
-    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:np:QRrSsvVtuUwz", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:nop:QRrSsvVtuUwz", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 opts.after = atoi(optarg);
@@ -327,6 +329,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'n':
                 opts.recurse_dirs = 0;
+                break;
+            case 'o':
+                opts.only_matching = TRUE;
                 break;
             case 'p':
                 opts.path_to_agignore = optarg;
@@ -387,6 +392,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                     out_fd = stdout;
                     opts.pager = NULL;
                     break;
+                } else if (strcmp(longopts[opt_index].name, "only-matching") == 0) {
+                    opts.only_matching = TRUE;
                 } else if (strcmp(longopts[opt_index].name, "pager") == 0) {
                     opts.pager = optarg;
                     break;
@@ -489,6 +496,11 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     if (opts.context > 0) {
         opts.before = opts.context;
         opts.after = opts.context;
+    }
+
+    if (opts.only_matching && (opts.before || opts.after)) {
+        log_err("When --only-matching is specified, --context, --before and --after have no effect");
+        opts.context = opts.before = opts.after = 0;
     }
 
     if (opts.ackmate) {
