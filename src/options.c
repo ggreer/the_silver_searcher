@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -112,6 +113,7 @@ void init_options() {
 #endif
     opts.max_matches_per_file = 10000;
     opts.max_search_depth = 25;
+    opts.needs_query = 1;
     opts.print_break = TRUE;
     opts.print_heading = TRUE;
     opts.print_line_numbers = TRUE;
@@ -151,18 +153,118 @@ void cleanup_options() {
     }
 }
 
+config_options *init_config_options() {
+    config_options *co = ag_malloc(2*sizeof(config_options));
+    co->options = NULL; /* empty option for getopt */
+    co->options_len = 1;
+    return co;
+}
+
+void cleanup_config_options(config_options *co) {
+    size_t i;
+
+    if (co) {
+        if (co->options) {
+            for (i = 0; i < co->options_len; i++) {
+                free(co->options[i]);
+            }
+            free(co->options);
+        }
+        free(co);
+    }
+}
+
+void load_config_file_options(config_options *co, const char *path, const struct option *longopts) {
+    size_t i;
+    FILE *fp = NULL;
+    fp = fopen(path, "r");
+    if (fp == NULL) {
+        log_debug("Skipping config file %s", path);
+        return;
+    }
+    log_debug("Loading config file %s", path);
+
+    char *line = NULL;
+    ssize_t line_len = 0;
+    size_t line_cap = 0;
+
+    while ((line_len = getline(&line, &line_cap, fp)) > 0) {
+        if (line_len == 0 || line[0] == '\n' || line[0] == '#') {
+            continue;
+        }
+        if (line[line_len-1] == '\n') {
+            line[line_len-1] = '\0'; /* kill the \n */
+        }
+        parse_config_file_option(co, line);
+    }
+
+    for (i = 0; i < co->options_len; ++i) {
+        log_debug("Read config file option [%d]: '%s'", i, co->options[i]);
+    }
+    set_options(co->options_len, co->options, longopts);
+    /* reset getopt for reading argv */
+    optind = 1;
+
+    free(line);
+    fclose(fp);
+}
+
+void parse_config_file_option(config_options *co, const char* option) {
+    size_t option_len;
+    size_t idx;
+
+    /* Kill leading whitespace */
+    for (idx = 0, option_len = strlen(option); idx < option_len; ++idx) {
+        if (!isspace(option[idx])) {
+            option = option + idx;
+            break;
+        }
+    }
+
+    /* Kill trailing whitespace */
+    for (option_len = strlen(option); option_len > 0; --option_len) {
+        if (!isspace(option[option_len - 1])) {
+            break;
+        }
+    }
+
+    /* Exclude comments */
+    if (option[0] == '#') {
+        return;
+    }
+
+    /* Split options with values */
+    for (idx = 0; idx < option_len; ++idx) {
+        if (isspace(option[idx])) {
+            add_config_file_option(co, ag_strndup(option, idx));
+            add_config_file_option(co, ag_strndup(option + idx + 1, option_len - idx));
+            return;
+        }
+    }
+
+    /* Add simple option */
+    add_config_file_option(co, ag_strndup(option, option_len));
+}
+
+void add_config_file_option(config_options *co, const char* option) {
+    size_t option_len = strlen(option);
+    if (option_len == 0 || option[0] == '#') {
+        log_debug("option is empty. Not adding to config file options.");
+        return;
+    }
+    co->options_len++;
+    co->options = ag_realloc(co->options, co->options_len * sizeof(char*));
+    co->options[co->options_len - 1] = ag_strndup(option, option_len);
+}
+
 void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
-    int ch;
     int i;
     int path_len = 0;
     int useless = 0;
     int group = 1;
-    int help = 0;
-    int version = 0;
-    int opt_index = 0;
     const char *home_dir = getenv("HOME");
+    char *config_file_path = NULL;
     char *ignore_file_path = NULL;
-    int needs_query = 1;
     struct stat statbuf;
     int rv;
 
@@ -226,7 +328,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "smart-case", no_argument, NULL, 'S' },
         { "stats", no_argument, &opts.stats, 1 },
         { "unrestricted", no_argument, NULL, 'u' },
-        { "version", no_argument, &version, 1 },
+        { "version", no_argument, &opts.version, 1 },
         { "word-regexp", no_argument, NULL, 'w' },
         { "workers", required_argument, NULL, 0 },
     };
@@ -244,6 +346,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 
     if (argc < 2) {
         usage();
+        cleanup_config_options(config_file_options);
         cleanup_ignore(root_ignores);
         cleanup_options();
         exit(1);
@@ -272,6 +375,159 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         }
         opts.stdout_inode = statbuf.st_ino;
     }
+
+    if (home_dir) {
+        log_debug("Found user's home dir: %s", home_dir);
+        ag_asprintf(&config_file_path, "%s/%s", home_dir, ".agrc");
+        load_config_file_options(config_file_options, config_file_path, longopts);
+        free(config_file_path);
+    }
+
+    set_options(argc, argv, longopts);
+
+    argc -= optind;
+    argv += optind;
+
+    if (opts.pager) {
+        out_fd = popen(opts.pager, "w");
+        if (!out_fd) {
+            perror("Failed to run pager");
+            exit(1);
+        }
+    }
+
+    if (opts.help) {
+        usage();
+        exit(0);
+    }
+
+    if (opts.version) {
+        print_version();
+        exit(0);
+    }
+
+    if (opts.needs_query && argc == 0) {
+        log_err("What do you want to search for?");
+        exit(1);
+    }
+
+    if (home_dir && !opts.search_all_files) {
+        log_debug("Found user's home dir: %s", home_dir);
+        ag_asprintf(&ignore_file_path, "%s/%s", home_dir, ignore_pattern_files[0]);
+        load_ignore_patterns(root_ignores, ignore_file_path);
+        free(ignore_file_path);
+    }
+
+    if (!opts.skip_vcs_ignores) {
+        FILE *gitconfig_file = NULL;
+        size_t buf_len = 0;
+        char *gitconfig_res = NULL;
+
+        gitconfig_file = popen("git config -z --get core.excludesfile", "r");
+        if (gitconfig_file != NULL) {
+            do {
+                gitconfig_res = ag_realloc(gitconfig_res, buf_len + 65);
+                buf_len += fread(gitconfig_res + buf_len, 1, 64, gitconfig_file);
+            } while (buf_len > 0 && buf_len % 64 == 0);
+            gitconfig_res[buf_len] = '\0';
+            load_ignore_patterns(root_ignores, gitconfig_res);
+            free(gitconfig_res);
+            pclose(gitconfig_file);
+        }
+    }
+
+    if (opts.context > 0) {
+        opts.before = opts.context;
+        opts.after = opts.context;
+    }
+
+    if (opts.ackmate) {
+        opts.color = 0;
+        opts.print_break = 1;
+        group = 1;
+        opts.search_stream = 0;
+    }
+
+    if (opts.parallel) {
+        opts.search_stream = 0;
+    }
+
+    if (opts.print_heading == 0 || opts.print_break == 0) {
+        goto skip_group;
+    }
+
+    if (group) {
+        opts.print_heading = 1;
+        opts.print_break = 1;
+    } else {
+        opts.print_heading = 0;
+        opts.print_break = 0;
+    }
+
+    skip_group:;
+
+    if (opts.search_stream) {
+        opts.print_break = 0;
+        opts.print_heading = 0;
+        if (opts.print_line_numbers != 2)
+            opts.print_line_numbers = 0;
+    }
+
+    if (opts.needs_query) {
+        opts.query = ag_strdup(argv[0]);
+        argc--;
+        argv++;
+    } else {
+        opts.query = ag_strdup(".");
+    }
+    opts.query_len = strlen(opts.query);
+
+    log_debug("Query is %s", opts.query);
+
+    if (opts.query_len == 0) {
+        log_err("Error: No query. What do you want to search for?");
+        exit(1);
+    }
+
+    if (!is_regex(opts.query)) {
+        opts.literal = 1;
+    }
+
+    char *path = NULL;
+    char *tmp = NULL;
+    opts.paths_len = argc;
+    if (argc > 0) {
+        *paths = ag_calloc(sizeof(char*), argc + 1);
+        *base_paths = ag_calloc(sizeof(char*), argc + 1);
+        for (i = 0; i < argc; i++) {
+            path = ag_strdup(argv[i]);
+            path_len = strlen(path);
+            /* kill trailing slash */
+            if (path_len > 1 && path[path_len - 1] == '/') {
+              path[path_len - 1] = '\0';
+            }
+            (*paths)[i] = path;
+            tmp = ag_malloc(PATH_MAX);
+            (*base_paths)[i] = realpath(path, tmp);
+        }
+        /* Make sure we search these paths instead of stdin. */
+        opts.search_stream = 0;
+    } else {
+        path = ag_strdup(".");
+        *paths = ag_malloc(sizeof(char*) * 2);
+        *base_paths = ag_malloc(sizeof(char*) * 2);
+        (*paths)[0] = path;
+        tmp = ag_malloc(PATH_MAX);
+        (*base_paths)[0] = realpath(path, tmp);
+        i = 1;
+    }
+    (*paths)[i] = NULL;
+    (*base_paths)[i] = NULL;
+}
+
+void set_options(int argc, char **argv, const struct option *longopts) {
+    int ch;
+    int opt_index = 0;
 
     while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:np:QRrSsvVtuUwz", longopts, &opt_index)) != -1) {
         switch (ch) {
@@ -304,14 +560,14 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.follow_symlinks = 1;
                 break;
             case 'g':
-                needs_query = 0;
+                opts.needs_query = 0;
                 opts.match_files = 1;
                 /* Fall through and build regex */
             case 'G':
                 compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, optarg, 0, 0);
                 break;
             case 'h':
-                help = 1;
+                opts.help = 1;
                 break;
             case 'i':
                 opts.casing = CASE_INSENSITIVE;
@@ -359,7 +615,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.invert_match = 1;
                 break;
             case 'V':
-                version = 1;
+                opts.version = 1;
                 break;
             case 'w':
                 opts.word_regexp = 1;
@@ -434,143 +690,4 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 exit(1);
         }
     }
-
-    argc -= optind;
-    argv += optind;
-
-    if (opts.pager) {
-        out_fd = popen(opts.pager, "w");
-        if (!out_fd) {
-            perror("Failed to run pager");
-            exit(1);
-        }
-    }
-
-    if (help) {
-        usage();
-        exit(0);
-    }
-
-    if (version) {
-        print_version();
-        exit(0);
-    }
-
-    if (needs_query && argc == 0) {
-        log_err("What do you want to search for?");
-        exit(1);
-    }
-
-    if (home_dir && !opts.search_all_files) {
-        log_debug("Found user's home dir: %s", home_dir);
-        ag_asprintf(&ignore_file_path, "%s/%s", home_dir, ignore_pattern_files[0]);
-        load_ignore_patterns(root_ignores, ignore_file_path);
-        free(ignore_file_path);
-    }
-
-    if (!opts.skip_vcs_ignores) {
-        FILE *gitconfig_file = NULL;
-        size_t buf_len = 0;
-        char *gitconfig_res = NULL;
-
-        gitconfig_file = popen("git config -z --get core.excludesfile", "r");
-        if (gitconfig_file != NULL) {
-            do {
-                gitconfig_res = ag_realloc(gitconfig_res, buf_len + 65);
-                buf_len += fread(gitconfig_res + buf_len, 1, 64, gitconfig_file);
-            } while (buf_len > 0 && buf_len % 64 == 0);
-            gitconfig_res[buf_len] = '\0';
-            load_ignore_patterns(root_ignores, gitconfig_res);
-            free(gitconfig_res);
-            pclose(gitconfig_file);
-        }
-    }
-
-    if (opts.context > 0) {
-        opts.before = opts.context;
-        opts.after = opts.context;
-    }
-
-    if (opts.ackmate) {
-        opts.color = 0;
-        opts.print_break = 1;
-        group = 1;
-        opts.search_stream = 0;
-    }
-
-    if (opts.parallel) {
-        opts.search_stream = 0;
-    }
-
-    if (opts.print_heading == 0 || opts.print_break == 0) {
-        goto skip_group;
-    }
-
-    if (group) {
-        opts.print_heading = 1;
-        opts.print_break = 1;
-    } else {
-        opts.print_heading = 0;
-        opts.print_break = 0;
-    }
-
-    skip_group:;
-
-    if (opts.search_stream) {
-        opts.print_break = 0;
-        opts.print_heading = 0;
-        if (opts.print_line_numbers != 2)
-            opts.print_line_numbers = 0;
-    }
-
-    if (needs_query) {
-        opts.query = ag_strdup(argv[0]);
-        argc--;
-        argv++;
-    } else {
-        opts.query = ag_strdup(".");
-    }
-    opts.query_len = strlen(opts.query);
-
-    log_debug("Query is %s", opts.query);
-
-    if (opts.query_len == 0) {
-        log_err("Error: No query. What do you want to search for?");
-        exit(1);
-    }
-
-    if (!is_regex(opts.query)) {
-        opts.literal = 1;
-    }
-
-    char *path = NULL;
-    char *tmp = NULL;
-    opts.paths_len = argc;
-    if (argc > 0) {
-        *paths = ag_calloc(sizeof(char*), argc + 1);
-        *base_paths = ag_calloc(sizeof(char*), argc + 1);
-        for (i = 0; i < argc; i++) {
-            path = ag_strdup(argv[i]);
-            path_len = strlen(path);
-            /* kill trailing slash */
-            if (path_len > 1 && path[path_len - 1] == '/') {
-              path[path_len - 1] = '\0';
-            }
-            (*paths)[i] = path;
-            tmp = ag_malloc(PATH_MAX);
-            (*base_paths)[i] = realpath(path, tmp);
-        }
-        /* Make sure we search these paths instead of stdin. */
-        opts.search_stream = 0;
-    } else {
-        path = ag_strdup(".");
-        *paths = ag_malloc(sizeof(char*) * 2);
-        *base_paths = ag_malloc(sizeof(char*) * 2);
-        (*paths)[0] = path;
-        tmp = ag_malloc(PATH_MAX);
-        (*base_paths)[0] = realpath(path, tmp);
-        i = 1;
-    }
-    (*paths)[i] = NULL;
-    (*base_paths)[i] = NULL;
 }
