@@ -15,7 +15,7 @@ I will be doing a public coding session on Saturday, October 26th at 1900UTC. Th
 * It searches code about 3–5× faster than `ack`.
 * It ignores file patterns from your `.gitignore` and `.hgignore`.
 * If there are files in your source repo you don't want to search, just add their patterns to a `.agignore` file. \*cough\* extern \*cough\*
-* The command name is 33% shorter than `ack`!
+* The command name is 33% shorter than `ack`, and all keys are on the home row!
 
 
 ## How is it so fast? ##
