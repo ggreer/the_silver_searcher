@@ -76,23 +76,23 @@ If you want a CentOS rpm or Ubuntu deb, take a look at [Vikram Dighe's packages]
 
 Debian unstable:
 
-    apt-get install silversearcher-ag
+    sudo apt-get install silversearcher-ag
 
 Ubuntu 13.10 or later:
 
-    apt-get install silversearcher-ag
+    sudo apt-get install silversearcher-ag
 
 Ubuntu 13.04:
 
-    apt-get install software-properties-common # (if required)
-    apt-add-repository ppa:mizuno-as/silversearcher-ag
-    apt-get update
-    apt-get install silversearcher-ag
+    sudo apt-get install software-properties-common # (if required)
+    sudo apt-add-repository ppa:mizuno-as/silversearcher-ag
+    sudo apt-get update
+    sudo apt-get install silversearcher-ag
 
 ## Building from source ##
 
 1. Install dependencies (Automake, pkg-config, PCRE, LZMA):
-    * Ubuntu: `apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev`
+    * Ubuntu: `sudo apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev`
     * CentOS:
 
               yum -y groupinstall "Development Tools"
