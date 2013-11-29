@@ -17,4 +17,3 @@ ag_compression_type is_zipped(const void* buf, const int buf_len);
 
 void* decompress(const ag_compression_type zip_type, const void* buf, const int buf_len, const char* dir_full_path, int* new_buf_len);
 #endif
-

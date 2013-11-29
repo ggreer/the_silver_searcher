@@ -12,6 +12,7 @@
 const uint8_t XZ_HEADER_MAGIC[6] = { 0xFD, '7', 'z', 'X', 'Z', 0x00 };
 const uint8_t LZMA_HEADER_SOMETIMES[3] = { 0x5D, 0x00, 0x00 };
 
+
 /* Code in decompress_zlib from
  *
  * https://raw.github.com/madler/zlib/master/examples/zpipe.c
@@ -94,6 +95,7 @@ static void* decompress_zlib(const void* buf, const int buf_len,
     return NULL;
 }
 
+
 static void* decompress_lzw(const void* buf, const int buf_len,
                             const char* dir_full_path, int* new_buf_len) {
     (void)buf; (void)buf_len;
@@ -101,6 +103,7 @@ static void* decompress_lzw(const void* buf, const int buf_len,
     *new_buf_len = 0;
     return NULL;
 }
+
 
 static void* decompress_zip(const void* buf, const int buf_len,
                             const char* dir_full_path, int* new_buf_len) {
@@ -110,6 +113,8 @@ static void* decompress_zip(const void* buf, const int buf_len,
     return NULL;
 }
 
+
+#ifdef HAVE_LZMA_H
 static void* decompress_lzma(const void* buf, const int buf_len,
                              const char* dir_full_path, int* new_buf_len) {
     lzma_stream stream = LZMA_STREAM_INIT;
@@ -173,7 +178,7 @@ static void* decompress_lzma(const void* buf, const int buf_len,
     }
     return NULL;
 }
-
+#endif
 
 
 /* This function is very hot. It's called on every file when zip is enabled. */
@@ -187,8 +192,10 @@ void* decompress(const ag_compression_type zip_type, const void* buf, const int 
              return decompress_lzw(buf, buf_len, dir_full_path, new_buf_len);
         case AG_ZIP:
              return decompress_zip(buf, buf_len, dir_full_path, new_buf_len);
+#ifdef HAVE_LZMA_H
         case AG_XZ:
              return decompress_lzma(buf, buf_len, dir_full_path, new_buf_len);
+#endif
         case AG_NO_COMPRESSION:
             log_err("File %s is not compressed", dir_full_path);
             break;
@@ -260,4 +267,3 @@ ag_compression_type is_zipped(const void* buf, const int buf_len) {
 
     return AG_NO_COMPRESSION;
 }
-
