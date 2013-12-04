@@ -308,7 +308,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.match_files = 1;
                 /* Fall through and build regex */
             case 'G':
-                compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, optarg, 0, 0);
+                compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, optarg, opts.casing && PCRE_CASELESS, 0);
+                opts.casing = CASE_SENSITIVE;
                 break;
             case 'h':
                 help = 1;
