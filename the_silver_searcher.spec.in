@@ -12,8 +12,8 @@ URL:		https://github.com/ggreer/%{name}
 Source0:	https://github.com/downloads/ggreer/%{name}/%{name}-%{version}.tar.gz
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
-BuildRequires:	pkgconfig, autoconf, pcre-devel, automake
-Requires:	pcre
+BuildRequires:	pcre-devel, xz-devel, zlib-devel
+Requires:	pcre, xz, zlib
 
 %description
 The Silver Searcher
@@ -65,6 +65,9 @@ rm -rf ${RPM_BUILD_ROOT}
 
 
 %changelog
+* Thu Dec 5 2013 Emily Strickland <code@emily.st> - 0.18.1-1
+- More accurate build and install requirements
+
 * Fri Aug 16 2013 Andrew Seidl <git@aas.io> - 0.15.0-1
 - Install bash completion file
 
