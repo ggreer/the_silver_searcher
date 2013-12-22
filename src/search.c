@@ -87,10 +87,12 @@ void search_buf(const char *buf, const int buf_len,
             matches_len++;
             match_ptr += opts.query_len;
 
+	    /*
             if (matches_len >= opts.max_matches_per_file) {
                 log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
                 break;
             }
+	    */
         }
     } else {
         int offset_vector[3];
@@ -110,10 +112,12 @@ void search_buf(const char *buf, const int buf_len,
             matches[matches_len].end = offset_vector[1];
             matches_len++;
 
+	    /*
             if (matches_len >= opts.max_matches_per_file) {
                 log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
                 break;
             }
+	    */
         }
     }
 
@@ -457,14 +461,10 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
             pthread_mutex_unlock(&work_queue_mtx);
             log_debug("%s added to work queue", dir_full_path);
         } else if (opts.recurse_dirs) {
-            if (depth < opts.max_search_depth) {
-                log_debug("Searching dir %s", dir_full_path);
-                ignores *child_ig = init_ignore(ig);
-                search_dir(child_ig, base_path, dir_full_path, depth + 1);
-                cleanup_ignore(child_ig);
-            } else {
-                log_err("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
-            }
+	    log_debug("Searching dir %s", dir_full_path);
+	    ignores *child_ig = init_ignore(ig);
+	    search_dir(child_ig, base_path, dir_full_path, depth + 1);
+	    cleanup_ignore(child_ig);
         }
 
         cleanup:;
