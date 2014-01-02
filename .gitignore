@@ -22,4 +22,5 @@ Makefile.in
 missing
 src/config.h*
 stamp-h1
+tests/*.err
 the_silver_searcher.spec
