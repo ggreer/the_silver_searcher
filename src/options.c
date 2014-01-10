@@ -162,6 +162,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     int opt_index = 0;
     const char *home_dir = getenv("HOME");
     char *ignore_file_path = NULL;
+    char *value = NULL;
     int needs_query = 1;
     struct stat statbuf;
     int rv;
@@ -271,6 +272,19 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             die("Error fstat()ing stdout");
         }
         opts.stdout_inode = statbuf.st_ino;
+    }
+
+    if ((value = getenv("AG_BEFORE"))) {
+        opts.before = atoi(value);
+    }
+    if ((value = getenv("AG_AFTER"))) {
+        opts.after = atoi(value);
+    }
+    if ((value = getenv("AG_CONTEXT"))) {
+        opts.context = atoi(value);
+    }
+    if ((value = getenv("AG_PAGER"))) {
+        opts.pager = strdup(value);
     }
 
     while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:np:QRrSsvVtuUwz", longopts, &opt_index)) != -1) {
