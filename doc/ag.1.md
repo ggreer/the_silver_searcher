@@ -1,5 +1,5 @@
-ag(1) -- The Silver Searcher. Like ack, but faster.
-=============================================
+ag(1) -- The Silver Searcher
+============================
 
 ## SYNOPSIS
 
