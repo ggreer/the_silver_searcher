@@ -49,6 +49,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
     int i, j;
     int in_a_match = FALSE;
     int printing_a_match = FALSE;
+    int character_visible = !opts.only_matching;
 
     if (opts.ackmate) {
         sep = ':';
@@ -147,6 +148,10 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                                 fprintf(out_fd, "%s", color_reset);
                             }
                             printing_a_match = FALSE;
+                            character_visible = !opts.only_matching;
+                            if (opts.only_matching) {
+                                fputc('\n', out_fd);
+                            }
                             last_printed_match++;
                         }
                         if (j == matches[last_printed_match].start && last_printed_match < matches_len) {
@@ -154,8 +159,11 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                                 fprintf(out_fd, "%s", opts.color_match);
                             }
                             printing_a_match = TRUE;
+                            character_visible = TRUE;
                         }
-                        fputc(buf[j], out_fd);
+                        if (character_visible) {
+                            fputc(buf[j], out_fd);
+                        }
                     }
                     if (printing_a_match && opts.color) {
                         fprintf(out_fd, "%s", color_reset);
