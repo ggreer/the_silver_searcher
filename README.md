@@ -2,9 +2,6 @@
 
 A code searching tool similar to `ack`, with a focus on speed.
 
-### Attention
-I will be doing a public coding session on Saturday, October 26th at 1900UTC. That's noon Pacific Time. You can watch and chat at https://floobits.com/r/ggreer/the_silver_searcher/
-
 <a href="https://floobits.com/r/ggreer/the_silver_searcher/redirect">
   <img alt="Floobits status" width="80" height="40" src="https://floobits.com/r/ggreer/the_silver_searcher.png" />
 </a>
@@ -17,6 +14,29 @@ I will be doing a public coding session on Saturday, October 26th at 1900UTC. Th
 * If there are files in your source repo you don't want to search, just add their patterns to a `.agignore` file. \*cough\* extern \*cough\*
 * The command name is 33% shorter than `ack`, and all keys are on the home row!
 
+## Common Usage ##
+
+Search across application files for a phrase:
+
+    ag my-search-phrase
+
+Search for files *not* containing a phrase:
+
+    ag -v ignore-this-phrase
+
+Search only Python files:
+
+    ag --python my-search-phrase
+
+This trick works for many common languages and filetypes: [a full list can be
+found here][filetypes].
+
+ [filetypes]: https://github.com/ggreer/the_silver_searcher/blob/master/src/lang.c#L7
+
+Print 5 lines of context before and after a match:
+
+    ag -C 5 my-search-phrase
+    # (use -B <num> for before, -A <num> for lines after a match)
 
 ## How is it so fast? ##
 
