@@ -93,6 +93,7 @@ Ubuntu 13.04:
 
 1. Install dependencies (Automake, pkg-config, PCRE, LZMA):
     * Ubuntu: `apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev`
+    * Fedora: `yum -y install pkgconfig automake gcc zlib-devel pcre-devel xz-devel`
     * CentOS:
 
               yum -y groupinstall "Development Tools"
