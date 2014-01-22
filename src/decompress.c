@@ -1,4 +1,5 @@
 #include <string.h>
+#include <unistd.h>
 #include <zlib.h>
 
 #include "decompress.h"

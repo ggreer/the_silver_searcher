@@ -16,17 +16,16 @@ PKG_CHECK_MODULES([PCRE], [libpcre])
 CFLAGS="$CFLAGS $PCRE_CFLAGS -Wall -Wextra -std=gnu89 -D_GNU_SOURCE"
 LDFLAGS="$LDFLAGS"
 
-AC_CHECK_HEADERS([pthread.h zlib.h])
+AC_CHECK_HEADERS([pthread.h zlib.h lzma.h])
+
+if test "$ac_cv_header_lzma_h" == yes
+then
+    PKG_CHECK_MODULES([LZMA], [liblzma])
+else
+    AC_MSG_WARN([LZMA lib not found. Compiling without compressed search support.])
+fi
 
 AC_CHECK_DECL([PCRE_CONFIG_JIT], [AC_DEFINE([USE_PCRE_JIT], [], [Use PCRE JIT])], [], [#include <pcre.h>])
-
-AC_ARG_ENABLE(lzma,
-	      [  --disable-lzma          disable LZMA decompression],
-	      [enable_lzma=$enableval])
-if test "x${enable_lzma}" != xno; then
-    PKG_CHECK_MODULES([LZMA], [liblzma])
-    AC_CHECK_HEADERS([lzma.h])
-fi
 
 AC_CHECK_MEMBER([struct dirent.d_type], [AC_DEFINE([HAVE_DIRENT_DTYPE], [], [Have dirent struct member d_type])], [], [[#include <dirent.h>]])
 
