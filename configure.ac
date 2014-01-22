@@ -13,7 +13,7 @@ m4_ifdef(
 PKG_CHECK_MODULES([PCRE], [libpcre])
 
 # Run CFLAGS="-g" ./configure if you want debug symbols
-CFLAGS="$CFLAGS $PCRE_CFLAGS -Wall -Wextra -std=c89 -D_GNU_SOURCE"
+CFLAGS="$CFLAGS $PCRE_CFLAGS -Wall -Wextra -std=gnu89 -D_GNU_SOURCE"
 LDFLAGS="$LDFLAGS"
 
 AC_CHECK_HEADERS([pthread.h zlib.h])
