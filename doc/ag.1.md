@@ -3,7 +3,7 @@ ag(1) -- The Silver Searcher. Like ack, but faster.
 
 ## SYNOPSIS
 
-`ag` [<options>] PATTERN [PATH]
+`ag` [<file-type>] [<options>] PATTERN [PATH]
 
 ## DESCRIPTION
 
@@ -57,6 +57,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Only print filenames containing matches, not matching lines. An empty query will print all files that would be searched.
   * `-L --files-without-matches`:
     Only print filenames that don't contain matches.
+  * `--list-file-types`:
+    See `FILE TYPES` below.
   * `-m --max-count NUM`:
     Skip the rest of a file after NUM matches. Default is 10,000.
   * `--no-numbers`:            
@@ -88,6 +90,10 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `-v --invert-match`
   * `-w --word-regexp`:
     Only match whole words.
+
+## FILE TYPES
+
+It is possible to restrict the types of files searched. For example, passing `--html` as the `file-types` parameter will search only files with the extensions `htm`, `html`, `shtml` or `xhtml`. For a list of supported `file-types` run `ag --list-file-types`.
 
 ## IGNORING FILES
 
