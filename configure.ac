@@ -1,4 +1,10 @@
-AC_INIT([the_silver_searcher], [0.19.1], [https://github.com/ggreer/the_silver_searcher/issues], [the_silver_searcher], [https://github.com/ggreer/the_silver_searcher])
+AC_INIT(
+    [the_silver_searcher],
+    [0.19.1],
+    [https://github.com/ggreer/the_silver_searcher/issues],
+    [the_silver_searcher],
+    [https://github.com/ggreer/the_silver_searcher])
+
 AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PREREQ([2.59])
@@ -7,8 +13,7 @@ AM_INIT_AUTOMAKE([no-define foreign subdir-objects])
 
 m4_ifdef(
     [AM_SILENT_RULES],
-    [AM_SILENT_RULES([yes])]
-)
+    [AM_SILENT_RULES([yes])])
 
 PKG_CHECK_MODULES([PCRE], [libpcre])
 
