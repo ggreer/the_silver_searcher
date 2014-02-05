@@ -88,7 +88,7 @@ void search_buf(const char *buf, const int buf_len,
             match_ptr += opts.query_len;
 
             if (matches_len >= opts.max_matches_per_file) {
-                log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
+                log_file_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
                 break;
             }
         }
@@ -111,7 +111,7 @@ void search_buf(const char *buf, const int buf_len,
             matches_len++;
 
             if (matches_len >= opts.max_matches_per_file) {
-                log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
+                log_file_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
                 break;
             }
         }
@@ -183,13 +183,13 @@ void search_file(const char *file_full_path) {
 
     fd = open(file_full_path, O_RDONLY);
     if (fd < 0) {
-        log_err("Error opening file %s: %s Skipping...", file_full_path, strerror(errno));
+        log_file_err("Error opening file %s: %s Skipping...", file_full_path, strerror(errno));
         goto cleanup;
     }
 
     rv = fstat(fd, &statbuf);
     if (rv != 0) {
-        log_err("Error fstat()ing file %s. Skipping...", file_full_path);
+        log_file_err("Error fstat()ing file %s. Skipping...", file_full_path);
         goto cleanup;
     }
 
@@ -199,7 +199,7 @@ void search_file(const char *file_full_path) {
     }
 
     if ((statbuf.st_mode & S_IFMT) == 0) {
-        log_err("%s is not a file. Mode %u. Skipping...", file_full_path, statbuf.st_mode);
+        log_file_err("%s is not a file. Mode %u. Skipping...", file_full_path, statbuf.st_mode);
         goto cleanup;
     }
 
@@ -230,14 +230,14 @@ void search_file(const char *file_full_path) {
                 FORMAT_MESSAGE_FROM_SYSTEM |
                 FORMAT_MESSAGE_IGNORE_INSERTS,
                 NULL, GetLastError(), 0, (void*) &buf, 0, NULL);
-            log_err("File %s failed to load: %s.", file_full_path, buf);
+            log_file_err("File %s failed to load: %s.", file_full_path, buf);
             LocalFree((void*)buf);
             goto cleanup;
         }
 #else
         buf = mmap(0, f_len, PROT_READ, MAP_SHARED, fd, 0);
         if (buf == MAP_FAILED) {
-            log_err("File %s failed to load: %s.", file_full_path, strerror(errno));
+            log_file_err("File %s failed to load: %s.", file_full_path, strerror(errno));
             goto cleanup;
         }
 #endif
@@ -248,7 +248,7 @@ void search_file(const char *file_full_path) {
                 int _buf_len = (int)f_len;
                 char *_buf = decompress(zip_type, buf, f_len, file_full_path, &_buf_len);
                 if (_buf == NULL || _buf_len == 0) {
-                    log_err("Cannot decompress zipped file %s", file_full_path);
+                    log_file_err("Cannot decompress zipped file %s", file_full_path);
                     goto cleanup;
                 }
                 search_buf(_buf, _buf_len, file_full_path);
@@ -311,7 +311,7 @@ static int check_symloop_enter(const char *path, dirkey_t *outkey) {
 
     int res = stat(path, &buf);
     if (res != 0) {
-        log_err("Error stat()ing: %s", path);
+        log_file_err("Error stat()ing: %s", path);
         return SYMLOOP_ERROR;
     }
 
@@ -342,7 +342,7 @@ static int check_symloop_leave(dirkey_t *dirkey) {
 
     HASH_FIND(hh, symhash, dirkey, sizeof(dirkey_t), item_found);
     if (!item_found) {
-        log_err("item not found! weird stuff...\n");
+        log_file_err("item not found! weird stuff...\n");
         return SYMLOOP_ERROR;
     }
 
@@ -370,7 +370,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
 
     symres = check_symloop_enter(path, &current_dirkey);
     if (symres == SYMLOOP_LOOP) {
-        log_err("Recursive directory loop: %s", path);
+        log_file_err("Recursive directory loop: %s", path);
         return;
     }
 
@@ -407,7 +407,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
             }
             search_file(path);
         } else {
-            log_err("Error opening directory %s: %s", path, strerror(errno));
+            log_file_err("Error opening directory %s: %s", path, strerror(errno));
         }
         goto search_dir_cleanup;
     }

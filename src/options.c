@@ -63,6 +63,7 @@ Output Options:\n\
                           (don't print the matching lines)\n\
   -L --files-without-matches\n\
                           Only print filenames that don't contain matches\n\
+     --no-file-errors     Don't show error messages opening or searching files\n\
      --no-numbers         Don't print line numbers\n\
      --print-long-lines   Print matches on very long lines (Default: >2k characters)\n\
      --stats              Print stats (files scanned, time taken, etc.)\n\
@@ -115,6 +116,7 @@ void init_options() {
     opts.print_break = TRUE;
     opts.print_heading = TRUE;
     opts.print_line_numbers = TRUE;
+    opts.log_file_errors = TRUE;
     opts.recurse_dirs = TRUE;
     opts.color_path = ag_strdup(color_path);
     opts.color_match = ag_strdup(color_match);
@@ -205,6 +207,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "literal", no_argument, NULL, 'Q' },
         { "match", no_argument, &useless, 0 },
         { "max-count", required_argument, NULL, 'm' },
+        { "no-file-errors", no_argument, NULL, 0 },
         { "no-numbers", no_argument, NULL, 0 },
         { "no-recurse", no_argument, NULL, 'n' },
         { "nobreak", no_argument, &opts.print_break, 0 },
@@ -374,6 +377,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                     break;
                 } else if (strcmp(longopts[opt_index].name, "depth") == 0) {
                     opts.max_search_depth = atoi(optarg);
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "no-file-errors") == 0) {
+                    opts.log_file_errors = FALSE;
                     break;
                 } else if (strcmp(longopts[opt_index].name, "no-numbers") == 0) {
                     opts.print_line_numbers = FALSE;
