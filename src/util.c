@@ -165,12 +165,52 @@ void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opt
 
 /* This function is very hot. It's called on every file. */
 int is_binary(const void* buf, const int buf_len) {
+    int total_bytes = buf_len > 512 ? 512 : buf_len;
+    const unsigned char *buf_c = buf;
+    int i;
+
+    /* When not utf-8 locale, the check must be abridged. */
+    for (i = 0; i < total_bytes; i++) {
+        if (buf_c[i] < 0x09) {
+            /* Maybe binary */
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int is_utf8 = -1;
+
+int is_printable(const void* buf, const int buf_len) {
     int suspicious_bytes = 0;
     int total_bytes = buf_len > 512 ? 512 : buf_len;
     const unsigned char *buf_c = buf;
     int i;
 
     if (buf_len == 0) {
+        return 0;
+    }
+
+    if (is_utf8 == -1) {
+        char* locale = NULL;
+        is_utf8 = 0;
+        if ((locale = getenv("LC_ALL")) == NULL || *locale == 0) {
+            if ((locale = getenv("LC_CTYPE")) == NULL || *locale == 0) {
+                locale = getenv("LANG");
+            }
+        }
+        if (locale != NULL && strstr(locale, "UTF-8")) {
+            is_utf8 = 1;
+        }
+    }
+    if (!is_utf8) {
+        /* When not utf-8 locale, the check must be abridged. */
+        for (i = 0; i < total_bytes; i++) {
+            if (buf_c[i] < 0x09) {
+                /* Maybe binary */
+                return 1;
+            }
+        }
         return 0;
     }
 
