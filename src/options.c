@@ -105,11 +105,7 @@ void print_version() {
 void init_options() {
     memset(&opts, 0, sizeof(opts));
     opts.casing = CASE_SENSITIVE;
-#ifdef _WIN32
-    opts.color = getenv("ANSICON") ? TRUE : FALSE;
-#else
     opts.color = TRUE;
-#endif
     opts.max_matches_per_file = 10000;
     opts.max_search_depth = 25;
     opts.print_break = TRUE;
