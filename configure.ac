@@ -23,6 +23,13 @@ LDFLAGS="$LDFLAGS"
 
 AC_CHECK_HEADERS([pthread.h zlib.h lzma.h])
 
+if test "$ac_cv_header_zlib_h" == yes
+then
+    AC_CHECK_LIB(zlib, zlib)
+else
+    AC_MSG_WARN([zlib not found. Compiling without compressed search support.])
+fi
+
 if test "$ac_cv_header_lzma_h" == yes
 then
     PKG_CHECK_MODULES([LZMA], [liblzma])

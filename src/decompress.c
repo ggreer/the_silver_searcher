@@ -1,6 +1,9 @@
 #include <string.h>
 #include <unistd.h>
+
+#ifdef HAVE_ZLIB_H
 #include <zlib.h>
+#endif
 
 #include "decompress.h"
 
@@ -13,7 +16,7 @@ const uint8_t LZMA_HEADER_SOMETIMES[3] = { 0x5D, 0x00, 0x00 };
 #endif
 
 
-
+#ifdef HAVE_ZLIB_H
 /* Code in decompress_zlib from
  *
  * https://raw.github.com/madler/zlib/master/examples/zpipe.c
@@ -95,6 +98,7 @@ static void* decompress_zlib(const void* buf, const int buf_len,
     *new_buf_len = 0;
     return NULL;
 }
+#endif
 
 
 static void* decompress_lzw(const void* buf, const int buf_len,
@@ -187,8 +191,10 @@ void* decompress(const ag_compression_type zip_type, const void* buf, const int 
                  const char* dir_full_path, int* new_buf_len) {
 
     switch(zip_type) {
+#ifdef HAVE_ZLIB_H
         case AG_GZIP:
              return decompress_zlib(buf, buf_len, dir_full_path, new_buf_len);
+#endif
         case AG_COMPRESS:
              return decompress_lzw(buf, buf_len, dir_full_path, new_buf_len);
         case AG_ZIP:
@@ -231,8 +237,10 @@ ag_compression_type is_zipped(const void* buf, const int buf_len) {
     if (buf_len >= 2) {
         if (buf_c[0] == 0x1F) {
             if (buf_c[1] == 0x8B) {
+#ifdef HAVE_ZLIB_H
                 log_debug("Found gzip-based stream");
                 return AG_GZIP;
+#endif
             } else if (buf_c[1] == 0x9B) {
                 log_debug("Found compress-based stream");
                 return AG_COMPRESS;
