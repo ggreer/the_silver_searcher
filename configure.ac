@@ -25,7 +25,7 @@ AC_CHECK_HEADERS([pthread.h zlib.h lzma.h])
 
 if test "$ac_cv_header_zlib_h" == yes
 then
-    AC_CHECK_LIB(zlib, zlib)
+    PKG_CHECK_MODULES([ZLIB], zlib)
 else
     AC_MSG_WARN([zlib not found. Compiling without compressed search support.])
 fi
