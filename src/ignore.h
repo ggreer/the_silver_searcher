@@ -4,6 +4,7 @@
 #include <dirent.h>
 #include <sys/types.h>
 
+#define GIT_IGNORE_FILE ".gitignore"
 #define SVN_DIR_PROP_BASE "dir-prop-base"
 #define SVN_DIR ".svn"
 #define SVN_PROP_IGNORE "svn:ignore"
@@ -29,6 +30,7 @@ void add_ignore_pattern(ignores *ig, const char* pattern);
 
 void load_ignore_patterns(ignores *ig, const char *path);
 void load_svn_ignore_patterns(ignores *ig, const char *path);
+void load_git_ignore_patterns(ignores *ig, const char *path);
 
 int filename_filter(const char *path, const struct dirent *dir, void *baton);
 

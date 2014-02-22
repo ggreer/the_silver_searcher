@@ -206,6 +206,40 @@ void load_svn_ignore_patterns(ignores *ig, const char *path) {
     fclose(fp);
 }
 
+void load_git_ignore_patterns(ignores *ig, const char *path) {
+    FILE *fp = NULL;
+    fp = fopen(path, "r");
+    if (fp == NULL) {
+        log_debug("Skipping ignore file %s", path);
+        return;
+    }
+
+    char *line = NULL;
+    ssize_t line_len = 0;
+    size_t line_cap = 0;
+
+    while ((line_len = getline(&line, &line_cap, fp)) > 0) {
+        if (line_len == 0 || line[0] == '\n' || line[0] == '#') {
+            continue;
+        }
+        if (line[line_len-1] == '\n') {
+            line[line_len-1] = '\0'; /* kill the \n */
+        }
+        if (line[0] == '/') {
+            char *relative_path = (char *) malloc(line_len + 1);
+            strcpy(relative_path, ".");
+            strcat(relative_path, line);
+            add_ignore_pattern(ig, relative_path);
+            free(relative_path);
+        } else {
+            add_ignore_pattern(ig, line);
+        }
+    }
+
+    free(line);
+    fclose(fp);
+}
+
 static int ackmate_dir_match(const char* dir_name) {
     int rc = 0;
 
