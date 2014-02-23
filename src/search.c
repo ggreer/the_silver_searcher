@@ -9,7 +9,7 @@ void search_buf(const char *buf, const int buf_len,
     if (opts.search_stream) {
         binary = 0;
     } else if (!opts.search_binary_files) {
-        binary = is_binary((void *)buf, buf_len);
+        binary = is_binary((const void *)buf, buf_len);
         if (binary) {
             log_debug("File %s is binary. Skipping...", dir_full_path);
             return;
@@ -129,7 +129,7 @@ void search_buf(const char *buf, const int buf_len,
 
     if (matches_len > 0) {
         if (binary == -1 && !opts.print_filename_only) {
-            binary = is_binary((void *)buf, buf_len);
+            binary = is_binary((const void *)buf, buf_len);
         }
         pthread_mutex_lock(&print_mtx);
         if (opts.print_filename_only) {

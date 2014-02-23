@@ -13,6 +13,7 @@ const uint8_t LZMA_HEADER_SOMETIMES[3] = { 0x5D, 0x00, 0x00 };
 
 
 #ifdef HAVE_ZLIB_H
+#define ZLIB_CONST 1
 #include <zlib.h>
 
 /* Code in decompress_zlib from
@@ -47,7 +48,7 @@ static void *decompress_zlib(const void *buf, const int buf_len,
     }
 
     stream.avail_in = buf_len;
-    stream.next_in = (void *)buf;
+    stream.next_in = buf;
 
     pagesize = getpagesize();
     result_size = ((buf_len + pagesize - 1) & ~(pagesize - 1));
@@ -129,7 +130,7 @@ static void *decompress_lzma(const void *buf, const int buf_len,
     size_t pagesize = 0;
 
     stream.avail_in = buf_len;
-    stream.next_in = (void *)buf;
+    stream.next_in = buf;
 
     lzrt = lzma_auto_decoder(&stream, -1, 0);
 
