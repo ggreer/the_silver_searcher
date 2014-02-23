@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
             /* Search routine needs the query to be lowercase */
             char *c = opts.query;
             for (; *c != '\0'; ++c) {
-                *c = (char) tolower(*c);
+                *c = (char)tolower(*c);
             }
         }
         generate_skip_lookup(opts.query, opts.query_len, skip_lookup, opts.casing == CASE_SENSITIVE);
