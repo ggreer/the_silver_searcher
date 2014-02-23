@@ -13,7 +13,7 @@ int first_file_match = 1;
 
 const char *color_reset = "\e[0m\e[K";
 
-void print_path(const char* path, const char sep) {
+void print_path(const char *path, const char sep) {
     log_debug("printing path");
     path = normalize_path(path);
 
@@ -28,13 +28,13 @@ void print_path(const char* path, const char sep) {
     }
 }
 
-void print_binary_file_matches(const char* path) {
+void print_binary_file_matches(const char *path) {
     path = normalize_path(path);
     print_file_separator();
     fprintf(out_fd, "Binary file %s matches.\n", path);
 }
 
-void print_file_matches(const char* path, const char* buf, const int buf_len, const match matches[], const int matches_len) {
+void print_file_matches(const char *path, const char *buf, const int buf_len, const match matches[], const int matches_len) {
     int line = 1;
     char **context_prev_lines = NULL;
     int prev_line = 0;
@@ -60,7 +60,7 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
         print_path(path, '\n');
     }
 
-    context_prev_lines = ag_calloc(sizeof(char*), (opts.before + 1));
+    context_prev_lines = ag_calloc(sizeof(char *), (opts.before + 1));
 
     for (i = 0; i <= buf_len && (cur_match < matches_len || lines_since_last_match <= opts.after); i++) {
         if (cur_match < matches_len && i == matches[cur_match].end) {
@@ -122,9 +122,8 @@ void print_file_matches(const char* path, const char* buf, const int buf_len, co
                     print_line_number(line, ';');
                     for (; last_printed_match < cur_match; last_printed_match++) {
                         fprintf(out_fd, "%i %i",
-                              (matches[last_printed_match].start - prev_line_offset),
-                              (matches[last_printed_match].end - matches[last_printed_match].start)
-                        );
+                                (matches[last_printed_match].start - prev_line_offset),
+                                (matches[last_printed_match].end - matches[last_printed_match].start));
                         last_printed_match == cur_match - 1 ? fputc(':', out_fd) : fputc(',', out_fd);
                     }
                     j = prev_line_offset;
@@ -210,7 +209,7 @@ void print_line_number(const int line, const char sep) {
     }
 }
 
-void print_file_separator() {
+void print_file_separator(void) {
     if (first_file_match == 0 && opts.print_break) {
         log_debug("printing file separator");
         fprintf(out_fd, "\n");
@@ -218,7 +217,7 @@ void print_file_separator() {
     first_file_match = 0;
 }
 
-const char* normalize_path(const char* path) {
+const char *normalize_path(const char *path) {
     if (strlen(path) < 3) {
         return path;
     }

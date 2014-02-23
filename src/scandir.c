@@ -7,8 +7,7 @@
 int ag_scandir(const char *dirname,
                struct dirent ***namelist,
                filter_fp filter,
-               void *baton
-              ) {
+               void *baton) {
     DIR *dirp = NULL;
     struct dirent **names = NULL;
     struct dirent *entry, *d;
@@ -20,7 +19,7 @@ int ag_scandir(const char *dirname,
         goto fail;
     }
 
-    names = malloc(sizeof(struct dirent*) * names_len);
+    names = malloc(sizeof(struct dirent *) * names_len);
     if (names == NULL) {
         goto fail;
     }
@@ -32,7 +31,7 @@ int ag_scandir(const char *dirname,
         if (results_len >= names_len) {
             struct dirent **tmp_names = names;
             names_len *= 2;
-            names = realloc(names, sizeof(struct dirent*) * names_len);
+            names = realloc(names, sizeof(struct dirent *) * names_len);
             if (names == NULL) {
                 free(tmp_names);
                 goto fail;
@@ -62,13 +61,13 @@ int ag_scandir(const char *dirname,
     *namelist = names;
     return results_len;
 
-    fail:;
-    int i;
+fail:
     if (dirp) {
         closedir(dirp);
     }
 
     if (names != NULL) {
+        int i;
         for (i = 0; i < results_len; i++) {
             free(names[i]);
         }

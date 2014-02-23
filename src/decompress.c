@@ -13,6 +13,7 @@ const uint8_t LZMA_HEADER_SOMETIMES[3] = { 0x5D, 0x00, 0x00 };
 
 
 #ifdef HAVE_ZLIB_H
+#define ZLIB_CONST 1
 #include <zlib.h>
 
 /* Code in decompress_zlib from
@@ -23,10 +24,10 @@ const uint8_t LZMA_HEADER_SOMETIMES[3] = { 0x5D, 0x00, 0x00 };
  *    Not copyrighted -- provided to the public domain
  *    Version 1.4  11 December 2005  Mark Adler 
  */
-static void* decompress_zlib(const void* buf, const int buf_len,
-                             const char* dir_full_path, int* new_buf_len) {
+static void *decompress_zlib(const void *buf, const int buf_len,
+                             const char *dir_full_path, int *new_buf_len) {
     int ret = 0;
-    unsigned char* result = NULL;
+    unsigned char *result = NULL;
     size_t result_size = 0;
     size_t pagesize = 0;
     z_stream stream;
@@ -47,16 +48,16 @@ static void* decompress_zlib(const void* buf, const int buf_len,
     }
 
     stream.avail_in = buf_len;
-    stream.next_in = (void*)buf;
+    stream.next_in = buf;
 
     pagesize = getpagesize();
     result_size = ((buf_len + pagesize - 1) & ~(pagesize - 1));
     do {
         do {
-            unsigned char* tmp_result = result;
+            unsigned char *tmp_result = result;
             /* Double the buffer size and realloc */
             result_size *= 2;
-            result = (unsigned char*)realloc(result, result_size * sizeof(unsigned char));
+            result = (unsigned char *)realloc(result, result_size * sizeof(unsigned char));
             if (result == NULL) {
                 free(tmp_result);
                 log_err("Unable to allocate %d bytes to decompress file %s", result_size * sizeof(unsigned char), dir_full_path);
@@ -68,7 +69,7 @@ static void* decompress_zlib(const void* buf, const int buf_len,
             stream.next_out = &result[stream.total_out];
             ret = inflate(&stream, Z_SYNC_FLUSH);
             log_debug("inflate ret = %d", ret);
-            switch(ret) {
+            switch (ret) {
                 case Z_STREAM_ERROR: {
                     log_err("Found stream error while decompressing zlib stream: %s", stream.msg);
                     inflateEnd(&stream);
@@ -82,8 +83,8 @@ static void* decompress_zlib(const void* buf, const int buf_len,
                     goto error_out;
                 }
             }
-        } while(stream.avail_out == 0);
-    } while(ret == Z_OK);
+        } while (stream.avail_out == 0);
+    } while (ret == Z_OK);
 
     *new_buf_len = stream.total_out;
     inflateEnd(&stream);
@@ -92,25 +93,27 @@ static void* decompress_zlib(const void* buf, const int buf_len,
         return result;
     }
 
-    error_out:;
+error_out:
     *new_buf_len = 0;
     return NULL;
 }
 #endif
 
 
-static void* decompress_lzw(const void* buf, const int buf_len,
-                            const char* dir_full_path, int* new_buf_len) {
-    (void)buf; (void)buf_len;
+static void *decompress_lzw(const void *buf, const int buf_len,
+                            const char *dir_full_path, int *new_buf_len) {
+    (void)buf;
+    (void)buf_len;
     log_err("LZW (UNIX compress) files not yet supported: %s", dir_full_path);
     *new_buf_len = 0;
     return NULL;
 }
 
 
-static void* decompress_zip(const void* buf, const int buf_len,
-                            const char* dir_full_path, int* new_buf_len) {
-    (void)buf; (void)buf_len;
+static void *decompress_zip(const void *buf, const int buf_len,
+                            const char *dir_full_path, int *new_buf_len) {
+    (void)buf;
+    (void)buf_len;
     log_err("Zip files not yet supported: %s", dir_full_path);
     *new_buf_len = 0;
     return NULL;
@@ -118,16 +121,16 @@ static void* decompress_zip(const void* buf, const int buf_len,
 
 
 #ifdef HAVE_LZMA_H
-static void* decompress_lzma(const void* buf, const int buf_len,
-                             const char* dir_full_path, int* new_buf_len) {
+static void *decompress_lzma(const void *buf, const int buf_len,
+                             const char *dir_full_path, int *new_buf_len) {
     lzma_stream stream = LZMA_STREAM_INIT;
     lzma_ret lzrt;
-    unsigned char* result = NULL;
+    unsigned char *result = NULL;
     size_t result_size = 0;
     size_t pagesize = 0;
 
     stream.avail_in = buf_len;
-    stream.next_in = (void*)buf;
+    stream.next_in = buf;
 
     lzrt = lzma_auto_decoder(&stream, -1, 0);
 
@@ -140,10 +143,10 @@ static void* decompress_lzma(const void* buf, const int buf_len,
     result_size = ((buf_len + pagesize - 1) & ~(pagesize - 1));
     do {
         do {
-            unsigned char* tmp_result = result;
+            unsigned char *tmp_result = result;
             /* Double the buffer size and realloc */
             result_size *= 2;
-            result = (unsigned char*)realloc(result, result_size * sizeof(unsigned char));
+            result = (unsigned char *)realloc(result, result_size * sizeof(unsigned char));
             if (result == NULL) {
                 free(tmp_result);
                 log_err("Unable to allocate %d bytes to decompress file %s", result_size * sizeof(unsigned char), dir_full_path);
@@ -154,7 +157,7 @@ static void* decompress_lzma(const void* buf, const int buf_len,
             stream.next_out = &result[stream.total_out];
             lzrt = lzma_code(&stream, LZMA_RUN);
             log_debug("lzma_code ret = %d", lzrt);
-            switch(lzrt) {
+            switch (lzrt) {
                 case LZMA_OK:
                 case LZMA_STREAM_END:
                     break;
@@ -162,8 +165,8 @@ static void* decompress_lzma(const void* buf, const int buf_len,
                     log_err("Found mem/data error while decompressing xz/lzma stream: %d", lzrt);
                     goto error_out;
             }
-        } while(stream.avail_out == 0);
-    } while(lzrt == LZMA_OK);
+        } while (stream.avail_out == 0);
+    } while (lzrt == LZMA_OK);
 
     *new_buf_len = stream.total_out;
 
@@ -173,7 +176,7 @@ static void* decompress_lzma(const void* buf, const int buf_len,
     }
 
 
-    error_out:
+error_out:
     lzma_end(&stream);
     *new_buf_len = 0;
     if (result) {
@@ -185,21 +188,21 @@ static void* decompress_lzma(const void* buf, const int buf_len,
 
 
 /* This function is very hot. It's called on every file when zip is enabled. */
-void* decompress(const ag_compression_type zip_type, const void* buf, const int buf_len,
-                 const char* dir_full_path, int* new_buf_len) {
+void *decompress(const ag_compression_type zip_type, const void *buf, const int buf_len,
+                 const char *dir_full_path, int *new_buf_len) {
 
-    switch(zip_type) {
+    switch (zip_type) {
 #ifdef HAVE_ZLIB_H
         case AG_GZIP:
-             return decompress_zlib(buf, buf_len, dir_full_path, new_buf_len);
+            return decompress_zlib(buf, buf_len, dir_full_path, new_buf_len);
 #endif
         case AG_COMPRESS:
-             return decompress_lzw(buf, buf_len, dir_full_path, new_buf_len);
+            return decompress_lzw(buf, buf_len, dir_full_path, new_buf_len);
         case AG_ZIP:
-             return decompress_zip(buf, buf_len, dir_full_path, new_buf_len);
+            return decompress_zip(buf, buf_len, dir_full_path, new_buf_len);
 #ifdef HAVE_LZMA_H
         case AG_XZ:
-             return decompress_lzma(buf, buf_len, dir_full_path, new_buf_len);
+            return decompress_lzma(buf, buf_len, dir_full_path, new_buf_len);
 #endif
         case AG_NO_COMPRESSION:
             log_err("File %s is not compressed", dir_full_path);
@@ -214,7 +217,7 @@ void* decompress(const ag_compression_type zip_type, const void* buf, const int 
 
 
 /* This function is very hot. It's called on every file. */
-ag_compression_type is_zipped(const void* buf, const int buf_len) {
+ag_compression_type is_zipped(const void *buf, const int buf_len) {
     /* Zip magic numbers
      * compressed file: { 0x1F, 0x9B }
      * http://en.wikipedia.org/wiki/Compress
@@ -224,7 +227,7 @@ ag_compression_type is_zipped(const void* buf, const int buf_len) {
      *
      * zip file:        { 0x50, 0x4B, 0x03, 0x04 }
      * http://www.pkware.com/documents/casestudies/APPNOTE.TXT (Section 4.3)
-     */ 
+     */
 
     const unsigned char *buf_c = buf;
 
@@ -248,8 +251,7 @@ ag_compression_type is_zipped(const void* buf, const int buf_len) {
 
     /* Check for zip */
     if (buf_len >= 4) {
-        if (buf_c[0] == 0x50 && buf_c[1] == 0x4B && buf_c[2] == 0x03 && buf_c[3] == 0x04)
-        {
+        if (buf_c[0] == 0x50 && buf_c[1] == 0x4B && buf_c[2] == 0x03 && buf_c[3] == 0x04) {
             log_debug("Found zip-based stream");
             return AG_ZIP;
         }
@@ -268,7 +270,7 @@ ag_compression_type is_zipped(const void* buf, const int buf_len) {
         if (memcmp(LZMA_HEADER_SOMETIMES, buf_c, 3) == 0) {
             log_debug("Found lzma-based stream");
             return AG_XZ;
-       }
+        }
     }
 #endif
 

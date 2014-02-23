@@ -1,6 +1,6 @@
 AC_INIT(
     [the_silver_searcher],
-    [0.19.2],
+    [0.20.0pre],
     [https://github.com/ggreer/the_silver_searcher/issues],
     [the_silver_searcher],
     [https://github.com/ggreer/the_silver_searcher])
@@ -18,7 +18,7 @@ m4_ifdef(
 PKG_CHECK_MODULES([PCRE], [libpcre])
 
 # Run CFLAGS="-g" ./configure if you want debug symbols
-CFLAGS="$CFLAGS $PCRE_CFLAGS -Wall -Wextra -std=gnu89 -D_GNU_SOURCE"
+CFLAGS="$CFLAGS $PCRE_CFLAGS -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -Wshadow -Wpointer-arith -Wcast-qual -Wmissing-prototypes -Wno-missing-braces -std=gnu89 -D_GNU_SOURCE"
 LDFLAGS="$LDFLAGS"
 
 AC_CHECK_HEADERS([pthread.h zlib.h lzma.h])
@@ -41,7 +41,7 @@ AC_CHECK_DECL([PCRE_CONFIG_JIT], [AC_DEFINE([USE_PCRE_JIT], [], [Use PCRE JIT])]
 
 AC_CHECK_MEMBER([struct dirent.d_type], [AC_DEFINE([HAVE_DIRENT_DTYPE], [], [Have dirent struct member d_type])], [], [[#include <dirent.h>]])
 
-AC_CHECK_FUNCS(vasprintf fgetln getline strndup)
+AC_CHECK_FUNCS(fgetln getline realpath strndup vasprintf)
 
 AC_CONFIG_FILES([Makefile the_silver_searcher.spec])
 AC_CONFIG_HEADERS([src/config.h])

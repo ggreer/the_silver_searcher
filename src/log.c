@@ -45,20 +45,20 @@ void vplog(const unsigned int level, const char *fmt, va_list args) {
 
     FILE *stream = out_fd;
 
-    switch(level) {
+    switch (level) {
         case LOG_LEVEL_DEBUG:
             fprintf(stream, "DEBUG: ");
-        break;
+            break;
         case LOG_LEVEL_MSG:
             fprintf(stream, "MSG: ");
-        break;
+            break;
         case LOG_LEVEL_WARN:
             fprintf(stream, "WARN: ");
-        break;
+            break;
         case LOG_LEVEL_ERR:
             stream = stderr;
             fprintf(stream, "ERR: ");
-        break;
+            break;
     }
 
     vfprintf(stream, fmt, args);
