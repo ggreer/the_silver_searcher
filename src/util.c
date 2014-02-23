@@ -106,10 +106,10 @@ const char *boyer_moore_strncasestr(const char *s, const char *find, const size_
     return NULL;
 }
 
-strncmp_fp get_strstr(cli_options opts) {
+strncmp_fp get_strstr(enum case_behavior casing) {
     strncmp_fp ag_strncmp_fp = &boyer_moore_strnstr;
 
-    if (opts.casing == CASE_INSENSITIVE) {
+    if (casing == CASE_INSENSITIVE) {
         ag_strncmp_fp = &boyer_moore_strncasestr;
     }
 
@@ -442,6 +442,22 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
 }
 #endif
 
+#ifndef HAVE_REALPATH
+char *realpath(const char *path, char *resolved_path) {
+    char *p;
+    char tmp[MAX_PATH + 1];
+    strncpy(tmp, path, sizeof(tmp) - 1);
+    p = tmp;
+    while (*p) {
+        if (*p == '/') {
+            *p = '\\';
+        }
+        p++;
+    }
+    return _fullpath(resolved_path, tmp, MAX_PATH);
+}
+#endif
+
 #ifndef HAVE_STRNDUP
 /* Apache-licensed implementation of strndup for OS
  * taken from http://source-android.frandroid.com/dalvik/tools/dmtracedump/CreateTestTrace.c
@@ -449,8 +465,9 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
  */
 char *strndup(const char *src, size_t len) {
     char *dest = (char *)malloc(len + 1);
-    if (!dest)
+    if (!dest) {
         return NULL;
+    }
     strncpy(dest, src, len);
     dest[len] = 0;
     return dest;

@@ -62,12 +62,12 @@ int ag_scandir(const char *dirname,
     return results_len;
 
 fail:
-    int i;
     if (dirp) {
         closedir(dirp);
     }
 
     if (names != NULL) {
+        int i;
         for (i = 0; i < results_len; i++) {
             free(names[i]);
         }

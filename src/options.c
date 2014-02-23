@@ -14,27 +14,12 @@
 #include "log.h"
 #include "util.h"
 
-#ifdef _WIN32
-char *realpath(const char *path, char *resolved_path) {
-    char *p;
-    char tmp[MAX_PATH + 1];
-    strncpy(tmp, path, sizeof(tmp) - 1);
-    p = tmp;
-    while (*p) {
-        if (*p == '/')
-            *p = '\\';
-        p++;
-    }
-    return _fullpath(resolved_path, tmp, MAX_PATH);
-}
-#endif
-
 const char *color_line_number = "\e[1;33m"; /* yellow with black background */
 const char *color_match = "\e[30;43m";      /* black with yellow background */
 const char *color_path = "\e[1;32m";        /* bold green */
 
 /* TODO: try to obey out_fd? */
-void usage() {
+void usage(void) {
     printf("\n");
     printf("Usage: ag [OPTIONS] PATTERN [PATH]\n\n");
 
@@ -99,11 +84,11 @@ Search Options:\n\
 \n");
 }
 
-void print_version() {
+void print_version(void) {
     printf("ag version %s\n", PACKAGE_VERSION);
 }
 
-void init_options() {
+void init_options(void) {
     memset(&opts, 0, sizeof(opts));
     opts.casing = CASE_SENSITIVE;
 #ifdef _WIN32
@@ -122,7 +107,7 @@ void init_options() {
     opts.color_line_number = ag_strdup(color_line_number);
 }
 
-void cleanup_options() {
+void cleanup_options(void) {
     free(opts.color_path);
     free(opts.color_match);
     free(opts.color_line_number);

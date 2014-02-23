@@ -57,7 +57,7 @@ void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], 
 const char* boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]);
 const char* boyer_moore_strncasestr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]);
 
-strncmp_fp get_strstr(cli_options opts);
+strncmp_fp get_strstr(enum case_behavior opts);
 
 int invert_matches(match matches[], int matches_len, const int buf_len);
 void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opts, const int study_opts);
@@ -88,6 +88,9 @@ char * fgetln(FILE *fp, size_t *lenp);
 #endif
 #ifndef HAVE_GETLINE
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
+#endif
+#ifndef HAVE_REALPATH
+char *realpath(const char *path, char *resolved_path);
 #endif
 #ifndef HAVE_STRNDUP
 char * strndup (const char *s, size_t n);

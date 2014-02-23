@@ -70,10 +70,11 @@ cli_options opts;
 
 typedef struct option option_t;
 
-void init_options();
-void parse_options(int argc, char **argv, char **base_paths[], char **paths[]);
-void cleanup_options();
+void usage(void);
+void print_version(void);
 
-void usage();
+void init_options(void);
+void parse_options(int argc, char **argv, char **base_paths[], char **paths[]);
+void cleanup_options(void);
 
 #endif

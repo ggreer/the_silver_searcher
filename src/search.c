@@ -44,7 +44,7 @@ void search_buf(const char *buf, const int buf_len,
         matches_len = 1;
     } else if (opts.literal) {
         const char *match_ptr = buf;
-        strncmp_fp ag_strnstr_fp = get_strstr(opts);
+        strncmp_fp ag_strnstr_fp = get_strstr(opts.casing);
 
         while (buf_offset < buf_len) {
             match_ptr = ag_strnstr_fp(match_ptr, opts.query, buf_len - buf_offset, opts.query_len, skip_lookup);
@@ -270,15 +270,17 @@ cleanup:
     }
 }
 
-void *search_file_worker() {
+void *search_file_worker(void *i) {
     work_queue_t *queue_item;
+    int worker_id = *(int *)i;
 
+    log_debug("Worker %i started", worker_id);
     while (TRUE) {
         pthread_mutex_lock(&work_queue_mtx);
         while (work_queue == NULL) {
             if (done_adding_files) {
                 pthread_mutex_unlock(&work_queue_mtx);
-                log_debug("Worker finished.");
+                log_debug("Worker %i finished.", worker_id);
                 pthread_exit(NULL);
             }
             pthread_cond_wait(&files_ready, &work_queue_mtx);

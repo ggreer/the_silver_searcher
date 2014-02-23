@@ -111,7 +111,7 @@ int main(int argc, char **argv) {
         search_stream(stdin, "");
     } else {
         for (i = 0; i < workers_len; i++) {
-            int rv = pthread_create(&(workers[i]), NULL, &search_file_worker, NULL);
+            int rv = pthread_create(&(workers[i]), NULL, &search_file_worker, &i);
             if (rv != 0) {
                 die("error in pthread_create(): %s", strerror(rv));
             }
