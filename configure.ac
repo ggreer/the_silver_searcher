@@ -18,7 +18,7 @@ m4_ifdef(
 PKG_CHECK_MODULES([PCRE], [libpcre])
 
 # Run CFLAGS="-g" ./configure if you want debug symbols
-CFLAGS="$CFLAGS $PCRE_CFLAGS -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -Wshadow -Wpointer-arith -Wcast-qual -Wmissing-prototypes -Wno-missing-braces -std=gnu89 -D_GNU_SOURCE"
+CFLAGS="$CFLAGS $PCRE_CFLAGS -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -Wshadow -Wpointer-arith -Wcast-qual -Wmissing-prototypes -Wno-missing-braces -std=gnu89 -D_GNU_SOURCE -O2"
 LDFLAGS="$LDFLAGS"
 
 AC_CHECK_HEADERS([pthread.h zlib.h lzma.h])
