@@ -2,11 +2,8 @@
 
 A code searching tool similar to `ack`, with a focus on speed.
 
-### Attention
-I will be doing a public coding session on Saturday, October 26th at 1900UTC. That's noon Pacific Time. You can watch and chat at https://floobits.com/r/ggreer/the_silver_searcher/
-
-<a href="https://floobits.com/r/ggreer/the_silver_searcher/redirect">
-  <img alt="Floobits status" width="80" height="40" src="https://floobits.com/r/ggreer/the_silver_searcher.png" />
+<a href="https://floobits.com/ggreer/ag/redirect">
+  <img alt="Floobits status" width="80" height="40" src="https://floobits.com/ggreer/ag.png" />
 </a>
 
 
@@ -32,11 +29,11 @@ I've written several blog posts showing how I've improved performance. These inc
 
 ## Installation ##
 
-Gentoo:
+### Gentoo
 
     emerge the_silver_searcher
 
-OS X:
+### OS X
 
     brew install the_silver_searcher
 
@@ -44,13 +41,19 @@ or
 
     port install the_silver_searcher
 
-ArchLinux:
+### Arch Linux
 
     pacman -S the_silver_searcher
 
-FreeBSD:
+### Debian unstable
 
-Use either of the following commands depending on which [package management tool](http://www.freebsd.org/doc/en_US.ISO8859-1/books/handbook/ports.html) your system is configured for:
+    apt-get install silversearcher-ag
+
+### Ubuntu 13.10 or later
+
+    apt-get install silversearcher-ag
+
+### FreeBSD
 
     pkg add the_silver_searcher
 
@@ -58,58 +61,59 @@ or
 
     pkg_add the_silver_searcher
 
-To build Ag from source on FreeBSD:
+To build from source on FreeBSD:
 
     make -C /usr/ports/textproc/the_silver_searcher install clean
 
-OpenBSD:
-
-Use the following command to install from packages:
+### OpenBSD
 
     pkg_add the_silver_searcher
 
-To build Ag from source on OpenBSD:
+To build from source on OpenBSD:
 
     cd /usr/ports/textproc/the_silver_searcher && make install
 
+
 If you want a CentOS rpm or Ubuntu deb, take a look at [Vikram Dighe's packages](http://swiftsignal.com/packages/).
 
-Debian unstable:
-
-    apt-get install silversearcher-ag
-
-Ubuntu 13.10 or later:
-
-    apt-get install silversearcher-ag
-
-Ubuntu 13.04:
-
-    apt-get install software-properties-common # (if required)
-    apt-add-repository ppa:mizuno-as/silversearcher-ag
-    apt-get update
-    apt-get install silversearcher-ag
 
 ## Building from source ##
 
 1. Install dependencies (Automake, pkg-config, PCRE, LZMA):
-    * Ubuntu: `apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev`
-    * Fedora: `yum -y install pkgconfig automake gcc zlib-devel pcre-devel xz-devel`
+    * Ubuntu:
+
+            apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev
+
+    * Fedora:
+
+            yum -y install pkgconfig automake gcc zlib-devel pcre-devel xz-devel
+
     * CentOS:
 
-              yum -y groupinstall "Development Tools"
-              yum -y install pcre-devel xz-devel
+            yum -y groupinstall "Development Tools"
+            yum -y install pcre-devel xz-devel
+
     * OS X:
-        - Install [homebrew](http://mxcl.github.com/homebrew/), then `brew install automake pkg-config pcre`
-        - Or install [macports](http://macports.org), then `port install automake pkgconfig pcre`
+
+            brew install automake pkg-config pcre
+        or
+
+            port install automake pkgconfig pcre
+
     * Windows: It's complicated. See [this wiki page](https://github.com/ggreer/the_silver_searcher/wiki/Windows).
+
 2. Run the build script (which just runs aclocal, automake, etc):
-    * `./build.sh`
+
+        ./build.sh
+
+  On Windows:
+
+        mingw32-make -f Makefile.w32
+
 3. Make install:
-    * `sudo make install`
 
-On windows:
+        sudo make install
 
-    mingw32-make -f Makefile.w32
 
 
 ## Current development status ##
@@ -142,6 +146,7 @@ There's also a fork of ack.vim tailored for use with Ag: [ag.vim][]
 You can use use [ag.el][] as an Emacs fronted to Ag.
 
 [ag.el]: https://github.com/Wilfred/ag.el
+
 
 ## Contributing ##
 

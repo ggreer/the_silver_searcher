@@ -460,7 +460,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         size_t buf_len = 0;
         char *gitconfig_res = NULL;
 
-        gitconfig_file = popen("git config -z --get core.excludesfile", "r");
+        gitconfig_file = popen("git config -z --get core.excludesfile 2>/dev/null", "r");
         if (gitconfig_file != NULL) {
             do {
                 gitconfig_res = ag_realloc(gitconfig_res, buf_len + 65);
