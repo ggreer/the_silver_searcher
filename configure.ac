@@ -21,21 +21,23 @@ PKG_CHECK_MODULES([PCRE], [libpcre])
 CFLAGS="$CFLAGS $PCRE_CFLAGS -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -Wshadow -Wpointer-arith -Wcast-qual -Wmissing-prototypes -Wno-missing-braces -std=gnu89 -D_GNU_SOURCE -O2"
 LDFLAGS="$LDFLAGS"
 
-AC_CHECK_HEADERS([pthread.h zlib.h lzma.h])
+AC_CHECK_HEADERS([pthread.h])
 
-if test "$ac_cv_header_zlib_h" == yes
-then
+AC_ARG_ENABLE([zlib],
+    AS_HELP_STRING([--disable-zlib], [Disable zlib compressed search support]))
+
+AS_IF([test "x$enable_zlib" != "xno"], [
+    AC_CHECK_HEADERS([zlib.h])
     AC_SEARCH_LIBS([inflate], [zlib, z])
-else
-    AC_MSG_WARN([zlib not found. Compiling without compressed search support.])
-fi
+])
 
-if test "$ac_cv_header_lzma_h" == yes
-then
+AC_ARG_ENABLE([lzma],
+    AS_HELP_STRING([--disable-lzma], [Disable lzma compressed search support]))
+
+AS_IF([test "x$enable_lzma" != "xno"], [
+    AC_CHECK_HEADERS([lzma.h])
     PKG_CHECK_MODULES([LZMA], [liblzma])
-else
-    AC_MSG_WARN([LZMA lib not found. Compiling without compressed search support.])
-fi
+])
 
 AC_CHECK_DECL([PCRE_CONFIG_JIT], [AC_DEFINE([USE_PCRE_JIT], [], [Use PCRE JIT])], [], [#include <pcre.h>])
 
