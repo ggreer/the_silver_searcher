@@ -163,8 +163,10 @@ void search_stream(FILE *stream, const char *path) {
     char *line = NULL;
     ssize_t line_len = 0;
     size_t line_cap = 0;
+    size_t i;
 
-    while ((line_len = getline(&line, &line_cap, stream)) > 0) {
+    for (i = 1; (line_len = getline(&line, &line_cap, stream)) > 0; i++) {
+        opts.stream_line_num = i;
         search_buf(line, line_len, path);
     }
 

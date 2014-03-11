@@ -196,11 +196,16 @@ void print_file_matches(const char *path, const char *buf, const int buf_len, co
     free(context_prev_lines);
 }
 
-void print_line_number(const int line, const char sep) {
+void print_line_number(int line, const char sep) {
     if (!opts.print_line_numbers) {
         return;
     }
     log_debug("printing line number");
+
+    if (opts.search_stream && opts.stream_line_num) {
+        // TODO: change line to size_t
+        line = (int)opts.stream_line_num;
+    }
 
     if (opts.color) {
         fprintf(out_fd, "%s%i%s%c", opts.color_line_number, line, color_reset, sep);
