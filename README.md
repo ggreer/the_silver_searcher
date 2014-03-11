@@ -59,7 +59,7 @@ or
 
 or
 
-    pkg_add the_silver_searcher
+    pkg_add -r the_silver_searcher
 
 To build from source on FreeBSD:
 
