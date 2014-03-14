@@ -136,6 +136,7 @@ TextMate users can use Ag with [my fork](https://github.com/ggreer/AckMate) of t
 You can use Ag with [ack.vim][] by adding the following line to your `.vimrc`:
 
     let g:ackprg = 'ag --nogroup --nocolor --column'
+    let g:ack_wildignore = 0
 
 There's also a fork of ack.vim tailored for use with Ag: [ag.vim][]
 [ack.vim]: https://github.com/mileszs/ack.vim
