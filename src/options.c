@@ -50,8 +50,11 @@ Output Options:\n\
   -L --files-without-matches\n\
                           Only print filenames that don't contain matches\n\
      --no-numbers         Don't print line numbers\n\
+     --pager COMMAND      Use COMMAND as pager\n\
+     --nopager            Disable pager\n\
      --print-long-lines   Print matches on very long lines (Default: >2k characters)\n\
      --stats              Print stats (files scanned, time taken, etc.)\n\
+  -V --version            Print version number and exit\n\
 \n\
 Search Options:\n\
   -a --all-types          Search all files (doesn't include hidden files\n\
@@ -59,6 +62,7 @@ Search Options:\n\
   -D --debug              Ridiculous debugging (probably not useful)\n\
      --depth NUM          Search up to NUM directories deep (Default: 25)\n\
   -f --follow             Follow symlinks\n\
+     --nofollow           Don't follow symlinks\n\
   -G --file-search-regex  PATTERN Limit search to filenames matching PATTERN\n\
      --hidden             Search hidden files (obeys .*ignore files)\n\
   -i --ignore-case        Match case insensitively\n\
@@ -66,10 +70,14 @@ Search Options:\n\
                           (literal file/directory names also allowed)\n\
      --ignore-dir NAME    Alias for --ignore for compatibility with ack.\n\
   -m --max-count NUM      Skip the rest of a file after NUM matches (Default: 10,000)\n\
+     --match              Ignored\n\
+  -n --norecurse          Disable recursive search\n\
   -p --path-to-agignore STRING\n\
                           Use .agignore file at STRING\n\
   -Q --literal            Don't parse PATTERN as a regular expression\n\
+  -r -R --recurse         Enable recurse search (default)\n\
   -s --case-sensitive     Match case sensitively (Enabled by default)\n\
+     --silent             Disable error logging\n\
   -S --smart-case         Match case insensitively unless PATTERN contains\n\
                           uppercase characters\n\
      --search-binary      Search binary files for matches\n\
@@ -80,6 +88,7 @@ Search Options:\n\
                           (.gitignore, .hgignore, .svnignore; still obey .agignore)\n\
   -v --invert-match\n\
   -w --word-regexp        Only match whole words\n\
+     --workers            Number of workers to use (Default: number of CPUs)\n\
   -z --search-zip         Search contents of compressed (e.g., gzip) files\n\
 \n");
 }
