@@ -71,9 +71,9 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
     int i;
     int pattern_len;
 
-    /* Strip off the leading ./ so that matches are more likely. */
+    /* Strip off the leading dot so that matches are more likely. */
     if (strncmp(pattern, "./", 2) == 0) {
-        pattern += 2;
+        pattern++;
     }
 
     /* Kill trailing whitespace */
@@ -271,7 +271,7 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     scandir_baton_t *scandir_baton = (scandir_baton_t *)baton;
     const ignores *ig = scandir_baton->ig;
     const char *base_path = scandir_baton->base_path;
-    size_t base_path_len = strlen(base_path);
+    const size_t base_path_len = scandir_baton->base_path_len;
     const char *path_start = path;
     char *temp;
 
@@ -317,19 +317,21 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         }
     }
 
-    /* TODO: copy-pasted from above */
     if (scandir_baton->level == 0) {
-        char *temp2; /* horrible variable name, I know */
         ag_asprintf(&temp, "/%s", filename);
         if (path_ignore_search(ig, path_start, temp)) {
+            free(temp);
             return 0;
         }
 
+        /* TODO: copy-pasted from above */
+        char *temp2; /* horrible variable name, I know */
         if (is_directory(path, dir) && temp[filename_len - 1] != '/') {
             ag_asprintf(&temp2, "%s/", temp);
             int rv = path_ignore_search(ig, path_start, temp2);
             free(temp2);
             if (rv) {
+                free(temp);
                 return 0;
             }
         }

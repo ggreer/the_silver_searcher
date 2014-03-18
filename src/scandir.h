@@ -6,6 +6,7 @@
 typedef struct {
     const ignores *ig;
     const char *base_path;
+    size_t base_path_len;
     int level;
 } scandir_baton_t;
 
