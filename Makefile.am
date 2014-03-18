@@ -16,3 +16,5 @@ EXTRA_DIST = Makefile.w32 LICENSE NOTICE the_silver_searcher.spec README.md
 
 test:
 	cram -v tests/*.t
+
+.PHONY : all test clean
