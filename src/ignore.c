@@ -92,7 +92,11 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
     if (is_fnmatch(pattern)) {
         ig->regexes_len++;
         ig->regexes = ag_realloc(ig->regexes, ig->regexes_len * sizeof(char *));
-        ig->regexes[ig->regexes_len - 1] = ag_strndup(pattern, pattern_len);
+        if (pattern[0] != '/') {
+            ag_asprintf(&(ig->regexes[ig->regexes_len - 1]), "*/%s", pattern);
+        } else {
+            ig->regexes[ig->regexes_len - 1] = ag_strndup(pattern, pattern_len);
+        }
         log_debug("added regex ignore pattern %s", pattern);
     } else {
         /* a balanced binary tree is best for performance, but I'm lazy */
@@ -207,26 +211,18 @@ cleanup:
 }
 
 static int ackmate_dir_match(const char *dir_name) {
-    int rc = 0;
-
-    if (opts.ackmate_dir_filter != NULL) {
-        /* we just care about the match, not where the matches are */
-        rc = pcre_exec(opts.ackmate_dir_filter, NULL, dir_name, strlen(dir_name), 0, 0, NULL, 0);
-        if (rc >= 0) {
-            log_debug("file %s ignored because name matches ackmate dir filter pattern", dir_name);
-            return 1;
-        }
+    if (opts.ackmate_dir_filter == NULL) {
+        return 0;
     }
-
-    return 0;
+    /* we just care about the match, not where the matches are */
+    return pcre_exec(opts.ackmate_dir_filter, NULL, dir_name, strlen(dir_name), 0, 0, NULL, 0);
 }
 
 static int filename_ignore_search(const ignores *ig, const char *filename) {
-    size_t i;
     int match_pos;
 
     if (strncmp(filename, "./", 2) == 0) {
-        filename += 2;
+        filename++;
     }
 
     match_pos = binary_search(filename, ig->names, 0, ig->names_len);
@@ -235,18 +231,6 @@ static int filename_ignore_search(const ignores *ig, const char *filename) {
         return 1;
     }
 
-    if (ackmate_dir_match(filename)) {
-        log_debug("file %s ignored because name matches ackmate regex", filename);
-        return 1;
-    }
-
-    for (i = 0; i < ig->regexes_len; i++) {
-        if (fnmatch(ig->regexes[i], filename, fnmatch_flags) == 0) {
-            log_debug("file %s ignored because name matches regex pattern %s", filename, ig->regexes[i]);
-            return 1;
-        }
-        log_debug("pattern %s doesn't match file %s", ig->regexes[i], filename);
-    }
     log_debug("file %s not ignored", filename);
     return 0;
 }
@@ -257,20 +241,27 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
     if (filename_ignore_search(ig, filename)) {
         return 1;
     }
-    if (path[0] == '\0') {
-        return 0;
-    }
-    if (path[0] == '.') {
-        if (path[1] == '\0') {
-            return 0;
-        }
-        if (path[1] == '/' && path[2] == '\0') {
-            return 0;
-        }
+
+    ag_asprintf(&temp, "%s/%s", path[0] == '.' ? path + 1 : path, filename);
+
+    if (filename_ignore_search(ig, temp)) {
+        free(temp);
+        return 1;
     }
 
-    ag_asprintf(&temp, "%s/%s", path, filename);
-    int rv = filename_ignore_search(ig, temp);
+    int rv = 0;
+    size_t i;
+    for (i = 0; i < ig->regexes_len; i++) {
+        if (fnmatch(ig->regexes[i], temp, fnmatch_flags) == 0) {
+            log_debug("file %s ignored because name matches regex pattern %s", temp, ig->regexes[i]);
+            rv = 1;
+            break;
+        }
+        log_debug("pattern %s doesn't match file %s", ig->regexes[i], temp);
+    }
+    if (rv == 0) {
+        rv = ackmate_dir_match(temp);
+    }
     free(temp);
     return rv;
 }
@@ -328,27 +319,6 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         if (rv) {
             return 0;
         }
-    }
-
-    if (scandir_baton->level == 0) {
-        ag_asprintf(&temp, "/%s", filename);
-        if (path_ignore_search(ig, path_start, temp)) {
-            free(temp);
-            return 0;
-        }
-
-        /* TODO: copy-pasted from above */
-        char *temp2; /* horrible variable name, I know */
-        if (is_directory(path, dir) && temp[filename_len - 1] != '/') {
-            ag_asprintf(&temp2, "%s/", temp);
-            int rv = path_ignore_search(ig, path_start, temp2);
-            free(temp2);
-            if (rv) {
-                free(temp);
-                return 0;
-            }
-        }
-        free(temp);
     }
 
     scandir_baton->level++;
