@@ -504,8 +504,9 @@ skip_group:
     if (opts.search_stream) {
         opts.print_break = 0;
         opts.print_heading = 0;
-        if (opts.print_line_numbers != 2)
+        if (opts.print_line_numbers != 2) {
             opts.print_line_numbers = 0;
+        }
     }
 
     if (needs_query) {

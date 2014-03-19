@@ -73,6 +73,7 @@ void search_buf(const char *buf, const int buf_len,
             }
 
             if ((size_t)matches_len + matches_spare >= matches_size) {
+                /* TODO: benchmark initial size of matches. 100 may be too small/big */
                 matches_size = matches ? matches_size * 2 : 100;
                 log_debug("Too many matches in %s. Reallocating matches to %zu.", dir_full_path, matches_size);
                 matches = ag_realloc(matches, matches_size * sizeof(match));
@@ -396,7 +397,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
 
     scandir_baton.ig = ig;
     scandir_baton.base_path = base_path;
-    scandir_baton.level = 0;
+    scandir_baton.base_path_len = strlen(base_path);
     results = ag_scandir(path, &dir_list, &filename_filter, &scandir_baton);
     if (results == 0) {
         log_debug("No results found in directory %s", path);
