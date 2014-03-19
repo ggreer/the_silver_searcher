@@ -257,6 +257,9 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
     if (filename_ignore_search(ig, filename)) {
         return 1;
     }
+    if (path[0] == '\0' || strcmp(path, ".") == 0 || strcmp(path, "./") == 0) {
+        return 0;
+    }
     ag_asprintf(&temp, "%s/%s", path, filename);
     int rv = filename_ignore_search(ig, temp);
     free(temp);
