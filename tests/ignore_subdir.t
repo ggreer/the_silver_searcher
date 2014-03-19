@@ -16,4 +16,3 @@ Dont ignore anything (unrestricted search):
   $ ag -u whatever .
   a/b/c/blah.yml:1:whatever1
   a/b/foo.yml:1:whatever2
-
