@@ -73,6 +73,7 @@ void search_buf(const char *buf, const int buf_len,
             }
 
             if ((size_t)matches_len + matches_spare >= matches_size) {
+                /* TODO: benchmark initial size of matches. 100 may be too small/big */
                 matches_size = matches ? matches_size * 2 : 100;
                 log_debug("Too many matches in %s. Reallocating matches to %zu.", dir_full_path, matches_size);
                 matches = ag_realloc(matches, matches_size * sizeof(match));
