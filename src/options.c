@@ -236,11 +236,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     rv = fstat(fileno(stdin), &statbuf);
-    if (rv != 0) {
-        die("Error fstat()ing stdin");
-    }
-    if (S_ISFIFO(statbuf.st_mode)) {
-        opts.search_stream = 1;
+    if (rv == 0) {
+        if (S_ISFIFO(statbuf.st_mode)) {
+            opts.search_stream = 1;
+        }
     }
 
     /* If we're not outputting to a terminal. change output to:
