@@ -16,7 +16,7 @@
 #define fnmatch(x, y, z) (!PathMatchSpec(y, x))
 #else
 #include <fnmatch.h>
-const int fnmatch_flags = 0 | FNM_PATHNAME;
+const int fnmatch_flags = FNM_PATHNAME;
 #endif
 
 /* TODO: build a huge-ass list of files we want to ignore by default (build cache stuff, pyc files, etc) */
@@ -251,13 +251,18 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
 
     int rv = 0;
     size_t i;
+    char *regex;
     for (i = 0; i < ig->regexes_len; i++) {
-        if (fnmatch(ig->regexes[i], temp, fnmatch_flags) == 0) {
-            log_debug("file %s ignored because name matches regex pattern %s", temp, ig->regexes[i]);
+        regex = ig->regexes[i];
+        /* TODO: behave specially if regex doesn't start with a slash
+        if (regex[0] == '/') {
+         */
+        if (fnmatch(regex, temp, fnmatch_flags) == 0) {
+            log_debug("file %s ignored because name matches regex pattern %s", temp, regex);
             rv = 1;
             break;
         }
-        log_debug("pattern %s doesn't match file %s", ig->regexes[i], temp);
+        log_debug("pattern %s doesn't match file %s", regex, temp);
     }
     if (rv == 0) {
         rv = ackmate_dir_match(temp);
@@ -306,25 +311,22 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         /* base_path always ends with "/\0" while path doesn't, so this is safe */
         path_start = path + i + 2;
     }
-    log_debug("path_start is %s", path_start);
+    log_debug("path_start %s filename %s", path_start, filename);
 
-    if (path_ignore_search(ig, path_start, filename)) {
-        return 0;
-    }
-
-    if (is_directory(path, dir) && filename[filename_len - 1] != '/') {
-        ag_asprintf(&temp, "%s/", filename);
-        int rv = path_ignore_search(ig, path_start, temp);
-        free(temp);
-        if (rv) {
+    while (ig != NULL) {
+        if (path_ignore_search(ig, path_start, filename)) {
             return 0;
         }
-    }
 
-    scandir_baton->level++;
-    if (ig->parent != NULL) {
-        scandir_baton->ig = ig->parent;
-        return filename_filter(path, dir, (void *)scandir_baton);
+        if (is_directory(path, dir) && filename[filename_len - 1] != '/') {
+            ag_asprintf(&temp, "%s/", filename);
+            int rv = path_ignore_search(ig, path_start, temp);
+            free(temp);
+            if (rv) {
+                return 0;
+            }
+        }
+        ig = ig->parent;
     }
 
     return 1;
