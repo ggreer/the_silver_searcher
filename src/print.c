@@ -11,7 +11,7 @@
 
 int first_file_match = 1;
 
-const char *color_reset = "\e[0m\e[K";
+const char *color_reset = "\033[0m\033[K";
 
 void print_path(const char *path, const char sep) {
     log_debug("printing path");
