@@ -13,6 +13,8 @@
 
 struct wildopts;
 
+typedef unsigned char uchar;
+
 int wildmatch(const char *pattern, const char *text,
 	      unsigned int flags,
 	      struct wildopts *wo);
@@ -85,8 +87,20 @@ const unsigned char sane_ctype[256] = {
 	/* Nothing in the 128.. range */
 };
 
+#ifdef isblank
+# define ISBLANK(c) (isascii(c) && isblank(c))
+#else
+# define ISBLANK(c) ((c) == ' ' || (c) == '\t')
+#endif
+
+#ifdef isgraph
+# define ISGRAPH(c) (isascii(c) && isgraph(c))
+#else
+# define ISGRAPH(c) (isascii(c) && isprint(c) && !isspace(c))
+#endif
+
 #define sane_istest(x,mask) ((sane_ctype[(unsigned char)(x)] & (mask)) != 0)
-// #define isascii(x) (((x) & ~0x7f) == 0)
+#define ISASCII(x) (((x) & ~0x7f) == 0)
 // #define isspace(x) sane_istest(x,GIT_SPACE)
 // #define isdigit(x) sane_istest(x,GIT_DIGIT)
 // #define isalpha(x) sane_istest(x,GIT_ALPHA)
@@ -121,4 +135,15 @@ static inline int sane_iscase(int x, int is_lower)
 	else
 		return (x & 0x20) == 0;
 }
+#define ISPRINT(c) (isascii(c) && isprint(c))
+#define ISDIGIT(c) (isascii(c) && isdigit(c))
+#define ISALNUM(c) (isascii(c) && isalnum(c))
+#define ISALPHA(c) (isascii(c) && isalpha(c))
+#define ISCNTRL(c) (isascii(c) && iscntrl(c))
+#define ISLOWER(c) (isascii(c) && islower(c))
+#define ISPUNCT(c) (isascii(c) && ispunct(c))
+#define ISSPACE(c) (isascii(c) && isspace(c))
+#define ISUPPER(c) (isascii(c) && isupper(c))
+#define ISXDIGIT(c) (isascii(c) && isxdigit(c))
+
 #endif

@@ -7,16 +7,20 @@
 **
 **  Modified by Wayne Davison to special-case '/' matching, to make '**'
 **  work differently than '*', and to fix the character-class code.
+
+Largely from git/git:
+
+Git is an Open Source project covered by the GNU General Public
+License version 2 (some parts of it are under different licenses,
+compatible with the GPLv2). It was originally written by Linus
+Torvalds with help of a group of hackers around the net.
+
 */
 
-// #include "ctype.h"
-// #include "cache.h"
+
 #include <string.h>
 #include <unistd.h>
-// #include "git-compat-util.h"
 #include "wildmatch.h"
-
-typedef unsigned char uchar;
 
 /* What character marks an inverted character class? */
 #define NEGATE_CLASS	'!'
@@ -25,30 +29,6 @@ typedef unsigned char uchar;
 #define CC_EQ(class, len, litmatch) ((len) == sizeof (litmatch)-1 \
 				    && *(class) == *(litmatch) \
 				    && strncmp((char*)class, litmatch, len) == 0)
-
-
-#ifdef isblank
-# define ISBLANK(c) (isascii(c) && isblank(c))
-#else
-# define ISBLANK(c) ((c) == ' ' || (c) == '\t')
-#endif
-
-#ifdef isgraph
-# define ISGRAPH(c) (isascii(c) && isgraph(c))
-#else
-# define ISGRAPH(c) (isascii(c) && isprint(c) && !isspace(c))
-#endif
-
-#define ISPRINT(c) (isascii(c) && isprint(c))
-#define ISDIGIT(c) (isascii(c) && isdigit(c))
-#define ISALNUM(c) (isascii(c) && isalnum(c))
-#define ISALPHA(c) (isascii(c) && isalpha(c))
-#define ISCNTRL(c) (isascii(c) && iscntrl(c))
-#define ISLOWER(c) (isascii(c) && islower(c))
-#define ISPUNCT(c) (isascii(c) && ispunct(c))
-#define ISSPACE(c) (isascii(c) && isspace(c))
-#define ISUPPER(c) (isascii(c) && isupper(c))
-#define ISXDIGIT(c) (isascii(c) && isxdigit(c))
 
 /* Match pattern "p" against "text" */
 static int dowild(const uchar *p, const uchar *text, unsigned int flags)
