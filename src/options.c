@@ -421,6 +421,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         }
     }
 
+    free(longopts);
+
     argc -= optind;
     argv += optind;
 
