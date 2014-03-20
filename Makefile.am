@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS}
-
+# 
 bin_PROGRAMS = ag
-git_compat = src/git-compat/ctype.h src/git-compat/git-compat-util.h src/git-compat/wildmatch.c src/git-compat/wildmatch.h src/git-compat/bswap.h src/git-compat/advice.h src/git-compat/cache.h src/git-compat/convert.h src/git-compat/gettext.h src/git-compat/strbuf.h
+git_compat = src/git-compat/wildmatch.c src/git-compat/wildmatch.h
 ag_SOURCES = ${git_compat} src/ignore.c src/ignore.h src/log.c src/log.h src/options.c src/options.h src/print.c src/print.h src/scandir.c src/scandir.h src/search.c src/search.h src/lang.c src/lang.h src/util.c src/util.h src/decompress.c src/decompress.h src/uthash.h src/main.c
 ag_LDADD = ${PCRE_LIBS} ${LZMA_LIBS} ${ZLIB_LIBS} -lpthread
 

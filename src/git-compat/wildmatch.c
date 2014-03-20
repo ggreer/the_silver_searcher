@@ -9,11 +9,11 @@
 **  work differently than '*', and to fix the character-class code.
 */
 
-#include "ctype.h"
-#include "cache.h"
+// #include "ctype.h"
+// #include "cache.h"
 #include <string.h>
 #include <unistd.h>
-#include "git-compat-util.h"
+// #include "git-compat-util.h"
 #include "wildmatch.h"
 
 typedef unsigned char uchar;
