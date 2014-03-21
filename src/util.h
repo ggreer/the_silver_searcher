@@ -30,7 +30,7 @@ char *ag_strndup(const char *s, size_t size);
 
 typedef struct {
     int start; /* Byte at which the match starts */
-    int end; /* and where it ends */
+    int end;   /* and where it ends */
 } match;
 
 typedef struct {
@@ -50,30 +50,30 @@ typedef enum {
 
 ag_stats stats;
 
-typedef const char *(*strncmp_fp)(const char*, const char*, const size_t, const size_t, const size_t[]);
+typedef const char *(*strncmp_fp)(const char *, const char *, const size_t, const size_t, const size_t[]);
 
 void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], int case_sensitive);
 
-const char* boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]);
-const char* boyer_moore_strncasestr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]);
+const char *boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]);
+const char *boyer_moore_strncasestr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]);
 
 strncmp_fp get_strstr(enum case_behavior opts);
 
 int invert_matches(match matches[], int matches_len, const int buf_len);
 void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opts, const int study_opts);
 
-void* decompress(const ag_compression_type zip_type, const void* buf, const int buf_len, const char* dir_full_path, int* new_buf_len);
-ag_compression_type is_zipped(const void* buf, const int buf_len);
+void *decompress(const ag_compression_type zip_type, const void *buf, const int buf_len, const char *dir_full_path, int *new_buf_len);
+ag_compression_type is_zipped(const void *buf, const int buf_len);
 
-int is_binary(const void* buf, const int buf_len);
-int is_regex(const char* query);
-int is_fnmatch(const char* filename);
-int binary_search(const char* needle, char **haystack, int start, int end);
+int is_binary(const void *buf, const int buf_len);
+int is_regex(const char *query);
+int is_fnmatch(const char *filename);
+int binary_search(const char *needle, char **haystack, int start, int end);
 
 void init_wordchar_table(void);
 int is_wordchar(char ch);
 
-int is_lowercase(const char* s);
+int is_lowercase(const char *s);
 
 int is_directory(const char *path, const struct dirent *d);
 int is_symlink(const char *path, const struct dirent *d);
@@ -84,7 +84,7 @@ void die(const char *fmt, ...);
 void ag_asprintf(char **ret, const char *fmt, ...);
 
 #ifndef HAVE_FGETLN
-char * fgetln(FILE *fp, size_t *lenp);
+char *fgetln(FILE *fp, size_t *lenp);
 #endif
 #ifndef HAVE_GETLINE
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
@@ -93,7 +93,7 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 char *realpath(const char *path, char *resolved_path);
 #endif
 #ifndef HAVE_STRNDUP
-char * strndup (const char *s, size_t n);
+char *strndup(const char *s, size_t n);
 #endif
 #ifndef HAVE_VASPRINTF
 int vasprintf(char **ret, const char *fmt, va_list args);

@@ -5,10 +5,10 @@
 
 enum log_level {
     LOG_LEVEL_DEBUG = 10,
-    LOG_LEVEL_MSG   = 20,
-    LOG_LEVEL_WARN  = 30,
-    LOG_LEVEL_ERR   = 40,
-    LOG_LEVEL_NONE  = 100
+    LOG_LEVEL_MSG = 20,
+    LOG_LEVEL_WARN = 30,
+    LOG_LEVEL_ERR = 40,
+    LOG_LEVEL_NONE = 100
 };
 
 void set_log_level(enum log_level threshold);

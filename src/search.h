@@ -10,9 +10,9 @@
 #include <stdlib.h>
 #include <string.h>
 #ifdef _WIN32
-# include <windows.h>
+#include <windows.h>
 #else
-# include <sys/mman.h>
+#include <sys/mman.h>
 #endif
 #include <sys/stat.h>
 #include <unistd.h>
@@ -44,9 +44,9 @@ pthread_mutex_t work_queue_mtx;
 
 
 /* For symlink loop detection */
-#define SYMLOOP_ERROR   (-1)
-#define SYMLOOP_OK      (0)
-#define SYMLOOP_LOOP    (1)
+#define SYMLOOP_ERROR (-1)
+#define SYMLOOP_OK (0)
+#define SYMLOOP_LOOP (1)
 
 typedef struct {
     dev_t dev;
