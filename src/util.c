@@ -380,7 +380,7 @@ char *fgetln(FILE *fp, size_t *lenp) {
 
     flockfile(fp);
     while ((c = getc_unlocked(fp)) != EOF) {
-        if (!buf || len > used) {
+        if (!buf || len >= used) {
             size_t nsize;
             char *newbuf;
             nsize = used + BUFSIZ;
