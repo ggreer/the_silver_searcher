@@ -1,3 +1,5 @@
+VERSION=$(shell grep -Po "(?<=\[)([0-9.]+.[0-9]+.[0-9]+)(?=\])" configure.ac)
+
 SRCS = \
 	src/decompress.c \
 	src/ignore.c \
@@ -12,8 +14,7 @@ SRCS = \
 	src/print_w32.c
 OBJS = $(subst .c,.o,$(SRCS))
 
-VERSION=
-CFLAGS = -O2 -Isrc/win32 -DPACKAGE_VERSION=\"0.16\"
+CFLAGS = -O2 -Isrc/win32 -DPACKAGE_VERSION=\"$(VERSION)\"
 LIBS = -lz -lpthread -lpcre -llzma -lshlwapi
 TARGET = ag.exe
 

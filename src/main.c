@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
             /* Search routine needs the query to be lowercase */
             char *c = opts.query;
             for (; *c != '\0'; ++c) {
-                *c = (char) tolower(*c);
+                *c = (char)tolower(*c);
             }
         }
         generate_skip_lookup(opts.query, opts.query_len, skip_lookup, opts.casing == CASE_SENSITIVE);
@@ -111,7 +111,7 @@ int main(int argc, char **argv) {
         search_stream(stdin, "");
     } else {
         for (i = 0; i < workers_len; i++) {
-            int rv = pthread_create(&(workers[i]), NULL, &search_file_worker, NULL);
+            int rv = pthread_create(&(workers[i]), NULL, &search_file_worker, &i);
             if (rv != 0) {
                 die("error in pthread_create(): %s", strerror(rv));
             }

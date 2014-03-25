@@ -3,13 +3,13 @@
 
 void search_buf(const char *buf, const int buf_len,
                 const char *dir_full_path) {
-    int binary = -1;  /* 1 = yes, 0 = no, -1 = don't know */
+    int binary = -1; /* 1 = yes, 0 = no, -1 = don't know */
     int buf_offset = 0;
 
     if (opts.search_stream) {
         binary = 0;
     } else if (!opts.search_binary_files) {
-        binary = is_binary((void*) buf, buf_len);
+        binary = is_binary((const void *)buf, buf_len);
         if (binary) {
             log_debug("File %s is binary. Skipping...", dir_full_path);
             return;
@@ -44,7 +44,7 @@ void search_buf(const char *buf, const int buf_len,
         matches_len = 1;
     } else if (opts.literal) {
         const char *match_ptr = buf;
-        strncmp_fp ag_strnstr_fp = get_strstr(opts);
+        strncmp_fp ag_strnstr_fp = get_strstr(opts.casing);
 
         while (buf_offset < buf_len) {
             match_ptr = ag_strnstr_fp(match_ptr, opts.query, buf_len - buf_offset, opts.query_len, skip_lookup);
@@ -60,11 +60,9 @@ void search_buf(const char *buf, const int buf_len,
                  * boundary
                  */
                 if ((start == buf ||
-                     is_wordchar(*(start - 1)) != opts.literal_starts_wordchar)
-                    &&
+                     is_wordchar(*(start - 1)) != opts.literal_starts_wordchar) &&
                     (end == buf + buf_len ||
-                     is_wordchar(*end) != opts.literal_ends_wordchar))
-                {
+                     is_wordchar(*end) != opts.literal_ends_wordchar)) {
                     /* It's a match */
                 } else {
                     /* It's not a match */
@@ -75,6 +73,7 @@ void search_buf(const char *buf, const int buf_len,
             }
 
             if ((size_t)matches_len + matches_spare >= matches_size) {
+                /* TODO: benchmark initial size of matches. 100 may be too small/big */
                 matches_size = matches ? matches_size * 2 : 100;
                 log_debug("Too many matches in %s. Reallocating matches to %zu.", dir_full_path, matches_size);
                 matches = ag_realloc(matches, matches_size * sizeof(match));
@@ -95,7 +94,7 @@ void search_buf(const char *buf, const int buf_len,
     } else {
         int offset_vector[3];
         while (buf_offset < buf_len &&
-              (pcre_exec(opts.re, opts.re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
+               (pcre_exec(opts.re, opts.re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
             log_debug("Regex match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
             buf_offset = offset_vector[1];
 
@@ -131,7 +130,7 @@ void search_buf(const char *buf, const int buf_len,
 
     if (matches_len > 0) {
         if (binary == -1 && !opts.print_filename_only) {
-            binary = is_binary((void*) buf, buf_len);
+            binary = is_binary((const void *)buf, buf_len);
         }
         pthread_mutex_lock(&print_mtx);
         if (opts.print_filename_only) {
@@ -165,8 +164,10 @@ void search_stream(FILE *stream, const char *path) {
     char *line = NULL;
     ssize_t line_len = 0;
     size_t line_cap = 0;
+    size_t i;
 
-    while ((line_len = getline(&line, &line_cap, stream)) > 0) {
+    for (i = 1; (line_len = getline(&line, &line_cap, stream)) > 0; i++) {
+        opts.stream_line_num = i;
         search_buf(line, line_len, path);
     }
 
@@ -220,18 +221,18 @@ void search_file(const char *file_full_path) {
         {
             HANDLE hmmap = CreateFileMapping(
                 (HANDLE)_get_osfhandle(fd), 0, PAGE_READONLY, 0, f_len, NULL);
-            buf = (char*) MapViewOfFile(hmmap, FILE_SHARE_READ, 0, 0, f_len);
+            buf = (char *)MapViewOfFile(hmmap, FILE_SHARE_READ, 0, 0, f_len);
             if (hmmap != NULL)
-              CloseHandle(hmmap);
+                CloseHandle(hmmap);
         }
         if (buf == NULL) {
             FormatMessageA(
                 FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                FORMAT_MESSAGE_FROM_SYSTEM |
-                FORMAT_MESSAGE_IGNORE_INSERTS,
-                NULL, GetLastError(), 0, (void*) &buf, 0, NULL);
+                    FORMAT_MESSAGE_FROM_SYSTEM |
+                    FORMAT_MESSAGE_IGNORE_INSERTS,
+                NULL, GetLastError(), 0, (void *)&buf, 0, NULL);
             log_err("File %s failed to load: %s.", file_full_path, buf);
-            LocalFree((void*)buf);
+            LocalFree((void *)buf);
             goto cleanup;
         }
 #else
@@ -260,7 +261,8 @@ void search_file(const char *file_full_path) {
         search_buf(buf, (int)f_len, file_full_path);
     }
 
-    cleanup:;
+cleanup:
+
     if (fd != -1) {
 #ifdef _WIN32
         UnmapViewOfFile(buf);
@@ -271,15 +273,17 @@ void search_file(const char *file_full_path) {
     }
 }
 
-void *search_file_worker() {
+void *search_file_worker(void *i) {
     work_queue_t *queue_item;
+    int worker_id = *(int *)i;
 
+    log_debug("Worker %i started", worker_id);
     while (TRUE) {
         pthread_mutex_lock(&work_queue_mtx);
         while (work_queue == NULL) {
             if (done_adding_files) {
                 pthread_mutex_unlock(&work_queue_mtx);
-                log_debug("Worker finished.");
+                log_debug("Worker %i finished.", worker_id);
                 pthread_exit(NULL);
             }
             pthread_cond_wait(&files_ready, &work_queue_mtx);
@@ -323,7 +327,7 @@ static int check_symloop_enter(const char *path, dirkey_t *outkey) {
         return SYMLOOP_LOOP;
     }
 
-    new_item = (symdir_t*)ag_malloc(sizeof(symdir_t));
+    new_item = (symdir_t *)ag_malloc(sizeof(symdir_t));
     memcpy(&new_item->key, outkey, sizeof(dirkey_t));
     HASH_ADD(hh, symhash, key, sizeof(dirkey_t), new_item);
     return SYMLOOP_OK;
@@ -393,7 +397,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
 
     scandir_baton.ig = ig;
     scandir_baton.base_path = base_path;
-    scandir_baton.level = 0;
+    scandir_baton.base_path_len = base_path ? strlen(base_path) : 0;
     results = ag_scandir(path, &dir_list, &filename_filter, &scandir_baton);
     if (results == 0) {
         log_debug("No results found in directory %s", path);
@@ -467,7 +471,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
             }
         }
 
-        cleanup:;
+    cleanup:
         free(dir);
         dir = NULL;
         if (queue_item == NULL) {
@@ -476,7 +480,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
         }
     }
 
-    search_dir_cleanup:;
+search_dir_cleanup:
     check_symloop_leave(&current_dirkey);
     free(dir_list);
     dir_list = NULL;

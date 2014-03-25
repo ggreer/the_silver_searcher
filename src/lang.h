@@ -5,8 +5,8 @@
 #define LANG_COUNT 56
 
 typedef struct {
-    const char* name;
-    const char* extensions[MAX_EXTENSIONS];
+    const char *name;
+    const char *extensions[MAX_EXTENSIONS];
 } lang_spec_t;
 
 extern lang_spec_t langs[];
@@ -17,6 +17,6 @@ into a regular expression of the form \.(extension1|extension2...)$
 
 Caller is responsible for freeing the returned string.
 */
-char* make_lang_regex(const char** extensions);
+char *make_lang_regex(const char **extensions);
 
 #endif

@@ -10,15 +10,15 @@ Case sensitive by default:
   $ ag FOO sample
   $ ag 'f.o' sample
   $ ag Foo sample
-  Foo
+  1:Foo
   $ ag 'F.o' sample
-  Foo
+  1:Foo
 
 Case insensitive mode:
 
   $ ag foo -i sample
-  Foo
+  1:Foo
   $ ag foo --ignore-case sample
-  Foo
+  1:Foo
   $ ag 'f.o' -i sample
-  Foo
+  1:Foo

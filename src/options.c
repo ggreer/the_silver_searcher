@@ -14,26 +14,12 @@
 #include "log.h"
 #include "util.h"
 
-#ifdef _WIN32
-char* realpath(const char *path, char *resolved_path) {
-    char *p;
-    char tmp[MAX_PATH + 1];
-    strncpy(tmp, path, sizeof(tmp)-1);
-    p = tmp;
-    while(*p) {
-        if (*p == '/') *p = '\\';
-        p++;
-    }
-    return _fullpath(resolved_path, tmp, MAX_PATH);
-}
-#endif
-
 const char *color_line_number = "\e[1;33m"; /* yellow with black background */
-const char *color_match = "\e[30;43m"; /* black with yellow background */
-const char *color_path = "\e[1;32m";   /* bold green */
+const char *color_match = "\e[30;43m";      /* black with yellow background */
+const char *color_path = "\e[1;32m";        /* bold green */
 
 /* TODO: try to obey out_fd? */
-void usage() {
+void usage(void) {
     printf("\n");
     printf("Usage: ag [OPTIONS] PATTERN [PATH]\n\n");
 
@@ -98,11 +84,11 @@ Search Options:\n\
 \n");
 }
 
-void print_version() {
+void print_version(void) {
     printf("ag version %s\n", PACKAGE_VERSION);
 }
 
-void init_options() {
+void init_options(void) {
     memset(&opts, 0, sizeof(opts));
     opts.casing = CASE_SENSITIVE;
     opts.color = TRUE;
@@ -117,7 +103,7 @@ void init_options() {
     opts.color_line_number = ag_strdup(color_line_number);
 }
 
-void cleanup_options() {
+void cleanup_options(void) {
     free(opts.color_path);
     free(opts.color_match);
     free(opts.color_line_number);
@@ -128,7 +114,7 @@ void cleanup_options() {
 
     pcre_free(opts.re);
     if (opts.re_extra) {
-         /* Using pcre_free_study on pcre_extra* can segfault on some versions of PCRE */
+        /* Using pcre_free_study on pcre_extra* can segfault on some versions of PCRE */
         pcre_free(opts.re_extra);
     }
 
@@ -163,7 +149,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     int rv;
 
     size_t longopts_len, full_len;
-    option_t* longopts;
+    option_t *longopts;
     char *lang_regex = NULL;
 
     init_options();
@@ -210,8 +196,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "noheading", no_argument, &opts.print_heading, 0 },
         { "nopager", no_argument, NULL, 0 },
         { "pager", required_argument, NULL, 0 },
-        { "parallel", no_argument, &opts.parallel, 1},
-        { "path-to-agignore", required_argument, NULL, 'p'},
+        { "parallel", no_argument, &opts.parallel, 1 },
+        { "path-to-agignore", required_argument, NULL, 'p' },
         { "print-long-lines", no_argument, &opts.print_long_lines, 1 },
         { "recurse", no_argument, NULL, 'r' },
         { "search-binary", no_argument, &opts.search_binary_files, 1 },
@@ -236,7 +222,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         option_t opt = { langs[i].name, no_argument, NULL, 0 };
         longopts[i + longopts_len] = opt;
     }
-    longopts[full_len-1] = (option_t){ NULL, 0, NULL, 0 };
+    longopts[full_len - 1] = (option_t) { NULL, 0, NULL, 0 };
 
     if (argc < 2) {
         usage();
@@ -246,11 +232,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     rv = fstat(fileno(stdin), &statbuf);
-    if (rv != 0) {
-        die("Error fstat()ing stdin");
-    }
-    if (S_ISFIFO(statbuf.st_mode)) {
-        opts.search_stream = 1;
+    if (rv == 0) {
+        if (S_ISFIFO(statbuf.st_mode)) {
+            opts.search_stream = 1;
+        }
     }
 
     /* If we're not outputting to a terminal. change output to:
@@ -302,7 +287,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             case 'g':
                 needs_query = 0;
                 opts.match_files = 1;
-                /* Fall through and build regex */
+            /* Fall through and build regex */
             case 'G':
                 compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, optarg, opts.casing & PCRE_CASELESS, 0);
                 opts.casing = CASE_SENSITIVE;
@@ -315,7 +300,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'L':
                 opts.invert_match = 1;
-                /* fall through */
+            /* fall through */
             case 'l':
                 opts.print_filename_only = 1;
                 break;
@@ -470,7 +455,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         size_t buf_len = 0;
         char *gitconfig_res = NULL;
 
-        gitconfig_file = popen("git config -z --get core.excludesfile", "r");
+        gitconfig_file = popen("git config -z --get core.excludesfile 2>/dev/null", "r");
         if (gitconfig_file != NULL) {
             do {
                 gitconfig_res = ag_realloc(gitconfig_res, buf_len + 65);
@@ -511,13 +496,13 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.print_break = 0;
     }
 
-    skip_group:;
-
+skip_group:
     if (opts.search_stream) {
         opts.print_break = 0;
         opts.print_heading = 0;
-        if (opts.print_line_numbers != 2)
+        if (opts.print_line_numbers != 2) {
             opts.print_line_numbers = 0;
+        }
     }
 
     if (needs_query) {
@@ -544,14 +529,14 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     char *tmp = NULL;
     opts.paths_len = argc;
     if (argc > 0) {
-        *paths = ag_calloc(sizeof(char*), argc + 1);
-        *base_paths = ag_calloc(sizeof(char*), argc + 1);
+        *paths = ag_calloc(sizeof(char *), argc + 1);
+        *base_paths = ag_calloc(sizeof(char *), argc + 1);
         for (i = 0; i < argc; i++) {
             path = ag_strdup(argv[i]);
             path_len = strlen(path);
             /* kill trailing slash */
             if (path_len > 1 && path[path_len - 1] == '/') {
-              path[path_len - 1] = '\0';
+                path[path_len - 1] = '\0';
             }
             (*paths)[i] = path;
             tmp = ag_malloc(PATH_MAX);
@@ -561,8 +546,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.search_stream = 0;
     } else {
         path = ag_strdup(".");
-        *paths = ag_malloc(sizeof(char*) * 2);
-        *base_paths = ag_malloc(sizeof(char*) * 2);
+        *paths = ag_malloc(sizeof(char *) * 2);
+        *base_paths = ag_malloc(sizeof(char *) * 2);
         (*paths)[0] = path;
         tmp = ag_malloc(PATH_MAX);
         (*base_paths)[0] = realpath(path, tmp);
