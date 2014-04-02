@@ -95,25 +95,20 @@ If you want a CentOS rpm or Ubuntu deb, take a look at [Vikram Dighe's packages]
     * Ubuntu:
 
             apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev
-
     * Fedora:
 
             yum -y install pkgconfig automake gcc zlib-devel pcre-devel xz-devel
-
     * CentOS:
 
             yum -y groupinstall "Development Tools"
             yum -y install pcre-devel xz-devel
-
     * OS X:
 
             brew install automake pkg-config pcre
         or
 
             port install automake pkgconfig pcre
-
     * Windows: It's complicated. See [this wiki page](https://github.com/ggreer/the_silver_searcher/wiki/Windows).
-
 2. Run the build script (which just runs aclocal, automake, etc):
 
         ./build.sh
@@ -121,7 +116,6 @@ If you want a CentOS rpm or Ubuntu deb, take a look at [Vikram Dighe's packages]
   On Windows:
 
         mingw32-make -f Makefile.w32
-
 3. Make install:
 
         sudo make install
