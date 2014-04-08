@@ -75,6 +75,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Match case sensitively if there are any uppercase letters in PATTERN, or case insensitively otherwise.
   * `--search-binary`:
     Search binary files for matches.
+  * `--silent`:
+    Suppress all log messages, including errors.
   * `--stats`:
     Print stats (files scanned, time taken, etc)
   * `-t --all-text`:
