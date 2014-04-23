@@ -453,13 +453,13 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     if (list_file_types) {
-        int i;
+        int lang_index;
         printf("The following file types are supported:\n");
-        for (i = 0; i < LANG_COUNT; i++) {
-            printf("  --%s\n    ", langs[i].name);
+        for (lang_index = 0; lang_index < LANG_COUNT; lang_index++) {
+            printf("  --%s\n    ", langs[lang_index].name);
             int j;
-            for (j = 0; j < MAX_EXTENSIONS && langs[i].extensions[j]; j++) {
-                printf("  .%s", langs[i].extensions[j]);
+            for (j = 0; j < MAX_EXTENSIONS && langs[lang_index].extensions[j]; j++) {
+                printf("  .%s", langs[lang_index].extensions[j]);
             }
             printf("\n\n");
         }
