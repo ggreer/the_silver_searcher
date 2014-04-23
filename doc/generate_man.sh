@@ -34,8 +34,9 @@ BEGIN{
     } else if (first_4_chars == "    ") { # we are in a description line
       printf("&nbsp;&nbsp;&nbsp;&nbsp;  %s\n", substr($0, 5));
       first_item_in_list_of_options = 1;
-    } else if (first_4_chars == "## I") { # reached the end of #OPTIONS part
+    } else if (first_4_chars == "## F") { # reached the end of #OPTIONS part
       in_options_block = 0;
+      print $0;
     } else {
       print $0;
     }
