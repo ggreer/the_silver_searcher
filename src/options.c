@@ -233,7 +233,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     memcpy(longopts, base_longopts, sizeof(base_longopts));
 
     for (i = 0; i < LANG_COUNT; i++) {
-        option_t opt = { (char *) langs[i].name, no_argument, NULL, 0 };
+        option_t opt = { langs[i].name, no_argument, NULL, 0 };
         longopts[i + longopts_len] = opt;
     }
     longopts[full_len - 1] = (option_t) { NULL, 0, NULL, 0 };
