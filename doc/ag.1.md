@@ -97,7 +97,11 @@ It is possible to restrict the types of files searched. For example, passing `--
 
 ## IGNORING FILES
 
-By default, ag will ignore files matched by patterns in .gitignore, .hgignore, or .agignore. These files can be anywhere in the directories being searched. Ag also ignores files matched by the svn:ignore property in subversion repositories. Finally, ag looks in $HOME/.agignore for ignore patterns. Binary files are ignored by default as well.
+By default, ag will ignore files matched by patterns in .gitignore, .hgignore,
+or .agignore. These files can be anywhere in the directories being searched. Ag
+also ignores files matched by the svn:ignore property if `svn --version` is 1.6
+or older.  Finally, ag looks in $HOME/.agignore for
+ignore patterns. Binary files are ignored by default as well.
 
 If you want to ignore .gitignore, .hgignore, and svn:ignore but still take .agignore into account, use `-U`.
 
