@@ -98,7 +98,7 @@ void init_options(void) {
     opts.color = TRUE;
 #endif
     opts.max_matches_per_file = 10000;
-    opts.max_search_depth = 25;
+    opts.max_search_depth = DEFAULT_MAX_SEARCH_DEPTH;
     opts.print_break = TRUE;
     opts.print_heading = TRUE;
     opts.print_line_numbers = TRUE;

@@ -7,7 +7,7 @@
 #include <pcre.h>
 
 #define DEFAULT_CONTEXT_LEN 2
-
+#define DEFAULT_MAX_SEARCH_DEPTH 25
 enum case_behavior {
     CASE_SENSITIVE,
     CASE_INSENSITIVE,
