@@ -1,10 +1,10 @@
 #include "search.h"
 #include "scandir.h"
 
-void search_buf(const char *buf, const int buf_len,
+void search_buf(const char *buf, const size_t buf_len,
                 const char *dir_full_path) {
     int binary = -1; /* 1 = yes, 0 = no, -1 = don't know */
-    int buf_offset = 0;
+    size_t buf_offset = 0;
 
     if (opts.search_stream) {
         binary = 0;

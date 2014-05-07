@@ -166,11 +166,11 @@ void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opt
 }
 
 /* This function is very hot. It's called on every file. */
-int is_binary(const void *buf, const int buf_len) {
-    int suspicious_bytes = 0;
-    int total_bytes = buf_len > 512 ? 512 : buf_len;
+int is_binary(const void *buf, const size_t buf_len) {
+    size_t suspicious_bytes = 0;
+    size_t total_bytes = buf_len > 512 ? 512 : buf_len;
     const unsigned char *buf_c = buf;
-    int i;
+    size_t i;
 
     if (buf_len == 0) {
         return 0;
