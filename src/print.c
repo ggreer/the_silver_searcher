@@ -14,7 +14,6 @@ int first_file_match = 1;
 const char *color_reset = "\033[0m\033[K";
 
 void print_path(const char *path, const char sep) {
-    log_debug("printing path");
     path = normalize_path(path);
 
     if (opts.ackmate) {
@@ -200,12 +199,9 @@ void print_line_number(size_t line, const char sep) {
     if (!opts.print_line_numbers) {
         return;
     }
-    log_debug("printing line number");
-
     if (opts.search_stream && opts.stream_line_num) {
         line = opts.stream_line_num;
     }
-
     if (opts.color) {
         fprintf(out_fd, "%s%lu%s%c", opts.color_line_number, line, color_reset, sep);
     } else {
@@ -215,7 +211,6 @@ void print_line_number(size_t line, const char sep) {
 
 void print_file_separator(void) {
     if (first_file_match == 0 && opts.print_break) {
-        log_debug("printing file separator");
         fprintf(out_fd, "\n");
     }
     first_file_match = 0;
