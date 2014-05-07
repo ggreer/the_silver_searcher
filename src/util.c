@@ -509,3 +509,20 @@ int vasprintf(char **ret, const char *fmt, va_list args) {
     return rv;
 }
 #endif
+
+int ag_vector_push(ag_vector *vec, void *ptr) {
+	if (vec->n+1 >= vec->size) {
+		(vec->size) += 10;
+		vec->data=ag_realloc(vec->data, (vec->size)*sizeof(void*));
+	}
+	vec->data[(vec->n)++] = ptr;
+	vec->data[(vec->n)] = NULL;
+	return vec->n;
+}
+
+int ag_vector_append(ag_vector *vec, void **ptr) {
+	while(*ptr) {
+		ag_vector_push(vec, *(ptr++));
+	}
+	return vec->n;
+}

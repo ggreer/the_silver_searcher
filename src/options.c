@@ -158,6 +158,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     option_t *longopts;
     char *lang_regex = NULL;
 
+    ag_vector ext_only = {0};
+
     init_options();
 
     option_t base_longopts[] = {
@@ -405,14 +407,11 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 
                 for (i = 0; i < LANG_COUNT; i++) {
                     if (strcmp(longopts[opt_index].name, langs[i].name) == 0) {
-                        lang_regex = make_lang_regex(langs[i].extensions);
-                        compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, lang_regex, 0, 0);
+                        ag_vector_append(&ext_only, (void *)&(langs[i].extensions));
                         break;
                     }
                 }
-                if (lang_regex) {
-                    free(lang_regex);
-                    lang_regex = NULL;
+                if (i<LANG_COUNT) {
                     break;
                 }
 
@@ -421,6 +420,12 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 usage();
                 exit(1);
         }
+    }
+
+    if(ext_only.n) {
+        lang_regex = make_lang_regex((const char**) ext_only.data);
+        compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, lang_regex, 0, 0);
+        free(lang_regex);
     }
 
     argc -= optind;

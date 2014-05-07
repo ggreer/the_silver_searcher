@@ -41,6 +41,12 @@ typedef struct {
     struct timeval time_end;
 } ag_stats;
 
+typedef struct  {
+    void **data;
+    int size;
+    int n;
+} ag_vector;
+
 typedef enum {
     AG_NO_COMPRESSION,
     AG_GZIP,
@@ -98,5 +104,8 @@ char *strndup(const char *s, size_t n);
 #ifndef HAVE_VASPRINTF
 int vasprintf(char **ret, const char *fmt, va_list args);
 #endif
+
+int ag_vector_push(ag_vector *vec, void *ptr);
+int ag_vector_append(ag_vector *vec, void **ptr);
 
 #endif
