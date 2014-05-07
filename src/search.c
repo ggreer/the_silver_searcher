@@ -213,7 +213,12 @@ void search_file(const char *file_full_path) {
         f_len = statbuf.st_size;
 
         if (f_len == 0) {
-            log_debug("File %s is empty, skipping.", file_full_path);
+            log_debug("Skipping %s: file is empty.", file_full_path);
+            goto cleanup;
+        }
+
+        if (!opts.literal && f_len > INT_MAX) {
+            log_err("Skipping %s: pcre_exec() can't handle files larger than %i bytes.", file_full_path, INT_MAX);
             goto cleanup;
         }
 
