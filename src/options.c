@@ -52,6 +52,7 @@ Output Options:\n\
                           Only print filenames that don't contain matches\n\
      --no-numbers         Don't print line numbers\n\
      --print-long-lines   Print matches on very long lines (Default: >2k characters)\n\
+     --silent             Suppress all log messages, including errors\n\
      --stats              Print stats (files scanned, time taken, etc.)\n\
 \n\
 Search Options:\n\
