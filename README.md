@@ -55,7 +55,7 @@ or
 
 ### FreeBSD
 
-    pkg add the_silver_searcher
+    pkg install the_silver_searcher
 
 or
 
