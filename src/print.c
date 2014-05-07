@@ -203,8 +203,7 @@ void print_line_number(size_t line, const char sep) {
     log_debug("printing line number");
 
     if (opts.search_stream && opts.stream_line_num) {
-        // TODO: change line to size_t
-        line = (int)opts.stream_line_num;
+        line = opts.stream_line_num;
     }
 
     if (opts.color) {
