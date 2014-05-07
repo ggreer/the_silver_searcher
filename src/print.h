@@ -5,8 +5,8 @@
 
 void print_path(const char *path, const char sep);
 void print_binary_file_matches(const char *path);
-void print_file_matches(const char *path, const char *buf, const int buf_len, const match matches[], const int matches_len);
-void print_line_number(int line, const char sep);
+void print_file_matches(const char *path, const char *buf, const size_t buf_len, const match matches[], const size_t matches_len);
+void print_line_number(size_t line, const char sep);
 void print_file_separator(void);
 const char *normalize_path(const char *path);
 
