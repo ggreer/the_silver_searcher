@@ -3,7 +3,7 @@
 A code searching tool similar to `ack`, with a focus on speed.
 
 <a href="https://floobits.com/ggreer/ag/redirect">
-  <img alt="Floobits status" width="80" height="40" src="https://floobits.com/ggreer/ag.png" />
+  <img alt="Floobits status" width="100" height="40" src="https://floobits.com/ggreer/ag.png" />
 </a>
 
 
@@ -158,7 +158,6 @@ I like when people send pull requests. It validates my existence. If you want to
 A special thanks goes out to Alex Davies. He has given me some excellent recommendations to improve Ag. Many of these things are still on my list:
 
 * Optimizations
-  * Profile `read()` against `mmap()`. Remember that's `read()` not `fread()`.
   * Write a benchmarking script that tweaks various settings to find what's fastest.
 * Features
   * Behave better when matching in files with really long lines.
@@ -171,7 +170,7 @@ A special thanks goes out to Alex Davies. He has given me some excellent recomme
 
 ## Other stuff you might like ##
 
-* [Ack](https://github.com/petdance/ack) - Better than grep
+* [Ack](https://github.com/petdance/ack) - Better than grep. Without Ack, Ag would not exist.
 * [AckMate](https://github.com/protocool/AckMate) - An ack-powered replacement for TextMate's slow built-in search.
 * [ack.vim](https://github.com/mileszs/ack.vim)
 * [ag.vim]( https://github.com/rking/ag.vim)
