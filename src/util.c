@@ -116,8 +116,8 @@ strncmp_fp get_strstr(enum case_behavior casing) {
     return ag_strncmp_fp;
 }
 
-int invert_matches(match matches[], int matches_len, const int buf_len) {
-    int i;
+size_t invert_matches(match matches[], size_t matches_len, const size_t buf_len) {
+    size_t i;
 
     if (matches_len == 0) {
         matches[0].start = 0;
@@ -137,10 +137,12 @@ int invert_matches(match matches[], int matches_len, const int buf_len) {
         }
         matches_len--;
     } else {
-        for (i = matches_len; i >= 0; i--) {
+        for (i = matches_len; i > 0; i--) {
             matches[i].end = matches[i].start;
-            matches[i].start = i == 0 ? 0 : matches[i - 1].end;
+            matches[i].start = matches[i - 1].end;
         }
+        matches[0].end = matches[0].start;
+        matches[0].start = 0;
     }
 
     matches[matches_len].end = buf_len;
