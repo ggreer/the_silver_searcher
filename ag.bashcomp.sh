@@ -42,6 +42,7 @@ _ag() {
     --ignore-dir
     --invert-match
     --line-numbers
+    --list-file-types
     --literal
     --max-count
     --no-numbers

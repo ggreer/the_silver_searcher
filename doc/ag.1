@@ -1,13 +1,13 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "AG" "1" "September 2013" "" ""
+.TH "AG" "1" "January 2014" "" ""
 .
 .SH "NAME"
 \fBag\fR \- The Silver Searcher\. Like ack, but faster\.
 .
 .SH "SYNOPSIS"
-\fBag\fR [\fIoptions\fR] PATTERN [PATH]
+\fBag\fR [\fIfile\-type\fR] [\fIoptions\fR] PATTERN [PATH]
 .
 .SH "DESCRIPTION"
 Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
@@ -151,6 +151,12 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 \~\~\~\~ Only print filenames that don\'t contain matches\.
 .
 .P
+\fB\-\-list\-file\-types\fR:
+.
+.br
+\~\~\~\~ See \fBFILE TYPES\fR below\.
+.
+.P
 \fB\-m \-\-max\-count NUM\fR:
 .
 .br
@@ -243,7 +249,10 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 .br
 \~\~\~\~ Only match whole words\.
 .
-.P
+.SH "FILE TYPES"
+It is possible to restrict the types of files searched\. For example, passing \fB\-\-html\fR as the \fBfile\-types\fR parameter will search only files with the extensions \fBhtm\fR, \fBhtml\fR, \fBshtml\fR or \fBxhtml\fR\. For a list of supported \fBfile\-types\fR run \fBag \-\-list\-file\-types\fR\.
+.
+.SH "IGNORING FILES"
 By default, ag will ignore files matched by patterns in \.gitignore, \.hgignore, or \.agignore\. These files can be anywhere in the directories being searched\. Ag also ignores files matched by the svn:ignore property in subversion repositories\. Finally, ag looks in $HOME/\.agignore for ignore patterns\. Binary files are ignored by default as well\.
 .
 .P
