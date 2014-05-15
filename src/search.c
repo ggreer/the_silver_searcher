@@ -1,10 +1,10 @@
 #include "search.h"
 #include "scandir.h"
 
-void search_buf(const char *buf, const int buf_len,
+void search_buf(const char *buf, const size_t buf_len,
                 const char *dir_full_path) {
     int binary = -1; /* 1 = yes, 0 = no, -1 = don't know */
-    int buf_offset = 0;
+    size_t buf_offset = 0;
 
     if (opts.search_stream) {
         binary = 0;
@@ -184,23 +184,24 @@ void search_file(const char *file_full_path) {
 
     fd = open(file_full_path, O_RDONLY);
     if (fd < 0) {
-        log_err("Error opening file %s: %s Skipping...", file_full_path, strerror(errno));
+        /* XXXX: strerror is not thread-safe */
+        log_err("Skipping %s: Error opening file: %s", file_full_path, strerror(errno));
         goto cleanup;
     }
 
     rv = fstat(fd, &statbuf);
     if (rv != 0) {
-        log_err("Error fstat()ing file %s. Skipping...", file_full_path);
+        log_err("Skipping %s: Error fstat()ing file.", file_full_path);
         goto cleanup;
     }
 
     if (opts.stdout_inode != 0 && opts.stdout_inode == statbuf.st_ino) {
-        log_debug("Skipping %s because stdout is redirected to it", file_full_path);
+        log_debug("Skipping %s: stdout is redirected to it", file_full_path);
         goto cleanup;
     }
 
     if ((statbuf.st_mode & S_IFMT) == 0) {
-        log_err("%s is not a file. Mode %u. Skipping...", file_full_path, statbuf.st_mode);
+        log_err("Skipping %s: Mode %u is not a file.", file_full_path, statbuf.st_mode);
         goto cleanup;
     }
 
@@ -213,7 +214,12 @@ void search_file(const char *file_full_path) {
         f_len = statbuf.st_size;
 
         if (f_len == 0) {
-            log_debug("File %s is empty, skipping.", file_full_path);
+            log_debug("Skipping %s: file is empty.", file_full_path);
+            goto cleanup;
+        }
+
+        if (!opts.literal && f_len > INT_MAX) {
+            log_err("Skipping %s: pcre_exec() can't handle files larger than %i bytes.", file_full_path, INT_MAX);
             goto cleanup;
         }
 

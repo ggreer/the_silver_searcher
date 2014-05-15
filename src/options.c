@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <limits.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,14 +15,14 @@
 #include "log.h"
 #include "util.h"
 
-const char *color_line_number = "\e[1;33m"; /* yellow with black background */
-const char *color_match = "\e[30;43m";      /* black with yellow background */
-const char *color_path = "\e[1;32m";        /* bold green */
+const char *color_line_number = "\033[1;33m"; /* yellow with black background */
+const char *color_match = "\033[30;43m";      /* black with yellow background */
+const char *color_path = "\033[1;32m";        /* bold green */
 
 /* TODO: try to obey out_fd? */
 void usage(void) {
     printf("\n");
-    printf("Usage: ag [OPTIONS] PATTERN [PATH]\n\n");
+    printf("Usage: ag [FILE-TYPE] [OPTIONS] PATTERN [PATH]\n\n");
 
     printf("  Recursively search for PATTERN in PATH.\n");
     printf("  Like grep or ack, but faster.\n\n");
@@ -51,6 +52,7 @@ Output Options:\n\
                           Only print filenames that don't contain matches\n\
      --no-numbers         Don't print line numbers\n\
      --print-long-lines   Print matches on very long lines (Default: >2k characters)\n\
+     --silent             Suppress all log messages, including errors\n\
      --stats              Print stats (files scanned, time taken, etc.)\n\
 \n\
 Search Options:\n\
@@ -82,6 +84,13 @@ Search Options:\n\
   -w --word-regexp        Only match whole words\n\
   -z --search-zip         Search contents of compressed (e.g., gzip) files\n\
 \n");
+    printf("File Types:\n\
+The search can be restricted to certain types of files. Example:\n\
+  ag --html needle\n\
+  - Searches for 'needle' in files with suffix .htm, .html, .shtml or .xhtml.\n\
+\n\
+For a list of supported file types run:\n\
+  ag --list-file-types\n\n");
 }
 
 void print_version(void) {
@@ -141,6 +150,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     int group = 1;
     int help = 0;
     int version = 0;
+    int list_file_types = 0;
     int opt_index = 0;
     const char *home_dir = getenv("HOME");
     char *ignore_file_path = NULL;
@@ -184,6 +194,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "ignore-case", no_argument, NULL, 'i' },
         { "invert-match", no_argument, &opts.invert_match, 1 },
         { "line-numbers", no_argument, &opts.print_line_numbers, 2 },
+        { "list-file-types", no_argument, &list_file_types, 1 },
         { "literal", no_argument, NULL, 'Q' },
         { "match", no_argument, &useless, 0 },
         { "max-count", required_argument, NULL, 'm' },
@@ -377,15 +388,15 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                     break;
                 } else if (strcmp(longopts[opt_index].name, "color-line-number") == 0) {
                     free(opts.color_line_number);
-                    ag_asprintf(&opts.color_line_number, "\e[%sm", optarg);
+                    ag_asprintf(&opts.color_line_number, "\033[%sm", optarg);
                     break;
                 } else if (strcmp(longopts[opt_index].name, "color-match") == 0) {
                     free(opts.color_match);
-                    ag_asprintf(&opts.color_match, "\e[%sm", optarg);
+                    ag_asprintf(&opts.color_match, "\033[%sm", optarg);
                     break;
                 } else if (strcmp(longopts[opt_index].name, "color-path") == 0) {
                     free(opts.color_path);
-                    ag_asprintf(&opts.color_path, "\e[%sm", optarg);
+                    ag_asprintf(&opts.color_path, "\033[%sm", optarg);
                     break;
                 } else if (strcmp(longopts[opt_index].name, "silent") == 0) {
                     set_log_level(LOG_LEVEL_NONE);
@@ -417,6 +428,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         }
     }
 
+    free(longopts);
+
     argc -= optind;
     argv += optind;
 
@@ -435,6 +448,20 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 
     if (version) {
         print_version();
+        exit(0);
+    }
+
+    if (list_file_types) {
+        int lang_index;
+        printf("The following file types are supported:\n");
+        for (lang_index = 0; lang_index < LANG_COUNT; lang_index++) {
+            printf("  --%s\n    ", langs[lang_index].name);
+            int j;
+            for (j = 0; j < MAX_EXTENSIONS && langs[lang_index].extensions[j]; j++) {
+                printf("  .%s", langs[lang_index].extensions[j]);
+            }
+            printf("\n\n");
+        }
         exit(0);
     }
 

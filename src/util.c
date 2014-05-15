@@ -116,8 +116,8 @@ strncmp_fp get_strstr(enum case_behavior casing) {
     return ag_strncmp_fp;
 }
 
-int invert_matches(match matches[], int matches_len, const int buf_len) {
-    int i;
+size_t invert_matches(match matches[], size_t matches_len, const size_t buf_len) {
+    size_t i;
 
     if (matches_len == 0) {
         matches[0].start = 0;
@@ -137,10 +137,12 @@ int invert_matches(match matches[], int matches_len, const int buf_len) {
         }
         matches_len--;
     } else {
-        for (i = matches_len; i >= 0; i--) {
+        for (i = matches_len; i > 0; i--) {
             matches[i].end = matches[i].start;
-            matches[i].start = i == 0 ? 0 : matches[i - 1].end;
+            matches[i].start = matches[i - 1].end;
         }
+        matches[0].end = matches[0].start;
+        matches[0].start = 0;
     }
 
     matches[matches_len].end = buf_len;
@@ -166,11 +168,11 @@ void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opt
 }
 
 /* This function is very hot. It's called on every file. */
-int is_binary(const void *buf, const int buf_len) {
-    int suspicious_bytes = 0;
-    int total_bytes = buf_len > 512 ? 512 : buf_len;
+int is_binary(const void *buf, const size_t buf_len) {
+    size_t suspicious_bytes = 0;
+    size_t total_bytes = buf_len > 512 ? 512 : buf_len;
     const unsigned char *buf_c = buf;
-    int i;
+    size_t i;
 
     if (buf_len == 0) {
         return 0;
@@ -380,7 +382,7 @@ char *fgetln(FILE *fp, size_t *lenp) {
 
     flockfile(fp);
     while ((c = getc_unlocked(fp)) != EOF) {
-        if (!buf || len > used) {
+        if (!buf || len >= used) {
             size_t nsize;
             char *newbuf;
             nsize = used + BUFSIZ;

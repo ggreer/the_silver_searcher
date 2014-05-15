@@ -1,15 +1,15 @@
 AC_INIT(
     [the_silver_searcher],
-    [0.21.1],
+    [0.22.0],
     [https://github.com/ggreer/the_silver_searcher/issues],
     [the_silver_searcher],
     [https://github.com/ggreer/the_silver_searcher])
 
+AM_INIT_AUTOMAKE([no-define foreign subdir-objects])
+
 AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PREREQ([2.59])
-
-AM_INIT_AUTOMAKE([no-define foreign subdir-objects])
 
 m4_ifdef(
     [AM_SILENT_RULES],
