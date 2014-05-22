@@ -1,5 +1,7 @@
 VERSION=$(shell grep -Po "(?<=\[)([0-9.]+.[0-9]+.[0-9]+)(?=\])" configure.ac)
 
+CC=gcc
+
 SRCS = \
 	src/decompress.c \
 	src/ignore.c \
@@ -20,10 +22,10 @@ TARGET = ag.exe
 all : $(TARGET)
 
 $(TARGET) : $(OBJS)
-	gcc -o $@ $(OBJS) $(LIBS)
+	$(CC) -o $@ $(OBJS) $(LIBS)
 
 .c.o :
-	gcc -c $(CFLAGS) -Isrc $< -o $@
+	$(CC) -c $(CFLAGS) -Isrc $< -o $@
 
 clean :
 	rm -f src/*.o $(TARGET)
