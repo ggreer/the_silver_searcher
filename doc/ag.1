@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "AG" "1" "January 2014" "" ""
+.TH "AG" "1" "June 2014" "" ""
 .
 .SH "NAME"
 \fBag\fR \- The Silver Searcher\. Like ack, but faster\.
@@ -248,6 +248,12 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 .
 .br
 \~\~\~\~ Only match whole words\.
+.
+.P
+\fB\-z \-\-search\-zip\fR:
+.
+.br
+\~\~\~\~ Search contents of compressed files\.
 .
 .SH "FILE TYPES"
 It is possible to restrict the types of files searched\. For example, passing \fB\-\-html\fR as the \fBfile\-types\fR parameter will search only files with the extensions \fBhtm\fR, \fBhtml\fR, \fBshtml\fR or \fBxhtml\fR\. For a list of supported \fBfile\-types\fR run \fBag \-\-list\-file\-types\fR\.
