@@ -117,7 +117,8 @@ void search_buf(const char *buf, const size_t buf_len,
     }
 
     if (opts.invert_match) {
-        matches_len = invert_matches(matches, matches_len, buf_len);
+        matches_len = invert_matches(buf, buf_len, matches, matches_len);
+        opts.color = FALSE;
     }
 
     if (opts.stats) {
