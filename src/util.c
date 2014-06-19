@@ -41,7 +41,13 @@ char *ag_strdup(const char *s) {
 }
 
 char *ag_strndup(const char *s, size_t size) {
-    char *str = strndup(s, size);
+    char *str = NULL;
+#ifdef HAVE_STRNDUP
+    str = strndup(s, size);
+#else
+    str = (char *)ag_malloc(size + 1);
+    strlcpy(str, s, size + 1);
+#endif
     CHECK_AND_RETURN(str)
 }
 
@@ -445,10 +451,13 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
 #endif
 
 #ifndef HAVE_REALPATH
+/*
+ * realpath() for Windows. Turns slashes into backslashes and calls _fullpath
+ */
 char *realpath(const char *path, char *resolved_path) {
     char *p;
     char tmp[MAX_PATH + 1];
-    strncpy(tmp, path, sizeof(tmp) - 1);
+    strlcpy(tmp, path, sizeof(tmp));
     p = tmp;
     while (*p) {
         if (*p == '/') {
@@ -486,22 +495,6 @@ size_t strlcpy(char *dst, const char *src, size_t size) {
     }
 
     return (s - src - 1); /* count does not include NUL */
-}
-#endif
-
-#ifndef HAVE_STRNDUP
-/* Apache-licensed implementation of strndup for OS
- * taken from http://source-android.frandroid.com/dalvik/tools/dmtracedump/CreateTestTrace.c
- * modified to check for malloc() failure
- */
-char *strndup(const char *src, size_t len) {
-    char *dest = (char *)malloc(len + 1);
-    if (!dest) {
-        return NULL;
-    }
-    strncpy(dest, src, len);
-    dest[len] = 0;
-    return dest;
 }
 #endif
 
