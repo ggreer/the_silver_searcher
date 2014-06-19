@@ -133,9 +133,9 @@ size_t invert_matches(const char *buf, const size_t buf_len, match matches[], si
     match next_match;
 
     if (matches_len > 0) {
-      next_match = matches[0];
+        next_match = matches[0];
     } else {
-      next_match.start = buf_len + 1;
+        next_match.start = buf_len + 1;
     }
 
     if (matches_len == 0) {
