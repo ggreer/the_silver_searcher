@@ -181,7 +181,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                 lines_since_last_match++;
             }
             /* File doesn't end with a newline. Print one so the output is pretty. */
-            if (i == buf_len && buf[i] != '\n') {
+            if (i == buf_len && buf[i] != '\n' && !opts.search_stream) {
                 fputc('\n', out_fd);
             }
         }
