@@ -41,8 +41,15 @@ char *ag_strdup(const char *s) {
 }
 
 char *ag_strndup(const char *s, size_t size) {
-    char *str = strndup(s, size);
+    char *str = NULL;
+#ifdef HAVE_STRNDUP
+    str = strndup(s, size);
     CHECK_AND_RETURN(str)
+#else
+    str = (char *)ag_malloc(size + 1);
+    strlcpy(str, s, size + 1);
+    return str;
+#endif
 }
 
 void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], int case_sensitive) {
@@ -461,10 +468,13 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
 #endif
 
 #ifndef HAVE_REALPATH
+/*
+ * realpath() for Windows. Turns slashes into backslashes and calls _fullpath
+ */
 char *realpath(const char *path, char *resolved_path) {
     char *p;
-    char tmp[_MAX_PATH + 1];
-    strncpy(tmp, path, sizeof(tmp) - 1);
+    char tmp[MAX_PATH + 1];
+    strlcpy(tmp, path, sizeof(tmp));
     p = tmp;
     while (*p) {
         if (*p == '/') {
@@ -476,19 +486,32 @@ char *realpath(const char *path, char *resolved_path) {
 }
 #endif
 
-#ifndef HAVE_STRNDUP
-/* Apache-licensed implementation of strndup for OS
- * taken from http://source-android.frandroid.com/dalvik/tools/dmtracedump/CreateTestTrace.c
- * modified to check for malloc() failure
- */
-char *strndup(const char *src, size_t len) {
-    char *dest = (char *)malloc(len + 1);
-    if (!dest) {
-        return NULL;
+#ifndef HAVE_STRLCPY
+size_t strlcpy(char *dst, const char *src, size_t size) {
+    char *d = dst;
+    const char *s = src;
+    size_t n = size;
+
+    /* Copy as many bytes as will fit */
+    if (n != 0) {
+        while (--n != 0) {
+            if ((*d++ = *s++) == '\0') {
+                break;
+            }
+        }
     }
-    strncpy(dest, src, len);
-    dest[len] = 0;
-    return dest;
+
+    /* Not enough room in dst, add NUL and traverse rest of src */
+    if (n == 0) {
+        if (size != 0) {
+            *d = '\0'; /* NUL-terminate dst */
+        }
+
+        while (*s++) {
+        }
+    }
+
+    return (s - src - 1); /* count does not include NUL */
 }
 #endif
 
