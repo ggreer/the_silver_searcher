@@ -466,7 +466,7 @@ char *realpath(const char *path, char *resolved_path) {
         }
         p++;
     }
-    return _fullpath(resolved_path, tmp, MAX_PATH);
+    return _fullpath(resolved_path, tmp, _MAX_PATH);
 }
 #endif
 

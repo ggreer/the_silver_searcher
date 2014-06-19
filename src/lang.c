@@ -20,6 +20,7 @@ lang_spec_t langs[] = {
     { "elisp", { "el" } },
     { "erlang", { "erl", "hrl" } },
     { "fortran", { "f", "f77", "f90", "f95", "f03", "for", "ftn", "fpp" } },
+    { "gettext", { "po", "pot", "mo" } },
     { "go", { "go" } },
     { "groovy", { "groovy", "gtmpl", "gpp", "grunit" } },
     { "haskell", { "hs", "lhs" } },
