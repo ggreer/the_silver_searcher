@@ -44,11 +44,12 @@ char *ag_strndup(const char *s, size_t size) {
     char *str = NULL;
 #ifdef HAVE_STRNDUP
     str = strndup(s, size);
+    CHECK_AND_RETURN(str)
 #else
     str = (char *)ag_malloc(size + 1);
     strlcpy(str, s, size + 1);
+    return str;
 #endif
-    CHECK_AND_RETURN(str)
 }
 
 void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], int case_sensitive) {
