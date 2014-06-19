@@ -177,3 +177,15 @@ Language types are output:
     --verilog
         .v  .vh  .sv
   
+    --vhdl
+        .vhd  .vhdl
+  
+    --vim
+        .vim
+  
+    --yaml
+        .yaml  .yml
+  
+    --xml
+        .xml  .dtd  .xsl  .xslt  .ent
+  
