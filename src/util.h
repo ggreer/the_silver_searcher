@@ -95,9 +95,6 @@ char *realpath(const char *path, char *resolved_path);
 #ifndef HAVE_STRLCPY
 size_t strlcpy(char *dest, const char *src, size_t size);
 #endif
-#ifndef HAVE_STRNDUP
-char *strndup(const char *s, size_t n);
-#endif
 #ifndef HAVE_VASPRINTF
 int vasprintf(char **ret, const char *fmt, va_list args);
 #endif
