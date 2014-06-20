@@ -59,27 +59,35 @@ int main(int argc, char **argv) {
 #else
     workers_len = (int)sysconf(_SC_NPROCESSORS_ONLN);
 #endif
-    if (opts.literal)
+    if (opts.literal) {
         workers_len--;
-    if (opts.workers)
+    }
+    if (opts.workers) {
         workers_len = opts.workers;
-    if (workers_len < 1)
+    }
+    if (workers_len < 1) {
         workers_len = 1;
+    }
 
     log_debug("Using %i workers", workers_len);
     done_adding_files = FALSE;
     workers = ag_calloc(workers_len, sizeof(pthread_t));
-    if (pthread_cond_init(&files_ready, NULL))
+    if (pthread_cond_init(&files_ready, NULL)) {
         die("pthread_cond_init failed!");
-    if (pthread_mutex_init(&print_mtx, NULL))
+    }
+    if (pthread_mutex_init(&print_mtx, NULL)) {
         die("pthread_mutex_init failed!");
-    if (pthread_mutex_init(&stats_mtx, NULL))
+    }
+    if (pthread_mutex_init(&stats_mtx, NULL)) {
         die("pthread_mutex_init failed!");
-    if (pthread_mutex_init(&work_queue_mtx, NULL))
+    }
+    if (pthread_mutex_init(&work_queue_mtx, NULL)) {
         die("pthread_mutex_init failed!");
+    }
 
-    if (opts.casing == CASE_SMART)
+    if (opts.casing == CASE_SMART) {
         opts.casing = is_lowercase(opts.query) ? CASE_INSENSITIVE : CASE_SENSITIVE;
+    }
 
     if (opts.literal) {
         if (opts.casing == CASE_INSENSITIVE) {
