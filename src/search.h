@@ -6,7 +6,6 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <pcre.h>
-#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,6 +18,10 @@
 #include <unistd.h>
 
 #include "config.h"
+
+#ifdef HAVE_PTHREAD_H
+#include <pthread.h>
+#endif
 
 #include "ignore.h"
 #include "log.h"
