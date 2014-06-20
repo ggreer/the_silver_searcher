@@ -1,22 +1,24 @@
 #include <pcre.h>
-#include <pthread.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <sys/time.h>
 #include <unistd.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 #include "config.h"
+
+#ifdef HAVE_PTHREAD_H
+#include <pthread.h>
+#endif
 
 #include "log.h"
 #include "options.h"
 #include "search.h"
 #include "util.h"
-
-#ifdef _WIN32
-#include <windows.h>
-#endif
 
 int main(int argc, char **argv) {
     char **base_paths = NULL;
