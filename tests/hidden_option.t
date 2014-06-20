@@ -1,6 +1,6 @@
 Setup:
 
-  $ source $TESTDIR/setup.sh
+  $ . $TESTDIR/setup.sh
   $ mkdir hidden_bug
   $ cd hidden_bug
   $ echo "test" > a.txt

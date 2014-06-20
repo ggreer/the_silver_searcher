@@ -1,6 +1,6 @@
 Setup:
 
-  $ source $TESTDIR/setup.sh
+  $ . $TESTDIR/setup.sh
   $ mkdir -p ./a/b/c
   $ echo 'whatever1' > ./a/b/c/blah.yml
   $ echo 'whatever2' > ./a/b/foo.yml
