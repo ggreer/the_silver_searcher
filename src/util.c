@@ -132,12 +132,15 @@ size_t invert_matches(const char *buf, const size_t buf_len, match matches[], si
     int in_inverted_match = FALSE;
     match next_match;
 
+    log_debug("Inverting %u matches.", matches_len);
+
     if (matches_len > 0) {
         next_match = matches[0];
     } else {
         next_match.start = buf_len + 1;
     }
 
+    /* No matches, so the whole buffer is now a match. */
     if (matches_len == 0) {
         matches[0].start = 0;
         matches[0].end = buf_len;
@@ -171,6 +174,10 @@ size_t invert_matches(const char *buf, const size_t buf_len, match matches[], si
 
             in_inverted_match = TRUE;
         }
+    }
+
+    for (i = 0; i < matches_len; i++) {
+        log_debug("Inverted match %i start %i end %i.", i, matches[i].start, matches[i].end);
     }
 
     return inverted_match_count;
