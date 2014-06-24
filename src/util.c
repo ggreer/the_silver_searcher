@@ -129,7 +129,7 @@ size_t invert_matches(const char *buf, const size_t buf_len, match matches[], si
     size_t inverted_match_count = 0;
     size_t inverted_match_start = 0;
     size_t last_line_end = 0;
-    int in_inverted_match = FALSE;
+    int in_inverted_match = TRUE;
     match next_match;
 
     if (matches_len > 0) {
@@ -140,13 +140,13 @@ size_t invert_matches(const char *buf, const size_t buf_len, match matches[], si
 
     if (matches_len == 0) {
         matches[0].start = 0;
-        matches[0].end = buf_len;
+        matches[0].end = buf_len - 1;
         return 1;
     }
 
     for (i = 0; i < buf_len; i++) {
         if (i == next_match.start) {
-            i = next_match.end;
+            i = next_match.end - 1;
 
             match_read_index++;
 
@@ -154,19 +154,24 @@ size_t invert_matches(const char *buf, const size_t buf_len, match matches[], si
                 next_match = matches[match_read_index];
             }
 
-            if (last_line_end >= inverted_match_start) {
+            if (in_inverted_match && last_line_end > inverted_match_start) {
                 matches[inverted_match_count].start = inverted_match_start;
-                matches[inverted_match_count].end = last_line_end;
+                matches[inverted_match_count].end = last_line_end - 1;
 
                 inverted_match_count++;
             }
 
             in_inverted_match = FALSE;
-        } else if (buf[i] == '\n') {
-            last_line_end = buf[i];
+        } else if (i == buf_len - 1 && in_inverted_match) {
+            matches[inverted_match_count].start = inverted_match_start;
+            matches[inverted_match_count].end = i;
 
-            if (in_inverted_match) {
-                inverted_match_start = last_line_end + 1;
+            inverted_match_count++;
+        } else if (buf[i] == '\n') {
+            last_line_end = i + 1;
+
+            if (!in_inverted_match) {
+                inverted_match_start = last_line_end;
             }
 
             in_inverted_match = TRUE;
