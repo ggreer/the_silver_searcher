@@ -1,6 +1,6 @@
 Setup:
 
-  $ source $TESTDIR/setup.sh
+  $ . $TESTDIR/setup.sh
   $ echo Foo >> ./sample
   $ echo bar >> ./sample
 

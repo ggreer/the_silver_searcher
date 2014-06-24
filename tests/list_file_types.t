@@ -1,6 +1,6 @@
 Setup:
 
-  $ source $TESTDIR/setup.sh
+  $ . $TESTDIR/setup.sh
 
 Language types are output:
 

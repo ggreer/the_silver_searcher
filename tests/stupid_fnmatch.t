@@ -1,6 +1,6 @@
 Setup:
 
-  $ source $TESTDIR/setup.sh
+  $ . $TESTDIR/setup.sh
   $ mkdir -p ./a/bomb
   $ echo 'whatever' > ./a/bomb/foo.yml
   $ echo '*b/foo.yml' > ./.gitignore
