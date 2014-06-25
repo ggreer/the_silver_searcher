@@ -1,6 +1,6 @@
 Setup:
 
-  $ source $TESTDIR/setup.sh
+  $ . $TESTDIR/setup.sh
   $ echo 'valid: 1' > ./blah.txt
   $ echo 'some_string' >> ./blah.txt
   $ echo 'valid: 654' >> ./blah.txt
