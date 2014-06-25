@@ -264,7 +264,7 @@ void search_file(const char *file_full_path) {
             }
         }
 
-        search_buf(buf, (int)f_len, file_full_path);
+        search_buf(buf, f_len, file_full_path);
     }
 
 cleanup:
