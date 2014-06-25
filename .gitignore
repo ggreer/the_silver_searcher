@@ -11,8 +11,10 @@ cachegrind.out.*
 callgrind.out.*
 clang_output_*
 compile
+config.guess
 config.log
 config.status
+config.sub
 configure
 depcomp
 gmon.out
