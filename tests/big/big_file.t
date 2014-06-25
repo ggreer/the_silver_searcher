@@ -17,4 +17,4 @@ Search a big file:
 
 Fail to regex search a big file:
   $ $TESTDIR/../../ag --nocolor --workers=1 --parallel 'hello.*' $TESTDIR/big_file.txt
-  ERR: Skipping /Users/ggreer/code/ag/tests/big/big_file.txt: pcre_exec() can't handle files larger than 2147483647 bytes.
+  ERR: Skipping */big_file.txt: pcre_exec() can't handle files larger than 2147483647 bytes. (glob)
