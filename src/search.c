@@ -210,62 +210,63 @@ void search_file(const char *file_full_path) {
         pipe = fdopen(fd, "r");
         search_stream(pipe, file_full_path);
         fclose(pipe);
-    } else {
-        f_len = statbuf.st_size;
+        goto cleanup;
+    }
 
-        if (f_len == 0) {
-            log_debug("Skipping %s: file is empty.", file_full_path);
-            goto cleanup;
-        }
+    f_len = statbuf.st_size;
 
-        if (!opts.literal && f_len > INT_MAX) {
-            log_err("Skipping %s: pcre_exec() can't handle files larger than %i bytes.", file_full_path, INT_MAX);
-            goto cleanup;
-        }
+    if (f_len == 0) {
+        log_debug("Skipping %s: file is empty.", file_full_path);
+        goto cleanup;
+    }
+
+    if (!opts.literal && f_len > INT_MAX) {
+        log_err("Skipping %s: pcre_exec() can't handle files larger than %i bytes.", file_full_path, INT_MAX);
+        goto cleanup;
+    }
 
 #ifdef _WIN32
-        {
-            HANDLE hmmap = CreateFileMapping(
-                (HANDLE)_get_osfhandle(fd), 0, PAGE_READONLY, 0, f_len, NULL);
-            buf = (char *)MapViewOfFile(hmmap, FILE_SHARE_READ, 0, 0, f_len);
-            if (hmmap != NULL)
-                CloseHandle(hmmap);
-        }
-        if (buf == NULL) {
-            FormatMessageA(
-                FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                    FORMAT_MESSAGE_FROM_SYSTEM |
-                    FORMAT_MESSAGE_IGNORE_INSERTS,
-                NULL, GetLastError(), 0, (void *)&buf, 0, NULL);
-            log_err("File %s failed to load: %s.", file_full_path, buf);
-            LocalFree((void *)buf);
-            goto cleanup;
-        }
+    {
+        HANDLE hmmap = CreateFileMapping(
+            (HANDLE)_get_osfhandle(fd), 0, PAGE_READONLY, 0, f_len, NULL);
+        buf = (char *)MapViewOfFile(hmmap, FILE_SHARE_READ, 0, 0, f_len);
+        if (hmmap != NULL)
+            CloseHandle(hmmap);
+    }
+    if (buf == NULL) {
+        FormatMessageA(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                FORMAT_MESSAGE_FROM_SYSTEM |
+                FORMAT_MESSAGE_IGNORE_INSERTS,
+            NULL, GetLastError(), 0, (void *)&buf, 0, NULL);
+        log_err("File %s failed to load: %s.", file_full_path, buf);
+        LocalFree((void *)buf);
+        goto cleanup;
+    }
 #else
-        buf = mmap(0, f_len, PROT_READ, MAP_SHARED, fd, 0);
-        if (buf == MAP_FAILED) {
-            log_err("File %s failed to load: %s.", file_full_path, strerror(errno));
-            goto cleanup;
-        }
+    buf = mmap(0, f_len, PROT_READ, MAP_SHARED, fd, 0);
+    if (buf == MAP_FAILED) {
+        log_err("File %s failed to load: %s.", file_full_path, strerror(errno));
+        goto cleanup;
+    }
 #endif
 
-        if (opts.search_zip_files) {
-            ag_compression_type zip_type = is_zipped(buf, f_len);
-            if (zip_type != AG_NO_COMPRESSION) {
-                int _buf_len = (int)f_len;
-                char *_buf = decompress(zip_type, buf, f_len, file_full_path, &_buf_len);
-                if (_buf == NULL || _buf_len == 0) {
-                    log_err("Cannot decompress zipped file %s", file_full_path);
-                    goto cleanup;
-                }
-                search_buf(_buf, _buf_len, file_full_path);
-                free(_buf);
+    if (opts.search_zip_files) {
+        ag_compression_type zip_type = is_zipped(buf, f_len);
+        if (zip_type != AG_NO_COMPRESSION) {
+            int _buf_len = (int)f_len;
+            char *_buf = decompress(zip_type, buf, f_len, file_full_path, &_buf_len);
+            if (_buf == NULL || _buf_len == 0) {
+                log_err("Cannot decompress zipped file %s", file_full_path);
                 goto cleanup;
             }
+            search_buf(_buf, _buf_len, file_full_path);
+            free(_buf);
+            goto cleanup;
         }
-
-        search_buf(buf, f_len, file_full_path);
     }
+
+    search_buf(buf, f_len, file_full_path);
 
 cleanup:
 
