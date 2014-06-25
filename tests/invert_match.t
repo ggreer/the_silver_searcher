@@ -11,5 +11,6 @@ Setup:
 
 Search for lines not matching "valid: 0" in blah.txt:
 
-  $ ag -v 'valid: 0' ./blah.txt
-  blah.txt:1:whatever1
+  $ ag -v 'valid: '
+  blah.txt:2:some_string
+  blah.txt:4:some_other_string
