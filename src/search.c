@@ -82,7 +82,7 @@ void search_buf(const char *buf, const size_t buf_len,
             matches[matches_len].start = match_ptr - buf;
             matches[matches_len].end = matches[matches_len].start + opts.query_len;
             buf_offset = matches[matches_len].end;
-            log_debug("Match found. File %s, offset %i bytes.", dir_full_path, matches[matches_len].start);
+            log_debug("Match found. File %s, offset %lu bytes.", dir_full_path, matches[matches_len].start);
             matches_len++;
             match_ptr += opts.query_len;
 
