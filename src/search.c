@@ -270,12 +270,14 @@ void search_file(const char *file_full_path) {
 
 cleanup:
 
-    if (fd != -1) {
+    if (buf != NULL) {
 #ifdef _WIN32
         UnmapViewOfFile(buf);
 #else
         munmap(buf, f_len);
 #endif
+    }
+    if (fd != -1) {
         close(fd);
     }
 }
