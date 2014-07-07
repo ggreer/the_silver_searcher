@@ -27,6 +27,7 @@ lang_spec_t langs[] = {
     { "hh", { "h" } },
     { "haml", { "haml" } },
     { "html", { "htm", "html", "shtml", "xhtml" } },
+    { "ini", { "ini" } },
     { "java", { "java", "properties" } },
     { "js", { "js" } },
     { "jsp", { "jsp", "jspx", "jhtm", "jhtml" } },
