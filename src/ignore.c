@@ -16,7 +16,6 @@
 #define fnmatch(x, y, z) (!PathMatchSpec(y, x))
 #else
 #include <fnmatch.h>
-const int fnmatch_flags = FNM_PATHNAME;
 #endif
 
 /* TODO: build a huge-ass list of files we want to ignore by default (build cache stuff, pyc files, etc) */
@@ -92,11 +91,7 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
     if (is_fnmatch(pattern)) {
         ig->regexes_len++;
         ig->regexes = ag_realloc(ig->regexes, ig->regexes_len * sizeof(char *));
-        if (pattern[0] != '/') {
-            ag_asprintf(&(ig->regexes[ig->regexes_len - 1]), "*/%s", pattern);
-        } else {
-            ig->regexes[ig->regexes_len - 1] = ag_strndup(pattern, pattern_len);
-        }
+        ig->regexes[ig->regexes_len - 1] = ag_strndup(pattern, pattern_len);
         log_debug("added regex ignore pattern %s", pattern);
     } else {
         /* a balanced binary tree is best for performance, but I'm lazy */
@@ -257,7 +252,8 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
         /* TODO: behave specially if regex doesn't start with a slash
         if (regex[0] == '/') {
          */
-        if (fnmatch(regex, temp, fnmatch_flags) == 0) {
+        int flags = (strchr(regex, '/') == NULL) ? 0 : FNM_PATHNAME;
+        if (fnmatch(regex, temp, flags) == 0) {
             log_debug("file %s ignored because name matches regex pattern %s", temp, regex);
             rv = 1;
             break;
