@@ -72,6 +72,9 @@ Language types are output:
     --html
         .htm  .html  .shtml  .xhtml
   
+    --ini
+        .ini
+  
     --java
         .java  .properties
   
