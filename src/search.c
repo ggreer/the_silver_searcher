@@ -17,6 +17,7 @@ void search_buf(const char *buf, const size_t buf_len,
     }
 
     int matches_len = 0;
+    int too_many_matches = 0; /* 1 = yes, 0 = no */
     match *matches;
     size_t matches_size;
     size_t matches_spare;
@@ -87,8 +88,8 @@ void search_buf(const char *buf, const size_t buf_len,
             match_ptr += opts.query_len;
 
             if (matches_len >= opts.max_matches_per_file) {
-                log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
-                break;
+		too_many_matches = 1;
+		break;
             }
         }
     } else {
@@ -110,8 +111,8 @@ void search_buf(const char *buf, const size_t buf_len,
             matches_len++;
 
             if (matches_len >= opts.max_matches_per_file) {
-                log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
-                break;
+		too_many_matches = 1;
+		break;
             }
         }
     }
@@ -143,7 +144,7 @@ void search_buf(const char *buf, const size_t buf_len,
              * checked. */
             if (!opts.invert_match || matches_len < 2) {
                 print_path(dir_full_path, '\n');
-            }
+            }      
         } else if (binary) {
             print_binary_file_matches(dir_full_path);
         } else {
@@ -152,6 +153,11 @@ void search_buf(const char *buf, const size_t buf_len,
         pthread_mutex_unlock(&print_mtx);
     } else {
         log_debug("No match in %s", dir_full_path);
+    }
+    
+    if(too_many_matches != 0){
+      log_err("Too many matches in %s. Since the current max # of matches per file would be %d (10,000 by defaul), skipping the rest of this file. Use the -m or --max-count NUM option to expand the limit.",
+	      dir_full_path, opts.max_matches_per_file);
     }
 
     if (matches_size > 0) {
