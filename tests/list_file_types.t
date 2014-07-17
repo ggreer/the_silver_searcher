@@ -74,6 +74,9 @@ Language types are output:
   
     --ini
         .ini
+
+    --jade
+        .jade
   
     --java
         .java  .properties
