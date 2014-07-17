@@ -167,6 +167,9 @@ Language types are output:
   
     --sql
         .sql  .ctl
+
+    --stylus
+        .styl
   
     --tcl
         .tcl  .itcl  .itk

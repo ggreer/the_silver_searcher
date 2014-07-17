@@ -59,6 +59,7 @@ lang_spec_t langs[] = {
     { "shell", { "sh", "bash", "csh", "tcsh", "ksh", "zsh" } },
     { "smalltalk", { "st" } },
     { "sql", { "sql", "ctl" } },
+    { "stylus", { "styl" } },
     { "tcl", { "tcl", "itcl", "itk" } },
     { "tex", { "tex", "cls", "sty" } },
     { "tt", { "tt", "tt2", "ttml" } },
