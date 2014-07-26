@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
                 *c = (char)tolower(*c);
             }
         }
-        generate_skip_lookup(opts.query, opts.query_len, skip_lookup, opts.casing == CASE_SENSITIVE);
+        generate_alpha_skip(opts.query, opts.query_len, skip_lookup, opts.casing == CASE_SENSITIVE);
         if (opts.word_regexp) {
             init_wordchar_table();
             opts.literal_starts_wordchar = is_wordchar(opts.query[0]);
