@@ -69,25 +69,18 @@ void generate_alpha_skip(const char *find, size_t f_len, size_t skip_lookup[], i
     }
 }
 
-void generate_find_skip(const char *find, size_t f_len, size_t skip_lookup[], int case_sensitive) {
+void generate_find_skip(const char *find, size_t f_len, size_t **skip_lookup, int case_sensitive) {
     size_t i;
-
-    for (i = 0; i < 256; i++) {
-        skip_lookup[i] = f_len;
-    }
-
-    f_len--;
+    *skip_lookup = ag_malloc(f_len * sizeof(size_t));
 
     for (i = 0; i < f_len; i++) {
-        skip_lookup[(unsigned char)find[i]] = f_len - i;
-        if (!case_sensitive) {
-            skip_lookup[(unsigned char)toupper(find[i])] = f_len - i;
-        }
+        (*skip_lookup)[i] = f_len;
     }
 }
 
 /* Boyer-Moore strstr */
-const char *boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]) {
+const char *boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len,
+                                const size_t alpha_skip_lookup[], const size_t *find_skip_lookup) {
     size_t i;
     size_t pos = 0;
 
@@ -102,14 +95,15 @@ const char *boyer_moore_strnstr(const char *s, const char *find, const size_t s_
                 return &(s[pos]);
             }
         }
-        pos += skip_lookup[(unsigned char)s[pos + f_len - 1]];
+        pos += alpha_skip_lookup[(unsigned char)s[pos + f_len - 1]];
     }
 
     return NULL;
 }
 
 /* Copy-pasted from above. Yes I know this is bad. One day I might even fix it. */
-const char *boyer_moore_strncasestr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]) {
+const char *boyer_moore_strncasestr(const char *s, const char *find, const size_t s_len, const size_t f_len,
+                                    const size_t alpha_skip_lookup[], const size_t *find_skip_lookup) {
     size_t i;
     size_t pos = 0;
 
@@ -124,7 +118,7 @@ const char *boyer_moore_strncasestr(const char *s, const char *find, const size_
                 return &(s[pos]);
             }
         }
-        pos += skip_lookup[(unsigned char)s[pos + f_len - 1]];
+        pos += alpha_skip_lookup[(unsigned char)s[pos + f_len - 1]];
     }
 
     return NULL;
