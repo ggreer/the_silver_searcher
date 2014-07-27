@@ -69,12 +69,37 @@ void generate_alpha_skip(const char *find, size_t f_len, size_t skip_lookup[], i
     }
 }
 
+int is_prefix(const char *s, const size_t s_len, const size_t pos) {
+    size_t i;
+
+    for (i = 0; pos + i < s_len; i++) {
+        if (s[i] != s[i + pos]) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+size_t suffix_len(const char *s, const size_t s_len, const size_t pos) {
+    size_t i;
+
+    for (i = 0; i < pos; i++) {
+        if (s[pos - i] != s[s_len - i - 1]) {
+            break;
+        }
+    }
+
+    return i;
+}
+
 void generate_find_skip(const char *find, size_t f_len, size_t **skip_lookup, int case_sensitive) {
     size_t i;
-    *skip_lookup = ag_malloc(f_len * sizeof(size_t));
+    size_t *sl = ag_malloc(f_len * sizeof(size_t));
+    *skip_lookup = sl;
 
     for (i = 0; i < f_len; i++) {
-        (*skip_lookup)[i] = f_len;
+        sl[i] = f_len;
     }
 }
 
