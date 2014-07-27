@@ -50,9 +50,11 @@ typedef enum {
 
 ag_stats stats;
 
-typedef const char *(*strncmp_fp)(const char *, const char *, const size_t, const size_t, const size_t[], const size_t*);
+typedef const char *(*strncmp_fp)(const char *, const char *, const size_t, const size_t, const size_t[], const size_t *);
 
 void generate_alpha_skip(const char *find, size_t f_len, size_t skip_lookup[], int case_sensitive);
+int is_prefix(const char *s, const size_t s_len, const size_t pos);
+size_t suffix_len(const char *s, const size_t s_len, const size_t pos);
 void generate_find_skip(const char *find, size_t f_len, size_t **skip_lookup, int case_sensitive);
 
 const char *boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len,
