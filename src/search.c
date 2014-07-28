@@ -17,7 +17,7 @@ void search_buf(const char *buf, const size_t buf_len,
     }
 
     int matches_len = 0;
-    match *matches;
+    match_t *matches;
     size_t matches_size;
     size_t matches_spare;
 
@@ -28,7 +28,7 @@ void search_buf(const char *buf, const size_t buf_len,
          * capacity for one extra.
          */
         matches_size = 100;
-        matches = ag_malloc(matches_size * sizeof(match));
+        matches = ag_malloc(matches_size * sizeof(match_t));
         matches_spare = 1;
     } else {
         matches_size = 0;
@@ -38,7 +38,7 @@ void search_buf(const char *buf, const size_t buf_len,
 
     if (opts.query_len == 1 && opts.query[0] == '.') {
         matches_size = 1;
-        matches = ag_malloc(matches_size * sizeof(match));
+        matches = ag_malloc(matches_size * sizeof(match_t));
         matches[0].start = 0;
         matches[0].end = buf_len;
         matches_len = 1;
@@ -76,7 +76,7 @@ void search_buf(const char *buf, const size_t buf_len,
                 /* TODO: benchmark initial size of matches. 100 may be too small/big */
                 matches_size = matches ? matches_size * 2 : 100;
                 log_debug("Too many matches in %s. Reallocating matches to %zu.", dir_full_path, matches_size);
-                matches = ag_realloc(matches, matches_size * sizeof(match));
+                matches = ag_realloc(matches, matches_size * sizeof(match_t));
             }
 
             matches[matches_len].start = match_ptr - buf;
@@ -102,7 +102,7 @@ void search_buf(const char *buf, const size_t buf_len,
             if ((size_t)matches_len + matches_spare >= matches_size) {
                 matches_size = matches ? matches_size * 2 : 100;
                 log_debug("Too many matches in %s. Reallocating matches to %zu.", dir_full_path, matches_size);
-                matches = ag_realloc(matches, matches_size * sizeof(match));
+                matches = ag_realloc(matches, matches_size * sizeof(match_t));
             }
 
             matches[matches_len].start = offset_vector[0];
