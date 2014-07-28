@@ -13,3 +13,13 @@ Do not ignore a.txt
   $ ag --hidden --ignore-dir .git test
   a.txt:1:test
 
+
+  $ mkdir -p ./.hidden
+  $ echo 'whatever' > ./.hidden/a.txt
+
+Ignore a.txt
+
+  $ ag whatever .
+
+  $ ag --hidden whatever .
+  .hidden/a.txt:1:whatever
