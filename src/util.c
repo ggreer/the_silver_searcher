@@ -110,9 +110,16 @@ void generate_find_skip(const char *find, size_t f_len, size_t **skip_lookup, in
     for (i = 0; i < f_len; i++) {
         s_len = suffix_len(find, f_len, i);
         if (find[i - s_len] != find[f_len - 1 - s_len]) {
-            sl[f_len - 1 - s_len] = f_len - 1 -i + s_len;
+            sl[f_len - 1 - s_len] = f_len - 1 - i + s_len;
         }
     }
+}
+
+size_t max(size_t a, size_t b) {
+    if (b > a) {
+        return b;
+    }
+    return a;
 }
 
 /* Boyer-Moore strstr */
@@ -132,7 +139,7 @@ const char *boyer_moore_strnstr(const char *s, const char *find, const size_t s_
                 return &(s[pos]);
             }
         }
-        pos += alpha_skip_lookup[(unsigned char)s[pos + f_len - 1]];
+        pos += max(alpha_skip_lookup[(unsigned char)s[pos + f_len - 1]], find_skip_lookup[i]);
     }
 
     return NULL;
