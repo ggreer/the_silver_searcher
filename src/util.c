@@ -52,7 +52,7 @@ char *ag_strndup(const char *s, size_t size) {
 #endif
 }
 
-void generate_alpha_skip(const char *find, size_t f_len, size_t skip_lookup[], int case_sensitive) {
+void generate_alpha_skip(const char *find, size_t f_len, size_t skip_lookup[], const int case_sensitive) {
     size_t i;
 
     for (i = 0; i < 256; i++) {
@@ -62,38 +62,52 @@ void generate_alpha_skip(const char *find, size_t f_len, size_t skip_lookup[], i
     f_len--;
 
     for (i = 0; i < f_len; i++) {
-        skip_lookup[(unsigned char)find[i]] = f_len - i;
-        if (!case_sensitive) {
+        if (case_sensitive) {
+            skip_lookup[(unsigned char)find[i]] = f_len - i;
+        } else {
+            skip_lookup[(unsigned char)tolower(find[i])] = f_len - i;
             skip_lookup[(unsigned char)toupper(find[i])] = f_len - i;
         }
     }
 }
 
-int is_prefix(const char *s, const size_t s_len, const size_t pos) {
+int is_prefix(const char *s, const size_t s_len, const size_t pos, const int case_sensitive) {
     size_t i;
 
     for (i = 0; pos + i < s_len; i++) {
-        if (s[i] != s[i + pos]) {
-            return 0;
+        if (case_sensitive) {
+            if (s[i] != s[i + pos]) {
+                return 0;
+            }
+        } else {
+            if (tolower(s[i]) != tolower(s[i + pos])) {
+                return 0;
+            }
         }
     }
 
     return 1;
 }
 
-size_t suffix_len(const char *s, const size_t s_len, const size_t pos) {
+size_t suffix_len(const char *s, const size_t s_len, const size_t pos, const int case_sensitive) {
     size_t i;
 
     for (i = 0; i < pos; i++) {
-        if (s[pos - i] != s[s_len - i - 1]) {
-            break;
+        if (case_sensitive) {
+            if (s[pos - i] != s[s_len - i - 1]) {
+                break;
+            }
+        } else {
+            if (tolower(s[pos - i]) != tolower(s[s_len - i - 1])) {
+                break;
+            }
         }
     }
 
     return i;
 }
 
-void generate_find_skip(const char *find, size_t f_len, size_t **skip_lookup, int case_sensitive) {
+void generate_find_skip(const char *find, const size_t f_len, size_t **skip_lookup, const int case_sensitive) {
     size_t i;
     size_t s_len;
     size_t *sl = ag_malloc(f_len * sizeof(size_t));
@@ -101,14 +115,14 @@ void generate_find_skip(const char *find, size_t f_len, size_t **skip_lookup, in
     size_t last_prefix = f_len;
 
     for (i = last_prefix; i > 0; i--) {
-        if (is_prefix(find, f_len, i)) {
+        if (is_prefix(find, f_len, i, case_sensitive)) {
             last_prefix = i;
         }
         sl[i - 1] = last_prefix + (f_len - i);
     }
 
     for (i = 0; i < f_len; i++) {
-        s_len = suffix_len(find, f_len, i);
+        s_len = suffix_len(find, f_len, i, case_sensitive);
         if (find[i - s_len] != find[f_len - 1 - s_len]) {
             sl[f_len - 1 - s_len] = f_len - 1 - i + s_len;
         }
@@ -162,7 +176,7 @@ const char *boyer_moore_strncasestr(const char *s, const char *find, const size_
                 return &(s[pos]);
             }
         }
-        pos += alpha_skip_lookup[(unsigned char)s[pos + f_len - 1]];
+        pos += max(alpha_skip_lookup[(unsigned char)s[pos + f_len - 1]], find_skip_lookup[i]);
     }
 
     return NULL;
