@@ -192,14 +192,14 @@ strncmp_fp get_strstr(enum case_behavior casing) {
     return ag_strncmp_fp;
 }
 
-size_t invert_matches(const char *buf, const size_t buf_len, match matches[], size_t matches_len) {
+size_t invert_matches(const char *buf, const size_t buf_len, match_t matches[], size_t matches_len) {
     size_t i;
     size_t match_read_index = 0;
     size_t inverted_match_count = 0;
     size_t inverted_match_start = 0;
     size_t last_line_end = 0;
     int in_inverted_match = TRUE;
-    match next_match;
+    match_t next_match;
 
     log_debug("Inverting %u matches.", matches_len);
 

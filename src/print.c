@@ -33,7 +33,7 @@ void print_binary_file_matches(const char *path) {
     fprintf(out_fd, "Binary file %s matches.\n", path);
 }
 
-void print_file_matches(const char *path, const char *buf, const size_t buf_len, const match matches[], const size_t matches_len) {
+void print_file_matches(const char *path, const char *buf, const size_t buf_len, const match_t matches[], const size_t matches_len) {
     size_t line = 1;
     char **context_prev_lines = NULL;
     size_t prev_line = 0;
