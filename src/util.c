@@ -95,11 +95,23 @@ size_t suffix_len(const char *s, const size_t s_len, const size_t pos) {
 
 void generate_find_skip(const char *find, size_t f_len, size_t **skip_lookup, int case_sensitive) {
     size_t i;
+    size_t s_len;
     size_t *sl = ag_malloc(f_len * sizeof(size_t));
     *skip_lookup = sl;
+    size_t last_prefix = f_len;
+
+    for (i = last_prefix; i > 0; i--) {
+        if (is_prefix(find, f_len, i)) {
+            last_prefix = i;
+        }
+        sl[i - 1] = last_prefix + (f_len - i);
+    }
 
     for (i = 0; i < f_len; i++) {
-        sl[i] = f_len;
+        s_len = suffix_len(find, f_len, i);
+        if (find[i - s_len] != find[f_len - 1 - s_len]) {
+            sl[f_len - 1 - s_len] = f_len - 1 -i + s_len;
+        }
     }
 }
 
