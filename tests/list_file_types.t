@@ -74,6 +74,9 @@ Language types are output:
   
     --ini
         .ini
+
+    --jade
+        .jade
   
     --java
         .java  .properties
@@ -164,6 +167,9 @@ Language types are output:
   
     --sql
         .sql  .ctl
+
+    --stylus
+        .styl
   
     --tcl
         .tcl  .itcl  .itk
