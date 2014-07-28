@@ -13,7 +13,7 @@ lang_spec_t langs[] = {
     { "cfmx", { "cfc", "cfm", "cfml" } },
     { "clojure", { "clj" } },
     { "coffee", { "coffee" } },
-    { "cpp", { "cpp", "cc", "cxx", "m", "hpp", "hh", "h", "hxx" } },
+    { "cpp", { "cpp", "cc", "C", "cxx", "m", "hpp", "hh", "h", "H", "hxx" } },
     { "csharp", { "cs" } },
     { "css", { "css" } },
     { "delphi", { "pas", "int", "dfm", "nfm", "dof", "dpk", "dproj", "groupproj", "bdsgroup", "bdsproj" } },
