@@ -31,7 +31,7 @@ Language types are output:
         .coffee
   
     --cpp
-        .cpp  .cc  .cxx  .m  .hpp  .hh  .h  .hxx
+        .cpp  .cc  .C  .cxx  .m  .hpp  .hh  .h  .H  .hxx
   
     --csharp
         .cs
