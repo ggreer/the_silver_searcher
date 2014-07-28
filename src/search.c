@@ -47,7 +47,7 @@ void search_buf(const char *buf, const size_t buf_len,
         strncmp_fp ag_strnstr_fp = get_strstr(opts.casing);
 
         while (buf_offset < buf_len) {
-            match_ptr = ag_strnstr_fp(match_ptr, opts.query, buf_len - buf_offset, opts.query_len, skip_lookup);
+            match_ptr = ag_strnstr_fp(match_ptr, opts.query, buf_len - buf_offset, opts.query_len, alpha_skip_lookup, find_skip_lookup);
             if (match_ptr == NULL) {
                 break;
             }
@@ -249,6 +249,11 @@ void search_file(const char *file_full_path) {
         log_err("File %s failed to load: %s.", file_full_path, strerror(errno));
         goto cleanup;
     }
+#if HAVE_MADVISE
+    madvise(buf, f_len, MADV_SEQUENTIAL);
+#elif HAVE_POSIX_FADVISE
+    posix_fadvise(fd, 0, f_len, POSIX_MADV_SEQUENTIAL);
+#endif
 #endif
 
     if (opts.search_zip_files) {

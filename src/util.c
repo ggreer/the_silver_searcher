@@ -52,7 +52,7 @@ char *ag_strndup(const char *s, size_t size) {
 #endif
 }
 
-void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], int case_sensitive) {
+void generate_alpha_skip(const char *find, size_t f_len, size_t skip_lookup[], int case_sensitive) {
     size_t i;
 
     for (i = 0; i < 256; i++) {
@@ -69,8 +69,62 @@ void generate_skip_lookup(const char *find, size_t f_len, size_t skip_lookup[], 
     }
 }
 
-/* Boyer-Moore-Horspool strstr */
-const char *boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]) {
+int is_prefix(const char *s, const size_t s_len, const size_t pos) {
+    size_t i;
+
+    for (i = 0; pos + i < s_len; i++) {
+        if (s[i] != s[i + pos]) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+size_t suffix_len(const char *s, const size_t s_len, const size_t pos) {
+    size_t i;
+
+    for (i = 0; i < pos; i++) {
+        if (s[pos - i] != s[s_len - i - 1]) {
+            break;
+        }
+    }
+
+    return i;
+}
+
+void generate_find_skip(const char *find, size_t f_len, size_t **skip_lookup, int case_sensitive) {
+    size_t i;
+    size_t s_len;
+    size_t *sl = ag_malloc(f_len * sizeof(size_t));
+    *skip_lookup = sl;
+    size_t last_prefix = f_len;
+
+    for (i = last_prefix; i > 0; i--) {
+        if (is_prefix(find, f_len, i)) {
+            last_prefix = i;
+        }
+        sl[i - 1] = last_prefix + (f_len - i);
+    }
+
+    for (i = 0; i < f_len; i++) {
+        s_len = suffix_len(find, f_len, i);
+        if (find[i - s_len] != find[f_len - 1 - s_len]) {
+            sl[f_len - 1 - s_len] = f_len - 1 - i + s_len;
+        }
+    }
+}
+
+size_t max(size_t a, size_t b) {
+    if (b > a) {
+        return b;
+    }
+    return a;
+}
+
+/* Boyer-Moore strstr */
+const char *boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len,
+                                const size_t alpha_skip_lookup[], const size_t *find_skip_lookup) {
     size_t i;
     size_t pos = 0;
 
@@ -85,14 +139,15 @@ const char *boyer_moore_strnstr(const char *s, const char *find, const size_t s_
                 return &(s[pos]);
             }
         }
-        pos += skip_lookup[(unsigned char)s[pos + f_len - 1]];
+        pos += max(alpha_skip_lookup[(unsigned char)s[pos + f_len - 1]], find_skip_lookup[i]);
     }
 
     return NULL;
 }
 
 /* Copy-pasted from above. Yes I know this is bad. One day I might even fix it. */
-const char *boyer_moore_strncasestr(const char *s, const char *find, const size_t s_len, const size_t f_len, const size_t skip_lookup[]) {
+const char *boyer_moore_strncasestr(const char *s, const char *find, const size_t s_len, const size_t f_len,
+                                    const size_t alpha_skip_lookup[], const size_t *find_skip_lookup) {
     size_t i;
     size_t pos = 0;
 
@@ -107,7 +162,7 @@ const char *boyer_moore_strncasestr(const char *s, const char *find, const size_
                 return &(s[pos]);
             }
         }
-        pos += skip_lookup[(unsigned char)s[pos + f_len - 1]];
+        pos += alpha_skip_lookup[(unsigned char)s[pos + f_len - 1]];
     }
 
     return NULL;
