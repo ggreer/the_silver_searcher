@@ -1,7 +1,7 @@
 Setup and create really big file:
 
   $ . $TESTDIR/../setup.sh
-  $ python $TESTDIR/create_big_file.py $TESTDIR/big_file.txt
+  $ python3 $TESTDIR/create_big_file.py $TESTDIR/big_file.txt
 
 Search a big file:
 
