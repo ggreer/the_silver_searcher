@@ -139,21 +139,15 @@ size_t max(size_t a, size_t b) {
 /* Boyer-Moore strstr */
 const char *boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len,
                                 const size_t alpha_skip_lookup[], const size_t *find_skip_lookup) {
-    size_t i;
-    size_t pos = 0;
+    ssize_t i;
+    size_t pos = f_len - 1;
 
-    /* It's impossible to match a larger string */
-    if (f_len > s_len) {
-        return NULL;
-    }
-
-    while (pos <= (s_len - f_len)) {
-        for (i = f_len - 1; s[pos + i] == find[i]; i--) {
-            if (i == 0) {
-                return &(s[pos]);
-            }
+    while (pos < s_len) {
+        for (i = f_len - 1; i >= 0 && s[pos] == find[i]; pos--, i--) {}
+        if (i < 0) {
+            return s + pos + 1;
         }
-        pos += max(alpha_skip_lookup[(unsigned char)s[pos + f_len - 1]], find_skip_lookup[i]);
+        pos += max(alpha_skip_lookup[(unsigned char)s[pos]], find_skip_lookup[i]);
     }
 
     return NULL;
@@ -162,21 +156,15 @@ const char *boyer_moore_strnstr(const char *s, const char *find, const size_t s_
 /* Copy-pasted from above. Yes I know this is bad. One day I might even fix it. */
 const char *boyer_moore_strncasestr(const char *s, const char *find, const size_t s_len, const size_t f_len,
                                     const size_t alpha_skip_lookup[], const size_t *find_skip_lookup) {
-    size_t i;
-    size_t pos = 0;
+    ssize_t i;
+    size_t pos = f_len - 1;
 
-    /* It's impossible to match a larger string */
-    if (f_len > s_len) {
-        return NULL;
-    }
-
-    while (pos <= (s_len - f_len)) {
-        for (i = f_len - 1; tolower(s[pos + i]) == find[i]; i--) {
-            if (i == 0) {
-                return &(s[pos]);
-            }
+    while (pos < s_len) {
+        for (i = f_len - 1; i >= 0 && tolower(s[pos]) == find[i]; pos--, i--) {}
+        if (i < 0) {
+            return s + pos + 1;
         }
-        pos += max(alpha_skip_lookup[(unsigned char)s[pos + f_len - 1]], find_skip_lookup[i]);
+        pos += max(alpha_skip_lookup[(unsigned char)s[pos]], find_skip_lookup[i]);
     }
 
     return NULL;
