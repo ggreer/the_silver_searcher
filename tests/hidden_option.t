@@ -8,8 +8,6 @@ Setup:
   $ if [ ! -d .git/info ] ; then mkdir .git/info ; fi
   $ echo "a.txt" > .git/info/exclude
 
-Do not ignore a.txt
-
   $ ag --ignore-dir .git test
 
   $ ag --hidden --ignore-dir .git test
@@ -20,11 +18,14 @@ Do not ignore a.txt
   $ ag --hidden -U --ignore-dir .git test
   a.txt:1:test
 
-
   $ mkdir -p ./.hidden
   $ echo 'whatever' > ./.hidden/a.txt
 
-Ignore a.txt
+  $ ag whatever
+
+  $ ag --hidden whatever
+
+  $ echo "" > .git/info/exclude
 
   $ ag whatever
 
