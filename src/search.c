@@ -249,6 +249,11 @@ void search_file(const char *file_full_path) {
         log_err("File %s failed to load: %s.", file_full_path, strerror(errno));
         goto cleanup;
     }
+#if HAVE_MADVISE
+    madvise(buf, f_len, MADV_SEQUENTIAL);
+#elif HAVE_POSIX_FADVISE
+    posix_fadvise(fd, 0, f_len, POSIX_MADV_SEQUENTIAL);
+#endif
 #endif
 
     if (opts.search_zip_files) {
