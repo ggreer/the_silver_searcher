@@ -32,8 +32,8 @@ void usage(void) {
     printf("\
 Output Options:\n\
      --ackmate            Print results in AckMate-parseable format\n\
-  -A --after [LINES]      Print lines before match (Default: 2)\n\
-  -B --before [LINES]     Print lines after match (Default: 2)\n\
+  -A --after [LINES]      Print lines before match (Default: 0)\n\
+  -B --before [LINES]     Print lines after match (Default: 0)\n\
      --[no]break          Print newlines between matches in different files\n\
                           (Enabled by default)\n\
      --[no]color          Print color codes in results (Enabled by default)\n\
@@ -43,7 +43,7 @@ Output Options:\n\
      --column             Print column numbers in results\n\
      --[no]heading\n\
      --line-numbers       Print line numbers even for streams\n\
-  -C --context [LINES]    Print lines before and after matches (Default: 2)\n\
+  -C --context [LINES]    Print lines before and after matches (Default: 0)\n\
      --[no]group          Same as --[no]break --[no]heading\n\
   -g PATTERN              Print filenames matching PATTERN\n\
   -l --files-with-matches Only print filenames that contain matches\n\
