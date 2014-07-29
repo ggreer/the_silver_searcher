@@ -155,7 +155,11 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                         }
                         /* Don't print the null terminator */
                         if (j < buf_len) {
-                            fputc(buf[j], out_fd);
+                            //print only if the the print_matches_only flag is off
+                            // or if it is printing a match or j is on the \n character
+                            if (!opts.print_matches_only || printing_a_match || buf[j] == '\n') {
+                                fputc(buf[j], out_fd);
+                            }
                         }
                     }
                     if (printing_a_match && opts.color) {

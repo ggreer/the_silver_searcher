@@ -32,8 +32,8 @@ void usage(void) {
     printf("\
 Output Options:\n\
      --ackmate            Print results in AckMate-parseable format\n\
-  -A --after [LINES]      Print lines before match (Default: 2)\n\
-  -B --before [LINES]     Print lines after match (Default: 2)\n\
+  -A --after [LINES]      Print lines after match (Default: 0)\n\
+  -B --before [LINES]     Print lines before match (Default: 0)\n\
      --[no]break          Print newlines between matches in different files\n\
                           (Enabled by default)\n\
      --[no]color          Print color codes in results (Enabled by default)\n\
@@ -43,7 +43,7 @@ Output Options:\n\
      --column             Print column numbers in results\n\
      --[no]heading\n\
      --line-numbers       Print line numbers even for streams\n\
-  -C --context [LINES]    Print lines before and after matches (Default: 2)\n\
+  -C --context [LINES]    Print lines before and after matches (Default: 0)\n\
      --[no]group          Same as --[no]break --[no]heading\n\
   -g PATTERN              Print filenames matching PATTERN\n\
   -l --files-with-matches Only print filenames that contain matches\n\
@@ -70,6 +70,7 @@ Search Options:\n\
   -m --max-count NUM      Skip the rest of a file after NUM matches (Default: 10,000)\n\
   -p --path-to-agignore STRING\n\
                           Use .agignore file at STRING\n\
+  -o --print-matches-only Show only the matches and not their containing lines\n\
   -Q --literal            Don't parse PATTERN as a regular expression\n\
   -s --case-sensitive     Match case sensitively (Enabled by default)\n\
   -S --smart-case         Match case insensitively unless PATTERN contains\n\
@@ -161,7 +162,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     int needs_query = 1;
     struct stat statbuf;
     int rv;
-
+    
     size_t longopts_len, full_len;
     option_t *longopts;
     char *lang_regex = NULL;
@@ -213,6 +214,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "pager", required_argument, NULL, 0 },
         { "parallel", no_argument, &opts.parallel, 1 },
         { "path-to-agignore", required_argument, NULL, 'p' },
+        { "print-matches-only", no_argument, NULL, 'o' },
         { "print-long-lines", no_argument, &opts.print_long_lines, 1 },
         { "recurse", no_argument, NULL, 'r' },
         { "search-binary", no_argument, &opts.search_binary_files, 1 },
@@ -269,7 +271,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.stdout_inode = statbuf.st_ino;
     }
 
-    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:np:QRrSsvVtuUwz", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:np:oQRrSsvVtuUwz", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 opts.after = atoi(optarg);
@@ -327,6 +329,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'p':
                 opts.path_to_agignore = optarg;
+                break;
+            case 'o':
+                opts.print_matches_only = 1;
                 break;
             case 'Q':
                 opts.literal = 1;
