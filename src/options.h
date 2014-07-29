@@ -45,6 +45,7 @@ typedef struct {
     int print_heading;
     int print_line_numbers;
     int print_long_lines; /* TODO: support this in print.c */
+    int print_matches_only;
     pcre *re;
     pcre_extra *re_extra;
     int recurse_dirs;

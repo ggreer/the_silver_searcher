@@ -1,6 +1,8 @@
 *.dSYM
 *.o
 *.plist
+*~
+\#*\#
 .deps
 .dirstamp
 .DS_Store
@@ -22,8 +24,10 @@ install-sh
 Makefile
 Makefile.in
 missing
+my_*
 src/config.h*
 stamp-h1
+TAGS
 tests/*.err
 tests/big/*.err
 tests/big/big_file.txt
