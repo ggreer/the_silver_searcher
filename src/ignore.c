@@ -70,6 +70,8 @@ void cleanup_ignore(ignores *ig) {
 void add_ignore_pattern(ignores *ig, const char *pattern) {
     int i;
     int pattern_len;
+    char *tmp_pattern;
+    int tmp_pattern_len;
 
     /* Strip off the leading dot so that matches are more likely. */
     if (strncmp(pattern, "./", 2) == 0) {
@@ -104,14 +106,25 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
         /* a balanced binary tree is best for performance, but I'm lazy */
         ig->names_len++;
         ig->names = ag_realloc(ig->names, ig->names_len * sizeof(char *));
+
+        /* Prepend '/' if the pattern contains '/' but doesn't start with '/' */
+        if ((pattern[0] != '/') && (strchr(pattern, '/') != NULL)) {
+            ag_asprintf(&tmp_pattern, "/%s", pattern);
+            tmp_pattern_len = pattern_len + 1;
+        } else {
+            tmp_pattern = ag_strndup(pattern, pattern_len);
+            tmp_pattern_len = pattern_len;
+        }
+
         for (i = ig->names_len - 1; i > 0; i--) {
-            if (strcmp(pattern, ig->names[i - 1]) > 0) {
+            if (strcmp(tmp_pattern, ig->names[i - 1]) > 0) {
                 break;
             }
             ig->names[i] = ig->names[i - 1];
         }
-        ig->names[i] = ag_strndup(pattern, pattern_len);
-        log_debug("added literal ignore pattern %s", pattern);
+        ig->names[i] = ag_strndup(tmp_pattern, tmp_pattern_len);
+        log_debug("added literal ignore pattern %s", tmp_pattern);
+        free(tmp_pattern);
     }
 }
 
