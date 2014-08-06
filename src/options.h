@@ -59,6 +59,7 @@ typedef struct {
     int search_stream; /* true if tail -F blah | ag */
     int stats;
     size_t stream_line_num; /* This should totally not be in here */
+    int match_found; /* This should totally not be in here */
     ino_t stdout_inode;
     char *query;
     int query_len;
