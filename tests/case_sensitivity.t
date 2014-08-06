@@ -7,8 +7,11 @@ Setup:
 Case sensitive by default:
 
   $ ag foo sample
+  [1]
   $ ag FOO sample
+  [1]
   $ ag 'f.o' sample
+  [1]
   $ ag Foo sample
   1:Foo
   $ ag 'F.o' sample
