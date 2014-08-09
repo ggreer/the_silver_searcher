@@ -46,6 +46,7 @@ Output Options:\n\
   -C --context [LINES]    Print lines before and after matches (Default: 2)\n\
      --[no]group          Same as --[no]break --[no]heading\n\
   -g PATTERN              Print filenames matching PATTERN\n\
+                          (or not matching PATTERN if PATTERN starts with !)\n\
   -l --files-with-matches Only print filenames that contain matches\n\
                           (don't print the matching lines)\n\
   -L --files-without-matches\n\
@@ -62,6 +63,7 @@ Search Options:\n\
      --depth NUM          Search up to NUM directories deep (Default: 25)\n\
   -f --follow             Follow symlinks\n\
   -G --file-search-regex  PATTERN Limit search to filenames matching PATTERN\n\
+                          (or not matching PATTERN if PATTERN starts with !)\n\
      --hidden             Search hidden files (obeys .*ignore files)\n\
   -i --ignore-case        Match case insensitively\n\
      --ignore PATTERN     Ignore files/directories matching PATTERN\n\
@@ -304,6 +306,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.match_files = 1;
             /* Fall through and build regex */
             case 'G':
+                if (optarg[0] == '!') {
+                        optarg ++;
+                        opts.file_search_regex_inverse = 1;
+                }
                 compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, optarg, opts.casing & PCRE_CASELESS, 0);
                 opts.casing = CASE_SENSITIVE;
                 break;
