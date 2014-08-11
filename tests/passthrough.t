@@ -1,6 +1,8 @@
 Setup:
 
   $ . $TESTDIR/setup.sh
+  $ unalias ag
+  $ alias ag="$TESTDIR/../ag --nocolor --workers=1"
   $ echo "foo bar" > passthrough_test.txt
   $ echo "zoo zar" >> passthrough_test.txt
   $ echo "foo test" >> passthrough_test.txt
@@ -8,7 +10,7 @@ Setup:
 No impact on non-stream:
 
   $ ag --passthrough zoo passthrough_test.txt
-  2:zoo zar
+  zoo zar
 
 Match stream with --passthrough:
 
