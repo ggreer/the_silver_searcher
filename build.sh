@@ -18,4 +18,4 @@ autoconf && \
 autoheader && \
 automake --add-missing && \
 ./configure "$@" && \
-make
+make -j4
