@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
         }
     } else {
         if (opts.casing == CASE_INSENSITIVE) {
-            pcre_opts = pcre_opts | PCRE_CASELESS;
+            pcre_opts |= PCRE_CASELESS;
         }
         if (opts.word_regexp) {
             char *word_regexp_query;
