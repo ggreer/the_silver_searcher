@@ -172,5 +172,5 @@ int main(int argc, char **argv) {
     if (find_skip_lookup) {
         free(find_skip_lookup);
     }
-    return 0;
+    return !opts.match_found;
 }
