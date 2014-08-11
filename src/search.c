@@ -151,6 +151,8 @@ void search_buf(const char *buf, const size_t buf_len,
         }
         pthread_mutex_unlock(&print_mtx);
         opts.match_found = 1;
+    } else if (opts.search_stream && opts.passthrough) {
+        fprintf(out_fd, "%s", buf);
     } else {
         log_debug("No match in %s", dir_full_path);
     }

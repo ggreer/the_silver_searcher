@@ -52,6 +52,8 @@ Output Options:\n\
                           Only print filenames that don't contain matches\n\
      --no-numbers         Don't print line numbers\n\
      --print-long-lines   Print matches on very long lines (Default: >2k characters)\n\
+     --passthrough        When searching a stream, print all lines even if they\n\
+                          don't match\n\
      --silent             Suppress all log messages, including errors\n\
      --stats              Print stats (files scanned, time taken, etc.)\n\
 \n\
@@ -214,6 +216,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "parallel", no_argument, &opts.parallel, 1 },
         { "path-to-agignore", required_argument, NULL, 'p' },
         { "print-long-lines", no_argument, &opts.print_long_lines, 1 },
+        { "passthrough", no_argument, &opts.passthrough, 1 },
         { "recurse", no_argument, NULL, 'r' },
         { "search-binary", no_argument, &opts.search_binary_files, 1 },
         { "search-zip", no_argument, &opts.search_zip_files, 1 },
