@@ -173,10 +173,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     option_t base_longopts[] = {
         { "ackmate", no_argument, &opts.ackmate, 1 },
         { "ackmate-dir-filter", required_argument, NULL, 0 },
-        { "after", required_argument, NULL, 'A' },
+        { "after", optional_argument, NULL, 'A' },
         { "all-text", no_argument, NULL, 't' },
         { "all-types", no_argument, NULL, 'a' },
-        { "before", required_argument, NULL, 'B' },
+        { "before", optional_argument, NULL, 'B' },
         { "break", no_argument, &opts.print_break, 1 },
         { "case-sensitive", no_argument, NULL, 's' },
         { "color", no_argument, &opts.color, 1 },
@@ -276,14 +276,32 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:np:QRrSsvVtuUwz", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
-                opts.after = atoi(optarg);
+                if (optarg) {
+                    opts.after = atoi(optarg);
+                    if (opts.after == 0 && errno == EINVAL) {
+                        /* This arg must be the search string instead of the after length */
+                        optind--;
+                        opts.context = DEFAULT_AFTER_LEN;
+                    }
+                } else {
+                    opts.context = DEFAULT_AFTER_LEN;
+                }
                 break;
             case 'a':
                 opts.search_all_files = 1;
                 opts.search_binary_files = 1;
                 break;
             case 'B':
-                opts.before = atoi(optarg);
+                if (optarg) {
+                    opts.before = atoi(optarg);
+                    if (opts.before == 0 && errno == EINVAL) {
+                        /* This arg must be the search string instead of the before length */
+                        optind--;
+                        opts.before = DEFAULT_BEFORE_LEN;
+                    }
+                } else {
+                    opts.before = DEFAULT_BEFORE_LEN;
+                }
                 break;
             case 'C':
                 if (optarg) {
