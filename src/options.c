@@ -158,6 +158,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     int version = 0;
     int list_file_types = 0;
     int opt_index = 0;
+    char *num_end;
     const char *home_dir = getenv("HOME");
     char *ignore_file_path = NULL;
     int needs_query = 1;
@@ -277,14 +278,14 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         switch (ch) {
             case 'A':
                 if (optarg) {
-                    opts.after = atoi(optarg);
-                    if (opts.after == 0 && errno == EINVAL) {
+                    opts.after = strtol(optarg, &num_end, 10);
+                    if (num_end == optarg || *num_end != '\0' || errno == ERANGE) {
                         /* This arg must be the search string instead of the after length */
                         optind--;
-                        opts.context = DEFAULT_AFTER_LEN;
+                        opts.after = DEFAULT_AFTER_LEN;
                     }
                 } else {
-                    opts.context = DEFAULT_AFTER_LEN;
+                    opts.after = DEFAULT_AFTER_LEN;
                 }
                 break;
             case 'a':
@@ -293,8 +294,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'B':
                 if (optarg) {
-                    opts.before = atoi(optarg);
-                    if (opts.before == 0 && errno == EINVAL) {
+                    opts.before = strtol(optarg, &num_end, 10);
+                    if (num_end == optarg || *num_end != '\0' || errno == ERANGE) {
                         /* This arg must be the search string instead of the before length */
                         optind--;
                         opts.before = DEFAULT_BEFORE_LEN;
@@ -305,8 +306,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'C':
                 if (optarg) {
-                    opts.context = atoi(optarg);
-                    if (opts.context == 0 && errno == EINVAL) {
+                    opts.context = strtol(optarg, &num_end, 10);
+                    if (num_end == optarg || *num_end != '\0' || errno == ERANGE) {
                         /* This arg must be the search string instead of the context length */
                         optind--;
                         opts.context = DEFAULT_CONTEXT_LEN;
