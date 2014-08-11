@@ -217,6 +217,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "path-to-agignore", required_argument, NULL, 'p' },
         { "print-long-lines", no_argument, &opts.print_long_lines, 1 },
         { "passthrough", no_argument, &opts.passthrough, 1 },
+        { "passthru", no_argument, &opts.passthrough, 1 },
         { "recurse", no_argument, NULL, 'r' },
         { "search-binary", no_argument, &opts.search_binary_files, 1 },
         { "search-zip", no_argument, &opts.search_zip_files, 1 },
