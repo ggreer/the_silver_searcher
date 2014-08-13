@@ -41,6 +41,10 @@ or
 
     port install the_silver_searcher
 
+or
+
+    pkgin -y install the_silver_searcher
+
 ### Arch Linux
 
     pacman -S the_silver_searcher
@@ -64,6 +68,14 @@ or
 To build from source on FreeBSD:
 
     make -C /usr/ports/textproc/the_silver_searcher install clean
+
+### NetBSD
+
+    pkg_add the_silver_searcher
+
+To build from source on NetBSD or most other OSes:
+
+    cd pkgsrc/textproc/the_silver_searcher && make install
 
 ### OpenBSD
 
