@@ -73,9 +73,9 @@ Search Options:\n\
   -p --path-to-agignore STRING\n\
                           Use .agignore file at STRING\n\
   -Q --literal            Don't parse PATTERN as a regular expression\n\
-  -s --case-sensitive     Match case sensitively (Enabled by default)\n\
+  -s --case-sensitive     Match case sensitively\n\
   -S --smart-case         Match case insensitively unless PATTERN contains\n\
-                          uppercase characters\n\
+                          uppercase characters (Enabled by default)\n\
      --search-binary      Search binary files for matches\n\
   -t --all-text           Search all text files (doesn't include hidden files)\n\
   -u --unrestricted       Search all files (ignore .agignore, .gitignore, etc.;\n\

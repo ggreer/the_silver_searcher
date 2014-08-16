@@ -306,7 +306,7 @@ typedef unsigned char uint8_t;
 #define HASH_FSCK(hh, head)
 #endif
 
-/* When compiled with -DHASH_EMIT_KEYS, length-prefixed keys are emitted to 
+/* When compiled with -DHASH_EMIT_KEYS, length-prefixed keys are emitted to
  * the descriptor to which this macro is defined for tuning the hash function.
  * The app can #include <unistd.h> to get the prototype for write(2). */
 #ifdef HASH_EMIT_KEYS
@@ -340,7 +340,7 @@ typedef unsigned char uint8_t;
     } while (0)
 
 
-/* SAX/FNV/OAT/JEN hash functions are macro variants of those listed at 
+/* SAX/FNV/OAT/JEN hash functions are macro variants of those listed at
  * http://eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx */
 #define HASH_SAX(key, keylen, num_bkts, hashv, bkt)                \
     do {                                                           \
@@ -514,7 +514,7 @@ typedef unsigned char uint8_t;
 #ifdef HASH_USING_NO_STRICT_ALIASING
 /* The MurmurHash exploits some CPU's (x86,x86_64) tolerance for unaligned reads.
  * For other types of CPU's (e.g. Sparc) an unaligned read causes a bus error.
- * MurmurHash uses the faster approach only on CPU's where we know it's safe. 
+ * MurmurHash uses the faster approach only on CPU's where we know it's safe.
  *
  * Note the preprocessor built-in defines can be emitted using:
  *
@@ -646,30 +646,30 @@ typedef unsigned char uint8_t;
  * and redistributing the items into the new buckets. Ideally the
  * items will distribute more or less evenly into the new buckets
  * (the extent to which this is true is a measure of the quality of
- * the hash function as it applies to the key domain). 
- * 
+ * the hash function as it applies to the key domain).
+ *
  * With the items distributed into more buckets, the chain length
  * (item count) in each bucket is reduced. Thus by expanding buckets
- * the hash keeps a bound on the chain length. This bounded chain 
+ * the hash keeps a bound on the chain length. This bounded chain
  * length is the essence of how a hash provides constant time lookup.
- * 
+ *
  * The calculation of tbl->ideal_chain_maxlen below deserves some
  * explanation. First, keep in mind that we're calculating the ideal
  * maximum chain length based on the *new* (doubled) bucket count.
  * In fractions this is just n/b (n=number of items,b=new num buckets).
- * Since the ideal chain length is an integer, we want to calculate 
+ * Since the ideal chain length is an integer, we want to calculate
  * ceil(n/b). We don't depend on floating point arithmetic in this
  * hash, so to calculate ceil(n/b) with integers we could write
- * 
+ *
  *      ceil(n/b) = (n/b) + ((n%b)?1:0)
- * 
+ *
  * and in fact a previous version of this hash did just that.
  * But now we have improved things a bit by recognizing that b is
  * always a power of two. We keep its base 2 log handy (call it lb),
  * so now we can write this with a bit shift and logical AND:
- * 
+ *
  *      ceil(n/b) = (n>>lb) + ( (n & (b-1)) ? 1:0)
- * 
+ *
  */
 #define HASH_EXPAND_BUCKETS(tbl)                                                                                                               \
     do {                                                                                                                                       \
@@ -716,7 +716,7 @@ typedef unsigned char uint8_t;
 
 
 /* This is an adaptation of Simon Tatham's O(n log(n)) mergesort */
-/* Note that HASH_SORT assumes the hash handle name to be hh. 
+/* Note that HASH_SORT assumes the hash handle name to be hh.
  * HASH_SRT was added to allow the hash handle name to be passed in. */
 #define HASH_SORT(head, cmpfcn) HASH_SRT(hh, head, cmpfcn)
 #define HASH_SRT(hh, head, cmpfcn)                                                                                                                            \
@@ -784,10 +784,10 @@ typedef unsigned char uint8_t;
         }                                                                                                                                                     \
     } while (0)
 
-/* This function selects items from one hash into another hash. 
- * The end result is that the selected items have dual presence 
- * in both hashes. There is no copy of the items made; rather 
- * they are added into the new hash through a secondary hash 
+/* This function selects items from one hash into another hash.
+ * The end result is that the selected items have dual presence
+ * in both hashes. There is no copy of the items made; rather
+ * they are added into the new hash through a secondary hash
  * hash handle that must be present in the structure. */
 #define HASH_SELECT(hh_dst, dst, hh_src, src, cond)                                                                 \
     do {                                                                                                            \
@@ -855,7 +855,7 @@ typedef struct UT_hash_bucket {
 
     /* expand_mult is normally set to 0. In this situation, the max chain length
     * threshold is enforced at its default value, HASH_BKT_CAPACITY_THRESH. (If
-    * the bucket's chain exceeds this length, bucket expansion is triggered). 
+    * the bucket's chain exceeds this length, bucket expansion is triggered).
     * However, setting expand_mult to a non-zero value delays bucket expansion
     * (that would be triggered by additions to this particular bucket)
     * until its chain length reaches a *multiple* of HASH_BKT_CAPACITY_THRESH.
@@ -863,7 +863,7 @@ typedef struct UT_hash_bucket {
     * multiplier is to reduce bucket expansions, since they are expensive, in
     * situations where we know that a particular bucket tends to be overused.
     * It is better to let its chain length grow to a longer yet-still-bounded
-    * value, than to do an O(n) bucket expansion too often. 
+    * value, than to do an O(n) bucket expansion too often.
     */
     unsigned expand_mult;
 
@@ -889,7 +889,7 @@ typedef struct UT_hash_table {
     * hash distribution; reaching them in a chain traversal takes >ideal steps */
     unsigned nonideal_items;
 
-    /* ineffective expands occur when a bucket doubling was performed, but 
+    /* ineffective expands occur when a bucket doubling was performed, but
     * afterward, more than half the items in the hash had nonideal chain
     * positions. If this happens on two consecutive expansions we inhibit any
     * further expansion, as it's not helping; this happens when the hash
