@@ -42,7 +42,7 @@ aclocal
 autoconf
 autoheader
 automake --add-missing
-%configure 
+%configure
 make %{?_smp_mflags}
 
 
