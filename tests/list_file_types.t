@@ -63,11 +63,11 @@ Language types are output:
     --haskell
         .hs  .lhs
   
-    --hh
-        .h
-  
     --haml
         .haml
+  
+    --hh
+        .h
   
     --html
         .htm  .html  .shtml  .xhtml
@@ -84,11 +84,11 @@ Language types are output:
     --js
         .js
   
-    --jsp
-        .jsp  .jspx  .jhtm  .jhtml
-  
     --json
         .json
+  
+    --jsp
+        .jsp  .jspx  .jhtm  .jhtml
   
     --lisp
         .lisp  .lsp
@@ -99,14 +99,14 @@ Language types are output:
     --m4
         .m4
   
-    --matlab
-        .m
-  
     --make
         .Makefiles  .mk  .mak
   
     --mason
         .mas  .mhtml  .mpl  .mtxt
+  
+    --matlab
+        .m
   
     --objc
         .m  .h
@@ -147,11 +147,11 @@ Language types are output:
     --rust
         .rs
   
-    --sass
-        .sass  .scss
-  
     --salt
         .sls
+  
+    --sass
+        .sass  .scss
   
     --scala
         .scala
@@ -195,9 +195,9 @@ Language types are output:
     --vim
         .vim
   
-    --yaml
-        .yaml  .yml
-  
     --xml
         .xml  .dtd  .xsl  .xslt  .ent
+  
+    --yaml
+        .yaml  .yml
   
