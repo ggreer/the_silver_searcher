@@ -171,6 +171,9 @@ Language types are output:
     --stylus
         .styl
   
+    --swift
+        .swift
+  
     --tcl
         .tcl  .itcl  .itk
   
