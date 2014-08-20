@@ -74,9 +74,9 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `-Q --literal`:
     Do not parse PATTERN as a regular expression. Try to match it literally.
   * `-s --case-sensitive`:
-    Match case sensitively. Enabled by default.
+    Match case sensitively.
   * `-S --smart-case`:
-    Match case sensitively if there are any uppercase letters in PATTERN, or case insensitively otherwise.
+    Match case sensitively if there are any uppercase letters in PATTERN, or case insensitively otherwise. Enabled by default.
   * `--search-binary`:
     Search binary files for matches.
   * `--silent`:
