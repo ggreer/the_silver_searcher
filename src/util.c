@@ -129,7 +129,7 @@ void generate_find_skip(const char *find, const size_t f_len, size_t **skip_look
     }
 }
 
-size_t max(size_t a, size_t b) {
+size_t ag_max(size_t a, size_t b) {
     if (b > a) {
         return b;
     }
@@ -148,7 +148,7 @@ const char *boyer_moore_strnstr(const char *s, const char *find, const size_t s_
         if (i < 0) {
             return s + pos + 1;
         }
-        pos += max(alpha_skip_lookup[(unsigned char)s[pos]], find_skip_lookup[i]);
+        pos += ag_max(alpha_skip_lookup[(unsigned char)s[pos]], find_skip_lookup[i]);
     }
 
     return NULL;
@@ -166,7 +166,7 @@ const char *boyer_moore_strncasestr(const char *s, const char *find, const size_
         if (i < 0) {
             return s + pos + 1;
         }
-        pos += max(alpha_skip_lookup[(unsigned char)s[pos]], find_skip_lookup[i]);
+        pos += ag_max(alpha_skip_lookup[(unsigned char)s[pos]], find_skip_lookup[i]);
     }
 
     return NULL;
