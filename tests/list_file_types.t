@@ -60,11 +60,11 @@ Language types are output:
     --groovy
         .groovy  .gtmpl  .gpp  .grunit
   
-    --haskell
-        .hs  .lhs
-  
     --haml
         .haml
+  
+    --haskell
+        .hs  .lhs
   
     --hh
         .h
