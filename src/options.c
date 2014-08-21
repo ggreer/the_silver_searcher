@@ -41,7 +41,7 @@ Output Options:\n\
      --color-match        Color codes for result match numbers (Default: 30;43)\n\
      --color-path         Color codes for path names (Default: 1;32)\n\
      --column             Print column numbers in results\n\
-     --[no]heading\n\
+  -H --[no]heading        Print file names (Enabled unless searching a single file)\n\
      --line-numbers       Print line numbers even for streams\n\
   -C --context [LINES]    Print lines before and after matches (Default: 2)\n\
      --[no]group          Same as --[no]break --[no]heading\n\
@@ -274,7 +274,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.stdout_inode = statbuf.st_ino;
     }
 
-    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:np:QRrSsvVtuUwz", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fHhiLlm:np:QRrSsvVtuUwz", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 if (optarg) {
@@ -329,6 +329,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             case 'G':
                 compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, optarg, opts.casing & PCRE_CASELESS, 0);
                 opts.casing = CASE_SENSITIVE;
+                break;
+            case 'H':
+                opts.print_heading = 1;
                 break;
             case 'h':
                 help = 1;
