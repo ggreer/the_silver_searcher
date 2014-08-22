@@ -633,7 +633,24 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         /* Make sure we search these paths instead of stdin. */
         opts.search_stream = 0;
     } else {
-        path = ag_strdup(".");
+        /* If stdin is a regular file, try to open it as portably as possible.
+         * If none of the filesystem mappings for stdin exist, fall back to
+         * treating it as a stream. If stdin isn't regular, no file was
+         * specified by the user, so search the current directory.
+         */
+        rv = fstat(fileno(stdin), &statbuf);
+        if (rv == 0 && S_ISREG(statbuf.st_mode)) {
+            if (access("/dev/stdin", F_OK) != -1) {
+                path = ag_strdup("/dev/stdin");
+            } else if (access("/dev/fd/0", F_OK) != -1) {
+                path = ag_strdup("/dev/fd/0");
+            } else {
+                opts.search_stream = 1;
+                path = ag_strdup(".");
+            }
+        } else {
+            path = ag_strdup(".");
+        }
         *paths = ag_malloc(sizeof(char *) * 2);
         *base_paths = ag_malloc(sizeof(char *) * 2);
         (*paths)[0] = path;
