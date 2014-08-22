@@ -10,7 +10,7 @@ Setup:
 No impact on non-stream:
 
   $ ag --passthrough zoo passthrough_test.txt
-  zoo zar
+  2:zoo zar
 
 Match stream with --passthrough:
 
