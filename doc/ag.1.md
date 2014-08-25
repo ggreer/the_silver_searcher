@@ -63,6 +63,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Skip the rest of a file after NUM matches. Default is 10,000.
   * `--no-numbers`:            
     Don't show line numbers
+  * `--null`:
+    Separate files output with -l or -L by \0 rather than \n, this allows 'xargs -0 <command>' to correctly process filenames with spaces.
   * `-p --path-to-agignore STRING`:
     Provide a path to a specific .agignore file.
   * `--pager COMMAND`:
