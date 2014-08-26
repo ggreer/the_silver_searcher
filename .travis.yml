@@ -8,14 +8,11 @@ notifications:
   email:
     - geoff@greer.fm
 
-before_install:
-  - apt-get update
-
 install:
-  - apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev
+  - sudo apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev
 
 script:
   - ./build.sh && make test
 
 before_script:
-  - pip install cram
+  - sudo pip install cram
