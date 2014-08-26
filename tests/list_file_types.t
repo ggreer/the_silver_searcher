@@ -89,8 +89,8 @@ Language types are output:
   
     --jsp
         .jsp  .jspx  .jhtm  .jhtml
-
-    -- less
+  
+    --less
         .less
   
     --lisp
