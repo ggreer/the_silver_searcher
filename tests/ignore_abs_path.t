@@ -13,6 +13,6 @@ Ignore foo.yml but not blah.yml:
 
 Dont ignore anything (unrestricted search):
 
-  $ ag -u whatever .
+  $ ag -u whatever . | sort
   a/b/c/blah.yml:1:whatever1
   a/b/foo.yml:1:whatever2
