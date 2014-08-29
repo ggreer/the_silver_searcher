@@ -50,6 +50,7 @@ Output Options:\n\
                           (don't print the matching lines)\n\
   -L --files-without-matches\n\
                           Only print filenames that don't contain matches\n\
+     --null               Follow filename (-l|-L) with null for 'xargs -0'\n\
      --no-numbers         Don't print line numbers\n\
      --print-long-lines   Print matches on very long lines (Default: >2k characters)\n\
      --passthrough        When searching a stream, print all lines even if they\n\
@@ -213,6 +214,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "nogroup", no_argument, &group, 0 },
         { "noheading", no_argument, &opts.print_heading, 0 },
         { "nopager", no_argument, NULL, 0 },
+        { "null", no_argument, &opts.null_follows_filename, 1 },
         { "pager", required_argument, NULL, 0 },
         { "parallel", no_argument, &opts.parallel, 1 },
         { "passthrough", no_argument, &opts.passthrough, 1 },
