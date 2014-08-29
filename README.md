@@ -2,6 +2,8 @@
 
 A code searching tool similar to `ack`, with a focus on speed.
 
+[![Build Status](https://travis-ci.org/ggreer/the_silver_searcher.svg?branch=master)](https://travis-ci.org/ggreer/the_silver_searcher)
+
 <a href="https://floobits.com/ggreer/ag/redirect">
   <img alt="Floobits status" width="100" height="40" src="https://floobits.com/ggreer/ag.png" />
 </a>
