@@ -422,9 +422,11 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
     } else if (results == -1) {
         if (errno == ENOTDIR) {
             /* Not a directory. Probably a file. */
-            /* If we're only searching one file, don't print the filename header at the top. */
             if (depth == 0 && opts.paths_len == 1) {
-                opts.print_heading = -1;
+                /* If we're only searching one file, don't print the filename header at the top. */
+                if (opts.print_path == PATH_PRINT_DEFAULT || opts.print_path == PATH_PRINT_DEFAULT_EACH_LINE) {
+                    opts.print_path = PATH_PRINT_NOTHING;
+                }
             }
             search_file(path);
         } else {

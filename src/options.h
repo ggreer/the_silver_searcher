@@ -17,6 +17,14 @@ enum case_behavior {
     CASE_SENSITIVE_RETRY_INSENSITIVE /* for future use */
 };
 
+enum path_print_behavior {
+    PATH_PRINT_DEFAULT, /* PRINT_TOP if > 1 file being searched, else PRINT_NOTHING */
+    PATH_PRINT_DEFAULT_EACH_LINE, /* PRINT_EACH_LINE if > 1 file being searched, else PRINT_NOTHING */
+    PATH_PRINT_TOP,
+    PATH_PRINT_EACH_LINE,
+    PATH_PRINT_NOTHING
+};
+
 typedef struct {
     int ackmate;
     pcre *ackmate_dir_filter;
@@ -45,7 +53,7 @@ typedef struct {
     char *path_to_agignore;
     int print_break;
     int print_filename_only;
-    int print_heading;
+    int print_path;
     int print_line_numbers;
     int print_long_lines; /* TODO: support this in print.c */
     int passthrough;

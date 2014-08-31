@@ -41,7 +41,7 @@ Output Options:\n\
      --color-match        Color codes for result match numbers (Default: 30;43)\n\
      --color-path         Color codes for path names (Default: 1;32)\n\
      --column             Print column numbers in results\n\
-     --[no]heading\n\
+  -H --[no]heading        Print file names (Enabled unless searching a single file)\n\
      --line-numbers       Print line numbers even for streams\n\
   -C --context [LINES]    Print lines before and after matches (Default: 2)\n\
      --[no]group          Same as --[no]break --[no]heading\n\
@@ -111,7 +111,7 @@ void init_options(void) {
     opts.max_matches_per_file = 10000;
     opts.max_search_depth = 25;
     opts.print_break = TRUE;
-    opts.print_heading = TRUE;
+    opts.print_path = PATH_PRINT_DEFAULT;
     opts.print_line_numbers = TRUE;
     opts.recurse_dirs = TRUE;
     opts.color_path = ag_strdup(color_path);
@@ -194,7 +194,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "files-without-matches", no_argument, NULL, 'L' },
         { "follow", no_argument, &opts.follow_symlinks, 1 },
         { "group", no_argument, &group, 1 },
-        { "heading", no_argument, &opts.print_heading, 1 },
+        { "heading", no_argument, &opts.print_path, PATH_PRINT_TOP },
         { "help", no_argument, NULL, 'h' },
         { "hidden", no_argument, &opts.search_hidden_files, 1 },
         { "ignore", required_argument, NULL, 0 },
@@ -212,7 +212,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "nocolor", no_argument, &opts.color, 0 },
         { "nofollow", no_argument, &opts.follow_symlinks, 0 },
         { "nogroup", no_argument, &group, 0 },
-        { "noheading", no_argument, &opts.print_heading, 0 },
+        { "noheading", no_argument, &opts.print_path, PATH_PRINT_EACH_LINE },
         { "nopager", no_argument, NULL, 0 },
         { "null", no_argument, &opts.null_follows_filename, 1 },
         { "pager", required_argument, NULL, 0 },
@@ -276,7 +276,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.stdout_inode = statbuf.st_ino;
     }
 
-    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fhiLlm:np:QRrSsvVtuUwz", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fHhiLlm:np:QRrSsvVtuUwz", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 if (optarg) {
@@ -331,6 +331,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             case 'G':
                 compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, optarg, opts.casing & PCRE_CASELESS, 0);
                 opts.casing = CASE_SENSITIVE;
+                break;
+            case 'H':
+                opts.print_path = PATH_PRINT_TOP;
                 break;
             case 'h':
                 help = 1;
@@ -540,22 +543,21 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.search_stream = 0;
     }
 
-    if (opts.print_heading == 0 || opts.print_break == 0) {
+    if (opts.print_path != PATH_PRINT_DEFAULT || opts.print_break == 0) {
         goto skip_group;
     }
 
     if (group) {
-        opts.print_heading = 1;
         opts.print_break = 1;
     } else {
-        opts.print_heading = 0;
+        opts.print_path = PATH_PRINT_DEFAULT_EACH_LINE;
         opts.print_break = 0;
     }
 
 skip_group:
     if (opts.search_stream) {
         opts.print_break = 0;
-        opts.print_heading = 0;
+        opts.print_path = PATH_PRINT_NOTHING;
         if (opts.print_line_numbers != 2) {
             opts.print_line_numbers = 0;
         }
