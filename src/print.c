@@ -55,6 +55,12 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
 
     print_file_separator();
 
+    if (opts.print_path == PATH_PRINT_DEFAULT) {
+        opts.print_path = PATH_PRINT_TOP;
+    } else if (opts.print_path == PATH_PRINT_DEFAULT_EACH_LINE) {
+        opts.print_path = PATH_PRINT_EACH_LINE;
+    }
+
     if (opts.print_path == PATH_PRINT_TOP) {
         print_path(path, '\n');
     }

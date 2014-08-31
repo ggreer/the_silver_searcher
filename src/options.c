@@ -541,14 +541,14 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.search_stream = 0;
     }
 
-    if (opts.print_path == PATH_PRINT_EACH_LINE || opts.print_break == 0) {
+    if (opts.print_path != PATH_PRINT_DEFAULT || opts.print_break == 0) {
         goto skip_group;
     }
 
     if (group) {
         opts.print_break = 1;
     } else {
-        opts.print_path = PATH_PRINT_EACH_LINE;
+        opts.print_path = PATH_PRINT_DEFAULT_EACH_LINE;
         opts.print_break = 0;
     }
 
