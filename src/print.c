@@ -55,7 +55,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
 
     print_file_separator();
 
-    if (opts.print_heading == TRUE) {
+    if (opts.print_path == PATH_PRINT_TOP) {
         print_path(path, '\n');
     }
 
@@ -88,7 +88,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                 for (j = (opts.before - lines_to_print); j < opts.before; j++) {
                     prev_line = (last_prev_line + j) % opts.before;
                     if (context_prev_lines[prev_line] != NULL) {
-                        if (opts.print_heading == 0) {
+                        if (opts.print_path == PATH_PRINT_EACH_LINE) {
                             print_path(path, ':');
                         }
                         print_line_number(line - (opts.before - j), sep);
@@ -112,7 +112,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
 
         if (buf[i] == '\n' || i == buf_len) {
             if (lines_since_last_match == 0) {
-                if (opts.print_heading == 0 && !opts.search_stream) {
+                if (opts.print_path == PATH_PRINT_EACH_LINE && !opts.search_stream) {
                     print_path(path, ':');
                 }
 
@@ -164,7 +164,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                 }
             } else if (lines_since_last_match <= opts.after) {
                 /* print context after matching line */
-                if (opts.print_heading == 0) {
+                if (opts.print_path == PATH_PRINT_EACH_LINE) {
                     print_path(path, ':');
                 }
                 print_line_number(line, sep);
