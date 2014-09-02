@@ -70,6 +70,8 @@ void cleanup_ignore(ignores *ig) {
 void add_ignore_pattern(ignores *ig, const char *pattern) {
     int i;
     int pattern_len;
+    const char *debug_type;
+    char **pattern_list;
 
     /* Strip off the leading dot so that matches are more likely. */
     if (strncmp(pattern, "./", 2) == 0) {
@@ -90,18 +92,14 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
 
     /* TODO: de-dupe these patterns */
     if (is_fnmatch(pattern)) {
+        debug_type = "regex";
         ig->regexes_len++;
         ig->regexes = ag_realloc(ig->regexes, ig->regexes_len * sizeof(char *));
-        /* Prepend '/' if the pattern contains '/' but doesn't start with '/' */
-        if ((pattern[0] != '/') && (strchr(pattern, '/') != NULL)) {
-            ag_asprintf(&(ig->regexes[ig->regexes_len - 1]), "/%s", pattern);
-            log_debug("added regex ignore pattern /%s", pattern);
-        } else {
-            ig->regexes[ig->regexes_len - 1] = ag_strndup(pattern, pattern_len);
-            log_debug("added regex ignore pattern %s", pattern);
-        }
+        i = ig->regexes_len - 1;
+        pattern_list = ig->regexes;
     } else {
         /* a balanced binary tree is best for performance, but I'm lazy */
+        debug_type = "literal";
         ig->names_len++;
         ig->names = ag_realloc(ig->names, ig->names_len * sizeof(char *));
         for (i = ig->names_len - 1; i > 0; i--) {
@@ -110,8 +108,16 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
             }
             ig->names[i] = ig->names[i - 1];
         }
-        ig->names[i] = ag_strndup(pattern, pattern_len);
-        log_debug("added literal ignore pattern %s", pattern);
+        pattern_list = ig->names;
+    }
+
+    /* Prepend '/' if the pattern contains '/' but doesn't start with '/' */
+    if ((pattern[0] != '/') && (strchr(pattern, '/') != NULL)) {
+        ag_asprintf(&(pattern_list[i]), "/%s", pattern);
+        log_debug("added %s ignore pattern /%s", debug_type, pattern);
+    } else {
+        pattern_list[i] = ag_strndup(pattern, pattern_len);
+        log_debug("added %s ignore pattern %s", debug_type, pattern);
     }
 }
 
