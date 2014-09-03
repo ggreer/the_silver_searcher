@@ -442,7 +442,13 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
     for (i = 0; i < results; i++) {
         queue_item = NULL;
         dir = dir_list[i];
-        ag_asprintf(&dir_full_path, "%s/%s", path, dir->d_name);
+        
+        // Don't print the directory name if it's the current directory
+        if (strlen(path) == 1 && path[0] == '.') {
+            ag_asprintf(&dir_full_path, "%s", dir->d_name);
+        } else {
+            ag_asprintf(&dir_full_path, "%s/%s", path, dir->d_name);
+        }
 
         /* If a link points to a directory then we need to treat it as a directory. */
         if (!opts.follow_symlinks && is_symlink(path, dir)) {
