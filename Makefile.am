@@ -14,6 +14,9 @@ EXTRA_DIST = Makefile.w32 LICENSE NOTICE the_silver_searcher.spec README.md
 test: ag
 	cram -v tests/*.t
 
+test_speed: ag
+	cram -v tests/speed/*.t
+
 test_big: ag
 	cram -v tests/big/*.t
 

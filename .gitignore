@@ -28,4 +28,5 @@ stamp-h1
 tests/*.err
 tests/big/*.err
 tests/big/big_file.txt
+tests/speed/*.err
 the_silver_searcher.spec
