@@ -25,7 +25,7 @@ Language types are output:
         .cfc  .cfm  .cfml
   
     --clojure
-        .clj
+        .clj  .cljs  .cljx
   
     --coffee
         .coffee
