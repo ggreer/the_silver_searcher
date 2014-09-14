@@ -162,6 +162,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     char *num_end;
     const char *home_dir = getenv("HOME");
     char *ignore_file_path = NULL;
+    int accepts_query = 1;
     int needs_query = 1;
     struct stat statbuf;
     int rv;
@@ -325,7 +326,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.follow_symlinks = 1;
                 break;
             case 'g':
-                needs_query = 0;
+                needs_query = accepts_query = 0;
                 opts.match_files = 1;
             /* Fall through and build regex */
             case 'G':
@@ -345,6 +346,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.invert_match = 1;
             /* fall through */
             case 'l':
+                needs_query = 0;
                 opts.print_filename_only = 1;
                 break;
             case 'm':
@@ -567,11 +569,13 @@ skip_group:
         }
     }
 
-    if (needs_query) {
+    if (accepts_query && argc > 0) {
+        // use the provided query
         opts.query = ag_strdup(argv[0]);
         argc--;
         argv++;
-    } else {
+    } else if (!needs_query) {
+        // use default query
         opts.query = ag_strdup(".");
     }
     opts.query_len = strlen(opts.query);
