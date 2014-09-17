@@ -18,20 +18,20 @@ Ignore foo/bar:
 
 Ignore foo/bar/baz:
 
-  $ ag needle --ignore foo/bar/baz
-  foo/quux:1:needle
+  $ ag needle --ignore foo/bar/baz | sort
   foo/bar/quux:1:needle
+  foo/quux:1:needle
 
 Ignore nonexistent dir:
 
-  $ ag needle --ignore nothing
-  foo/quux:1:needle
-  foo/bar/quux:1:needle
+  $ ag needle --ignore nothing | sort
   foo/bar/baz/quux:1:needle
+  foo/bar/quux:1:needle
+  foo/quux:1:needle
 
 Ignore nothing:
 
-  $ ag needle
-  foo/quux:1:needle
-  foo/bar/quux:1:needle
+  $ ag needle | sort
   foo/bar/baz/quux:1:needle
+  foo/bar/quux:1:needle
+  foo/quux:1:needle
