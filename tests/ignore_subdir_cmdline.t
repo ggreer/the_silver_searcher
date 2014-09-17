@@ -35,3 +35,8 @@ Ignore nothing:
   foo/bar/baz/quux:1:needle
   foo/bar/quux:1:needle
   foo/quux:1:needle
+
+Ignore foo/bar and build/:
+
+  $ ag needle --ignore foo/bar --ignore build/
+  foo/quux:1:needle
