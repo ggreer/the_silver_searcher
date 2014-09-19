@@ -92,12 +92,14 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
     if (is_fnmatch(pattern)) {
         ig->regexes_len++;
         ig->regexes = ag_realloc(ig->regexes, ig->regexes_len * sizeof(char *));
-        if (pattern[0] != '/') {
-            ag_asprintf(&(ig->regexes[ig->regexes_len - 1]), "*/%s", pattern);
+        /* Prepend '/' if the pattern contains '/' but doesn't start with '/' */
+        if ((pattern[0] != '/') && (strchr(pattern, '/') != NULL)) {
+            ag_asprintf(&(ig->regexes[ig->regexes_len - 1]), "/%s", pattern);
+            log_debug("added regex ignore pattern /%s", pattern);
         } else {
             ig->regexes[ig->regexes_len - 1] = ag_strndup(pattern, pattern_len);
+            log_debug("added regex ignore pattern %s", pattern);
         }
-        log_debug("added regex ignore pattern %s", pattern);
     } else {
         /* a balanced binary tree is best for performance, but I'm lazy */
         ig->names_len++;
@@ -219,6 +221,7 @@ static int ackmate_dir_match(const char *dir_name) {
 }
 
 static int filename_ignore_search(const ignores *ig, const char *filename) {
+    size_t i;
     int match_pos;
 
     if (strncmp(filename, "./", 2) == 0) {
@@ -229,6 +232,14 @@ static int filename_ignore_search(const ignores *ig, const char *filename) {
     if (match_pos >= 0) {
         log_debug("file %s ignored because name matches static pattern %s", filename, ig->names[match_pos]);
         return 1;
+    }
+
+    for (i = 0; i < ig->regexes_len; i++) {
+        if (fnmatch(ig->regexes[i], filename, fnmatch_flags) == 0) {
+            log_debug("file %s ignored because name matches regex pattern %s", filename, ig->regexes[i]);
+            return 1;
+        }
+        log_debug("pattern %s doesn't match file %s", ig->regexes[i], filename);
     }
 
     log_debug("file %s not ignored", filename);
@@ -249,24 +260,7 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
         return 1;
     }
 
-    int rv = 0;
-    size_t i;
-    char *regex;
-    for (i = 0; i < ig->regexes_len; i++) {
-        regex = ig->regexes[i];
-        /* TODO: behave specially if regex doesn't start with a slash
-        if (regex[0] == '/') {
-         */
-        if (fnmatch(regex, temp, fnmatch_flags) == 0) {
-            log_debug("file %s ignored because name matches regex pattern %s", temp, regex);
-            rv = 1;
-            break;
-        }
-        log_debug("pattern %s doesn't match file %s", regex, temp);
-    }
-    if (rv == 0) {
-        rv = ackmate_dir_match(temp);
-    }
+    int rv = ackmate_dir_match(temp);
     free(temp);
     return rv;
 }

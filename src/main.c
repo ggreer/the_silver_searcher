@@ -1,22 +1,24 @@
 #include <pcre.h>
-#include <pthread.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <sys/time.h>
 #include <unistd.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 #include "config.h"
+
+#ifdef HAVE_PTHREAD_H
+#include <pthread.h>
+#endif
 
 #include "log.h"
 #include "options.h"
 #include "search.h"
 #include "util.h"
-
-#ifdef _WIN32
-#include <windows.h>
-#endif
 
 int main(int argc, char **argv) {
     char **base_paths = NULL;
@@ -57,27 +59,35 @@ int main(int argc, char **argv) {
 #else
     workers_len = (int)sysconf(_SC_NPROCESSORS_ONLN);
 #endif
-    if (opts.literal)
+    if (opts.literal) {
         workers_len--;
-    if (opts.workers)
+    }
+    if (opts.workers) {
         workers_len = opts.workers;
-    if (workers_len < 1)
+    }
+    if (workers_len < 1) {
         workers_len = 1;
+    }
 
     log_debug("Using %i workers", workers_len);
     done_adding_files = FALSE;
     workers = ag_calloc(workers_len, sizeof(pthread_t));
-    if (pthread_cond_init(&files_ready, NULL))
+    if (pthread_cond_init(&files_ready, NULL)) {
         die("pthread_cond_init failed!");
-    if (pthread_mutex_init(&print_mtx, NULL))
+    }
+    if (pthread_mutex_init(&print_mtx, NULL)) {
         die("pthread_mutex_init failed!");
-    if (pthread_mutex_init(&stats_mtx, NULL))
+    }
+    if (pthread_mutex_init(&stats_mtx, NULL)) {
         die("pthread_mutex_init failed!");
-    if (pthread_mutex_init(&work_queue_mtx, NULL))
+    }
+    if (pthread_mutex_init(&work_queue_mtx, NULL)) {
         die("pthread_mutex_init failed!");
+    }
 
-    if (opts.casing == CASE_SMART)
+    if (opts.casing == CASE_SMART) {
         opts.casing = is_lowercase(opts.query) ? CASE_INSENSITIVE : CASE_SENSITIVE;
+    }
 
     if (opts.literal) {
         if (opts.casing == CASE_INSENSITIVE) {
@@ -87,7 +97,9 @@ int main(int argc, char **argv) {
                 *c = (char)tolower(*c);
             }
         }
-        generate_skip_lookup(opts.query, opts.query_len, skip_lookup, opts.casing == CASE_SENSITIVE);
+        generate_alpha_skip(opts.query, opts.query_len, alpha_skip_lookup, opts.casing == CASE_SENSITIVE);
+        find_skip_lookup = NULL;
+        generate_find_skip(opts.query, opts.query_len, &find_skip_lookup, opts.casing == CASE_SENSITIVE);
         if (opts.word_regexp) {
             init_wordchar_table();
             opts.literal_starts_wordchar = is_wordchar(opts.query[0]);
@@ -95,7 +107,7 @@ int main(int argc, char **argv) {
         }
     } else {
         if (opts.casing == CASE_INSENSITIVE) {
-            pcre_opts = pcre_opts | PCRE_CASELESS;
+            pcre_opts |= PCRE_CASELESS;
         }
         if (opts.word_regexp) {
             char *word_regexp_query;
@@ -157,5 +169,8 @@ int main(int argc, char **argv) {
     }
     free(base_paths);
     free(paths);
-    return 0;
+    if (find_skip_lookup) {
+        free(find_skip_lookup);
+    }
+    return !opts.match_found;
 }

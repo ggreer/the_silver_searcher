@@ -6,7 +6,6 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <pcre.h>
-#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,6 +19,10 @@
 
 #include "config.h"
 
+#ifdef HAVE_PTHREAD_H
+#include <pthread.h>
+#endif
+
 #include "ignore.h"
 #include "log.h"
 #include "options.h"
@@ -27,7 +30,8 @@
 #include "util.h"
 #include "uthash.h"
 
-size_t skip_lookup[256];
+size_t alpha_skip_lookup[256];
+size_t *find_skip_lookup;
 
 struct work_queue_t {
     char *path;
