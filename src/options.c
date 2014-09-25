@@ -104,7 +104,7 @@ void init_options(void) {
     memset(&opts, 0, sizeof(opts));
     opts.casing = CASE_SMART;
 #ifdef _WIN32
-    opts.color = getenv("ANSICON") ? TRUE : FALSE;
+    opts.color = (getenv("ANSICON") || getenv("CMDER_ROOT")) ? TRUE : FALSE;
 #else
     opts.color = TRUE;
 #endif
