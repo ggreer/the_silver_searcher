@@ -37,13 +37,15 @@ const char *ignore_pattern_files[] = {
     NULL
 };
 
-ignores *init_ignore(ignores *parent) {
+ignores *init_ignore(ignores *parent, const char *dirname, const size_t dirname_len) {
     ignores *ig = ag_malloc(sizeof(ignores));
     ig->names = NULL;
     ig->names_len = 0;
     ig->regexes = NULL;
     ig->regexes_len = 0;
     ig->parent = parent;
+    ig->dirname = dirname;
+    ig->dirname_len = dirname_len;
     return ig;
 }
 
@@ -254,7 +256,6 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
     }
 
     ag_asprintf(&temp, "%s/%s", path[0] == '.' ? path + 1 : path, filename);
-
     if (filename_ignore_search(ig, temp)) {
         free(temp);
         return 1;

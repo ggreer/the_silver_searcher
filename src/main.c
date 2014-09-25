@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
     work_queue = NULL;
     work_queue_tail = NULL;
     memset(&stats, 0, sizeof(stats));
-    root_ignores = init_ignore(NULL);
+    root_ignores = init_ignore(NULL, "", 0);
     out_fd = stdout;
 #ifdef USE_PCRE_JIT
     int has_jit = 0;
@@ -131,7 +131,9 @@ int main(int argc, char **argv) {
         for (i = 0; paths[i] != NULL; i++) {
             log_debug("searching path %s for %s", paths[i], opts.query);
             symhash = NULL;
-            search_dir(root_ignores, base_paths[i], paths[i], 0);
+            ignores *ig = init_ignore(root_ignores, paths[i], strlen(paths[i]));
+            search_dir(ig, base_paths[i], paths[i], 0);
+            cleanup_ignore(ig);
         }
         pthread_mutex_lock(&work_queue_mtx);
         done_adding_files = TRUE;
