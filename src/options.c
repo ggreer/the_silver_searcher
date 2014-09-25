@@ -531,6 +531,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         }
     }
 
+    sort_ignore_patterns(root_ignores);
+
     if (opts.context > 0) {
         opts.before = opts.context;
         opts.after = opts.context;

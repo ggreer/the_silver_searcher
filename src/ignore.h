@@ -26,6 +26,7 @@ ignores *init_ignore(ignores *parent);
 void cleanup_ignore(ignores *ig);
 
 void add_ignore_pattern(ignores *ig, const char *pattern);
+void sort_ignore_patterns(ignores *ig);
 
 void load_ignore_patterns(ignores *ig, const char *path);
 void load_svn_ignore_patterns(ignores *ig, const char *path);
