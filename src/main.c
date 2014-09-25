@@ -97,7 +97,9 @@ int main(int argc, char **argv) {
                 *c = (char)tolower(*c);
             }
         }
-        generate_skip_lookup(opts.query, opts.query_len, skip_lookup, opts.casing == CASE_SENSITIVE);
+        generate_alpha_skip(opts.query, opts.query_len, alpha_skip_lookup, opts.casing == CASE_SENSITIVE);
+        find_skip_lookup = NULL;
+        generate_find_skip(opts.query, opts.query_len, &find_skip_lookup, opts.casing == CASE_SENSITIVE);
         if (opts.word_regexp) {
             init_wordchar_table();
             opts.literal_starts_wordchar = is_wordchar(opts.query[0]);
@@ -105,7 +107,7 @@ int main(int argc, char **argv) {
         }
     } else {
         if (opts.casing == CASE_INSENSITIVE) {
-            pcre_opts = pcre_opts | PCRE_CASELESS;
+            pcre_opts |= PCRE_CASELESS;
         }
         if (opts.word_regexp) {
             char *word_regexp_query;
@@ -167,5 +169,8 @@ int main(int argc, char **argv) {
     }
     free(base_paths);
     free(paths);
-    return 0;
+    if (find_skip_lookup) {
+        free(find_skip_lookup);
+    }
+    return !opts.match_found;
 }

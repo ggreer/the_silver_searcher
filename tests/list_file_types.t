@@ -25,13 +25,13 @@ Language types are output:
         .cfc  .cfm  .cfml
   
     --clojure
-        .clj
+        .clj  .cljs  .cljx
   
     --coffee
         .coffee
   
     --cpp
-        .cpp  .cc  .cxx  .m  .hpp  .hh  .h  .hxx
+        .cpp  .cc  .C  .cxx  .m  .hpp  .hh  .h  .H  .hxx
   
     --csharp
         .cs
@@ -60,17 +60,23 @@ Language types are output:
     --groovy
         .groovy  .gtmpl  .gpp  .grunit
   
+    --haml
+        .haml
+  
     --haskell
         .hs  .lhs
   
     --hh
         .h
   
-    --haml
-        .haml
-  
     --html
         .htm  .html  .shtml  .xhtml
+  
+    --ini
+        .ini
+  
+    --jade
+        .jade
   
     --java
         .java  .properties
@@ -78,11 +84,14 @@ Language types are output:
     --js
         .js
   
+    --json
+        .json
+  
     --jsp
         .jsp  .jspx  .jhtm  .jhtml
   
-    --json
-        .json
+    --less
+        .less
   
     --lisp
         .lisp  .lsp
@@ -93,14 +102,14 @@ Language types are output:
     --m4
         .m4
   
-    --matlab
-        .m
-  
     --make
         .Makefiles  .mk  .mak
   
     --mason
         .mas  .mhtml  .mpl  .mtxt
+  
+    --matlab
+        .m
   
     --objc
         .m  .h
@@ -141,11 +150,11 @@ Language types are output:
     --rust
         .rs
   
-    --sass
-        .sass  .scss
-  
     --salt
         .sls
+  
+    --sass
+        .sass  .scss
   
     --scala
         .scala
@@ -161,6 +170,12 @@ Language types are output:
   
     --sql
         .sql  .ctl
+  
+    --stylus
+        .styl
+  
+    --swift
+        .swift
   
     --tcl
         .tcl  .itcl  .itk
@@ -183,9 +198,9 @@ Language types are output:
     --vim
         .vim
   
-    --yaml
-        .yaml  .yml
-  
     --xml
         .xml  .dtd  .xsl  .xslt  .ent
+  
+    --yaml
+        .yaml  .yml
   

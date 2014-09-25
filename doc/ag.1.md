@@ -44,7 +44,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Print filenames matching PATTERN.
   * `-G`, `--file-search-regex PATTERN`:
     Only search filenames matching PATTERN.
-  * `--[no]heading`
+  * `-H`, `--[no]heading`:
+    Print file names above matching contents.
   * `--hidden`:
     Search hidden files. This option obeys ignore files.
   * `--ignore PATTERN`:
@@ -63,18 +64,22 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Skip the rest of a file after NUM matches. Default is 10,000.
   * `--no-numbers`:            
     Don't show line numbers
+  * `--null`:
+    Separate files output with -l or -L by \0 rather than \n, this allows 'xargs -0 <command>' to correctly process filenames with spaces.
   * `-p --path-to-agignore STRING`:
     Provide a path to a specific .agignore file.
   * `--pager COMMAND`:
     Use a pager such as less. Use `--nopager` to override. This option is also ignored if output is piped to another program.
   * `--print-long-lines`:
     Print matches on very long lines (> 2k characters by default)
+  * `--passthrough`:
+    When searching a stream, print all lines even if they don't match.
   * `-Q --literal`:
     Do not parse PATTERN as a regular expression. Try to match it literally.
   * `-s --case-sensitive`:
-    Match case sensitively. Enabled by default.
+    Match case sensitively.
   * `-S --smart-case`:
-    Match case sensitively if there are any uppercase letters in PATTERN, or case insensitively otherwise.
+    Match case sensitively if there are any uppercase letters in PATTERN, or case insensitively otherwise. Enabled by default.
   * `--search-binary`:
     Search binary files for matches.
   * `--silent`:
@@ -99,7 +104,11 @@ It is possible to restrict the types of files searched. For example, passing `--
 
 ## IGNORING FILES
 
-By default, ag will ignore files matched by patterns in .gitignore, .hgignore, or .agignore. These files can be anywhere in the directories being searched. Ag also ignores files matched by the svn:ignore property in subversion repositories. Finally, ag looks in $HOME/.agignore for ignore patterns. Binary files are ignored by default as well.
+By default, ag will ignore files matched by patterns in .gitignore, .hgignore,
+or .agignore. These files can be anywhere in the directories being searched. Ag
+also ignores files matched by the svn:ignore property if `svn --version` is 1.6
+or older.  Finally, ag looks in $HOME/.agignore for
+ignore patterns. Binary files are ignored by default as well.
 
 If you want to ignore .gitignore, .hgignore, and svn:ignore but still take .agignore into account, use `-U`.
 

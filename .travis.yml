@@ -1,0 +1,18 @@
+language: c
+
+branches:
+  only:
+    - master
+
+notifications:
+  email:
+    - geoff@greer.fm
+
+install:
+  - sudo apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev
+
+script:
+  - ./build.sh && make test
+
+before_script:
+  - sudo pip install cram

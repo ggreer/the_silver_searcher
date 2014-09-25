@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "AG" "1" "June 2014" "" ""
+.TH "AG" "1" "August 2014" "" ""
 .
 .SH "NAME"
 \fBag\fR \- The Silver Searcher\. Like ack, but faster\.
@@ -112,9 +112,12 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 \~\~\~\~ Only search filenames matching PATTERN\.
 .
 .P
-\fB\-\-[no]heading\fR
+\fB\-H\fR, \fB\-\-[no]heading\fR:
 .
 .br
+\~\~\~\~ Print file names above matching contents\.
+.
+.P
 \fB\-\-hidden\fR:
 .
 .br
@@ -187,6 +190,12 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 \~\~\~\~ Print matches on very long lines (> 2k characters by default)
 .
 .P
+\fB\-\-passthrough\fR:
+.
+.br
+\~\~\~\~ When searching a stream, print all lines even if they don\'t match\.
+.
+.P
 \fB\-Q \-\-literal\fR:
 .
 .br
@@ -196,13 +205,13 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 \fB\-s \-\-case\-sensitive\fR:
 .
 .br
-\~\~\~\~ Match case sensitively\. Enabled by default\.
+\~\~\~\~ Match case sensitively\.
 .
 .P
 \fB\-S \-\-smart\-case\fR:
 .
 .br
-\~\~\~\~ Match case sensitively if there are any uppercase letters in PATTERN, or case insensitively otherwise\.
+\~\~\~\~ Match case sensitively if there are any uppercase letters in PATTERN, or case insensitively otherwise\. Enabled by default\.
 .
 .P
 \fB\-\-search\-binary\fR:
@@ -259,7 +268,7 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 It is possible to restrict the types of files searched\. For example, passing \fB\-\-html\fR as the \fBfile\-types\fR parameter will search only files with the extensions \fBhtm\fR, \fBhtml\fR, \fBshtml\fR or \fBxhtml\fR\. For a list of supported \fBfile\-types\fR run \fBag \-\-list\-file\-types\fR\.
 .
 .SH "IGNORING FILES"
-By default, ag will ignore files matched by patterns in \.gitignore, \.hgignore, or \.agignore\. These files can be anywhere in the directories being searched\. Ag also ignores files matched by the svn:ignore property in subversion repositories\. Finally, ag looks in $HOME/\.agignore for ignore patterns\. Binary files are ignored by default as well\.
+By default, ag will ignore files matched by patterns in \.gitignore, \.hgignore, or \.agignore\. These files can be anywhere in the directories being searched\. Ag also ignores files matched by the svn:ignore property if \fBsvn \-\-version\fR is 1\.6 or older\. Finally, ag looks in $HOME/\.agignore for ignore patterns\. Binary files are ignored by default as well\.
 .
 .P
 If you want to ignore \.gitignore, \.hgignore, and svn:ignore but still take \.agignore into account, use \fB\-U\fR\.

@@ -11,8 +11,10 @@ cachegrind.out.*
 callgrind.out.*
 clang_output_*
 compile
+config.guess
 config.log
 config.status
+config.sub
 configure
 depcomp
 gmon.out
@@ -23,4 +25,6 @@ missing
 src/config.h*
 stamp-h1
 tests/*.err
+tests/big/*.err
+tests/big/big_file.txt
 the_silver_searcher.spec

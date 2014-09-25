@@ -2,7 +2,7 @@
 #define LANG_H
 
 #define MAX_EXTENSIONS 12
-#define LANG_COUNT 61
+#define LANG_COUNT 66
 
 typedef struct {
     const char *name;
