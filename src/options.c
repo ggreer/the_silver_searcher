@@ -57,6 +57,8 @@ Output Options:\n\
                           don't match\n\
      --silent             Suppress all log messages, including errors\n\
      --stats              Print stats (files scanned, time taken, etc.)\n\
+     --vimgrep            Print results like vim's :vimgrep /pattern/g would\n\
+                          (it reports every match on the line)\n\
 \n\
 Search Options:\n\
   -a --all-types          Search all files (doesn't include hidden files\n\
@@ -232,6 +234,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "stats", no_argument, &opts.stats, 1 },
         { "unrestricted", no_argument, NULL, 'u' },
         { "version", no_argument, &version, 1 },
+        { "vimgrep", no_argument, &opts.vimgrep, 1 },
         { "word-regexp", no_argument, NULL, 'w' },
         { "workers", required_argument, NULL, 0 },
     };
@@ -543,6 +546,14 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.print_break = 1;
         group = 1;
         opts.search_stream = 0;
+    }
+
+    if (opts.vimgrep) {
+        opts.color = 0;
+        opts.print_break = 0;
+        group = 1;
+        opts.search_stream = 0;
+        opts.print_path = PATH_PRINT_NOTHING;
     }
 
     if (opts.parallel) {
