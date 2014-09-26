@@ -486,7 +486,16 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
                 search_dir(child_ig, base_path, dir_full_path, depth + 1);
                 cleanup_ignore(child_ig);
             } else {
-                log_err("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
+                if (opts.max_search_depth == DEFAULT_MAX_SEARCH_DEPTH) {
+                    /*
+                     * If the user didn't intentionally specify a particular depth,
+                     * this is a warning...
+                     */
+                    log_warn("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
+                } else {
+                    /* ... if they did, let's settle for debug. */
+                    log_debug("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
+                }
             }
         }
 

@@ -104,12 +104,12 @@ void init_options(void) {
     memset(&opts, 0, sizeof(opts));
     opts.casing = CASE_SMART;
 #ifdef _WIN32
-    opts.color = getenv("ANSICON") ? TRUE : FALSE;
+    opts.color = (getenv("ANSICON") || getenv("CMDER_ROOT")) ? TRUE : FALSE;
 #else
     opts.color = TRUE;
 #endif
     opts.max_matches_per_file = 10000;
-    opts.max_search_depth = 25;
+    opts.max_search_depth = DEFAULT_MAX_SEARCH_DEPTH;
     opts.print_break = TRUE;
     opts.print_path = PATH_PRINT_DEFAULT;
     opts.print_line_numbers = TRUE;
