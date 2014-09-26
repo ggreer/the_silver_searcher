@@ -5,6 +5,8 @@
 #include <string.h>
 #include <sys/stat.h>
 
+#include <assert.h>
+
 #include "ignore.h"
 #include "log.h"
 #include "options.h"
@@ -41,8 +43,12 @@ ignores *init_ignore(ignores *parent, const char *dirname, const size_t dirname_
     ignores *ig = ag_malloc(sizeof(ignores));
     ig->names = NULL;
     ig->names_len = 0;
+    ig->slash_names = NULL;
+    ig->slash_names_len = 0;
     ig->regexes = NULL;
     ig->regexes_len = 0;
+    ig->slash_regexes = NULL;
+    ig->slash_regexes_len = 0;
     ig->parent = parent;
     ig->dirname = dirname;
     ig->dirname_len = dirname_len;
@@ -96,6 +102,8 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
         if (pattern[0] == '/') {
             patterns_p = &(ig->slash_regexes);
             patterns_len = &(ig->slash_regexes_len);
+            pattern++;
+            pattern_len--;
         } else {
             patterns_p = &(ig->regexes);
             patterns_len = &(ig->regexes_len);
@@ -104,17 +112,20 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
         if (pattern[0] == '/') {
             patterns_p = &(ig->slash_names);
             patterns_len = &(ig->slash_names_len);
+            pattern++;
+            pattern_len--;
         } else {
             patterns_p = &(ig->names);
             patterns_len = &(ig->names_len);
         }
     }
+
     ++*patterns_len;
 
     char **patterns;
 
     /* a balanced binary tree is best for performance, but I'm lazy */
-    patterns = ag_realloc(*patterns_p, *patterns_len * sizeof(char *));
+    *patterns_p = patterns = ag_realloc(*patterns_p, (*patterns_len) * sizeof(char *));
     /* TODO: de-dupe these patterns */
     for (i = *patterns_len - 1; i > 0; i--) {
         if (strcmp(pattern, patterns[i - 1]) > 0) {
@@ -123,7 +134,6 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
         patterns[i] = patterns[i - 1];
     }
     patterns[i] = ag_strndup(pattern, pattern_len);
-    *patterns_p = patterns;
     log_debug("added ignore pattern %s", pattern);
 }
 
@@ -245,6 +255,12 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
     match_pos = binary_search(filename, ig->names, 0, ig->names_len);
     if (match_pos >= 0) {
         log_debug("file %s ignored because name matches static pattern %s", filename, ig->names[match_pos]);
+        return 1;
+    }
+
+    match_pos = binary_search(filename, ig->slash_names, 0, ig->slash_names_len);
+    if (match_pos >= 0) {
+        log_debug("file %s ignored because name matches static pattern %s", filename, ig->slash_names[match_pos]);
         return 1;
     }
 
