@@ -11,11 +11,18 @@
 struct ignores {
     char **names; /* Non-regex ignore lines. Sorted so we can binary search them. */
     size_t names_len;
+    char **slash_names; /* Same but starts with a slash */
+    size_t slash_names_len;
+
     char **regexes; /* For patterns that need fnmatch */
     size_t regexes_len;
-    struct ignores *parent;
+    char **slash_regexes;
+    size_t slash_regexes_len;
+
     const char *dirname;
     size_t dirname_len;
+
+    struct ignores *parent;
 };
 typedef struct ignores ignores;
 
