@@ -102,13 +102,8 @@ _ag() {
 
   case "${cur}" in
     -*)
-          if [[ "${COMP_CWORD}" -eq 1 ]] ; then
-            COMPREPLY=( $(compgen -W \
-              "${lngopt} ${shtopt} ${types}" -- "${cur}") )
-          else
-            COMPREPLY=( $(compgen -W \
-              "${lngopt} ${shtopt} ${types}" -- "${cur}") )
-          fi
+          COMPREPLY=( $(compgen -W \
+            "${lngopt} ${shtopt} ${types}" -- "${cur}") )
           return 0;;
     *)
           _filedir
