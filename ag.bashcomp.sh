@@ -74,6 +74,8 @@ _ag() {
     -w -z
   '
 
+  types=$(ag --list-file-types |grep -- '--')
+
   # these options require an argument
   if [[ "${prev}" == -@(A|B|C|G|g|m) ]] ; then
     return 0
@@ -102,10 +104,10 @@ _ag() {
     -*)
           if [[ "${COMP_CWORD}" -eq 1 ]] ; then
             COMPREPLY=( $(compgen -W \
-              "${lngopt} ${shtopt}" -- "${cur}") )
+              "${lngopt} ${shtopt} ${types}" -- "${cur}") )
           else
             COMPREPLY=( $(compgen -W \
-              "${lngopt} ${shtopt}" -- "${cur}") )
+              "${lngopt} ${shtopt} ${types}" -- "${cur}") )
           fi
           return 0;;
     *)
