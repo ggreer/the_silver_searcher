@@ -74,6 +74,10 @@ lang_spec_t langs[] = {
     { NULL, { NULL } }
 };
 
+unsigned int get_lang_count() {
+  return sizeof(langs) / sizeof(lang_spec_t);
+}
+
 char *make_lang_regex(const char **extensions) {
     int regex_capacity = 100;
     char *regex = ag_malloc(regex_capacity);
