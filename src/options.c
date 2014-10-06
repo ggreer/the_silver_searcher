@@ -239,12 +239,15 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "workers", required_argument, NULL, 0 },
     };
 
+    int lang_count = 0;
+    while(langs[lang_count].name != NULL)
+        lang_count++;
     longopts_len = (sizeof(base_longopts) / sizeof(option_t));
-    full_len = (longopts_len + LANG_COUNT + 1);
+    full_len = (longopts_len + lang_count + 1);
     longopts = ag_malloc(full_len * sizeof(option_t));
     memcpy(longopts, base_longopts, sizeof(base_longopts));
 
-    for (i = 0; i < LANG_COUNT; i++) {
+    for (i = 0; langs[i].name != NULL; i++) {
         option_t opt = { langs[i].name, no_argument, NULL, 0 };
         longopts[i + longopts_len] = opt;
     }
@@ -445,7 +448,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                     break;
                 }
 
-                for (i = 0; i < LANG_COUNT; i++) {
+                for (i = 0; langs[i].name != NULL; i++) {
                     if (strcmp(longopts[opt_index].name, langs[i].name) == 0) {
                         lang_regex = make_lang_regex(langs[i].extensions);
                         compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, lang_regex, 0, 0);
@@ -491,7 +494,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     if (list_file_types) {
         int lang_index;
         printf("The following file types are supported:\n");
-        for (lang_index = 0; lang_index < LANG_COUNT; lang_index++) {
+        for (lang_index = 0; langs[lang_index].name != NULL; lang_index++) {
             printf("  --%s\n    ", langs[lang_index].name);
             int j;
             for (j = 0; j < MAX_EXTENSIONS && langs[lang_index].extensions[j]; j++) {
