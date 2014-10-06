@@ -70,8 +70,7 @@ lang_spec_t langs[] = {
     { "vhdl", { "vhd", "vhdl" } },
     { "vim", { "vim" } },
     { "xml", { "xml", "dtd", "xsl", "xslt", "ent" } },
-    { "yaml", { "yaml", "yml" } },
-    { NULL, { NULL } }
+    { "yaml", { "yaml", "yml" } }
 };
 
 unsigned int get_lang_count() {
