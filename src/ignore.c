@@ -253,7 +253,11 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
         return 1;
     }
 
-    ag_asprintf(&temp, "%s/%s", path[0] == '.' ? path + 1 : path, filename);
+    if(path[0] != '.' && path[0] != '/') {
+        ag_asprintf(&temp, "/%s/%s", path, filename);
+    } else {
+        ag_asprintf(&temp, "%s/%s", path[0] == '.' ? path + 1 : path, filename);
+    }
 
     if (filename_ignore_search(ig, temp)) {
         free(temp);
