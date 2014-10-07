@@ -70,6 +70,8 @@ void cleanup_ignore(ignores *ig) {
 void add_ignore_pattern(ignores *ig, const char *pattern) {
     int i;
     int pattern_len;
+    const char *debug_type;
+    char **pattern_list;
 
     /* Strip off the leading dot so that matches are more likely. */
     if (strncmp(pattern, "./", 2) == 0) {
@@ -90,29 +92,40 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
 
     /* TODO: de-dupe these patterns */
     if (is_fnmatch(pattern)) {
+        debug_type = "regex";
+        i = ig->regexes_len;
         ig->regexes_len++;
         ig->regexes = ag_realloc(ig->regexes, ig->regexes_len * sizeof(char *));
-        /* Prepend '/' if the pattern contains '/' but doesn't start with '/' */
-        if ((pattern[0] != '/') && (strchr(pattern, '/') != NULL)) {
-            ag_asprintf(&(ig->regexes[ig->regexes_len - 1]), "/%s", pattern);
-            log_debug("added regex ignore pattern /%s", pattern);
-        } else {
-            ig->regexes[ig->regexes_len - 1] = ag_strndup(pattern, pattern_len);
-            log_debug("added regex ignore pattern %s", pattern);
-        }
+        pattern_list = ig->regexes;
     } else {
-        /* a balanced binary tree is best for performance, but I'm lazy */
+        debug_type = "literal";
+        i = ig->names_len;
         ig->names_len++;
         ig->names = ag_realloc(ig->names, ig->names_len * sizeof(char *));
-        for (i = ig->names_len - 1; i > 0; i--) {
-            if (strcmp(pattern, ig->names[i - 1]) > 0) {
-                break;
-            }
-            ig->names[i] = ig->names[i - 1];
-        }
-        ig->names[i] = ag_strndup(pattern, pattern_len);
-        log_debug("added literal ignore pattern %s", pattern);
+        pattern_list = ig->names;
     }
+
+    /* Prepend '/' if the pattern contains '/' but doesn't start with '/' */
+    if ((pattern[0] != '/') && (strchr(pattern, '/') != NULL)) {
+        ag_asprintf(&(pattern_list[i]), "/%s", pattern);
+        log_debug("added %s ignore pattern /%s", debug_type, pattern);
+    } else {
+        pattern_list[i] = ag_strndup(pattern, pattern_len);
+        log_debug("added %s ignore pattern %s", debug_type, pattern);
+    }
+}
+
+/* Must be called after a batch of add_ignore_pattern calls */
+static int __qsort_char_ptr(const void * a, const void * b) {
+    return strcmp(*((char * const *) a), *((char * const *) b));
+}
+void sort_ignore_patterns(ignores *ig) {
+    size_t i;
+    for (i = 0; i < ig->names_len; i++)
+        log_debug("BEFORE: ignore #%d: %s", i, ig->names[i]);
+    qsort(ig->names, ig->names_len, sizeof(char *), __qsort_char_ptr);
+    for (i = 0; i < ig->names_len; i++)
+        log_debug("AFTER: ignore #%d: %s", i, ig->names[i]);
 }
 
 /* For loading git/hg ignore patterns */
@@ -137,6 +150,8 @@ void load_ignore_patterns(ignores *ig, const char *path) {
         }
         add_ignore_pattern(ig, line);
     }
+
+    sort_ignore_patterns(ig);
 
     free(line);
     fclose(fp);
@@ -205,6 +220,8 @@ void load_svn_ignore_patterns(ignores *ig, const char *path) {
         patterns += line_len + 1;
         patterns_len -= line_len + 1;
     }
+    sort_ignore_patterns(ig);
+
     free(entry);
 cleanup:
     free(dir_prop_base);
