@@ -21,6 +21,8 @@ struct ignores {
 
     const char *dirname;
     size_t dirname_len;
+    char *abs_path;
+    size_t abs_path_len;
 
     struct ignores *parent;
 };

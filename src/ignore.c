@@ -52,6 +52,17 @@ ignores *init_ignore(ignores *parent, const char *dirname, const size_t dirname_
     ig->parent = parent;
     ig->dirname = dirname;
     ig->dirname_len = dirname_len;
+    if (parent && parent->abs_path_len > 0) {
+        ag_asprintf(&(ig->abs_path), "%s/%s", parent->abs_path, dirname);
+        ig->abs_path_len = parent->abs_path_len + 1 + dirname_len;
+    } else if (dirname_len == 1 && dirname[0] == '.') {
+        ig->abs_path = ag_malloc(sizeof(char));
+        ig->abs_path[0] = '\0';
+        ig->abs_path_len = 0;
+    } else {
+        ag_asprintf(&(ig->abs_path), "%s", dirname);
+        ig->abs_path_len = dirname_len;
+    }
     return ig;
 }
 
@@ -70,6 +81,9 @@ void cleanup_ignore(ignores *ig) {
                 free(ig->names[i]);
             }
             free(ig->names);
+        }
+        if (ig->abs_path) {
+            free(ig->abs_path);
         }
         free(ig);
     }
