@@ -481,11 +481,11 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
             if (depth < opts.max_search_depth) {
                 log_debug("Searching dir %s", dir_full_path);
                 ignores *child_ig;
-#if defined(__MINGW32__) || defined(__CYGWIN__)
+// #if defined(__MINGW32__) || defined(__CYGWIN__)
                 child_ig = init_ignore(ig, dir->d_name, strlen(dir->d_name));
-#else
-                child_ig = init_ignore(ig, dir->d_name, dir->d_namlen);
-#endif
+// #else
+                // child_ig = init_ignore(ig, dir->d_name, dir->d_namlen);
+// #endif
                 search_dir(child_ig, base_path, dir_full_path, depth + 1);
                 cleanup_ignore(child_ig);
             } else {
