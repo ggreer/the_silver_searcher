@@ -75,7 +75,6 @@ void search_buf(const char *buf, const size_t buf_len,
             if ((size_t)matches_len + matches_spare >= matches_size) {
                 /* TODO: benchmark initial size of matches. 100 may be too small/big */
                 matches_size = matches ? matches_size * 2 : 100;
-                log_debug("Too many matches in %s. Reallocating matches to %zu.", dir_full_path, matches_size);
                 matches = ag_realloc(matches, matches_size * sizeof(match_t));
             }
 
@@ -101,7 +100,6 @@ void search_buf(const char *buf, const size_t buf_len,
             /* TODO: copy-pasted from above. FIXME */
             if ((size_t)matches_len + matches_spare >= matches_size) {
                 matches_size = matches ? matches_size * 2 : 100;
-                log_debug("Too many matches in %s. Reallocating matches to %zu.", dir_full_path, matches_size);
                 matches = ag_realloc(matches, matches_size * sizeof(match_t));
             }
 
@@ -482,7 +480,12 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
         } else if (opts.recurse_dirs) {
             if (depth < opts.max_search_depth) {
                 log_debug("Searching dir %s", dir_full_path);
-                ignores *child_ig = init_ignore(ig);
+                ignores *child_ig;
+                // #if defined(__MINGW32__) || defined(__CYGWIN__)
+                child_ig = init_ignore(ig, dir->d_name, strlen(dir->d_name));
+                // #else
+                // child_ig = init_ignore(ig, dir->d_name, dir->d_namlen);
+                // #endif
                 search_dir(child_ig, base_path, dir_full_path, depth + 1);
                 cleanup_ignore(child_ig);
             } else {

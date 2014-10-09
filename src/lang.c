@@ -74,7 +74,7 @@ lang_spec_t langs[] = {
 };
 
 unsigned int get_lang_count() {
-  return sizeof(langs) / sizeof(lang_spec_t);
+    return sizeof(langs) / sizeof(lang_spec_t);
 }
 
 char *make_lang_regex(const char **extensions) {

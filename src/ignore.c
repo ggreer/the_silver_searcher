@@ -5,6 +5,8 @@
 #include <string.h>
 #include <sys/stat.h>
 
+#include <assert.h>
+
 #include "ignore.h"
 #include "log.h"
 #include "options.h"
@@ -37,13 +39,30 @@ const char *ignore_pattern_files[] = {
     NULL
 };
 
-ignores *init_ignore(ignores *parent) {
+ignores *init_ignore(ignores *parent, const char *dirname, const size_t dirname_len) {
     ignores *ig = ag_malloc(sizeof(ignores));
     ig->names = NULL;
     ig->names_len = 0;
+    ig->slash_names = NULL;
+    ig->slash_names_len = 0;
     ig->regexes = NULL;
     ig->regexes_len = 0;
+    ig->slash_regexes = NULL;
+    ig->slash_regexes_len = 0;
     ig->parent = parent;
+    ig->dirname = dirname;
+    ig->dirname_len = dirname_len;
+    if (parent && parent->abs_path_len > 0) {
+        ag_asprintf(&(ig->abs_path), "%s/%s", parent->abs_path, dirname);
+        ig->abs_path_len = parent->abs_path_len + 1 + dirname_len;
+    } else if (dirname_len == 1 && dirname[0] == '.') {
+        ig->abs_path = ag_malloc(sizeof(char));
+        ig->abs_path[0] = '\0';
+        ig->abs_path_len = 0;
+    } else {
+        ag_asprintf(&(ig->abs_path), "%s", dirname);
+        ig->abs_path_len = dirname_len;
+    }
     return ig;
 }
 
@@ -62,6 +81,9 @@ void cleanup_ignore(ignores *ig) {
                 free(ig->names[i]);
             }
             free(ig->names);
+        }
+        if (ig->abs_path) {
+            free(ig->abs_path);
         }
         free(ig);
     }
@@ -88,31 +110,45 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
         return;
     }
 
-    /* TODO: de-dupe these patterns */
+    char ***patterns_p;
+    size_t *patterns_len;
     if (is_fnmatch(pattern)) {
-        ig->regexes_len++;
-        ig->regexes = ag_realloc(ig->regexes, ig->regexes_len * sizeof(char *));
-        /* Prepend '/' if the pattern contains '/' but doesn't start with '/' */
-        if ((pattern[0] != '/') && (strchr(pattern, '/') != NULL)) {
-            ag_asprintf(&(ig->regexes[ig->regexes_len - 1]), "/%s", pattern);
-            log_debug("added regex ignore pattern /%s", pattern);
+        if (pattern[0] == '/') {
+            patterns_p = &(ig->slash_regexes);
+            patterns_len = &(ig->slash_regexes_len);
+            pattern++;
+            pattern_len--;
         } else {
-            ig->regexes[ig->regexes_len - 1] = ag_strndup(pattern, pattern_len);
-            log_debug("added regex ignore pattern %s", pattern);
+            patterns_p = &(ig->regexes);
+            patterns_len = &(ig->regexes_len);
         }
     } else {
-        /* a balanced binary tree is best for performance, but I'm lazy */
-        ig->names_len++;
-        ig->names = ag_realloc(ig->names, ig->names_len * sizeof(char *));
-        for (i = ig->names_len - 1; i > 0; i--) {
-            if (strcmp(pattern, ig->names[i - 1]) > 0) {
-                break;
-            }
-            ig->names[i] = ig->names[i - 1];
+        if (pattern[0] == '/') {
+            patterns_p = &(ig->slash_names);
+            patterns_len = &(ig->slash_names_len);
+            pattern++;
+            pattern_len--;
+        } else {
+            patterns_p = &(ig->names);
+            patterns_len = &(ig->names_len);
         }
-        ig->names[i] = ag_strndup(pattern, pattern_len);
-        log_debug("added literal ignore pattern %s", pattern);
     }
+
+    ++*patterns_len;
+
+    char **patterns;
+
+    /* a balanced binary tree is best for performance, but I'm lazy */
+    *patterns_p = patterns = ag_realloc(*patterns_p, (*patterns_len) * sizeof(char *));
+    /* TODO: de-dupe these patterns */
+    for (i = *patterns_len - 1; i > 0; i--) {
+        if (strcmp(pattern, patterns[i - 1]) > 0) {
+            break;
+        }
+        patterns[i] = patterns[i - 1];
+    }
+    patterns[i] = ag_strndup(pattern, pattern_len);
+    log_debug("added ignore pattern %s", pattern);
 }
 
 /* For loading git/hg ignore patterns */
@@ -220,7 +256,9 @@ static int ackmate_dir_match(const char *dir_name) {
     return pcre_exec(opts.ackmate_dir_filter, NULL, dir_name, strlen(dir_name), 0, 0, NULL, 0);
 }
 
-static int filename_ignore_search(const ignores *ig, const char *filename) {
+static int path_ignore_search(const ignores *ig, const char *path, const char *filename) {
+    char *temp;
+
     size_t i;
     int match_pos;
 
@@ -234,31 +272,58 @@ static int filename_ignore_search(const ignores *ig, const char *filename) {
         return 1;
     }
 
+    ag_asprintf(&temp, "%s/%s", path[0] == '.' ? path + 1 : path, filename);
+    log_debug("temp: %s abs path: %s", temp, ig->abs_path);
+
+    if (strncmp(temp, ig->abs_path, ig->abs_path_len) == 0) {
+        char *slash_filename = temp + ig->abs_path_len + 1;
+        match_pos = binary_search(slash_filename, ig->names, 0, ig->names_len);
+        if (match_pos >= 0) {
+            log_debug("file %s ignored because name matches static pattern %s", temp, ig->names[match_pos]);
+            free(temp);
+            return 1;
+        }
+
+        match_pos = binary_search(slash_filename, ig->slash_names, 0, ig->slash_names_len);
+        if (match_pos >= 0) {
+            log_debug("file %s ignored because name matches slash static pattern %s", slash_filename, ig->slash_names[match_pos]);
+            free(temp);
+            return 1;
+        }
+
+        for (i = 0; i < ig->names_len; i++) {
+            char *pos = strstr(slash_filename, ig->names[i]);
+            if (pos == slash_filename || (pos && *(pos - 1) == '/')) {
+                pos += strlen(ig->names[i]);
+                if (*pos == '\0' || *pos == '/') {
+                    log_debug("file %s ignored because path somewhere matches name %s", slash_filename, ig->names[i]);
+                    free(temp);
+                    return 1;
+                }
+            }
+            log_debug("pattern %s doesn't match name %s", slash_filename, ig->names[i]);
+        }
+
+        for (i = 0; i < ig->slash_regexes_len; i++) {
+            if (fnmatch(ig->slash_regexes[i], slash_filename, fnmatch_flags) == 0) {
+                log_debug("file %s ignored because name matches slash regex pattern %s", slash_filename, ig->slash_regexes[i]);
+                free(temp);
+                return 1;
+            }
+            log_debug("pattern %s doesn't match slash file %s", ig->slash_regexes[i], slash_filename);
+        }
+    }
+
     for (i = 0; i < ig->regexes_len; i++) {
         if (fnmatch(ig->regexes[i], filename, fnmatch_flags) == 0) {
             log_debug("file %s ignored because name matches regex pattern %s", filename, ig->regexes[i]);
+            free(temp);
             return 1;
         }
         log_debug("pattern %s doesn't match file %s", ig->regexes[i], filename);
     }
 
     log_debug("file %s not ignored", filename);
-    return 0;
-}
-
-static int path_ignore_search(const ignores *ig, const char *path, const char *filename) {
-    char *temp;
-
-    if (filename_ignore_search(ig, filename)) {
-        return 1;
-    }
-
-    ag_asprintf(&temp, "%s/%s", path[0] == '.' ? path + 1 : path, filename);
-
-    if (filename_ignore_search(ig, temp)) {
-        free(temp);
-        return 1;
-    }
 
     int rv = ackmate_dir_match(temp);
     free(temp);
