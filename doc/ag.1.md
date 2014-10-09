@@ -62,7 +62,7 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     See `FILE TYPES` below.
   * `-m --max-count NUM`:
     Skip the rest of a file after NUM matches. Default is 10,000.
-  * `--no-numbers`:            
+  * `--no-numbers`:
     Don't show line numbers
   * `--null`:
     Separate files output with -l or -L by \0 rather than \n, this allows 'xargs -0 <command>' to correctly process filenames with spaces.
@@ -93,6 +93,13 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `-U --skip-vcs-ignores`:
     Ignore VCS ignore files (.gitignore, .hgignore, svn:ignore), but still use .agignore.
   * `-v --invert-match`
+  * `--vimgrep`:
+    Output results like vim's :vimgrep /pattern/g would (it reports every match on the line).
+    Here's a ~/.vimrc configuration example:
+    set grepprg=ag\ --vimgrep\ $*
+    set grepformat=%f:%l:%c:%m
+    Then use :grep to grep for something.
+    Then use :copen :cn :cp etc.. to navigate through the matches.
   * `-w --word-regexp`:
     Only match whole words.
   * `-z --search-zip`:

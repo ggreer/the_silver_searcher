@@ -57,6 +57,8 @@ Output Options:\n\
                           don't match\n\
      --silent             Suppress all log messages, including errors\n\
      --stats              Print stats (files scanned, time taken, etc.)\n\
+     --vimgrep            Print results like vim's :vimgrep /pattern/g would\n\
+                          (it reports every match on the line)\n\
 \n\
 Search Options:\n\
   -a --all-types          Search all files (doesn't include hidden files\n\
@@ -151,7 +153,7 @@ void cleanup_options(void) {
 
 void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     int ch;
-    int i;
+    unsigned int i;
     int path_len = 0;
     int useless = 0;
     int group = 1;
@@ -166,6 +168,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     int needs_query = 1;
     struct stat statbuf;
     int rv;
+    unsigned int lang_count;
 
     size_t longopts_len, full_len;
     option_t *longopts;
@@ -232,16 +235,18 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "stats", no_argument, &opts.stats, 1 },
         { "unrestricted", no_argument, NULL, 'u' },
         { "version", no_argument, &version, 1 },
+        { "vimgrep", no_argument, &opts.vimgrep, 1 },
         { "word-regexp", no_argument, NULL, 'w' },
         { "workers", required_argument, NULL, 0 },
     };
 
+    lang_count = get_lang_count();
     longopts_len = (sizeof(base_longopts) / sizeof(option_t));
-    full_len = (longopts_len + LANG_COUNT + 1);
+    full_len = (longopts_len + lang_count + 1);
     longopts = ag_malloc(full_len * sizeof(option_t));
     memcpy(longopts, base_longopts, sizeof(base_longopts));
 
-    for (i = 0; i < LANG_COUNT; i++) {
+    for (i = 0; i < lang_count; i++) {
         option_t opt = { langs[i].name, no_argument, NULL, 0 };
         longopts[i + longopts_len] = opt;
     }
@@ -442,7 +447,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                     break;
                 }
 
-                for (i = 0; i < LANG_COUNT; i++) {
+                for (i = 0; i < lang_count; i++) {
                     if (strcmp(longopts[opt_index].name, langs[i].name) == 0) {
                         lang_regex = make_lang_regex(langs[i].extensions);
                         compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, lang_regex, 0, 0);
@@ -486,9 +491,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     if (list_file_types) {
-        int lang_index;
+        unsigned int lang_index;
         printf("The following file types are supported:\n");
-        for (lang_index = 0; lang_index < LANG_COUNT; lang_index++) {
+        for (lang_index = 0; lang_index < lang_count; lang_index++) {
             printf("  --%s\n    ", langs[lang_index].name);
             int j;
             for (j = 0; j < MAX_EXTENSIONS && langs[lang_index].extensions[j]; j++) {
@@ -545,6 +550,14 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.search_stream = 0;
     }
 
+    if (opts.vimgrep) {
+        opts.color = 0;
+        opts.print_break = 0;
+        group = 1;
+        opts.search_stream = 0;
+        opts.print_path = PATH_PRINT_NOTHING;
+    }
+
     if (opts.parallel) {
         opts.search_stream = 0;
     }
@@ -597,7 +610,7 @@ skip_group:
     if (argc > 0) {
         *paths = ag_calloc(sizeof(char *), argc + 1);
         *base_paths = ag_calloc(sizeof(char *), argc + 1);
-        for (i = 0; i < argc; i++) {
+        for (i = 0; i < (unsigned int)argc; i++) {
             path = ag_strdup(argv[i]);
             path_len = strlen(path);
             /* kill trailing slash */

@@ -2,7 +2,6 @@
 #define LANG_H
 
 #define MAX_EXTENSIONS 12
-#define LANG_COUNT 66
 
 typedef struct {
     const char *name;
@@ -10,6 +9,11 @@ typedef struct {
 } lang_spec_t;
 
 extern lang_spec_t langs[];
+
+/**
+ Return the language count.
+ */
+unsigned int get_lang_count(void);
 
 /**
 Convert a NULL-terminated array of language extensions

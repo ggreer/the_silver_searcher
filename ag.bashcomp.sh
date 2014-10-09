@@ -62,6 +62,7 @@ _ag() {
     --stats
     --unrestricted
     --version
+    --vimgrep
     --word-regexp
     --workers
   '

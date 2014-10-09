@@ -252,7 +252,23 @@ Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 .P
 \fB\-v \-\-invert\-match\fR
 .
+.P
+\fB\-\-vimgrep\fR:
+.
 .br
+\~\~\~\~ Output results like vim's :vimgrep /pattern/g would (it reports every match on the line)\.
+.br
+\~\~\~\~ Here's a ~/.vimrc configuration example:
+.P
+\~\~\~\~\~\~\~\~ set grepprg=ag\\\ --vimgrep\\\ $*
+.br
+\~\~\~\~\~\~\~\~ set grepformat=%f:%l:%c:%m
+.P
+\~\~\~\~ Then use :grep to grep for something\.
+.br
+\~\~\~\~ Then use :copen :cn :cp etc.. to navigate through the matches\.
+.
+.P
 \fB\-w \-\-word\-regexp\fR:
 .
 .br
