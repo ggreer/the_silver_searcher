@@ -5,8 +5,6 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#include <assert.h>
-
 #include "ignore.h"
 #include "log.h"
 #include "options.h"
