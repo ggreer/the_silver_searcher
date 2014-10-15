@@ -15,9 +15,9 @@
 #include "log.h"
 #include "util.h"
 
-const char *color_line_number = "\033[1;33m"; /* yellow with black background */
-const char *color_match = "\033[30;43m";      /* black with yellow background */
-const char *color_path = "\033[1;32m";        /* bold green */
+const char *color_line_number = "\033[1;32m"; /* green on black background */
+const char *color_match = "\033[1;37m";       /* white on black background */
+const char *color_path = "\033[1;34m";        /* blue on black background */
 
 /* TODO: try to obey out_fd? */
 void usage(void) {
@@ -37,9 +37,9 @@ Output Options:\n\
      --[no]break          Print newlines between matches in different files\n\
                           (Enabled by default)\n\
      --[no]color          Print color codes in results (Enabled by default)\n\
-     --color-line-number  Color codes for line numbers (Default: 1;33)\n\
-     --color-match        Color codes for result match numbers (Default: 30;43)\n\
-     --color-path         Color codes for path names (Default: 1;32)\n\
+     --color-line-number  Color codes for line numbers (Default: 1;32)\n\
+     --color-match        Color codes for result match numbers (Default: 1;37)\n\
+     --color-path         Color codes for path names (Default: 1;34)\n\
      --column             Print column numbers in results\n\
   -H --[no]heading        Print file names (Enabled unless searching a single file)\n\
      --line-numbers       Print line numbers even for streams\n\
