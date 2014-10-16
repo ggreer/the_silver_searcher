@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -66,6 +67,8 @@ Search Options:\n\
   -D --debug              Ridiculous debugging (probably not useful)\n\
      --depth NUM          Search up to NUM directories deep (Default: 25)\n\
   -f --follow             Follow symlinks\n\
+  --files-from FILE       Read the list of files to search from FILE.\n\
+  -x                      Read the list of files to search from STDIN.\n\
   -G --file-search-regex  PATTERN Limit search to filenames matching PATTERN\n\
      --hidden             Search hidden files (obeys .*ignore files)\n\
   -i --ignore-case        Match case insensitively\n\
@@ -130,6 +133,10 @@ void cleanup_options(void) {
         free(opts.query);
     }
 
+    if (opts.files_from) {
+        free(opts.files_from);
+    }
+
     pcre_free(opts.re);
     if (opts.re_extra) {
         /* Using pcre_free_study on pcre_extra* can segfault on some versions of PCRE */
@@ -151,10 +158,32 @@ void cleanup_options(void) {
     }
 }
 
+static void add_path(const char *file_path, unsigned int idx, char **base_paths[], char **paths[])
+{
+    size_t path_len;
+    char *path = NULL;
+    char *tmp = NULL;
+
+    path = ag_strdup(file_path);
+    path_len = strlen(path);
+
+    while ((path_len > 0) && isspace(path[path_len - 1])) {
+        path[--path_len] = '\0';
+    }
+
+    /* kill trailing slash */
+    if (path_len > 1 && path[path_len - 1] == '/') {
+        path[path_len - 1] = '\0';
+    }
+
+    (*paths)[idx] = path;
+    tmp = ag_malloc(PATH_MAX);
+    (*base_paths)[idx] = realpath(path, tmp);
+}
+
 void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     int ch;
     unsigned int i;
-    int path_len = 0;
     int useless = 0;
     int group = 1;
     int help = 0;
@@ -193,6 +222,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "context", optional_argument, NULL, 'C' },
         { "debug", no_argument, NULL, 'D' },
         { "depth", required_argument, NULL, 0 },
+        { "files-from", required_argument, NULL, 0 },
         { "file-search-regex", required_argument, NULL, 'G' },
         { "files-with-matches", no_argument, NULL, 'l' },
         { "files-without-matches", no_argument, NULL, 'L' },
@@ -282,7 +312,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.stdout_inode = statbuf.st_ino;
     }
 
-    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fHhiLlm:np:QRrSsvVtuUwz", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fHhiLlm:np:QRrSsvVtuUwxz", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 if (optarg) {
@@ -396,6 +426,12 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             case 'w':
                 opts.word_regexp = 1;
                 break;
+            case 'x':
+                if (opts.files_from) {
+                    free(opts.files_from);
+                }
+                opts.files_from = ag_strdup("-");
+                break;
             case 'z':
                 opts.search_zip_files = 1;
                 break;
@@ -440,6 +476,12 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 } else if (strcmp(longopts[opt_index].name, "silent") == 0) {
                     set_log_level(LOG_LEVEL_NONE);
                     break;
+                } else if (strcmp(longopts[opt_index].name, "files-from") == 0) {
+                    if (opts.files_from) {
+                        free(opts.files_from);
+                    }
+                    opts.files_from = ag_strdup(optarg);
+                    break;
                 }
 
                 /* Continue to usage if we don't recognize the option */
@@ -471,6 +513,14 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 
     argc -= optind;
     argv += optind;
+
+    if (opts.files_from) {
+        opts.search_binary_files = 1;
+        opts.search_all_files = 1;
+        opts.search_hidden_files = 1;
+        opts.skip_vcs_ignores = 1;
+        opts.search_stream = 0;
+    }
 
     if (opts.pager) {
         out_fd = popen(opts.pager, "w");
@@ -604,33 +654,56 @@ skip_group:
         opts.literal = 1;
     }
 
-    char *path = NULL;
-    char *tmp = NULL;
-    opts.paths_len = argc;
-    if (argc > 0) {
-        *paths = ag_calloc(sizeof(char *), argc + 1);
-        *base_paths = ag_calloc(sizeof(char *), argc + 1);
-        for (i = 0; i < (unsigned int)argc; i++) {
-            path = ag_strdup(argv[i]);
-            path_len = strlen(path);
-            /* kill trailing slash */
-            if (path_len > 1 && path[path_len - 1] == '/') {
-                path[path_len - 1] = '\0';
+    if (opts.files_from) {
+        FILE *fin;
+        char line[PATH_MAX];
+        unsigned int max_size = 4;
+
+        if (strcmp(opts.files_from, "-") == 0) {
+            fin = stdin;
+        } else {
+            fin = fopen(opts.files_from, "r");
+            if (NULL == fin) {
+                log_err("Error: Failed to open '%s' for reading.", opts.files_from);
+                exit(1);
             }
-            (*paths)[i] = path;
-            tmp = ag_malloc(PATH_MAX);
-            (*base_paths)[i] = realpath(path, tmp);
         }
-        /* Make sure we search these paths instead of stdin. */
+
+        i = 0;
+        *paths = ag_calloc(sizeof(char *), max_size + 1);
+        *base_paths = ag_calloc(sizeof(char *), max_size + 1);
+
+        while (fgets(line, PATH_MAX, fin) != NULL) {
+            if (i == max_size) {
+                max_size *= 4;
+                *paths = ag_realloc(*paths, sizeof(char *) * (max_size + 1));
+                *base_paths = ag_realloc(*base_paths, sizeof(char *) * (max_size + 1));
+            }
+
+            add_path(line, i, base_paths, paths);
+
+            ++i;
+        }
+
+        if (fin != stdin) {
+            fclose(fin);
+        }
         opts.search_stream = 0;
+        opts.paths_len = 0;
     } else {
-        path = ag_strdup(".");
-        *paths = ag_malloc(sizeof(char *) * 2);
-        *base_paths = ag_malloc(sizeof(char *) * 2);
-        (*paths)[0] = path;
-        tmp = ag_malloc(PATH_MAX);
-        (*base_paths)[0] = realpath(path, tmp);
-        i = 1;
+        opts.paths_len = argc;
+        *paths = ag_calloc(sizeof(char *), (argc > 0) ? argc + 1 : 2);
+        *base_paths = ag_calloc(sizeof(char *), (argc > 0) ? argc + 1 : 2);
+        if (argc > 0) {
+            for (i = 0; i < (unsigned int)argc; i++) {
+                add_path(argv[i], i, base_paths, paths);
+            }
+            /* Make sure we search these paths instead of stdin. */
+            opts.search_stream = 0;
+        } else {
+            add_path(".", 0, base_paths, paths);
+            i = 1;
+        }
     }
     (*paths)[i] = NULL;
     (*base_paths)[i] = NULL;
