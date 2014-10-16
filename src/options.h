@@ -78,6 +78,7 @@ typedef struct {
     int vimgrep;
     int word_regexp;
     int workers;
+    char *files_from;
 } cli_options;
 
 /* global options. parse_options gives it sane values, everything else reads from it */
