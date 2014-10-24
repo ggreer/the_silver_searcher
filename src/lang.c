@@ -38,6 +38,7 @@ lang_spec_t langs[] = {
     { "lua", { "lua" } },
     { "m4", { "m4" } },
     { "make", { "Makefiles", "mk", "mak" } },
+    { "markdown", { "markdown", "mdown", "mdwn", "mkdn", "mkd", "md" } },
     { "mason", { "mas", "mhtml", "mpl", "mtxt" } },
     { "matlab", { "m" } },
     { "objc", { "m", "h" } },

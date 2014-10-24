@@ -105,6 +105,9 @@ Language types are output:
     --make
         .Makefiles  .mk  .mak
   
+    --markdown
+        .markdown  .mdown  .mdwn  .mkdn  .mkd  .md
+  
     --mason
         .mas  .mhtml  .mpl  .mtxt
   
