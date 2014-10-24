@@ -149,14 +149,14 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Match every line *not* containing the specified pattern.
 
   * `--vimgrep`:
-    Output results like vim's :vimgrep /pattern/g would (it reports every match on the line).   
+    Output results like vim's `:vimgrep /pattern/g` would (it reports every match on the line).   
     Here's a ~/.vimrc configuration example:
 
-    set grepprg=ag\ --vimgrep\ $*   
-    set grepformat=%f:%l:%c:%m
+    `set grepprg=ag\ --vimgrep\ $*`   
+    `set grepformat=%f:%l:%c:%m`
 
-    Then use :grep to grep for something.   
-    Then use :copen :cn :cp etc.. to navigate through the matches.
+    Then use `:grep` to grep for something.   
+    Then use `:copen`, `:cn`, `:cp`, etc. to navigate through the matches.
 
   * `-w --word-regexp`:
     Only match whole words.

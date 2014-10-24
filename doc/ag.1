@@ -184,22 +184,22 @@ Match every line \fInot\fR containing the specified pattern\.
 .
 .TP
 \fB\-\-vimgrep\fR
-Output results like vim\'s :vimgrep /pattern/g would (it reports every match on the line)\.
+Output results like vim\'s \fB:vimgrep /pattern/g\fR would (it reports every match on the line)\.
 .
 .br
 Here\'s a ~/\.vimrc configuration example:
 .
 .IP
-set grepprg=ag\e \-\-vimgrep\e $*
+\fBset grepprg=ag\e \-\-vimgrep\e $*\fR
 .
 .br
-set grepformat=%f:%l:%c:%m
+\fBset grepformat=%f:%l:%c:%m\fR
 .
 .IP
-Then use :grep to grep for something\.
+Then use \fB:grep\fR to grep for something\.
 .
 .br
-Then use :copen :cn :cp etc\.\. to navigate through the matches\.
+Then use \fB:copen\fR, \fB:cn\fR, \fB:cp\fR, etc\. to navigate through the matches\.
 .
 .TP
 \fB\-w \-\-word\-regexp\fR
