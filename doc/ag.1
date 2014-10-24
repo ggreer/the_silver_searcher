@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "AG" "1" "August 2014" "" ""
+.TH "AG" "1" "October 2014" "" ""
 .
 .SH "NAME"
 \fBag\fR \- The Silver Searcher\. Like ack, but faster\.
@@ -13,284 +13,213 @@
 Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
 .
 .SH "OPTIONS"
-\fB\-\-ackmate\fR:
 .
-.br
-\~\~\~\~ Output results in a format parseable by AckMate \fIhttps://github\.com/protocool/AckMate\fR\.
+.TP
+\fB\-\-ackmate\fR
+Output results in a format parseable by AckMate \fIhttps://github\.com/protocool/AckMate\fR\.
 .
-.P
-\fB\-a \-\-all\-types\fR:
+.TP
+\fB\-a \-\-all\-types\fR
+Search all files\. This doesn\'t include hidden files, and doesn\'t respect any ignore files\.
 .
-.br
-\~\~\~\~ Search all files\. This doesn\'t include hidden files, and also doesn\'t respect any ignore files
+.TP
+\fB\-A \-\-after [LINES]\fR
+Print lines after match\. Defaults to 2\.
 .
-.P
-\fB\-A \-\-after [LINES]\fR:
+.TP
+\fB\-B \-\-before [LINES]\fR
+Print lines before match\. Defaults to 2\.
 .
-.br
-\~\~\~\~ Print lines after match\. Defaults to 2\.
+.TP
+\fB\-\-[no]break\fR
+Print a newline between matches in different files\. Enabled by default\.
 .
-.P
-\fB\-B \-\-before [LINES]\fR:
+.TP
+\fB\-\-[no]color\fR
+Print color codes in results\. Enabled by default\.
 .
-.br
-\~\~\~\~ Print lines before match\. Defaults to 2\.
+.TP
+\fB\-\-color\-line\-number\fR
+Color codes for line numbers\. Defaults to 1;33\.
 .
-.P
-\fB\-\-[no]break\fR:
+.TP
+\fB\-\-color\-match\fR
+Color codes for result match numbers\. Defaults to 30;43\.
 .
-.br
-\~\~\~\~ Print a newline between matches in different files\. Enabled by default\.
+.TP
+\fB\-\-color\-path\fR
+Color codes for path names\. Defaults to 1;32\.
 .
-.P
-\fB\-\-[no]color\fR:
+.TP
+\fB\-\-column\fR
+Print column numbers in results\.
 .
-.br
-\~\~\~\~ Print color codes in results\. Enabled by default\.
+.TP
+\fB\-C \-\-context [LINES]\fR
+Print lines before and after matches\. Defaults to 2\.
 .
-.P
-\fB\-\-color\-line\-number\fR:
+.TP
+\fB\-D \-\-debug\fR
+Output ridiculous amounts of debugging info\. Probably not useful\.
 .
-.br
-\~\~\~\~ Color codes for line numbers\. Defaults to 1;33\.
+.TP
+\fB\-\-depth NUM\fR
+Search up to NUM directories deep\. Default is 25\.
 .
-.P
-\fB\-\-color\-match\fR:
+.TP
+\fB\-f \-\-follow\fR
+Follow symlinks\.
 .
-.br
-\~\~\~\~ Color codes for result match numbers\. Defaults to 30;43\.
-.
-.P
-\fB\-\-color\-path\fR:
-.
-.br
-\~\~\~\~ Color codes for path names\. Defaults to 1;32\.
-.
-.P
-\fB\-\-column\fR:
-.
-.br
-\~\~\~\~ Print column numbers in results\.
-.
-.P
-\fB\-C \-\-context [LINES]\fR:
-.
-.br
-\~\~\~\~ Print lines before and after matches\. Defaults to 2\.
-.
-.P
-\fB\-D \-\-debug\fR:
-.
-.br
-\~\~\~\~ Output ridiculous amounts of debugging info\. Probably not useful\.
-.
-.P
-\fB\-\-depth NUM\fR:
-.
-.br
-\~\~\~\~ Search up to NUM directories deep\. Default is 25\.
-.
-.P
-\fB\-f \-\-follow\fR:
-.
-.br
-\~\~\~\~ Follow symlinks\.
-.
-.P
+.TP
 \fB\-\-[no]group\fR
+The default, \fB\-\-group\fR, lumps multiple matches in the same file together, and presents them under a single occurrence of the filename\. \fB\-\-nogroup\fR refrains from this, and instead places the filename at the start of each match line\.
 .
-.br
-\fB\-g PATTERN\fR:
+.TP
+\fB\-g PATTERN\fR
+Print filenames matching PATTERN\.
 .
-.br
-\~\~\~\~ Print filenames matching PATTERN\.
+.TP
+\fB\-G \-\-file\-search\-regex PATTERN\fR
+Only search files whose names match PATTERN\.
 .
-.P
-\fB\-G\fR, \fB\-\-file\-search\-regex PATTERN\fR:
+.TP
+\fB\-H \-\-[no]heading\fR
+Print filenames above matching contents\.
 .
-.br
-\~\~\~\~ Only search filenames matching PATTERN\.
+.TP
+\fB\-\-hidden\fR
+Search hidden files\. This option obeys ignore files\.
 .
-.P
-\fB\-H\fR, \fB\-\-[no]heading\fR:
+.TP
+\fB\-\-ignore PATTERN\fR
+Ignore files/directories whose names match this pattern\. Literal file and directory names are also allowed\.
 .
-.br
-\~\~\~\~ Print file names above matching contents\.
+.TP
+\fB\-\-ignore\-dir NAME\fR
+Alias for \-\-ignore for compatibility with ack\.
 .
-.P
-\fB\-\-hidden\fR:
+.TP
+\fB\-i \-\-ignore\-case\fR
+Match case\-insensitively\.
 .
-.br
-\~\~\~\~ Search hidden files\. This option obeys ignore files\.
+.TP
+\fB\-l \-\-files\-with\-matches\fR
+Only print the names of files containing matches, not the matching lines\. An empty query will print all files that would be searched\.
 .
-.P
-\fB\-\-ignore PATTERN\fR:
+.TP
+\fB\-L \-\-files\-without\-matches\fR
+Only print the names of files that don\'t contain matches\.
 .
-.br
-\~\~\~\~ Ignore files/directories matching this pattern\. Literal file and directory names are also allowed\.
+.TP
+\fB\-\-list\-file\-types\fR
+See \fBFILE TYPES\fR below\.
 .
-.P
-\fB\-\-ignore\-dir NAME\fR:
+.TP
+\fB\-m \-\-max\-count NUM\fR
+Skip the rest of a file after NUM matches\. Default is 10,000\.
 .
-.br
-\~\~\~\~ Alias for \-\-ignore for compatibility with ack\.
+.TP
+\fB\-\-no\-numbers\fR
+Don\'t show line numbers\.
 .
-.P
-\fB\-i \-\-ignore\-case\fR:
+.TP
+\fB\-\-null\fR
+Separate the filenames produced by \-l or \-L with \fB\e0\fR, rather than \fB\en\fR: this allows \fBxargs \-0 <command>\fR to correctly process filenames containing spaces\.
 .
-.br
-\~\~\~\~ Match case insensitively\.
+.TP
+\fB\-p \-\-path\-to\-agignore STRING\fR
+Provide a path to a specific \.agignore file\.
 .
-.P
-\fB\-l \-\-files\-with\-matches\fR:
+.TP
+\fB\-\-pager COMMAND\fR
+Use a pager such as less\. Use \fB\-\-nopager\fR to override\. This option is also ignored if output is piped to another program\.
 .
-.br
-\~\~\~\~ Only print filenames containing matches, not matching lines\. An empty query will print all files that would be searched\.
+.TP
+\fB\-\-print\-long\-lines\fR
+Print matches on very long lines (> 2k characters by default)\.
 .
-.P
-\fB\-L \-\-files\-without\-matches\fR:
+.TP
+\fB\-\-passthrough\fR
+When searching a stream, print all lines even if they don\'t match\.
 .
-.br
-\~\~\~\~ Only print filenames that don\'t contain matches\.
+.TP
+\fB\-Q \-\-literal\fR
+Do not parse PATTERN as a regular expression\. Try to match it literally\.
 .
-.P
-\fB\-\-list\-file\-types\fR:
+.TP
+\fB\-s \-\-case\-sensitive\fR
+Match case\-sensitively\.
 .
-.br
-\~\~\~\~ See \fBFILE TYPES\fR below\.
+.TP
+\fB\-S \-\-smart\-case\fR
+Match case\-sensitively if there are any uppercase letters in PATTERN, case\-insensitively otherwise\. Enabled by default\.
 .
-.P
-\fB\-m \-\-max\-count NUM\fR:
+.TP
+\fB\-\-search\-binary\fR
+Search binary files for matches\.
 .
-.br
-\~\~\~\~ Skip the rest of a file after NUM matches\. Default is 10,000\.
+.TP
+\fB\-\-silent\fR
+Suppress all log messages, including errors\.
 .
-.P
-\fB\-\-no\-numbers\fR:
+.TP
+\fB\-\-stats\fR
+Print stats (files scanned, time taken, etc)\.
 .
-.br
-\~\~\~\~ Don\'t show line numbers
+.TP
+\fB\-t \-\-all\-text\fR
+Search all text files\. This doesn\'t include hidden files\.
 .
-.P
-\fB\-p \-\-path\-to\-agignore STRING\fR:
+.TP
+\fB\-u \-\-unrestricted\fR
+Search \fIall\fR files\. This ignores \.agignore, \.gitignore, etc\. It searches binary and hidden files as well\.
 .
-.br
-\~\~\~\~ Provide a path to a specific \.agignore file\.
+.TP
+\fB\-U \-\-skip\-vcs\-ignores\fR
+Ignore VCS ignore files (\.gitignore, \.hgignore, svn:ignore), but still use \.agignore\.
 .
-.P
-\fB\-\-pager COMMAND\fR:
-.
-.br
-\~\~\~\~ Use a pager such as less\. Use \fB\-\-nopager\fR to override\. This option is also ignored if output is piped to another program\.
-.
-.P
-\fB\-\-print\-long\-lines\fR:
-.
-.br
-\~\~\~\~ Print matches on very long lines (> 2k characters by default)
-.
-.P
-\fB\-\-passthrough\fR:
-.
-.br
-\~\~\~\~ When searching a stream, print all lines even if they don\'t match\.
-.
-.P
-\fB\-Q \-\-literal\fR:
-.
-.br
-\~\~\~\~ Do not parse PATTERN as a regular expression\. Try to match it literally\.
-.
-.P
-\fB\-s \-\-case\-sensitive\fR:
-.
-.br
-\~\~\~\~ Match case sensitively\.
-.
-.P
-\fB\-S \-\-smart\-case\fR:
-.
-.br
-\~\~\~\~ Match case sensitively if there are any uppercase letters in PATTERN, or case insensitively otherwise\. Enabled by default\.
-.
-.P
-\fB\-\-search\-binary\fR:
-.
-.br
-\~\~\~\~ Search binary files for matches\.
-.
-.P
-\fB\-\-silent\fR:
-.
-.br
-\~\~\~\~ Suppress all log messages, including errors\.
-.
-.P
-\fB\-\-stats\fR:
-.
-.br
-\~\~\~\~ Print stats (files scanned, time taken, etc)
-.
-.P
-\fB\-t \-\-all\-text\fR:
-.
-.br
-\~\~\~\~ Search all text files\. This doesn\'t include hidden files\.
-.
-.P
-\fB\-u \-\-unrestricted\fR:
-.
-.br
-\~\~\~\~ Search \fIall\fR files\. This ignores \.agignore, \.gitignore, etc\. It searches binary and hidden files as well\.
-.
-.P
-\fB\-U \-\-skip\-vcs\-ignores\fR:
-.
-.br
-\~\~\~\~ Ignore VCS ignore files (\.gitignore, \.hgignore, svn:ignore), but still use \.agignore\.
-.
-.P
+.TP
 \fB\-v \-\-invert\-match\fR
+Match every line \fInot\fR containing the specified pattern\.
 .
-.P
-\fB\-\-vimgrep\fR:
-.
-.br
-\~\~\~\~ Output results like vim's :vimgrep /pattern/g would (it reports every match on the line)\.
-.br
-\~\~\~\~ Here's a ~/.vimrc configuration example:
-.P
-\~\~\~\~\~\~\~\~ set grepprg=ag\\\ --vimgrep\\\ $*
-.br
-\~\~\~\~\~\~\~\~ set grepformat=%f:%l:%c:%m
-.P
-\~\~\~\~ Then use :grep to grep for something\.
-.br
-\~\~\~\~ Then use :copen :cn :cp etc.. to navigate through the matches\.
-.
-.P
-\fB\-w \-\-word\-regexp\fR:
+.TP
+\fB\-\-vimgrep\fR
+Output results like vim\'s :vimgrep /pattern/g would (it reports every match on the line)\.
 .
 .br
-\~\~\~\~ Only match whole words\.
+Here\'s a ~/\.vimrc configuration example:
 .
-.P
-\fB\-z \-\-search\-zip\fR:
+.IP
+set grepprg=ag\e \-\-vimgrep\e $*
 .
 .br
-\~\~\~\~ Search contents of compressed files\.
+set grepformat=%f:%l:%c:%m
+.
+.IP
+Then use :grep to grep for something\.
+.
+.br
+Then use :copen :cn :cp etc\.\. to navigate through the matches\.
+.
+.TP
+\fB\-w \-\-word\-regexp\fR
+Only match whole words\.
+.
+.TP
+\fB\-z \-\-search\-zip\fR
+Search contents of compressed files\.
 .
 .SH "FILE TYPES"
-It is possible to restrict the types of files searched\. For example, passing \fB\-\-html\fR as the \fBfile\-types\fR parameter will search only files with the extensions \fBhtm\fR, \fBhtml\fR, \fBshtml\fR or \fBxhtml\fR\. For a list of supported \fBfile\-types\fR run \fBag \-\-list\-file\-types\fR\.
+It is possible to restrict the types of files searched\. For example, passing \fB\-\-html\fR as the \fBfile\-types\fR parameter will search only files with the extensions \fBhtm\fR, \fBhtml\fR, \fBshtml\fR or \fBxhtml\fR\. For a list of supported \fBfile\- types\fR run \fBag \-\-list\-file\-types\fR\.
 .
 .SH "IGNORING FILES"
-By default, ag will ignore files matched by patterns in \.gitignore, \.hgignore, or \.agignore\. These files can be anywhere in the directories being searched\. Ag also ignores files matched by the svn:ignore property if \fBsvn \-\-version\fR is 1\.6 or older\. Finally, ag looks in $HOME/\.agignore for ignore patterns\. Binary files are ignored by default as well\.
+By default, ag will ignore files whose names match patterns in \.gitignore, \.hgignore, or \.agignore\. These files can be anywhere in the directories being searched\. Ag also ignores files matched by the svn:ignore property if \fBsvn \-\-version\fR is 1\.6 or older\. Finally, ag looks in $HOME/\.agignore for ignore patterns\. Binary files are ignored by default as well\.
 .
 .P
-If you want to ignore \.gitignore, \.hgignore, and svn:ignore but still take \.agignore into account, use \fB\-U\fR\.
+If you want to ignore \.gitignore, \.hgignore, and svn:ignore, but still take \.agignore into account, use \fB\-U\fR\.
 .
 .P
-Use the \fB\-t\fR option to search all text files, \fB\-a\fR to search all files, and \fB\-u\fR to search all including hidden files\.
+Use the \fB\-t\fR option to search all text files; \fB\-a\fR to search all files; and \fB\-u\fR to search all, including hidden files\.
 .
 .SH "EXAMPLES"
 \fBag printf\fR: Find matches for "printf" in the current directory\.
