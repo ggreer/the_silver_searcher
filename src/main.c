@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
         for (i = 0; paths[i] != NULL; i++) {
             log_debug("searching path %s for %s", paths[i], opts.query);
             symhash = NULL;
-            ignores *ig = init_ignore(root_ignores, paths[i], strlen(paths[i]));
+            ignores *ig = init_ignore(root_ignores, "", 0);
             search_dir(ig, base_paths[i], paths[i], 0);
             cleanup_ignore(ig);
         }

@@ -16,3 +16,8 @@ Dont ignore anything (unrestricted search):
   $ ag -u whatever . | sort
   a/b/c/blah.yml:1:whatever1
   a/b/foo.yml:1:whatever2
+
+Ignore foo.yml given an absolute search path [#448]:
+
+  $ ag whatever $(pwd)
+  /.*/a/b/c/blah.yml:1:whatever1 (re)

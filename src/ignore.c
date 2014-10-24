@@ -146,7 +146,7 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
         patterns[i] = patterns[i - 1];
     }
     patterns[i] = ag_strndup(pattern, pattern_len);
-    log_debug("added ignore pattern %s", pattern);
+    log_debug("added ignore pattern %s to %s", pattern, ig->abs_path);
 }
 
 /* For loading git/hg ignore patterns */
@@ -274,7 +274,10 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
     log_debug("temp: %s abs path: %s", temp, ig->abs_path);
 
     if (strncmp(temp, ig->abs_path, ig->abs_path_len) == 0) {
-        char *slash_filename = temp + ig->abs_path_len + 1;
+        char *slash_filename = temp + ig->abs_path_len;
+        if (slash_filename[0] == '/') {
+            slash_filename++;
+        }
         match_pos = binary_search(slash_filename, ig->names, 0, ig->names_len);
         if (match_pos >= 0) {
             log_debug("file %s ignored because name matches static pattern %s", temp, ig->names[match_pos]);
