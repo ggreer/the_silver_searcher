@@ -219,9 +219,9 @@ void print_line_number(size_t line, const char sep) {
         line = opts.stream_line_num;
     }
     if (opts.color) {
-        fprintf(out_fd, "%s%lu%s%c", opts.color_line_number, line, color_reset, sep);
+        fprintf(out_fd, "%s%lu%s%c", opts.color_line_number, (unsigned long)line, color_reset, sep);
     } else {
-        fprintf(out_fd, "%lu%c", line, sep);
+        fprintf(out_fd, "%lu%c", (unsigned long)line, sep);
     }
 }
 
