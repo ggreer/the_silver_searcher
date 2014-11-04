@@ -20,6 +20,11 @@
 #include "search.h"
 #include "util.h"
 
+typedef struct {
+    pthread_t thread;
+    int id;
+} worker_t;
+
 int main(int argc, char **argv) {
     char **base_paths = NULL;
     char **paths = NULL;
@@ -27,7 +32,7 @@ int main(int argc, char **argv) {
     int pcre_opts = PCRE_MULTILINE;
     int study_opts = 0;
     double time_diff;
-    pthread_t *workers = NULL;
+    worker_t *workers = NULL;
     int workers_len;
 
     set_log_level(LOG_LEVEL_WARN);
@@ -71,7 +76,7 @@ int main(int argc, char **argv) {
 
     log_debug("Using %i workers", workers_len);
     done_adding_files = FALSE;
-    workers = ag_calloc(workers_len, sizeof(pthread_t));
+    workers = ag_calloc(workers_len, sizeof(worker_t));
     if (pthread_cond_init(&files_ready, NULL)) {
         die("pthread_cond_init failed!");
     }
@@ -123,7 +128,8 @@ int main(int argc, char **argv) {
         search_stream(stdin, "");
     } else {
         for (i = 0; i < workers_len; i++) {
-            int rv = pthread_create(&(workers[i]), NULL, &search_file_worker, &i);
+            workers[i].id = i;
+            int rv = pthread_create(&(workers[i].thread), NULL, &search_file_worker, &(workers[i].id));
             if (rv != 0) {
                 die("error in pthread_create(): %s", strerror(rv));
             }
@@ -140,7 +146,7 @@ int main(int argc, char **argv) {
         pthread_cond_broadcast(&files_ready);
         pthread_mutex_unlock(&work_queue_mtx);
         for (i = 0; i < workers_len; i++) {
-            if (pthread_join(workers[i], NULL)) {
+            if (pthread_join(workers[i].thread, NULL)) {
                 die("pthread_join failed!");
             }
         }
