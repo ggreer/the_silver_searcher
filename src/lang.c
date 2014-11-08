@@ -34,6 +34,7 @@ lang_spec_t langs[] = {
     { "json", { "json" } },
     { "jsp", { "jsp", "jspx", "jhtm", "jhtml" } },
     { "less", { "less" } },
+    { "liquid", { "liquid" } },
     { "lisp", { "lisp", "lsp" } },
     { "lua", { "lua" } },
     { "m4", { "m4" } },

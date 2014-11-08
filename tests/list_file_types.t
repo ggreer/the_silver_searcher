@@ -93,6 +93,9 @@ Language types are output:
     --less
         .less
   
+    --liquid
+        .liquid
+  
     --lisp
         .lisp  .lsp
   
