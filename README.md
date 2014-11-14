@@ -94,10 +94,10 @@ If you want a CentOS rpm or Ubuntu deb, take a look at [Vikram Dighe's packages]
             yum -y install pcre-devel xz-devel
     * OS X:
 
-            brew install automake pkg-config pcre
+            brew install automake pkg-config pcre xz
         or
 
-            port install automake pkgconfig pcre
+            port install automake pkgconfig pcre xz
     * Windows: It's complicated. See [this wiki page](https://github.com/ggreer/the_silver_searcher/wiki/Windows).
 2. Run the build script (which just runs aclocal, automake, etc):
 
