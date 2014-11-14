@@ -96,11 +96,6 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
 
   * `--no-numbers`:
     Don't show line numbers.
-
-  * `--null`:
-    Separate the filenames produced by -l or -L with `\0`, rather than `\n`:
-    this allows `xargs -0 <command>` to correctly process filenames containing
-    spaces.
   
   * `-p --path-to-agignore STRING`:
     Provide a path to a specific .agignore file.
@@ -163,6 +158,12 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
 
   * `-z --search-zip`:
     Search contents of compressed files.
+
+  * `-0 --null --print0`:
+    Separate the filenames with `\0`, rather than `\n`:
+    this allows `xargs -0 <command>` to correctly process filenames containing
+    spaces or newlines.
+
 
 ## FILE TYPES
 

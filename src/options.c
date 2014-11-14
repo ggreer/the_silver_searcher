@@ -50,7 +50,6 @@ Output Options:\n\
                           (don't print the matching lines)\n\
   -L --files-without-matches\n\
                           Only print filenames that don't contain matches\n\
-     --null               Follow filename (-l|-L) with null for 'xargs -0'\n\
      --no-numbers         Don't print line numbers\n\
      --print-long-lines   Print matches on very long lines (Default: >2k characters)\n\
      --passthrough        When searching a stream, print all lines even if they\n\
@@ -59,6 +58,7 @@ Output Options:\n\
      --stats              Print stats (files scanned, time taken, etc.)\n\
      --vimgrep            Print results like vim's :vimgrep /pattern/g would\n\
                           (it reports every match on the line)\n\
+  -0 --null --print0      Separate filenames with null (for 'xargs -0')\n\
 \n\
 Search Options:\n\
   -a --all-types          Search all files (doesn't include hidden files\n\
@@ -112,6 +112,7 @@ void init_options(void) {
 #endif
     opts.max_matches_per_file = 10000;
     opts.max_search_depth = DEFAULT_MAX_SEARCH_DEPTH;
+    opts.path_sep = '\n';
     opts.print_break = TRUE;
     opts.print_path = PATH_PRINT_DEFAULT;
     opts.print_line_numbers = TRUE;
@@ -218,12 +219,13 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "nogroup", no_argument, &group, 0 },
         { "noheading", no_argument, &opts.print_path, PATH_PRINT_EACH_LINE },
         { "nopager", no_argument, NULL, 0 },
-        { "null", no_argument, &opts.null_follows_filename, 1 },
+        { "null", no_argument, NULL, '0' },
         { "pager", required_argument, NULL, 0 },
         { "parallel", no_argument, &opts.parallel, 1 },
         { "passthrough", no_argument, &opts.passthrough, 1 },
         { "passthru", no_argument, &opts.passthrough, 1 },
         { "path-to-agignore", required_argument, NULL, 'p' },
+        { "print0", no_argument, NULL, '0'},
         { "print-long-lines", no_argument, &opts.print_long_lines, 1 },
         { "recurse", no_argument, NULL, 'r' },
         { "search-binary", no_argument, &opts.search_binary_files, 1 },
@@ -282,7 +284,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.stdout_inode = statbuf.st_ino;
     }
 
-    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fHhiLlm:np:QRrSsvVtuUwz", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fHhiLlm:np:QRrSsvVtuUwz0", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 if (optarg) {
@@ -398,6 +400,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'z':
                 opts.search_zip_files = 1;
+                break;
+            case '0':
+                opts.path_sep = '\0';
                 break;
             case 0: /* Long option */
                 if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0) {

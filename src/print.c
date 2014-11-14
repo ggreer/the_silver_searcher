@@ -70,7 +70,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
     }
 
     if (opts.print_path == PATH_PRINT_TOP) {
-        print_path(path, '\n');
+        print_path(path, opts.path_sep);
     }
 
     context_prev_lines = ag_calloc(sizeof(char *), (opts.before + 1));

@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "AG" "1" "October 2014" "" ""
+.TH "AG" "1" "November 2014" "" ""
 .
 .SH "NAME"
 \fBag\fR \- The Silver Searcher\. Like ack, but faster\.
@@ -123,10 +123,6 @@ Skip the rest of a file after NUM matches\. Default is 10,000\.
 Don\'t show line numbers\.
 .
 .TP
-\fB\-\-null\fR
-Separate the filenames produced by \-l or \-L with \fB\e0\fR, rather than \fB\en\fR: this allows \fBxargs \-0 <command>\fR to correctly process filenames containing spaces\.
-.
-.TP
 \fB\-p \-\-path\-to\-agignore STRING\fR
 Provide a path to a specific \.agignore file\.
 .
@@ -208,6 +204,10 @@ Only match whole words\.
 .TP
 \fB\-z \-\-search\-zip\fR
 Search contents of compressed files\.
+.
+.TP
+\fB\-0 \-\-null \-\-print0\fR
+Separate the filenames with \fB\e0\fR, rather than \fB\en\fR: this allows \fBxargs \-0 <command>\fR to correctly process filenames containing spaces or newlines\.
 .
 .SH "FILE TYPES"
 It is possible to restrict the types of files searched\. For example, passing \fB\-\-html\fR as the \fBfile\-types\fR parameter will search only files with the extensions \fBhtm\fR, \fBhtml\fR, \fBshtml\fR or \fBxhtml\fR\. For a list of supported \fBfile\- types\fR run \fBag \-\-list\-file\-types\fR\.

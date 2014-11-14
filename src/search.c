@@ -140,7 +140,7 @@ void search_buf(const char *buf, const size_t buf_len,
              * GitHub issue 206 for the consequences if this behaviour is not
              * checked. */
             if (!opts.invert_match || matches_len < 2) {
-                print_path(dir_full_path, opts.null_follows_filename ? 0 : '\n');
+                print_path(dir_full_path, opts.path_sep);
             }
         } else if (binary) {
             print_binary_file_matches(dir_full_path);
@@ -458,7 +458,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
                 } else if (opts.match_files) {
                     log_debug("match_files: file_search_regex matched for %s.", dir_full_path);
                     pthread_mutex_lock(&print_mtx);
-                    print_path(dir_full_path, '\n');
+                    print_path(dir_full_path, opts.path_sep);
                     pthread_mutex_unlock(&print_mtx);
                     goto cleanup;
                 }
