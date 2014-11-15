@@ -7,7 +7,7 @@ Setup:
 
 Count matches:
 
-  $ $TESTDIR/../ag --nocolor --workers=1 --count --parallel blah
+  $ $TESTDIR/../ag --nocolor --workers=1 --count --parallel blah | sort
   blah.txt:2
   other_file.txt:2
 
