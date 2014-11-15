@@ -29,6 +29,17 @@ void print_path(const char *path, const char sep) {
     }
 }
 
+void print_path_count(const char *path, const char sep, const size_t count) {
+    if (*path) {
+        print_path(path, ':');
+    }
+    if (opts.color) {
+        fprintf(out_fd, "%s%lu%s%c", opts.color_line_number, count, color_reset, sep);
+    } else {
+        fprintf(out_fd, "%lu%c", count, sep);
+    }
+}
+
 void print_line(const char *buf, size_t buf_pos, size_t prev_line_offset) {
     for (; prev_line_offset <= buf_pos; prev_line_offset++) {
         fputc(buf[prev_line_offset], out_fd);
@@ -70,7 +81,11 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
     }
 
     if (opts.print_path == PATH_PRINT_TOP) {
-        print_path(path, opts.path_sep);
+        if (opts.print_count) {
+            print_path_count(path, opts.path_sep, matches_len);
+        } else {
+            print_path(path, opts.path_sep);
+        }
     }
 
     context_prev_lines = ag_calloc(sizeof(char *), (opts.before + 1));

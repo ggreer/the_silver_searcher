@@ -192,6 +192,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "color-path", required_argument, NULL, 0 },
         { "column", no_argument, &opts.column, 1 },
         { "context", optional_argument, NULL, 'C' },
+        { "count", no_argument, NULL, 'c'},
         { "debug", no_argument, NULL, 'D' },
         { "depth", required_argument, NULL, 0 },
         { "file-search-regex", required_argument, NULL, 'G' },
@@ -284,7 +285,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.stdout_inode = statbuf.st_ino;
     }
 
-    while ((ch = getopt_long(argc, argv, "A:aB:C:DG:g:fHhiLlm:np:QRrSsvVtuUwz0", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:fHhiLlm:np:QRrSsvVtuUwz0", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 if (optarg) {
@@ -325,6 +326,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 } else {
                     opts.context = DEFAULT_CONTEXT_LEN;
                 }
+                break;
+            case 'c':
+                opts.print_count = 1;
+                opts.print_filename_only = 1;
                 break;
             case 'D':
                 set_log_level(LOG_LEVEL_DEBUG);

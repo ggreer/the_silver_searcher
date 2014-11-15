@@ -52,6 +52,7 @@ typedef struct {
     char path_sep;
     char *path_to_agignore;
     int print_break;
+    int print_count;
     int print_filename_only;
     int print_path;
     int print_line_numbers;
