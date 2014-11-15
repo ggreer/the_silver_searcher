@@ -140,7 +140,11 @@ void search_buf(const char *buf, const size_t buf_len,
              * GitHub issue 206 for the consequences if this behaviour is not
              * checked. */
             if (!opts.invert_match || matches_len < 2) {
-                print_path(dir_full_path, opts.path_sep);
+                if (opts.print_count) {
+                    print_path_count(dir_full_path, opts.path_sep, (size_t)matches_len);
+                } else {
+                    print_path(dir_full_path, opts.path_sep);
+                }
             }
         } else if (binary) {
             print_binary_file_matches(dir_full_path);
