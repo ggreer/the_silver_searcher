@@ -79,6 +79,9 @@ or
         pkg_add the_silver_searcher
 
 
+### Fedora
+
+    yum install the_silver_searcher
 
 ## Building from source
 
