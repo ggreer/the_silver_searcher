@@ -22,18 +22,18 @@ Ag is quite stable now. Most changes are new features, minor bug fixes, or perfo
 
     ag test_blah ~/code/  4.67s user 4.58s system 286% cpu 3.227 total
 
-Ack and Ag found the same results, but Ag was 34x faster (3.2 seconds vs 110 seconds). My `~/code` directory is about 8GB, though thanks to git/hg/svn-ignore, Ag only searched 700MB of that.
+Ack and Ag found the same results, but Ag was 34x faster (3.2 seconds vs 110 seconds). My `~/code` directory is about 8GB. Thanks to git/hg/svn-ignore, Ag only searched 700MB of that.
 
-You can also take a look at [graphs of performance across releases](http://geoff.greer.fm/ag/speed/).
+There are also [graphs of performance across releases](http://geoff.greer.fm/ag/speed/).
 
 ## How is it so fast?
 
-* Searching for literals (no regex) uses [Boyer-Moore strstr](https://en.wikipedia.org/wiki/Boyer%E2%80%93Moore_string_search_algorithm).
-* Files are `mmap()`ed instead of read into a buffer.
-* If you're building with PCRE 8.21 or greater, regex searches use [the JIT compiler](http://sljit.sourceforge.net/pcre.html).
-* Ag calls `pcre_study()` before executing the regex on a jillion files.
-* Instead of calling `fnmatch()` on every pattern in your ignore files, non-regex patterns are loaded into an array and binary searched.
 * Ag uses [Pthreads](https://en.wikipedia.org/wiki/POSIX_Threads) to take advantage of multiple CPU cores and search files in parallel.
+* Files are `mmap()`ed instead of read into a buffer.
+* Literal string searching uses [Boyer-Moore strstr](https://en.wikipedia.org/wiki/Boyer%E2%80%93Moore_string_search_algorithm).
+* Regex searching uses [PCRE's JIT compiler](http://sljit.sourceforge.net/pcre.html) (if Ag is built with PCRE >=8.21).
+* Ag calls `pcre_study()` before executing the same regex on every file.
+* Instead of calling `fnmatch()` on every pattern in your ignore files, non-regex patterns are loaded into arrays and binary searched.
 
 I've written several blog posts showing how I've improved performance. These include how I [added pthreads](http://geoff.greer.fm/2012/09/07/the-silver-searcher-adding-pthreads/), [wrote my own `scandir()`](http://geoff.greer.fm/2012/09/03/profiling-ag-writing-my-own-scandir/), [benchmarked every revision to find performance regressions](http://geoff.greer.fm/2012/08/25/the-silver-searcher-benchmarking-revisions/), and profiled with [gprof](http://geoff.greer.fm/2012/02/08/profiling-with-gprof/) and [Valgrind](http://geoff.greer.fm/2012/01/23/making-programs-faster-profiling/).
 
