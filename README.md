@@ -53,31 +53,30 @@ or
 
 * Ubuntu >= 13.10 (Saucy) or Debian >= 8 (Jessie)
 
-    apt-get install silversearcher-ag
+        apt-get install silversearcher-ag
 * Fedora 19+
 
-    yum install the_silver_searcher
+        yum install the_silver_searcher
 * RHEL7+
 
-    rpm -Uvh http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/epel-release-7-0.2.noarch.rpm
-    yum install the_silver_searcher
+        rpm -Uvh http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/epel-release-7-0.2.noarch.rpm
+        yum install the_silver_searcher
 * Gentoo
 
-    emerge the_silver_searcher
+        emerge the_silver_searcher
 * Arch
 
-    pacman -S the_silver_searcher
+        pacman -S the_silver_searcher
 
 
 ### BSD
 
 * FreeBSD
 
-    pkg install the_silver_searcher
-
+        pkg install the_silver_searcher
 * OpenBSD/NetBSD
 
-    pkg_add the_silver_searcher
+        pkg_add the_silver_searcher
 
 
 
