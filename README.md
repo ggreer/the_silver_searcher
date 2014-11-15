@@ -75,6 +75,10 @@ To build from source on OpenBSD:
 
     cd /usr/ports/textproc/the_silver_searcher && make install
 
+### Fedora 19 or later
+
+    yum install the_silver_searcher
+
 
 If you want a CentOS rpm or Ubuntu deb, take a look at [Vikram Dighe's packages](http://swiftsignal.com/packages/).
 
