@@ -75,6 +75,16 @@ To build from source on OpenBSD:
 
     cd /usr/ports/textproc/the_silver_searcher && make install
 
+### Fedora 19 or later
+
+    yum install the_silver_searcher
+
+### RHEL7
+__NOTE:__  You will install EPEL and it's not commercially supported by Red Hat. See [EPEL FAQ](https://fedoraproject.org/wiki/EPEL/FAQ). 
+
+    rpm -Uvh http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/epel-release-7-0.2.noarch.rpm
+
+    yum install the_silver_searcher
 
 If you want a CentOS rpm or Ubuntu deb, take a look at [Vikram Dighe's packages](http://swiftsignal.com/packages/).
 
