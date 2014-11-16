@@ -4,9 +4,9 @@ A code searching tool similar to `ack`, with a focus on speed.
 
 [![Build Status](https://travis-ci.org/ggreer/the_silver_searcher.svg?branch=master)](https://travis-ci.org/ggreer/the_silver_searcher)
 
-<a href="https://floobits.com/ggreer/ag/redirect">
-  <img alt="Floobits status" width="100" height="40" src="https://floobits.com/ggreer/ag.png" />
-</a>
+[![Floobits Status](https://floobits.com/ggreer/ag.png)](https://floobits.com/ggreer/ag/redirect)
+
+Do you know C? I invite you to pair with me to [help me get to Ag 1.0](http://geoff.greer.fm/2014/10/13/help-me-get-to-ag-10/).
 
 
 ## What's so great about Ag?
