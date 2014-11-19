@@ -78,7 +78,7 @@ _ag() {
   types=$(ag --list-file-types |grep -- '--')
 
   # these options require an argument
-  if [[ "${prev}" == -@(A|B|C|G|g|m) ]] ; then
+  if [[ "${prev}" == -[ABCGgm] ]] ; then
     return 0
   fi
 
