@@ -464,6 +464,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
                     pthread_mutex_lock(&print_mtx);
                     print_path(dir_full_path, opts.path_sep);
                     pthread_mutex_unlock(&print_mtx);
+                    opts.match_found = 1;
                     goto cleanup;
                 }
             }
