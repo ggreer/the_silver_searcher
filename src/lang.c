@@ -44,7 +44,7 @@ lang_spec_t langs[] = {
     { "matlab", { "m" } },
     { "objc", { "m", "h" } },
     { "objcpp", { "mm", "h" } },
-    { "ocaml", { "ml", "mli" } },
+    { "ocaml", { "ml", "mli", "mll", "mly" } },
     { "octave", { "m" } },
     { "parrot", { "pir", "pasm", "pmc", "ops", "pod", "pg", "tg" } },
     { "perl", { "pl", "pm", "pm6", "pod", "t" } },
