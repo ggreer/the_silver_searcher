@@ -1,6 +1,4 @@
 #include <errno.h>
-#include <limits.h>
-#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -155,7 +153,7 @@ void cleanup_options(void) {
 void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     int ch;
     unsigned int i;
-    int path_len = 0;
+    size_t path_len = 0;
     int useless = 0;
     int group = 1;
     int help = 0;
@@ -170,7 +168,6 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     struct stat statbuf;
     int rv;
     unsigned int lang_count;
-
     size_t longopts_len, full_len;
     option_t *longopts;
     char *lang_regex = NULL;
@@ -618,8 +615,8 @@ skip_group:
     char *tmp = NULL;
     opts.paths_len = argc;
     if (argc > 0) {
-        *paths = ag_calloc(sizeof(char *), argc + 1);
-        *base_paths = ag_calloc(sizeof(char *), argc + 1);
+        *paths = ag_calloc(sizeof(char *), argc + (size_t)1);
+        *base_paths = ag_calloc(sizeof(char *), argc + (size_t)1);
         for (i = 0; i < (unsigned int)argc; i++) {
             path = ag_strdup(argv[i]);
             path_len = strlen(path);
