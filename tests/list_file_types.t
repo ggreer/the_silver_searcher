@@ -124,7 +124,7 @@ Language types are output:
         .mm  .h
   
     --ocaml
-        .ml  .mli
+        .ml  .mli  .mll  .mly
   
     --octave
         .m
