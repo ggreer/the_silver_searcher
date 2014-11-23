@@ -542,9 +542,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         char *gitconfig_res = NULL;
 
 #ifdef _WIN32
-        gitconfig_file = popen("git config -z --get core.excludesfile 2>NUL", "r");
+        gitconfig_file = popen("git config -z --path --get core.excludesfile 2>NUL", "r");
 #else
-        gitconfig_file = popen("git config -z --get core.excludesfile 2>/dev/null", "r");
+        gitconfig_file = popen("git config -z --path --get core.excludesfile 2>/dev/null", "r");
 #endif
         if (gitconfig_file != NULL) {
             do {
