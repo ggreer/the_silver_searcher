@@ -53,6 +53,9 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `-f --follow`:
     Follow symlinks.
 
+  * `-F --fixed-strings`:
+    Alias for --literal for compatibility with grep.
+
   * `--[no]group`:
     The default, `--group`, lumps multiple matches in the same file
     together, and presents them under a single occurrence of the
