@@ -11,6 +11,7 @@
 #define DEFAULT_CONTEXT_LEN 2
 #define DEFAULT_MAX_SEARCH_DEPTH 25
 enum case_behavior {
+    CASE_DEFAULT, /* Changes to CASE_SMART at the end of option parsing */
     CASE_SENSITIVE,
     CASE_INSENSITIVE,
     CASE_SMART,

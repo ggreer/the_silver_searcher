@@ -104,7 +104,7 @@ void print_version(void) {
 
 void init_options(void) {
     memset(&opts, 0, sizeof(opts));
-    opts.casing = CASE_SMART;
+    opts.casing = CASE_DEFAULT;
 #ifdef _WIN32
     opts.color = (getenv("ANSICON") || getenv("CMDER_ROOT")) ? TRUE : FALSE;
 #else
@@ -285,6 +285,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.stdout_inode = statbuf.st_ino;
     }
 
+    int pcre_opts = 0;
     while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:fHhiLlm:np:QRrSsvVtuUwz0", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
@@ -342,8 +343,13 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.match_files = 1;
             /* Fall through and build regex */
             case 'G':
-                compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, optarg, opts.casing & PCRE_CASELESS, 0);
-                opts.casing = CASE_SENSITIVE;
+                if (opts.casing == CASE_DEFAULT) {
+                    opts.casing = CASE_SENSITIVE;
+                }
+                if (opts.casing != CASE_SENSITIVE) {
+                    pcre_opts |= PCRE_CASELESS;
+                }
+                compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, optarg, pcre_opts, 0);
                 break;
             case 'H':
                 opts.print_path = PATH_PRINT_TOP;
@@ -481,6 +487,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 
     argc -= optind;
     argv += optind;
+
+    if (opts.casing == CASE_DEFAULT) {
+        opts.casing = CASE_SMART;
+    }
 
     if (opts.pager) {
         out_fd = popen(opts.pager, "w");
