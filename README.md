@@ -68,6 +68,10 @@ or
 
         pacman -S the_silver_searcher
 
+* Slackware
+
+        sbopkg -i the_silver_searcher
+
 
 ### BSD
 
