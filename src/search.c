@@ -483,7 +483,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
             pthread_mutex_unlock(&work_queue_mtx);
             log_debug("%s added to work queue", dir_full_path);
         } else if (opts.recurse_dirs) {
-            if (depth < opts.max_search_depth) {
+            if (depth < opts.max_search_depth || opts.max_search_depth == -1) {
                 log_debug("Searching dir %s", dir_full_path);
                 ignores *child_ig;
                 // #if defined(__MINGW32__) || defined(__CYGWIN__)
