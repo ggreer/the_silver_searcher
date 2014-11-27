@@ -6,6 +6,7 @@
 .DS_Store
 aclocal.m4
 ag
+ag.exe
 autom4te.cache
 cachegrind.out.*
 callgrind.out.*
