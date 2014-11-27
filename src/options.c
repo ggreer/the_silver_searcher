@@ -489,13 +489,15 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
 
-    num_exts = combine_file_extensions(ext_index, lang_num, &extensions);
-    lang_regex = make_lang_regex(extensions, num_exts);
-    compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, lang_regex, 0, 0);
+    if (ext_index[0]) {
+        num_exts = combine_file_extensions(ext_index, lang_num, &extensions);
+        lang_regex = make_lang_regex(extensions, num_exts);
+        compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, lang_regex, 0, 0);
+    }
 
-    free(extensions);
+    if (extensions) free(extensions);
     free(ext_index);
-    free(lang_regex);
+    if (lang_regex) free(lang_regex);
     free(longopts);
 
     argc -= optind;
