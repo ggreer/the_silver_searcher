@@ -110,7 +110,7 @@ void init_options(void) {
 #else
     opts.color = TRUE;
 #endif
-    opts.max_matches_per_file = 10000;
+    opts.max_matches_per_file = 0;
     opts.max_search_depth = DEFAULT_MAX_SEARCH_DEPTH;
     opts.path_sep = '\n';
     opts.print_break = TRUE;

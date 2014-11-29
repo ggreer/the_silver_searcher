@@ -85,7 +85,7 @@ void search_buf(const char *buf, const size_t buf_len,
             matches_len++;
             match_ptr += opts.query_len;
 
-            if (matches_len >= opts.max_matches_per_file) {
+            if (opts.max_matches_per_file > 0 && matches_len >= opts.max_matches_per_file) {
                 log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
                 break;
             }
@@ -107,7 +107,7 @@ void search_buf(const char *buf, const size_t buf_len,
             matches[matches_len].end = offset_vector[1];
             matches_len++;
 
-            if (matches_len >= opts.max_matches_per_file) {
+            if (opts.max_matches_per_file > 0 && matches_len >= opts.max_matches_per_file) {
                 log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
                 break;
             }
