@@ -92,7 +92,7 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     See `FILE TYPES` below.
 
   * `-m --max-count NUM`:
-    Skip the rest of a file after NUM matches. Default is 10,000.
+    Skip the rest of a file after NUM matches. Default is 0, which never skips.
 
   * `--no-numbers`:
     Don't show line numbers.
