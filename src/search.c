@@ -16,7 +16,7 @@ void search_buf(const char *buf, const size_t buf_len,
         }
     }
 
-    int matches_len = 0;
+    size_t matches_len = 0;
     match_t *matches;
     size_t matches_size;
     size_t matches_spare;
@@ -72,7 +72,7 @@ void search_buf(const char *buf, const size_t buf_len,
                 }
             }
 
-            if ((size_t)matches_len + matches_spare >= matches_size) {
+            if (matches_len + matches_spare >= matches_size) {
                 /* TODO: benchmark initial size of matches. 100 may be too small/big */
                 matches_size = matches ? matches_size * 2 : 100;
                 matches = ag_realloc(matches, matches_size * sizeof(match_t));
@@ -98,7 +98,7 @@ void search_buf(const char *buf, const size_t buf_len,
             buf_offset = offset_vector[1];
 
             /* TODO: copy-pasted from above. FIXME */
-            if ((size_t)matches_len + matches_spare >= matches_size) {
+            if (matches_len + matches_spare >= matches_size) {
                 matches_size = matches ? matches_size * 2 : 100;
                 matches = ag_realloc(matches, matches_size * sizeof(match_t));
             }
