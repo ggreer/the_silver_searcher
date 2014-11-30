@@ -26,6 +26,11 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `--[no]break`:
     Print a newline between matches in different files. Enabled by default.
 
+  * `-c --count`:
+    Only print the number of matches in each file.
+    Note: This is the number of matches, **not** the number of matching lines.
+    Pipe output to `wc -l` if you want the number of matching lines.
+
   * `--[no]color`:
     Print color codes in results. Enabled by default.
 

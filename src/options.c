@@ -36,6 +36,8 @@ Output Options:\n\
   -B --before [LINES]     Print lines before match (Default: 2)\n\
      --[no]break          Print newlines between matches in different files\n\
                           (Enabled by default)\n\
+  -c --count              Only print the number of matches in each file.\n\
+                          (This often differs from the number of matching lines)\n\
      --[no]color          Print color codes in results (Enabled by default)\n\
      --color-line-number  Color codes for line numbers (Default: 1;33)\n\
      --color-match        Color codes for result match numbers (Default: 30;43)\n\
