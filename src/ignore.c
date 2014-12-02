@@ -313,6 +313,15 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
             }
             log_debug("pattern %s doesn't match slash file %s", ig->slash_regexes[i], slash_filename);
         }
+
+        for (i = 0; i < ig->regexes_len; i++) {
+            if (fnmatch(ig->regexes[i], slash_filename, fnmatch_flags) == 0) {
+                log_debug("file %s ignored because path matches regex pattern %s", filename, ig->regexes[i]);
+                free(temp);
+                return 1;
+            }
+            log_debug("regex pattern %s doesn't match path %s", ig->regexes[i], slash_filename);
+        }
     }
 
     for (i = 0; i < ig->regexes_len; i++) {
