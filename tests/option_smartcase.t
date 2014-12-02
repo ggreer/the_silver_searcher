@@ -1,7 +1,8 @@
 Setup:
 
   $ . $TESTDIR/setup.sh
-  $ echo 'asdf\nAsDf' > test.txt
+  $ echo 'asdf' > test.txt
+  $ echo 'AsDf' >> test.txt
 
 Smart case search:
 
