@@ -11,10 +11,10 @@ dist_bashcomp_DATA = ag.bashcomp.sh
 
 EXTRA_DIST = Makefile.w32 LICENSE NOTICE the_silver_searcher.spec README.md
 
-test:
+test: ag
 	cram -v tests/*.t
 
-test_big:
+test_big: ag
 	cram -v tests/big/*.t
 
 .PHONY : all test clean
