@@ -18,7 +18,8 @@ Setup:
   $ echo 'whatever14' > ./foo.yml~
   $ echo 'whatever15' > ./.foo.yml.swp
   $ echo 'whatever16' > ./.foo.yml.swo
-  $ echo '*~\n*.sw[po]' > ./.gitignore
+  $ echo '*~'         > ./.gitignore
+  $ echo '*.sw[po]'   >> ./.gitignore
 
 Ignore all files except foo.yml
 
