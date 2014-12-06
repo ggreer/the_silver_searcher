@@ -186,7 +186,10 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                         }
                         /* Don't print the null terminator */
                         if (j < buf_len) {
-                            fputc(buf[j], out_fd);
+                            /* if only_matching is set, print only matches and newlines */
+                            if (!opts.only_matching || printing_a_match || buf[j] == '\n') {
+                                fputc(buf[j], out_fd);
+                            }
                         }
                     }
                     if (printing_a_match && opts.color) {
