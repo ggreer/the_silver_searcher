@@ -53,6 +53,7 @@ Output Options:\n\
   -L --files-without-matches\n\
                           Only print filenames that don't contain matches\n\
      --no-numbers         Don't print line numbers\n\
+  -o --only-matching      Prints only the matching part of the lines\n\
      --print-long-lines   Print matches on very long lines (Default: >2k characters)\n\
      --passthrough        When searching a stream, print all lines even if they\n\
                           don't match\n\
@@ -223,6 +224,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "noheading", no_argument, &opts.print_path, PATH_PRINT_EACH_LINE },
         { "nopager", no_argument, NULL, 0 },
         { "null", no_argument, NULL, '0' },
+        { "only-matching", no_argument, NULL, 'o' },
         { "pager", required_argument, NULL, 0 },
         { "parallel", no_argument, &opts.parallel, 1 },
         { "passthrough", no_argument, &opts.passthrough, 1 },
@@ -288,7 +290,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     int pcre_opts = 0;
-    while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:fHhiLlm:np:QRrSsvVtuUwz0", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:fHhiLlm:nop:QRrSsvVtuUwz0", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 if (optarg) {
@@ -377,6 +379,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'p':
                 opts.path_to_agignore = optarg;
+                break;
+            case 'o':
+                opts.only_matching = 1;
                 break;
             case 'Q':
                 opts.literal = 1;

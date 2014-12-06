@@ -50,6 +50,7 @@ typedef struct {
     int literal_ends_wordchar;
     size_t max_matches_per_file;
     int max_search_depth;
+    int only_matching;
     char path_sep;
     char *path_to_agignore;
     int print_break;
