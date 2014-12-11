@@ -77,9 +77,11 @@ Search Options:\n\
                           (literal file/directory names also allowed)\n\
      --ignore-dir NAME    Alias for --ignore for compatibility with ack.\n\
   -m --max-count NUM      Skip the rest of a file after NUM matches (Default: 10,000)\n\
+  -n --no-recurse         Do not search recursively\n\
   -p --path-to-agignore STRING\n\
                           Use .agignore file at STRING\n\
   -Q --literal            Don't parse PATTERN as a regular expression\n\
+  -r --recurse            Search recursively (Enabled by default)\n\
   -s --case-sensitive     Match case sensitively\n\
   -S --smart-case         Match case insensitively unless PATTERN contains\n\
                           uppercase characters (Enabled by default)\n\
