@@ -116,7 +116,7 @@ Language types are output:
   
     --matlab
         .m
-
+  
     --mercury
         .m  .moo
   
