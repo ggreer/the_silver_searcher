@@ -173,7 +173,9 @@ void load_ignore_patterns(ignores *ig, const char *path) {
         }
         /* Ignore .gitignore files if they start with a ignore-all line.
          * HACK for https://github.com/ggreer/the_silver_searcher/issues/168. */
-        if (i == 1 && line[0] == '*' && strlen(line) == 1
+        if (i == 1
+                && ( (line[0] == '*' && strlen(line) == 1)
+                  || (line[0] == '/' && line[1] == '*' && strlen(line) == 2))
                 && strlen(path) >= 10
                 && strcmp(path + strlen(path) - 10, ".gitignore") == 0) {
             log_debug("Ignoring star-ignore file %s", path);
