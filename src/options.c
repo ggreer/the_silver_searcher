@@ -68,6 +68,7 @@ Search Options:\n\
   -D --debug              Ridiculous debugging (probably not useful)\n\
      --depth NUM          Search up to NUM directories deep (Default: 25)\n\
   -f --follow             Follow symlinks\n\
+  -F --fixed-strings      Alias for --literal for compatibility with grep\n\
   -G --file-search-regex  PATTERN Limit search to filenames matching PATTERN\n\
      --hidden             Search hidden files (obeys .*ignore files)\n\
   -i --ignore-case        Match case insensitively\n\
@@ -200,6 +201,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "file-search-regex", required_argument, NULL, 'G' },
         { "files-with-matches", no_argument, NULL, 'l' },
         { "files-without-matches", no_argument, NULL, 'L' },
+        { "fixed-strings", no_argument, NULL, 'F' },
         { "follow", no_argument, &opts.follow_symlinks, 1 },
         { "group", no_argument, &group, 1 },
         { "heading", no_argument, &opts.print_path, PATH_PRINT_TOP },
@@ -288,7 +290,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     int pcre_opts = 0;
-    while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:fHhiLlm:np:QRrSsvVtuUwz0", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:FfHhiLlm:np:QRrSsvVtuUwz0", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 if (optarg) {
@@ -378,6 +380,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             case 'p':
                 opts.path_to_agignore = optarg;
                 break;
+            case 'F':
             case 'Q':
                 opts.literal = 1;
                 break;
