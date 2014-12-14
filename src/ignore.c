@@ -302,7 +302,7 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
                     return 1;
                 }
             }
-            log_debug("pattern %s doesn't match name %s", slash_filename, ig->names[i]);
+            log_debug("pattern %s doesn't match path %s", ig->names[i], slash_filename);
         }
 
         for (i = 0; i < ig->slash_regexes_len; i++) {
