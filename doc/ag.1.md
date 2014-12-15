@@ -53,7 +53,7 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Output ridiculous amounts of debugging info. Probably not useful.
 
   * `--depth NUM`:
-    Search up to NUM directories deep. Default is 25.
+    Search up to NUM directories deep, -1 for unlimited. Default is 25.
 
   * `-f --follow`:
     Follow symlinks.
