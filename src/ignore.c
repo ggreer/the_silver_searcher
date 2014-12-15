@@ -146,7 +146,8 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
         patterns[i] = patterns[i - 1];
     }
     patterns[i] = ag_strndup(pattern, pattern_len);
-    log_debug("added ignore pattern %s to %s", pattern, ig->abs_path);
+    log_debug("added ignore pattern %s to %s", pattern,
+            ig == root_ignores ? "root ignores" : ig->abs_path);
 }
 
 /* For loading git/hg ignore patterns */
@@ -154,7 +155,7 @@ void load_ignore_patterns(ignores *ig, const char *path) {
     FILE *fp = NULL;
     fp = fopen(path, "r");
     if (fp == NULL) {
-        log_debug("Skipping ignore file %s", path);
+        log_debug("Skipping ignore file %s: not readable", path);
         return;
     }
 

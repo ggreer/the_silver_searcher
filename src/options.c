@@ -552,9 +552,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         char *gitconfig_res = NULL;
 
 #ifdef _WIN32
-        gitconfig_file = popen("git config -z --get core.excludesfile 2>NUL", "r");
+        gitconfig_file = popen("git config -z --path --get core.excludesfile 2>NUL", "r");
 #else
-        gitconfig_file = popen("git config -z --get core.excludesfile 2>/dev/null", "r");
+        gitconfig_file = popen("git config -z --path --get core.excludesfile 2>/dev/null", "r");
 #endif
         if (gitconfig_file != NULL) {
             do {
@@ -562,6 +562,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 buf_len += fread(gitconfig_res + buf_len, 1, 64, gitconfig_file);
             } while (!feof(gitconfig_file) && buf_len > 0 && buf_len % 64 == 0);
             gitconfig_res[buf_len] = '\0';
+            log_debug("Found user's global Git excludesfile: %s", gitconfig_res);
             load_ignore_patterns(root_ignores, gitconfig_res);
             free(gitconfig_res);
             pclose(gitconfig_file);
