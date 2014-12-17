@@ -152,7 +152,7 @@ I like when people send pull requests. It validates my existence. If you want to
 
 ## Other stuff you might like
 
-* [Ack](https://github.com/petdance/ack) - Better than grep. Without Ack, Ag would not exist.
+* [Ack](https://github.com/petdance/ack2) - Better than grep. Without Ack, Ag would not exist.
 * [AckMate](https://github.com/protocool/AckMate) - An ack-powered replacement for TextMate's slow built-in search.
 * [ack.vim](https://github.com/mileszs/ack.vim)
 * [ag.vim]( https://github.com/rking/ag.vim)
