@@ -34,6 +34,9 @@ int main(int argc, char **argv) {
     double time_diff;
     worker_t *workers = NULL;
     int workers_len;
+#ifdef USE_CPU_SET
+    cpu_set_t cpu_set;
+#endif
 
     set_log_level(LOG_LEVEL_WARN);
 
@@ -64,6 +67,14 @@ int main(int argc, char **argv) {
 #else
     workers_len = (int)sysconf(_SC_NPROCESSORS_ONLN);
 #endif
+
+#ifdef USE_CPU_SET
+    CPU_ZERO(&cpu_set);
+    for (i = 0; i < workers_len; i++) {
+        CPU_SET(i, &cpu_set);
+    }
+#endif
+
     if (opts.literal) {
         workers_len--;
     }
@@ -133,6 +144,12 @@ int main(int argc, char **argv) {
             if (rv != 0) {
                 die("error in pthread_create(): %s", strerror(rv));
             }
+#if defined(HAVE_PTHREAD_SETAFFINITY_NP) && defined(USE_CPU_SET)
+            rv = pthread_setaffinity_np(workers[i].thread, sizeof(cpu_set), &cpu_set);
+            if (rv != 0) {
+                die("error in pthread_setaffinity_np(): %s", strerror(rv));
+            }
+#endif
         }
         for (i = 0; paths[i] != NULL; i++) {
             log_debug("searching path %s for %s", paths[i], opts.query);
