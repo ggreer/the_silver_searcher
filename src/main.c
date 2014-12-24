@@ -34,9 +34,7 @@ int main(int argc, char **argv) {
     double time_diff;
     worker_t *workers = NULL;
     int workers_len;
-#ifdef USE_CPU_SET
-    cpu_set_t cpu_set;
-#endif
+    int num_cores;
 
     set_log_level(LOG_LEVEL_WARN);
 
@@ -62,19 +60,13 @@ int main(int argc, char **argv) {
     {
         SYSTEM_INFO si;
         GetSystemInfo(&si);
-        workers_len = si.dwNumberOfProcessors;
+        num_cores = si.dwNumberOfProcessors;
     }
 #else
-    workers_len = (int)sysconf(_SC_NPROCESSORS_ONLN);
+    num_cores = (int)sysconf(_SC_NPROCESSORS_ONLN);
 #endif
 
-#ifdef USE_CPU_SET
-    CPU_ZERO(&cpu_set);
-    for (i = 0; i < workers_len; i++) {
-        CPU_SET(i, &cpu_set);
-    }
-#endif
-
+    workers_len = num_cores;
     if (opts.literal) {
         workers_len--;
     }
@@ -145,10 +137,16 @@ int main(int argc, char **argv) {
                 die("error in pthread_create(): %s", strerror(rv));
             }
 #if defined(HAVE_PTHREAD_SETAFFINITY_NP) && defined(USE_CPU_SET)
+            cpu_set_t cpu_set;
+            CPU_ZERO(&cpu_set);
+            CPU_SET(i % num_cores, &cpu_set);
             rv = pthread_setaffinity_np(workers[i].thread, sizeof(cpu_set), &cpu_set);
             if (rv != 0) {
                 die("error in pthread_setaffinity_np(): %s", strerror(rv));
             }
+            log_debug("Thread %i set to CPU %i", i, i);
+#else
+            log_debug("No CPU affinity.");
 #endif
         }
         for (i = 0; paths[i] != NULL; i++) {
