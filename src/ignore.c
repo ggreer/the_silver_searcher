@@ -158,6 +158,7 @@ void load_ignore_patterns(ignores *ig, const char *path) {
         log_debug("Skipping ignore file %s: not readable", path);
         return;
     }
+    log_debug("Loading ignore file %s.", path);
 
     char *line = NULL;
     ssize_t line_len = 0;
