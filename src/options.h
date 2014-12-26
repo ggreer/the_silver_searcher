@@ -30,8 +30,8 @@ typedef struct {
     int ackmate;
     pcre *ackmate_dir_filter;
     pcre_extra *ackmate_dir_filter_extra;
-    size_t after;
-    size_t before;
+    long after;
+    long before;
     enum case_behavior casing;
     const char *file_search_string;
     int match_files;
@@ -42,7 +42,7 @@ typedef struct {
     char *color_match;
     char *color_path;
     int column;
-    int context;
+    long context;
     int follow_symlinks;
     int invert_match;
     int literal;
@@ -74,7 +74,7 @@ typedef struct {
     int match_found;        /* This should totally not be in here */
     ino_t stdout_inode;
     char *query;
-    int query_len;
+    size_t query_len;
     char *pager;
     int paths_len;
     int parallel;
