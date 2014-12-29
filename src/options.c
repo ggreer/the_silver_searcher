@@ -124,6 +124,7 @@ void init_options(void) {
     opts.color_path = ag_strdup(color_path);
     opts.color_match = ag_strdup(color_match);
     opts.color_line_number = ag_strdup(color_line_number);
+    opts.use_thread_affinity = TRUE;
 }
 
 void cleanup_options(void) {
@@ -184,6 +185,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     option_t base_longopts[] = {
         { "ackmate", no_argument, &opts.ackmate, 1 },
         { "ackmate-dir-filter", required_argument, NULL, 0 },
+        { "affinity", no_argument, &opts.use_thread_affinity, 1 },
         { "after", optional_argument, NULL, 'A' },
         { "all-text", no_argument, NULL, 't' },
         { "all-types", no_argument, NULL, 'a' },
@@ -219,6 +221,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "max-count", required_argument, NULL, 'm' },
         { "no-numbers", no_argument, NULL, 0 },
         { "no-recurse", no_argument, NULL, 'n' },
+        { "noaffinity", no_argument, &opts.use_thread_affinity, 0 },
         { "nobreak", no_argument, &opts.print_break, 0 },
         { "nocolor", no_argument, &opts.color, 0 },
         { "nofollow", no_argument, &opts.follow_symlinks, 0 },

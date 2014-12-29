@@ -137,16 +137,20 @@ int main(int argc, char **argv) {
                 die("error in pthread_create(): %s", strerror(rv));
             }
 #if defined(HAVE_PTHREAD_SETAFFINITY_NP) && defined(USE_CPU_SET)
-            cpu_set_t cpu_set;
-            CPU_ZERO(&cpu_set);
-            CPU_SET(i % num_cores, &cpu_set);
-            rv = pthread_setaffinity_np(workers[i].thread, sizeof(cpu_set), &cpu_set);
-            if (rv != 0) {
-                die("error in pthread_setaffinity_np(): %s", strerror(rv));
+            if (opts.use_thread_affinity) {
+                cpu_set_t cpu_set;
+                CPU_ZERO(&cpu_set);
+                CPU_SET(i % num_cores, &cpu_set);
+                rv = pthread_setaffinity_np(workers[i].thread, sizeof(cpu_set), &cpu_set);
+                if (rv != 0) {
+                    die("error in pthread_setaffinity_np(): %s", strerror(rv));
+                }
+                log_debug("Thread %i set to CPU %i", i, i);
+            } else {
+                log_debug("Thread affinity disabled.");
             }
-            log_debug("Thread %i set to CPU %i", i, i);
 #else
-            log_debug("No CPU affinity.");
+            log_debug("No CPU affinity support.");
 #endif
         }
         for (i = 0; paths[i] != NULL; i++) {

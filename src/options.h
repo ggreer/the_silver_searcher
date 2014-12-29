@@ -78,6 +78,7 @@ typedef struct {
     char *pager;
     int paths_len;
     int parallel;
+    int use_thread_affinity;
     int vimgrep;
     int word_regexp;
     int workers;
