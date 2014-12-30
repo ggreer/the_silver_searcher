@@ -415,6 +415,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'v':
                 opts.invert_match = 1;
+                opts.color = 0; /* github issue #478 */
                 break;
             case 'V':
                 version = 1;
