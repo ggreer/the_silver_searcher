@@ -213,7 +213,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "ignore", required_argument, NULL, 0 },
         { "ignore-case", no_argument, NULL, 'i' },
         { "ignore-dir", required_argument, NULL, 0 },
-        { "invert-match", no_argument, &opts.invert_match, 1 },
+        { "invert-match", no_argument, NULL, 'v' },
         { "line-numbers", no_argument, &opts.print_line_numbers, 2 },
         { "list-file-types", no_argument, &list_file_types, 1 },
         { "literal", no_argument, NULL, 'Q' },
@@ -415,7 +415,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'v':
                 opts.invert_match = 1;
-                opts.color = 0; /* github issue #478 */
+                /* Color highlighting doesn't make sense when inverting matches */
+                opts.color = 0;
                 break;
             case 'V':
                 version = 1;
