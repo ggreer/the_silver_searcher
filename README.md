@@ -115,6 +115,13 @@ or
 
         sudo make install
 
+## Usage
+
+        Ag searchterm
+
+### Escape sequences and list only filenames
+
+        Ag 'foo\(' -l
 
 ## Editor Integration
 
