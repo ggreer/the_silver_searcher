@@ -37,6 +37,10 @@ const char *ignore_pattern_files[] = {
     NULL
 };
 
+int is_empty(ignores* ig) {
+    return (ig->names_len + ig->slash_names_len + ig->regexes_len + ig->slash_regexes_len == 0);
+};
+
 ignores *init_ignore(ignores *parent, const char *dirname, const size_t dirname_len) {
     ignores *ig = ag_malloc(sizeof(ignores));
     ig->names = NULL;
@@ -47,9 +51,15 @@ ignores *init_ignore(ignores *parent, const char *dirname, const size_t dirname_
     ig->regexes_len = 0;
     ig->slash_regexes = NULL;
     ig->slash_regexes_len = 0;
-    ig->parent = parent;
     ig->dirname = dirname;
     ig->dirname_len = dirname_len;
+
+    if (parent && is_empty(parent) && parent->parent) {
+        ig->parent = parent->parent;
+    } else {
+        ig->parent = parent;
+    }
+
     if (parent && parent->abs_path_len > 0) {
         ag_asprintf(&(ig->abs_path), "%s/%s", parent->abs_path, dirname);
         ig->abs_path_len = parent->abs_path_len + 1 + dirname_len;
