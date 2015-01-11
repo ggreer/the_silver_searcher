@@ -336,19 +336,17 @@ void search_file(const char *file_full_path) {
         }
     }
 
-    else {
-        struct ds_link *curr = ds_list_head;
-        while (curr) {
-            char *start = buf + curr->start;
-            if (curr->end <= f_len) {
-                log_debug("curr->start is %ld", curr->start);
-                log_debug("search_buf(%ld, %ld, %s)", start, curr->end - curr->start, file_full_path);
-                search_buf(start, curr->end - curr->start,
-                           file_full_path);
-                curr = curr->next;
-            } else {
-                curr = NULL;
-            }
+    struct ds_link *curr = ds_list_head;
+    while (curr) {
+        char *start = buf + curr->start;
+        if (curr->end <= f_len) {
+            log_debug("curr->start is %ld", curr->start);
+            log_debug("search_buf(%ld, %ld, %s)", start, curr->end - curr->start, file_full_path);
+            search_buf(start, curr->end - curr->start,
+                       file_full_path);
+            curr = curr->next;
+        } else {
+            curr = NULL;
         }
     }
 
