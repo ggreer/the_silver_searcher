@@ -77,6 +77,7 @@ Search Options:\n\
                           (literal file/directory names also allowed)\n\
      --ignore-dir NAME    Alias for --ignore for compatibility with ack.\n\
   -m --max-count NUM      Skip the rest of a file after NUM matches (Default: 10,000)\n\
+     --one-device         Don't follow links to other devices.\n\
   -p --path-to-agignore STRING\n\
                           Use .agignore file at STRING\n\
   -Q --literal            Don't parse PATTERN as a regular expression\n\
@@ -125,6 +126,7 @@ void init_options(void) {
     opts.color_match = ag_strdup(color_match);
     opts.color_line_number = ag_strdup(color_line_number);
     opts.use_thread_affinity = TRUE;
+    opts.one_dev = FALSE;
 }
 
 void cleanup_options(void) {
@@ -230,6 +232,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "nopager", no_argument, NULL, 0 },
         { "null", no_argument, NULL, '0' },
         { "only-matching", no_argument, NULL, 'o' },
+        { "one-device", no_argument, &opts.one_dev, 1 },
         { "pager", required_argument, NULL, 0 },
         { "parallel", no_argument, &opts.parallel, 1 },
         { "passthrough", no_argument, &opts.passthrough, 1 },

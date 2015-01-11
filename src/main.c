@@ -157,7 +157,14 @@ int main(int argc, char **argv) {
             log_debug("searching path %s for %s", paths[i], opts.query);
             symhash = NULL;
             ignores *ig = init_ignore(root_ignores, "", 0);
-            search_dir(ig, base_paths[i], paths[i], 0);
+            struct stat s = {.st_dev = 0};
+            /* The device is ignored if opts.one_dev is false, so it's fine
+             * to leave it at the default 0
+             */
+            if (opts.one_dev && lstat(paths[i], &s) == -1) {
+                log_err("Failed to get device information for path %s. Skipping...", paths[i]);
+            }
+            search_dir(ig, base_paths[i], paths[i], 0, s.st_dev);
             cleanup_ignore(ig);
         }
         pthread_mutex_lock(&work_queue_mtx);

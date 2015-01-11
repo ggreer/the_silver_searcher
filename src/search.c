@@ -378,7 +378,8 @@ static int check_symloop_leave(dirkey_t *dirkey) {
 /* TODO: Append matches to some data structure instead of just printing them out.
  * Then ag can have sweet summaries of matches/files scanned/time/etc.
  */
-void search_dir(ignores *ig, const char *base_path, const char *path, const int depth) {
+void search_dir(ignores *ig, const char *base_path, const char *path, const int depth,
+                dev_t original_dev) {
     struct dirent **dir_list = NULL;
     struct dirent *dir = NULL;
     scandir_baton_t scandir_baton;
@@ -445,6 +446,17 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
         queue_item = NULL;
         dir = dir_list[i];
         ag_asprintf(&dir_full_path, "%s/%s", path, dir->d_name);
+        if (opts.one_dev) {
+            struct stat s;
+            if (lstat(dir_full_path, &s) != 0) {
+                log_err("Failed to get device information for %s. Skipping...", dir->d_name);
+                goto cleanup;
+            }
+            if (s.st_dev != original_dev) {
+                log_debug("File %s crosses a device boundary (is probably a mount point.) Skipping...", dir->d_name);
+                goto cleanup;
+            }
+        }
 
         /* If a link points to a directory then we need to treat it as a directory. */
         if (!opts.follow_symlinks && is_symlink(path, dir)) {
@@ -491,7 +503,8 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
                 // #else
                 // child_ig = init_ignore(ig, dir->d_name, dir->d_namlen);
                 // #endif
-                search_dir(child_ig, base_path, dir_full_path, depth + 1);
+                search_dir(child_ig, base_path, dir_full_path, depth + 1,
+                           original_dev);
                 cleanup_ignore(child_ig);
             } else {
                 if (opts.max_search_depth == DEFAULT_MAX_SEARCH_DEPTH) {
