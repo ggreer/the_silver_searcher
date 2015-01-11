@@ -81,6 +81,7 @@ Search Options:\n\
                           Use .agignore file at STRING\n\
   -Q --literal            Don't parse PATTERN as a regular expression\n\
   -s --case-sensitive     Match case sensitively\n\
+     --skip-holes         Skip holes in sparse files, if supported by the filesystem\n\
   -S --smart-case         Match case insensitively unless PATTERN contains\n\
                           uppercase characters (Enabled by default)\n\
      --search-binary      Search binary files for matches\n\
@@ -125,6 +126,7 @@ void init_options(void) {
     opts.color_match = ag_strdup(color_match);
     opts.color_line_number = ag_strdup(color_line_number);
     opts.use_thread_affinity = TRUE;
+    opts.skip_holes = FALSE;
 }
 
 void cleanup_options(void) {
@@ -242,6 +244,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "search-files", no_argument, &opts.search_stream, 0 },
         { "search-zip", no_argument, &opts.search_zip_files, 1 },
         { "silent", no_argument, NULL, 0 },
+        { "skip-holes", no_argument, &opts.skip_holes, 1 },
         { "skip-vcs-ignores", no_argument, NULL, 'U' },
         { "smart-case", no_argument, NULL, 'S' },
         { "stats", no_argument, &opts.stats, 1 },
@@ -596,6 +599,17 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 
     if (opts.parallel) {
         opts.search_stream = 0;
+    }
+
+    if (opts.skip_holes) {
+#ifdef _WIN32
+        log_warn("Skipping holes is not implemented on Windows.");
+        opts.skip_holes = FALSE;
+#else
+#ifndef USE_SEEK_HOLE
+        log_warn("Support for skipping holes was not compiled in; perhaps your system lacks SEEK_HOLE and SEEK_DATA.")
+#endif /* #ifndef USE_SEEK_HOLE */
+#endif /* #ifdef _WIN32 */
     }
 
     if (opts.print_path != PATH_PRINT_DEFAULT || opts.print_break == 0) {

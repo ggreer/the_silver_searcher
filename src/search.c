@@ -179,6 +179,31 @@ void search_stream(FILE *stream, const char *path) {
     free(line);
 }
 
+struct ds_link {
+    off_t start;
+    off_t end;
+    struct ds_link *next;
+};
+
+static struct ds_link *ds_new(struct ds_link *tail, off_t start, off_t end) {
+    struct ds_link *new = ag_malloc(sizeof (*new));
+    new->next = NULL;
+    new->start = start;
+    new->end = end;
+    if (tail)
+        tail->next = new;
+    return new;
+}
+
+static void ds_list_free(struct ds_link *head) {
+    struct ds_link *curr = head;
+    while (curr) {
+        struct ds_link *next = curr->next;
+        free(curr);
+        curr = next;
+    }
+}
+
 void search_file(const char *file_full_path) {
     int fd;
     off_t f_len = 0;
@@ -186,6 +211,8 @@ void search_file(const char *file_full_path) {
     struct stat statbuf;
     int rv = 0;
     FILE *pipe = NULL;
+    struct ds_link *ds_list_head = NULL;
+    struct ds_link *ds_list_end = NULL;
 
     fd = open(file_full_path, O_RDONLY);
     if (fd < 0) {
@@ -254,12 +281,45 @@ void search_file(const char *file_full_path) {
         log_err("File %s failed to load: %s.", file_full_path, strerror(errno));
         goto cleanup;
     }
+    log_debug("Length of file %s is %ld", file_full_path, f_len);
+#ifdef USE_SEEK_HOLE
+    if (opts.skip_holes) {
+        off_t offset = 0;
+        while ((offset = lseek(fd, offset, SEEK_DATA)) != -1) {
+            log_debug("Offset of data is %ld", offset);
+            off_t hole_offset = lseek(fd, offset, SEEK_HOLE);
+            ds_list_end = ds_new(ds_list_end, offset, hole_offset);
+            log_debug("Offset of hole is %ld", hole_offset);
+            if (ds_list_head == NULL) {
+                ds_list_head = ds_list_end;
+            }
+            if (hole_offset == f_len) {
+                break;
+            }
+            offset = hole_offset;
+
+        }
+        if (offset == -1 && errno != ENXIO) {
+            log_err("Error %s performing lseek in file %s; falling back to reading the entire file.", strerror(errno), file_full_path);
+            if (ds_list_head != NULL) {
+                ds_list_free(ds_list_head);
+                ds_list_head = NULL;
+            }
+        } else if (ds_list_head == NULL) {
+            log_debug("Entire file %s is a hole. Skipping...", file_full_path);
+            goto cleanup;
+        }
+    }
+#endif
 #if HAVE_MADVISE
     madvise(buf, f_len, MADV_SEQUENTIAL);
 #elif HAVE_POSIX_FADVISE
     posix_fadvise(fd, 0, f_len, POSIX_MADV_SEQUENTIAL);
 #endif
 #endif
+    if (ds_list_head == NULL) {
+        ds_list_head = ds_new(NULL, 0, f_len);
+    }
 
     if (opts.search_zip_files) {
         ag_compression_type zip_type = is_zipped(buf, f_len);
@@ -276,7 +336,21 @@ void search_file(const char *file_full_path) {
         }
     }
 
-    search_buf(buf, f_len, file_full_path);
+    else {
+        struct ds_link *curr = ds_list_head;
+        while (curr) {
+            char *start = buf + curr->start;
+            if (curr->end <= f_len) {
+                log_debug("curr->start is %ld", curr->start);
+                log_debug("search_buf(%ld, %ld, %s)", start, curr->end - curr->start, file_full_path);
+                search_buf(start, curr->end - curr->start,
+                           file_full_path);
+                curr = curr->next;
+            } else {
+                curr = NULL;
+            }
+        }
+    }
 
 cleanup:
 
@@ -289,6 +363,9 @@ cleanup:
     }
     if (fd != -1) {
         close(fd);
+    }
+    if (ds_list_head != NULL) {
+        ds_list_free(ds_list_head);
     }
 }
 
