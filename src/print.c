@@ -91,12 +91,6 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
     context_prev_lines = ag_calloc(sizeof(char *), (opts.before + 1));
 
     for (i = 0; i <= buf_len && (cur_match < matches_len || lines_since_last_match <= opts.after); i++) {
-        if (cur_match < matches_len && i == matches[cur_match].end) {
-            /* We found the end of a match. */
-            cur_match++;
-            in_a_match = FALSE;
-        }
-
         if (cur_match < matches_len && i == matches[cur_match].start) {
             in_a_match = TRUE;
             /* We found the start of a match */
@@ -126,6 +120,12 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                 }
             }
             lines_since_last_match = 0;
+        }
+
+        if (cur_match < matches_len && i == matches[cur_match].end) {
+            /* We found the end of a match. */
+            cur_match++;
+            in_a_match = FALSE;
         }
 
         /* We found the end of a line. */
