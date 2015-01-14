@@ -92,7 +92,10 @@ typedef struct option option_t;
 void usage(void);
 void print_version(void);
 
+void free_str_array(int len, char ***arr);
+
 void init_options(void);
+int append_env_options(int argc, char **argv, char ***opts);
 void parse_options(int argc, char **argv, char **base_paths[], char **paths[]);
 void cleanup_options(void);
 
