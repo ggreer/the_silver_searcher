@@ -157,6 +157,88 @@ void cleanup_options(void) {
     }
 }
 
+void free_str_array(int len, char ***arr)
+{
+    int i;
+    for(i = 0; i < len; i++)
+    {
+        free(*(*arr+i));
+    }
+    free(*arr);
+}
+
+int append_env_options(int argc, char **argv, char ***all_opts)
+{
+    /*
+     * Combine environment variable AG_OPTIONS and argv array.
+     * This allows users to set this environment variable to
+     * contain default arguments for ag.
+     *
+     * TODO: If anyone has a cleaner way of doing this...
+     */
+    int extra_args = 1;
+    int i;
+
+    /* we always have the program name as first argument */
+    *all_opts = malloc(sizeof(char*));
+    *(*all_opts) = malloc((strlen(argv[0]) + 1) * sizeof(char));
+    strcpy(*(*all_opts), argv[0]);
+
+    /* cycle through and load environment variable options */
+    char* env_opts = getenv("AG_OPTIONS");
+    char* env_var = strtok(env_opts, " ");
+    for(i = 1; env_var != NULL; i++)
+    {
+        char** tmp = *all_opts;
+        realloc(tmp, ++extra_args * sizeof(char*));
+        if(tmp == NULL)
+        {
+            /* reallocating memory failed, safer just to give up */
+            free_str_array(extra_args - 1, all_opts);
+            return -1;
+        }
+        *all_opts = tmp;
+        *(*all_opts+i) = malloc((strlen(env_var)+1) * sizeof(char));
+        if(*(*all_opts+1) == NULL)
+        {
+            /* memory allocation fail */
+            free_str_array(extra_args, all_opts);
+            return -1;
+        }
+        strcpy(*(*all_opts+i), env_var);
+
+        env_var = strtok(NULL, " ");
+    }
+
+    /* combine our environment variables with argv */
+    char** tmp = *all_opts;
+    realloc(tmp, (extra_args + argc - 1) * sizeof(char*));
+    if(tmp != NULL)
+    {
+        *all_opts = tmp;
+        for(i = 1; i < argc; i++)
+        {
+            *(*all_opts + i + extra_args - 1) = malloc((strlen(argv[i]+1)) * sizeof(char));
+            if(*(*all_opts + i + extra_args - 1) == NULL)
+            {
+                /* memory allocation fail */
+                printf("Memory allocation failed!");
+                free_str_array(extra_args + argc - 1, all_opts);
+                return -1;
+            }
+            strcpy(*(*all_opts + i + extra_args - 1), argv[i]);
+        }
+    }
+    else
+    {
+        /* memory reallocation fail */
+        free_str_array(extra_args, all_opts);
+        return -1;
+    }
+
+    return argc + extra_args - 1;
+}
+
 void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     int ch;
     unsigned int i;
@@ -294,6 +376,22 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.stdout_inode = statbuf.st_ino;
     }
 
+    /* attempts to merge AG_OPTIONS environment var with argv */
+    char** all_opts;
+    int all_argc = append_env_options(argc, argv, &all_opts);
+    if(all_argc == -1)
+    {
+        fprintf(stderr, "Failed to load default options!\n");
+        all_argc = argc;
+        all_opts = argv;
+    }
+
+    /* replace argc and argv with our custom values */
+    argv = all_opts;
+    argc = all_argc;
+
+
+    /* parse command line options normally */
     int pcre_opts = 0;
     while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:FfHhiLlm:nop:QRrSsvVtuUwz0", longopts, &opt_index)) != -1) {
         switch (ch) {
@@ -670,4 +768,7 @@ skip_group:
     }
     (*paths)[i] = NULL;
     (*base_paths)[i] = NULL;
+
+    /* we don't need this anymore */
+    free_str_array(all_argc, &all_opts);
 }
