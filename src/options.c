@@ -218,7 +218,7 @@ int append_env_options(int argc, char **argv, char ***all_opts)
         *all_opts = tmp;
         for(i = 1; i < argc; i++)
         {
-            *(*all_opts + i + extra_args - 1) = malloc((strlen(argv[i]+1)) * sizeof(char));
+            *(*all_opts + i + extra_args - 1) = malloc((strlen(argv[i])+1) * sizeof(char));
             if(*(*all_opts + i + extra_args - 1) == NULL)
             {
                 /* memory allocation fail */
