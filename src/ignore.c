@@ -114,7 +114,11 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
 
     char ***patterns_p;
     size_t *patterns_len;
-    if (is_fnmatch(pattern)) {
+    if (is_extension(pattern)) {
+        patterns_p = &(ig->extensions);
+        patterns_len = &(ig->extensions_len);
+        pattern += 2;
+    } else if (is_fnmatch(pattern)) {
         if (pattern[0] == '/') {
             patterns_p = &(ig->slash_regexes);
             patterns_len = &(ig->slash_regexes_len);
@@ -274,6 +278,20 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
     if (match_pos >= 0) {
         log_debug("file %s ignored because name matches static pattern %s", filename, ig->names[match_pos]);
         return 1;
+    }
+
+    const char *extension = NULL;
+    for (i = 0; filename[i] != '\0'; i++) {
+        if (filename[i] == '.') {
+            extension = filename + i + 1;
+        }
+    }
+    if (extension) {
+        match_pos = binary_search(extension, ig->extensions, 0, ig->extensions_len);
+        if (match_pos >= 0) {
+            log_debug("file %s ignored because name matches extension %s", extension, ig->extensions[match_pos]);
+            return 1;
+        }
     }
 
     ag_asprintf(&temp, "%s/%s", path[0] == '.' ? path + 1 : path, filename);

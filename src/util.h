@@ -76,6 +76,7 @@ void *decompress(const ag_compression_type zip_type, const void *buf, const int 
 ag_compression_type is_zipped(const void *buf, const int buf_len);
 
 int is_binary(const void *buf, const size_t buf_len);
+int is_extension(const char *filename);
 int is_regex(const char *query);
 int is_fnmatch(const char *filename);
 int binary_search(const char *needle, char **haystack, int start, int end);
