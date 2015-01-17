@@ -37,7 +37,7 @@ const char *ignore_pattern_files[] = {
     NULL
 };
 
-int is_empty(ignores* ig) {
+int is_empty(ignores *ig) {
     return (ig->extensions_len + ig->names_len + ig->slash_names_len + ig->regexes_len + ig->slash_regexes_len == 0);
 };
 
@@ -151,7 +151,7 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
     }
     patterns[i] = ag_strndup(pattern, pattern_len);
     log_debug("added ignore pattern %s to %s", pattern,
-            ig == root_ignores ? "root ignores" : ig->abs_path);
+              ig == root_ignores ? "root ignores" : ig->abs_path);
 }
 
 /* For loading git/hg ignore patterns */
