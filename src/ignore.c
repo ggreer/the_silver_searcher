@@ -38,11 +38,13 @@ const char *ignore_pattern_files[] = {
 };
 
 int is_empty(ignores* ig) {
-    return (ig->names_len + ig->slash_names_len + ig->regexes_len + ig->slash_regexes_len == 0);
+    return (ig->extensions_len + ig->names_len + ig->slash_names_len + ig->regexes_len + ig->slash_regexes_len == 0);
 };
 
 ignores *init_ignore(ignores *parent, const char *dirname, const size_t dirname_len) {
     ignores *ig = ag_malloc(sizeof(ignores));
+    ig->extensions = NULL;
+    ig->extensions_len = 0;
     ig->names = NULL;
     ig->names_len = 0;
     ig->slash_names = NULL;
@@ -75,26 +77,18 @@ ignores *init_ignore(ignores *parent, const char *dirname, const size_t dirname_
 }
 
 void cleanup_ignore(ignores *ig) {
-    size_t i;
-
-    if (ig) {
-        if (ig->regexes) {
-            for (i = 0; i < ig->regexes_len; i++) {
-                free(ig->regexes[i]);
-            }
-            free(ig->regexes);
-        }
-        if (ig->names) {
-            for (i = 0; i < ig->names_len; i++) {
-                free(ig->names[i]);
-            }
-            free(ig->names);
-        }
-        if (ig->abs_path) {
-            free(ig->abs_path);
-        }
-        free(ig);
+    if (ig == NULL) {
+        return;
     }
+    free_strings(ig->extensions, ig->extensions_len);
+    free_strings(ig->names, ig->names_len);
+    free_strings(ig->slash_names, ig->slash_names_len);
+    free_strings(ig->regexes, ig->regexes_len);
+    free_strings(ig->slash_regexes, ig->slash_regexes_len);
+    if (ig->abs_path) {
+        free(ig->abs_path);
+    }
+    free(ig);
 }
 
 void add_ignore_pattern(ignores *ig, const char *pattern) {
