@@ -77,17 +77,17 @@ lang_spec_t langs[] = {
     { "yaml", { "yaml", "yml" } }
 };
 
-unsigned int get_lang_count() {
+size_t get_lang_count() {
     return sizeof(langs) / sizeof(lang_spec_t);
 }
 
-char *make_lang_regex(char* ext_array, unsigned int num_exts) {
+char *make_lang_regex(char *ext_array, size_t num_exts) {
     int regex_capacity = 100;
     char *regex = ag_malloc(regex_capacity);
     int regex_length = 3;
     int subsequent = 0;
     char *extension;
-    unsigned int i;
+    size_t i;
 
     strcpy(regex, "\\.(");
 
@@ -113,35 +113,29 @@ char *make_lang_regex(char* ext_array, unsigned int num_exts) {
     return regex;
 }
 
-unsigned int
-combine_file_extensions(unsigned int*   extension_index,
-                        unsigned int    len,
-                        char**          exts)
-{
+size_t combine_file_extensions(size_t *extension_index, size_t len, char **exts) {
     /* Keep it fixed as 100 for the reason that if you have more than 100 
      * file types to search, you'd better search all the files.
      * */
-    unsigned int ext_capacity = 100;
-    (*exts) = (char*)ag_malloc(ext_capacity * SINGLE_EXT_LEN);
+    size_t ext_capacity = 100;
+    (*exts) = (char *)ag_malloc(ext_capacity * SINGLE_EXT_LEN);
     memset((*exts), 0, ext_capacity * SINGLE_EXT_LEN);
-    unsigned int num_of_extensions= 0;
+    size_t num_of_extensions = 0;
 
-    unsigned int i = 0;
-    for (; i < len; ++i) {
-        unsigned int j = 0;
-        const char* ext = langs[extension_index[i]].extensions[j];
+    size_t i;
+    for (i = 0; i < len; ++i) {
+        size_t j = 0;
+        const char *ext = langs[extension_index[i]].extensions[j];
         do {
             if (num_of_extensions == ext_capacity) {
                 break;
             }
-            char* pos = (*exts) + num_of_extensions * SINGLE_EXT_LEN;
+            char *pos = (*exts) + num_of_extensions * SINGLE_EXT_LEN;
             strncpy(pos, ext, strlen(ext));
             ++num_of_extensions;
             ext = langs[extension_index[i]].extensions[++j];
-        } while(ext);
+        } while (ext);
     }
 
     return num_of_extensions;
 }
-
-

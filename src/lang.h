@@ -14,7 +14,7 @@ extern lang_spec_t langs[];
 /**
  Return the language count.
  */
-unsigned int get_lang_count(void);
+size_t get_lang_count(void);
 
 /**
 Convert a NULL-terminated array of language extensions
@@ -22,7 +22,7 @@ into a regular expression of the form \.(extension1|extension2...)$
 
 Caller is responsible for freeing the returned string.
 */
-char *make_lang_regex(char *ext_array, unsigned int num_exts);
+char *make_lang_regex(char *ext_array, size_t num_exts);
 
 
 /**
@@ -32,8 +32,5 @@ The combined result is returned through *exts*;
 *exts* is one-dimension array, which can contain up to 100 extensions;
 The number of extensions that *exts* actually contain is returned.
 */
-unsigned int
-combine_file_extensions(unsigned int*   extension_index,
-                        unsigned int    len,
-                        char**          exts);
+size_t combine_file_extensions(size_t *extension_index, size_t len, char **exts);
 #endif

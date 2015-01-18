@@ -159,7 +159,7 @@ void cleanup_options(void) {
 
 void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     int ch;
-    unsigned int i;
+    size_t i;
     int path_len = 0;
     int useless = 0;
     int group = 1;
@@ -174,15 +174,15 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     int needs_query = 1;
     struct stat statbuf;
     int rv;
-    unsigned int lang_count;
-    unsigned int lang_num = 0;
+    size_t lang_count;
+    size_t lang_num = 0;
 
     size_t longopts_len, full_len;
     option_t *longopts;
     char *lang_regex = NULL;
-    unsigned int* ext_index = NULL;
-    char* extensions = NULL;
-    unsigned int num_exts = 0;
+    size_t *ext_index = NULL;
+    char *extensions = NULL;
+    size_t num_exts = 0;
 
     init_options();
 
@@ -261,8 +261,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     full_len = (longopts_len + lang_count + 1);
     longopts = ag_malloc(full_len * sizeof(option_t));
     memcpy(longopts, base_longopts, sizeof(base_longopts));
-    ext_index = (unsigned int*)ag_malloc(sizeof(unsigned int)*lang_count);
-    memset(ext_index, 0, sizeof(unsigned int)*lang_count);
+    ext_index = (size_t *)ag_malloc(sizeof(size_t) * lang_count);
+    memset(ext_index, 0, sizeof(size_t) * lang_count);
 
     for (i = 0; i < lang_count; i++) {
         option_t opt = { langs[i].name, no_argument, NULL, 0 };
@@ -508,9 +508,13 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, lang_regex, 0, 0);
     }
 
-    if (extensions) free(extensions);
+    if (extensions) {
+        free(extensions);
+    }
     free(ext_index);
-    if (lang_regex) free(lang_regex);
+    if (lang_regex) {
+        free(lang_regex);
+    }
     free(longopts);
 
     argc -= optind;
@@ -539,7 +543,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     if (list_file_types) {
-        unsigned int lang_index;
+        size_t lang_index;
         printf("The following file types are supported:\n");
         for (lang_index = 0; lang_index < lang_count; lang_index++) {
             printf("  --%s\n    ", langs[lang_index].name);
@@ -659,7 +663,7 @@ skip_group:
     if (argc > 0) {
         *paths = ag_calloc(sizeof(char *), argc + 1);
         *base_paths = ag_calloc(sizeof(char *), argc + 1);
-        for (i = 0; i < (unsigned int)argc; i++) {
+        for (i = 0; i < (size_t)argc; i++) {
             path = ag_strdup(argv[i]);
             path_len = strlen(path);
             /* kill trailing slash */
