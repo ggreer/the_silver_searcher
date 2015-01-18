@@ -175,10 +175,14 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     struct stat statbuf;
     int rv;
     unsigned int lang_count;
+    unsigned int lang_num = 0;
 
     size_t longopts_len, full_len;
     option_t *longopts;
     char *lang_regex = NULL;
+    unsigned int* ext_index = NULL;
+    char* extensions = NULL;
+    unsigned int num_exts = 0;
 
     init_options();
 
@@ -257,6 +261,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     full_len = (longopts_len + lang_count + 1);
     longopts = ag_malloc(full_len * sizeof(option_t));
     memcpy(longopts, base_longopts, sizeof(base_longopts));
+    ext_index = (unsigned int*)ag_malloc(sizeof(unsigned int)*lang_count);
+    memset(ext_index, 0, sizeof(unsigned int)*lang_count);
 
     for (i = 0; i < lang_count; i++) {
         option_t opt = { langs[i].name, no_argument, NULL, 0 };
@@ -480,14 +486,11 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 
                 for (i = 0; i < lang_count; i++) {
                     if (strcmp(longopts[opt_index].name, langs[i].name) == 0) {
-                        lang_regex = make_lang_regex(langs[i].extensions);
-                        compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, lang_regex, 0, 0);
+                        ext_index[lang_num++] = i;
                         break;
                     }
                 }
-                if (lang_regex) {
-                    free(lang_regex);
-                    lang_regex = NULL;
+                if (i != lang_count) {
                     break;
                 }
 
@@ -498,6 +501,16 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         }
     }
 
+
+    if (ext_index[0]) {
+        num_exts = combine_file_extensions(ext_index, lang_num, &extensions);
+        lang_regex = make_lang_regex(extensions, num_exts);
+        compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, lang_regex, 0, 0);
+    }
+
+    if (extensions) free(extensions);
+    free(ext_index);
+    if (lang_regex) free(lang_regex);
     free(longopts);
 
     argc -= optind;
