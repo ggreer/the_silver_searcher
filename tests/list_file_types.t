@@ -195,6 +195,9 @@ Language types are output:
     --tt
         .tt  .tt2  .ttml
   
+    --vala
+        .vala  .vapi
+  
     --vb
         .bas  .cls  .frm  .ctl  .vb  .resx
   
