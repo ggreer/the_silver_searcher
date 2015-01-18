@@ -264,34 +264,16 @@ static int ackmate_dir_match(const char *dir_name) {
     return pcre_exec(opts.ackmate_dir_filter, NULL, dir_name, strlen(dir_name), 0, 0, NULL, 0);
 }
 
+/* This is the hottest code in Ag. 10-15% of all execution time is spent here */
 static int path_ignore_search(const ignores *ig, const char *path, const char *filename) {
     char *temp;
-
     size_t i;
     int match_pos;
-
-    if (strncmp(filename, "./", 2) == 0) {
-        filename++;
-    }
 
     match_pos = binary_search(filename, ig->names, 0, ig->names_len);
     if (match_pos >= 0) {
         log_debug("file %s ignored because name matches static pattern %s", filename, ig->names[match_pos]);
         return 1;
-    }
-
-    const char *extension = NULL;
-    for (i = 0; filename[i] != '\0'; i++) {
-        if (filename[i] == '.') {
-            extension = filename + i + 1;
-        }
-    }
-    if (extension) {
-        match_pos = binary_search(extension, ig->extensions, 0, ig->extensions_len);
-        if (match_pos >= 0) {
-            log_debug("file %s ignored because name matches extension %s", extension, ig->extensions[match_pos]);
-            return 1;
-        }
     }
 
     ag_asprintf(&temp, "%s/%s", path[0] == '.' ? path + 1 : path, filename);
@@ -397,7 +379,31 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     }
     log_debug("path_start %s filename %s", path_start, filename);
 
+    const char *extension = NULL;
+    for (i = filename_len - 1; filename_len > 1; i--) {
+        if (filename[i] == '.') {
+            extension = filename + i + 1;
+            break;
+        }
+    }
+    if (extension && extension[0] == '\0') {
+        extension = NULL;
+    }
+
     while (ig != NULL) {
+        if (strncmp(filename, "./", 2) == 0) {
+            filename++;
+            filename_len--;
+        }
+
+        if (extension) {
+            int match_pos = binary_search(extension, ig->extensions, 0, ig->extensions_len);
+            if (match_pos >= 0) {
+                log_debug("file %s ignored because name matches extension %s", extension, ig->extensions[match_pos]);
+                return 0;
+            }
+        }
+
         if (path_ignore_search(ig, path_start, filename)) {
             return 0;
         }

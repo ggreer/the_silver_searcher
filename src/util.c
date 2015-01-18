@@ -322,13 +322,6 @@ int is_binary(const void *buf, const size_t buf_len) {
     return 0;
 }
 
-int is_extension(const char *filename) {
-    if (filename[0] == '*' && filename[1] == '.' && filename[2] != '\0') {
-        return !is_fnmatch(filename + 2);
-    }
-    return FALSE;
-}
-
 int is_regex(const char *query) {
     char regex_chars[] = {
         '$',
