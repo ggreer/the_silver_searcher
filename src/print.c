@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 #include "ignore.h"
 #include "log.h"
@@ -59,8 +60,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
     size_t last_prev_line = 0;
     size_t prev_line_offset = 0;
     size_t cur_match = 0;
-    /* TODO the line below contains a terrible hack */
-    size_t lines_since_last_match = 1000000; /* if I initialize this to INT_MAX it'll overflow */
+    size_t lines_since_last_match = INT_MAX;
     ssize_t lines_to_print = 0;
     size_t last_printed_match = 0;
     char sep = '-';
@@ -211,7 +211,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
 
             prev_line_offset = i + 1; /* skip the newline */
             line++;
-            if (!in_a_match) {
+            if (!in_a_match && lines_since_last_match < INT_MAX) {
                 lines_since_last_match++;
             }
             /* File doesn't end with a newline. Print one so the output is pretty. */
