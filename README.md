@@ -86,6 +86,8 @@ or
 
 ## Building from source
 
+### Building master
+
 1. Install dependencies (Automake, pkg-config, PCRE, LZMA):
     * OS X:
 
@@ -114,6 +116,17 @@ or
 3. Make install:
 
         sudo make install
+
+
+### Building a release tarball
+
+Building release tarballs requires the same dependencies, except for automake and pkg-config. Once you've installed the dependencies, just run:
+
+    ./configure
+    make
+    make install
+
+You may need to use `sudo` or run as root for the make install.
 
 
 ## Editor Integration
