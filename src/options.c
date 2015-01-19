@@ -126,7 +126,6 @@ void init_options(void) {
     opts.color_match = ag_strdup(color_match);
     opts.color_line_number = ag_strdup(color_line_number);
     opts.use_thread_affinity = TRUE;
-    opts.one_dev = FALSE;
 }
 
 void cleanup_options(void) {
