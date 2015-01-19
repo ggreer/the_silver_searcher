@@ -1,6 +1,10 @@
 Setup:
 
   $ . $TESTDIR/setup.sh
+  $ if [ ! -e "/dev/shm" ]; then
+  $ echo "No /dev/shm. Skipping test."
+  $ exit 80
+  $ fi
   $ TEST_TMPDIR=`mktemp -d --tmpdir=/dev/shm ag_test.XXX`
   $ echo "blah" > $TEST_TMPDIR/blah.txt
   $ ln -s $TEST_TMPDIR other_device
