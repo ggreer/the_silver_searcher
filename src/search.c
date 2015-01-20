@@ -454,6 +454,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
         queue_item = NULL;
         dir = dir_list[i];
         ag_asprintf(&dir_full_path, "%s/%s", path, dir->d_name);
+#ifndef _WIN32
         if (opts.one_dev) {
             struct stat s;
             if (lstat(dir_full_path, &s) != 0) {
@@ -465,6 +466,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
                 goto cleanup;
             }
         }
+#endif
 
         /* If a link points to a directory then we need to treat it as a directory. */
         if (!opts.follow_symlinks && is_symlink(path, dir)) {
