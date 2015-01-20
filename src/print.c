@@ -134,8 +134,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                 free(context_prev_lines[last_prev_line]);
             }
             /* We don't want to strcpy the \n */
-            context_prev_lines[last_prev_line] =
-                ag_strndup(&buf[prev_line_offset], i - prev_line_offset);
+            context_prev_lines[last_prev_line] = ag_strndup(&buf[prev_line_offset], i - prev_line_offset);
             last_prev_line = (last_prev_line + 1) % opts.before;
         }
 
