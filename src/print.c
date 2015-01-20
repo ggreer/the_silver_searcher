@@ -191,7 +191,9 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                                 if (opts.print_path == PATH_PRINT_EACH_LINE) {
                                     print_path(path, ':');
                                 }
-                                print_line_number(line, ':');
+                                if (opts.print_path != PATH_PRINT_NOTHING) {
+                                    print_line_number(line, ':');
+                                }
                             }
                         }
                         /* Don't print the null terminator */
