@@ -9,7 +9,7 @@ Setup:
 
 Only print matches:
 
-  $ ag -o "fox\w+"
+  $ ag -o "fox\w+" blah.txt
   foxy
   foxlike
 
@@ -28,7 +28,7 @@ Ditto but with filename at top
 
 Always print matches on separate lines:
 
-  $ ag -o "blah"
+  $ ag -o "blah" blah.txt
   blah
   blah
   blah

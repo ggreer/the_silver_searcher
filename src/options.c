@@ -395,7 +395,6 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'o':
                 opts.only_matching = 1;
-                opts.print_path = PATH_PRINT_NOTHING;
                 break;
             case 'F':
             case 'Q':
