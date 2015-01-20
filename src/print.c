@@ -140,7 +140,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
 
         if (buf[i] == '\n' || i == buf_len) {
             if (lines_since_last_match == 0) {
-                if (opts.print_path == PATH_PRINT_EACH_LINE && !opts.search_stream) {
+                if (opts.print_path == PATH_PRINT_EACH_LINE && !opts.search_stream && !opts.only_matching) {
                     print_path(path, ':');
                 }
                 if (opts.ackmate) {
@@ -161,7 +161,9 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                         print_line(buf, i, prev_line_offset);
                     }
                 } else {
-                    print_line_number(line, ':');
+                    if (!opts.only_matching) {
+                        print_line_number(line, ':');
+                    }
                     if (opts.column) {
                         print_column_number(matches, last_printed_match, prev_line_offset, ':');
                     }
@@ -176,17 +178,26 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                             }
                             printing_a_match = FALSE;
                             last_printed_match++;
+                            if (opts.only_matching) {
+                                fputc('\n', out_fd);
+                            }
                         }
                         if (last_printed_match < matches_len && j == matches[last_printed_match].start) {
                             if (opts.color) {
                                 fprintf(out_fd, "%s", opts.color_match);
                             }
                             printing_a_match = TRUE;
+                            if (opts.only_matching) {
+                                if (opts.print_path == PATH_PRINT_EACH_LINE) {
+                                    print_path(path, ':');
+                                }
+                                print_line_number(line, ':');
+                            }
                         }
                         /* Don't print the null terminator */
                         if (j < buf_len) {
                             /* if only_matching is set, print only matches and newlines */
-                            if (!opts.only_matching || printing_a_match || buf[j] == '\n') {
+                            if (!opts.only_matching || printing_a_match) {
                                 fputc(buf[j], out_fd);
                             }
                         }
