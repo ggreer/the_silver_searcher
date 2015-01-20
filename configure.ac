@@ -18,9 +18,10 @@ m4_ifdef(
 PKG_CHECK_MODULES([PCRE], [libpcre])
 
 m4_include([m4/ax_pthread.m4])
-AX_PTHREAD([
-    AC_CHECK_HEADERS([pthread.h])
-])
+AX_PTHREAD(
+    [AC_CHECK_HEADERS([pthread.h])],
+    [AC_MSG_WARN([No pthread support. Ag will be slower due to running single-threaded.])]
+)
 
 # Run CFLAGS="-pg" ./configure if you want debug symbols
 CFLAGS="$CFLAGS $PTHREAD_CFLAGS $PCRE_CFLAGS -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -Wshadow -Wpointer-arith -Wcast-qual -Wmissing-prototypes -Wno-missing-braces -std=gnu89 -D_GNU_SOURCE -O2"
