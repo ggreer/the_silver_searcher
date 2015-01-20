@@ -56,3 +56,14 @@ Ditto but with filename at top
   5:blah
   5:blah
   5:blah
+
+With columns
+
+  $ ag -o -H --column "blah"
+  blah.txt
+  2:1:blah
+  2:6:blah
+  2:11:blah
+  5:1:blah
+  5:6:blah
+  5:11:blah

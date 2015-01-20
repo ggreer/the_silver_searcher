@@ -188,6 +188,9 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                                     print_path(path, ':');
                                 }
                                 print_line_number(line, ':');
+                                if (opts.column) {
+                                    print_column_number(matches, last_printed_match, prev_line_offset, ':');
+                                }
                             }
                             if (opts.color) {
                                 fprintf(out_fd, "%s", opts.color_match);
