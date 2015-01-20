@@ -104,6 +104,9 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
 
   * `--no-numbers`:
     Don't show line numbers.
+
+  * `-o --only-matching`:
+    Print only the matching part of the lines.
   
   * `-p --path-to-agignore STRING`:
     Provide a path to a specific .agignore file.
