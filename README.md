@@ -59,7 +59,7 @@ or
         yum install the_silver_searcher
 * RHEL7+
 
-        rpm -Uvh http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/epel-release-7-0.2.noarch.rpm
+        rpm -Uvh http://download.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
         yum install the_silver_searcher
 * Gentoo
 
