@@ -157,12 +157,6 @@ You can use [ag.el][] as an Emacs fronted to Ag.
 
 TextMate users can use Ag with [my fork](https://github.com/ggreer/AckMate) of the popular AckMate plugin, which lets you use both Ack and Ag for searching. If you already have AckMate you just want to replace Ack with Ag, move or delete `"~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"` and run `ln -s /usr/local/bin/ag "~/Library/Application Support/TextMate/PlugIns/AckMate.tmplugin/Contents/Resources/ackmate_ack"`
 
-
-## Contributing
-
-I like when people send pull requests. It validates my existence. If you want to help out, check the [issue list](https://github.com/ggreer/the_silver_searcher/issues?sort=updated&state=open) or search the codebase for `TODO`. Don't worry if you lack experience writing C. If I think a pull request isn't ready to be merged, I'll give feedback in comments. Once everything looks good, I'll comment on your pull request with a cool animated gif and hit the merge button.
-
-
 ## Other stuff you might like
 
 * [Ack](https://github.com/petdance/ack2) - Better than grep. Without Ack, Ag would not exist.
