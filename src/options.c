@@ -43,7 +43,9 @@ Output Options:\n\
      --color-match        Color codes for result match numbers (Default: 30;43)\n\
      --color-path         Color codes for path names (Default: 1;32)\n\
      --column             Print column numbers in results\n\
-  -H --[no]heading        Print file names (Enabled unless searching a single file)\n\
+     --[no]filename       Print file names (Enabled unless searching a single file)\n\
+  -H --[no]heading        Print file names before each file's matches\n\
+                          (Enabled by default)\n\
   -C --context [LINES]    Print lines before and after matches (Default: 2)\n\
      --[no]group          Same as --[no]break --[no]heading\n\
   -g PATTERN              Print filenames matching PATTERN\n\
@@ -206,6 +208,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "count", no_argument, NULL, 'c'},
         { "debug", no_argument, NULL, 'D' },
         { "depth", required_argument, NULL, 0 },
+        { "filename", no_argument, NULL, 0 },
         { "file-search-regex", required_argument, NULL, 'G' },
         { "files-with-matches", no_argument, NULL, 'l' },
         { "files-without-matches", no_argument, NULL, 'L' },
@@ -231,6 +234,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "noaffinity", no_argument, &opts.use_thread_affinity, 0 },
         { "nobreak", no_argument, &opts.print_break, 0 },
         { "nocolor", no_argument, &opts.color, 0 },
+        { "nofilename", no_argument, NULL, 0 },
         { "nofollow", no_argument, &opts.follow_symlinks, 0 },
         { "nogroup", no_argument, &group, 0 },
         { "noheading", no_argument, &opts.print_path, PATH_PRINT_EACH_LINE },
@@ -450,11 +454,19 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 } else if (strcmp(longopts[opt_index].name, "depth") == 0) {
                     opts.max_search_depth = atoi(optarg);
                     break;
+                } else if (strcmp(longopts[opt_index].name, "filename") == 0) {
+                    opts.print_path = PATH_PRINT_DEFAULT;
+                    opts.print_line_numbers = TRUE;
+                    break;
                 } else if (strcmp(longopts[opt_index].name, "ignore-dir") == 0) {
                     add_ignore_pattern(root_ignores, optarg);
                     break;
                 } else if (strcmp(longopts[opt_index].name, "ignore") == 0) {
                     add_ignore_pattern(root_ignores, optarg);
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "nofilename") == 0) {
+                    opts.print_path = PATH_PRINT_NOTHING;
+                    opts.print_line_numbers = FALSE;
                     break;
                 } else if (strcmp(longopts[opt_index].name, "nopager") == 0) {
                     out_fd = stdout;
