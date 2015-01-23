@@ -55,6 +55,9 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `--depth NUM`:
     Search up to NUM directories deep, -1 for unlimited. Default is 25.
 
+  * `--[no]filename`:
+    Print file names. Enabled by default, except when searching a single file.
+
   * `-f --follow`:
     Follow symlinks.
 
