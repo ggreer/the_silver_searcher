@@ -102,8 +102,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `-m --max-count NUM`:
     Skip the rest of a file after NUM matches. Default is 0, which never skips.
 
-  * `--no-numbers`:
-    Don't show line numbers.
+  * `--[no]numbers`:
+    Print line numbers. Default is to omit line numbers when searching streams.
 
   * `-o --only-matching`:
     Print only the matching part of the lines.
