@@ -44,7 +44,6 @@ Output Options:\n\
      --color-path         Color codes for path names (Default: 1;32)\n\
      --column             Print column numbers in results\n\
   -H --[no]heading        Print file names (Enabled unless searching a single file)\n\
-     --line-numbers       Print line numbers even for streams\n\
   -C --context [LINES]    Print lines before and after matches (Default: 2)\n\
      --[no]group          Same as --[no]break --[no]heading\n\
   -g PATTERN              Print filenames matching PATTERN\n\
@@ -52,7 +51,8 @@ Output Options:\n\
                           (don't print the matching lines)\n\
   -L --files-without-matches\n\
                           Only print filenames that don't contain matches\n\
-     --no-numbers         Don't print line numbers\n\
+     --[no]numbers        Print line numbers. Default is to omit line numbers\n\
+                          when searching streams\n\
   -o --only-matching      Prints only the matching part of the lines\n\
      --print-long-lines   Print matches on very long lines (Default: >2k characters)\n\
      --passthrough        When searching a stream, print all lines even if they\n\
@@ -219,12 +219,14 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "ignore-case", no_argument, NULL, 'i' },
         { "ignore-dir", required_argument, NULL, 0 },
         { "invert-match", no_argument, NULL, 'v' },
+        /* deprecated for --numbers. Remove eventually. */
         { "line-numbers", no_argument, &opts.print_line_numbers, 2 },
         { "list-file-types", no_argument, &list_file_types, 1 },
         { "literal", no_argument, NULL, 'Q' },
         { "match", no_argument, &useless, 0 },
         { "max-count", required_argument, NULL, 'm' },
-        { "no-numbers", no_argument, NULL, 0 },
+        /* "no-" is deprecated. Remove these eventually. */
+        { "no-numbers", no_argument, &opts.print_line_numbers, FALSE },
         { "no-recurse", no_argument, NULL, 'n' },
         { "noaffinity", no_argument, &opts.use_thread_affinity, 0 },
         { "nobreak", no_argument, &opts.print_break, 0 },
@@ -232,8 +234,11 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "nofollow", no_argument, &opts.follow_symlinks, 0 },
         { "nogroup", no_argument, &group, 0 },
         { "noheading", no_argument, &opts.print_path, PATH_PRINT_EACH_LINE },
+        { "nonumbers", no_argument, &opts.print_line_numbers, FALSE },
         { "nopager", no_argument, NULL, 0 },
+        { "norecurse", no_argument, NULL, 'n' },
         { "null", no_argument, NULL, '0' },
+        { "numbers", no_argument, &opts.print_line_numbers, 2 },
         { "only-matching", no_argument, NULL, 'o' },
         { "one-device", no_argument, &opts.one_dev, 1 },
         { "pager", required_argument, NULL, 0 },
@@ -444,9 +449,6 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                     break;
                 } else if (strcmp(longopts[opt_index].name, "depth") == 0) {
                     opts.max_search_depth = atoi(optarg);
-                    break;
-                } else if (strcmp(longopts[opt_index].name, "no-numbers") == 0) {
-                    opts.print_line_numbers = FALSE;
                     break;
                 } else if (strcmp(longopts[opt_index].name, "ignore-dir") == 0) {
                     add_ignore_pattern(root_ignores, optarg);
