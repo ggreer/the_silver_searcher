@@ -30,6 +30,7 @@ _ag() {
     --file-search-regex
     --files-with-matches
     --files-without-matches
+    --fixed-strings
     --follow
     --group
     --nogroup
@@ -62,20 +63,23 @@ _ag() {
     --stats
     --unrestricted
     --version
+    --vimgrep
     --word-regexp
     --workers
   '
   shtopt='
     -a -A -B -C -D
-    -f -g -G -h -i
-    -l -L -m -n -p
-    -Q -r -R -s -S
-    -t -u -U -v -V
-    -w -z
+    -f -F -g -G -h
+    -i -l -L -m -n
+    -p -Q -r -R -s
+    -S -t -u -U -v
+    -V -w -z
   '
 
+  types=$(ag --list-file-types |grep -- '--')
+
   # these options require an argument
-  if [[ "${prev}" == -@(A|B|C|G|g|m) ]] ; then
+  if [[ "${prev}" == -[ABCGgm] ]] ; then
     return 0
   fi
 
@@ -100,13 +104,8 @@ _ag() {
 
   case "${cur}" in
     -*)
-          if [[ "${COMP_CWORD}" -eq 1 ]] ; then
-            COMPREPLY=( $(compgen -W \
-              "${lngopt} ${shtopt}" -- "${cur}") )
-          else
-            COMPREPLY=( $(compgen -W \
-              "${lngopt} ${shtopt}" -- "${cur}") )
-          fi
+          COMPREPLY=( $(compgen -W \
+            "${lngopt} ${shtopt} ${types}" -- "${cur}") )
           return 0;;
     *)
           _filedir

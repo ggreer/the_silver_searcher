@@ -34,15 +34,18 @@ lang_spec_t langs[] = {
     { "json", { "json" } },
     { "jsp", { "jsp", "jspx", "jhtm", "jhtml" } },
     { "less", { "less" } },
+    { "liquid", { "liquid" } },
     { "lisp", { "lisp", "lsp" } },
     { "lua", { "lua" } },
     { "m4", { "m4" } },
     { "make", { "Makefiles", "mk", "mak" } },
+    { "markdown", { "markdown", "mdown", "mdwn", "mkdn", "mkd", "md" } },
     { "mason", { "mas", "mhtml", "mpl", "mtxt" } },
     { "matlab", { "m" } },
+    { "mercury", { "m", "moo" } },
     { "objc", { "m", "h" } },
     { "objcpp", { "mm", "h" } },
-    { "ocaml", { "ml", "mli" } },
+    { "ocaml", { "ml", "mli", "mll", "mly" } },
     { "octave", { "m" } },
     { "parrot", { "pir", "pasm", "pmc", "ops", "pod", "pg", "tg" } },
     { "perl", { "pl", "pm", "pm6", "pod", "t" } },
@@ -65,26 +68,32 @@ lang_spec_t langs[] = {
     { "tcl", { "tcl", "itcl", "itk" } },
     { "tex", { "tex", "cls", "sty" } },
     { "tt", { "tt", "tt2", "ttml" } },
+    { "vala", { "vala", "vapi" } },
     { "vb", { "bas", "cls", "frm", "ctl", "vb", "resx" } },
     { "verilog", { "v", "vh", "sv" } },
     { "vhdl", { "vhd", "vhdl" } },
     { "vim", { "vim" } },
     { "xml", { "xml", "dtd", "xsl", "xslt", "ent" } },
-    { "yaml", { "yaml", "yml" } },
-    { NULL, { NULL } }
+    { "yaml", { "yaml", "yml" } }
 };
 
-char *make_lang_regex(const char **extensions) {
+size_t get_lang_count() {
+    return sizeof(langs) / sizeof(lang_spec_t);
+}
+
+char *make_lang_regex(char *ext_array, size_t num_exts) {
     int regex_capacity = 100;
     char *regex = ag_malloc(regex_capacity);
     int regex_length = 3;
     int subsequent = 0;
-    const char **extension;
+    char *extension;
+    size_t i;
 
     strcpy(regex, "\\.(");
 
-    for (extension = extensions; *extension; ++extension) {
-        int extension_length = strlen(*extension);
+    for (i = 0; i < num_exts; ++i) {
+        extension = ext_array + i * SINGLE_EXT_LEN;
+        int extension_length = strlen(extension);
         while (regex_length + extension_length + 3 + subsequent > regex_capacity) {
             regex_capacity *= 2;
             regex = ag_realloc(regex, regex_capacity);
@@ -94,7 +103,7 @@ char *make_lang_regex(const char **extensions) {
         } else {
             subsequent = 1;
         }
-        strcpy(regex + regex_length, *extension);
+        strcpy(regex + regex_length, extension);
         regex_length += extension_length;
     }
 
@@ -102,4 +111,31 @@ char *make_lang_regex(const char **extensions) {
     regex[regex_length++] = '$';
     regex[regex_length++] = 0;
     return regex;
+}
+
+size_t combine_file_extensions(size_t *extension_index, size_t len, char **exts) {
+    /* Keep it fixed as 100 for the reason that if you have more than 100 
+     * file types to search, you'd better search all the files.
+     * */
+    size_t ext_capacity = 100;
+    (*exts) = (char *)ag_malloc(ext_capacity * SINGLE_EXT_LEN);
+    memset((*exts), 0, ext_capacity * SINGLE_EXT_LEN);
+    size_t num_of_extensions = 0;
+
+    size_t i;
+    for (i = 0; i < len; ++i) {
+        size_t j = 0;
+        const char *ext = langs[extension_index[i]].extensions[j];
+        do {
+            if (num_of_extensions == ext_capacity) {
+                break;
+            }
+            char *pos = (*exts) + num_of_extensions * SINGLE_EXT_LEN;
+            strncpy(pos, ext, strlen(ext));
+            ++num_of_extensions;
+            ext = langs[extension_index[i]].extensions[++j];
+        } while (ext);
+    }
+
+    return num_of_extensions;
 }

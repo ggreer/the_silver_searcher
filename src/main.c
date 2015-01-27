@@ -20,6 +20,11 @@
 #include "search.h"
 #include "util.h"
 
+typedef struct {
+    pthread_t thread;
+    int id;
+} worker_t;
+
 int main(int argc, char **argv) {
     char **base_paths = NULL;
     char **paths = NULL;
@@ -27,15 +32,16 @@ int main(int argc, char **argv) {
     int pcre_opts = PCRE_MULTILINE;
     int study_opts = 0;
     double time_diff;
-    pthread_t *workers = NULL;
+    worker_t *workers = NULL;
     int workers_len;
+    int num_cores;
 
     set_log_level(LOG_LEVEL_WARN);
 
     work_queue = NULL;
     work_queue_tail = NULL;
     memset(&stats, 0, sizeof(stats));
-    root_ignores = init_ignore(NULL);
+    root_ignores = init_ignore(NULL, "", 0);
     out_fd = stdout;
 #ifdef USE_PCRE_JIT
     int has_jit = 0;
@@ -54,11 +60,13 @@ int main(int argc, char **argv) {
     {
         SYSTEM_INFO si;
         GetSystemInfo(&si);
-        workers_len = si.dwNumberOfProcessors;
+        num_cores = si.dwNumberOfProcessors;
     }
 #else
-    workers_len = (int)sysconf(_SC_NPROCESSORS_ONLN);
+    num_cores = (int)sysconf(_SC_NPROCESSORS_ONLN);
 #endif
+
+    workers_len = num_cores;
     if (opts.literal) {
         workers_len--;
     }
@@ -71,7 +79,7 @@ int main(int argc, char **argv) {
 
     log_debug("Using %i workers", workers_len);
     done_adding_files = FALSE;
-    workers = ag_calloc(workers_len, sizeof(pthread_t));
+    workers = ag_calloc(workers_len, sizeof(worker_t));
     if (pthread_cond_init(&files_ready, NULL)) {
         die("pthread_cond_init failed!");
     }
@@ -123,22 +131,50 @@ int main(int argc, char **argv) {
         search_stream(stdin, "");
     } else {
         for (i = 0; i < workers_len; i++) {
-            int rv = pthread_create(&(workers[i]), NULL, &search_file_worker, &i);
+            workers[i].id = i;
+            int rv = pthread_create(&(workers[i].thread), NULL, &search_file_worker, &(workers[i].id));
             if (rv != 0) {
                 die("error in pthread_create(): %s", strerror(rv));
             }
+#if defined(HAVE_PTHREAD_SETAFFINITY_NP) && defined(USE_CPU_SET)
+            if (opts.use_thread_affinity) {
+                cpu_set_t cpu_set;
+                CPU_ZERO(&cpu_set);
+                CPU_SET(i % num_cores, &cpu_set);
+                rv = pthread_setaffinity_np(workers[i].thread, sizeof(cpu_set), &cpu_set);
+                if (rv != 0) {
+                    die("error in pthread_setaffinity_np(): %s", strerror(rv));
+                }
+                log_debug("Thread %i set to CPU %i", i, i);
+            } else {
+                log_debug("Thread affinity disabled.");
+            }
+#else
+            log_debug("No CPU affinity support.");
+#endif
         }
         for (i = 0; paths[i] != NULL; i++) {
             log_debug("searching path %s for %s", paths[i], opts.query);
             symhash = NULL;
-            search_dir(root_ignores, base_paths[i], paths[i], 0);
+            ignores *ig = init_ignore(root_ignores, "", 0);
+            struct stat s = {.st_dev = 0};
+#ifndef _WIN32
+            /* The device is ignored if opts.one_dev is false, so it's fine
+             * to leave it at the default 0
+             */
+            if (opts.one_dev && lstat(paths[i], &s) == -1) {
+                log_err("Failed to get device information for path %s. Skipping...", paths[i]);
+            }
+#endif
+            search_dir(ig, base_paths[i], paths[i], 0, s.st_dev);
+            cleanup_ignore(ig);
         }
         pthread_mutex_lock(&work_queue_mtx);
         done_adding_files = TRUE;
         pthread_cond_broadcast(&files_ready);
         pthread_mutex_unlock(&work_queue_mtx);
         for (i = 0; i < workers_len; i++) {
-            if (pthread_join(workers[i], NULL)) {
+            if (pthread_join(workers[i].thread, NULL)) {
                 die("pthread_join failed!");
             }
         }

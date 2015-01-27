@@ -544,7 +544,7 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
  */
 char *realpath(const char *path, char *resolved_path) {
     char *p;
-    char tmp[MAX_PATH + 1];
+    char tmp[_MAX_PATH + 1];
     strlcpy(tmp, path, sizeof(tmp));
     p = tmp;
     while (*p) {

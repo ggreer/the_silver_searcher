@@ -16,7 +16,7 @@ void search_buf(const char *buf, const size_t buf_len,
         }
     }
 
-    int matches_len = 0;
+    size_t matches_len = 0;
     match_t *matches;
     size_t matches_size;
     size_t matches_spare;
@@ -72,10 +72,9 @@ void search_buf(const char *buf, const size_t buf_len,
                 }
             }
 
-            if ((size_t)matches_len + matches_spare >= matches_size) {
+            if (matches_len + matches_spare >= matches_size) {
                 /* TODO: benchmark initial size of matches. 100 may be too small/big */
                 matches_size = matches ? matches_size * 2 : 100;
-                log_debug("Too many matches in %s. Reallocating matches to %zu.", dir_full_path, matches_size);
                 matches = ag_realloc(matches, matches_size * sizeof(match_t));
             }
 
@@ -86,7 +85,7 @@ void search_buf(const char *buf, const size_t buf_len,
             matches_len++;
             match_ptr += opts.query_len;
 
-            if (matches_len >= opts.max_matches_per_file) {
+            if (opts.max_matches_per_file > 0 && matches_len >= opts.max_matches_per_file) {
                 log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
                 break;
             }
@@ -97,11 +96,14 @@ void search_buf(const char *buf, const size_t buf_len,
                (pcre_exec(opts.re, opts.re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
             log_debug("Regex match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
             buf_offset = offset_vector[1];
+            if (offset_vector[0] == offset_vector[1]) {
+                ++buf_offset;
+                log_debug("Regex match is of length zero. Advancing offset one byte.");
+            }
 
             /* TODO: copy-pasted from above. FIXME */
-            if ((size_t)matches_len + matches_spare >= matches_size) {
+            if (matches_len + matches_spare >= matches_size) {
                 matches_size = matches ? matches_size * 2 : 100;
-                log_debug("Too many matches in %s. Reallocating matches to %zu.", dir_full_path, matches_size);
                 matches = ag_realloc(matches, matches_size * sizeof(match_t));
             }
 
@@ -109,7 +111,7 @@ void search_buf(const char *buf, const size_t buf_len,
             matches[matches_len].end = offset_vector[1];
             matches_len++;
 
-            if (matches_len >= opts.max_matches_per_file) {
+            if (opts.max_matches_per_file > 0 && matches_len >= opts.max_matches_per_file) {
                 log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
                 break;
             }
@@ -134,7 +136,7 @@ void search_buf(const char *buf, const size_t buf_len,
         }
         pthread_mutex_lock(&print_mtx);
         if (opts.print_filename_only) {
-            /* If the --files-without-matches or -L option in passed we should
+            /* If the --files-without-matches or -L option is passed we should
              * not print a matching line. This option currently sets
              * opts.print_filename_only and opts.invert_match. Unfortunately
              * setting the latter has the side effect of making matches.len = 1
@@ -142,7 +144,11 @@ void search_buf(const char *buf, const size_t buf_len,
              * GitHub issue 206 for the consequences if this behaviour is not
              * checked. */
             if (!opts.invert_match || matches_len < 2) {
-                print_path(dir_full_path, opts.null_follows_filename ? 0 : '\n');
+                if (opts.print_count) {
+                    print_path_count(dir_full_path, opts.path_sep, (size_t)matches_len);
+                } else {
+                    print_path(dir_full_path, opts.path_sep);
+                }
             }
         } else if (binary) {
             print_binary_file_matches(dir_full_path);
@@ -376,7 +382,8 @@ static int check_symloop_leave(dirkey_t *dirkey) {
 /* TODO: Append matches to some data structure instead of just printing them out.
  * Then ag can have sweet summaries of matches/files scanned/time/etc.
  */
-void search_dir(ignores *ig, const char *base_path, const char *path, const int depth) {
+void search_dir(ignores *ig, const char *base_path, const char *path, const int depth,
+                dev_t original_dev) {
     struct dirent **dir_list = NULL;
     struct dirent *dir = NULL;
     scandir_baton_t scandir_baton;
@@ -427,6 +434,10 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
                 if (opts.print_path == PATH_PRINT_DEFAULT || opts.print_path == PATH_PRINT_DEFAULT_EACH_LINE) {
                     opts.print_path = PATH_PRINT_NOTHING;
                 }
+                /* If we're only searching one file and --only-matching is specified, disable line numbers too. */
+                if (opts.only_matching && opts.print_path == PATH_PRINT_NOTHING) {
+                    opts.print_line_numbers = FALSE;
+                }
             }
             search_file(path);
         } else {
@@ -443,6 +454,19 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
         queue_item = NULL;
         dir = dir_list[i];
         ag_asprintf(&dir_full_path, "%s/%s", path, dir->d_name);
+#ifndef _WIN32
+        if (opts.one_dev) {
+            struct stat s;
+            if (lstat(dir_full_path, &s) != 0) {
+                log_err("Failed to get device information for %s. Skipping...", dir->d_name);
+                goto cleanup;
+            }
+            if (s.st_dev != original_dev) {
+                log_debug("File %s crosses a device boundary (is probably a mount point.) Skipping...", dir->d_name);
+                goto cleanup;
+            }
+        }
+#endif
 
         /* If a link points to a directory then we need to treat it as a directory. */
         if (!opts.follow_symlinks && is_symlink(path, dir)) {
@@ -460,8 +484,9 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
                 } else if (opts.match_files) {
                     log_debug("match_files: file_search_regex matched for %s.", dir_full_path);
                     pthread_mutex_lock(&print_mtx);
-                    print_path(dir_full_path, '\n');
+                    print_path(dir_full_path, opts.path_sep);
                     pthread_mutex_unlock(&print_mtx);
+                    opts.match_found = 1;
                     goto cleanup;
                 }
             }
@@ -480,13 +505,28 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
             pthread_mutex_unlock(&work_queue_mtx);
             log_debug("%s added to work queue", dir_full_path);
         } else if (opts.recurse_dirs) {
-            if (depth < opts.max_search_depth) {
+            if (depth < opts.max_search_depth || opts.max_search_depth == -1) {
                 log_debug("Searching dir %s", dir_full_path);
-                ignores *child_ig = init_ignore(ig);
-                search_dir(child_ig, base_path, dir_full_path, depth + 1);
+                ignores *child_ig;
+                // #if defined(__MINGW32__) || defined(__CYGWIN__)
+                child_ig = init_ignore(ig, dir->d_name, strlen(dir->d_name));
+                // #else
+                // child_ig = init_ignore(ig, dir->d_name, dir->d_namlen);
+                // #endif
+                search_dir(child_ig, base_path, dir_full_path, depth + 1,
+                           original_dev);
                 cleanup_ignore(child_ig);
             } else {
-                log_err("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
+                if (opts.max_search_depth == DEFAULT_MAX_SEARCH_DEPTH) {
+                    /*
+                     * If the user didn't intentionally specify a particular depth,
+                     * this is a warning...
+                     */
+                    log_warn("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
+                } else {
+                    /* ... if they did, let's settle for debug. */
+                    log_debug("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
+                }
             }
         }
 

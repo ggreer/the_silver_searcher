@@ -93,6 +93,9 @@ Language types are output:
     --less
         .less
   
+    --liquid
+        .liquid
+  
     --lisp
         .lisp  .lsp
   
@@ -105,11 +108,17 @@ Language types are output:
     --make
         .Makefiles  .mk  .mak
   
+    --markdown
+        .markdown  .mdown  .mdwn  .mkdn  .mkd  .md
+  
     --mason
         .mas  .mhtml  .mpl  .mtxt
   
     --matlab
         .m
+  
+    --mercury
+        .m  .moo
   
     --objc
         .m  .h
@@ -118,7 +127,7 @@ Language types are output:
         .mm  .h
   
     --ocaml
-        .ml  .mli
+        .ml  .mli  .mll  .mly
   
     --octave
         .m
@@ -185,6 +194,9 @@ Language types are output:
   
     --tt
         .tt  .tt2  .ttml
+  
+    --vala
+        .vala  .vapi
   
     --vb
         .bas  .cls  .frm  .ctl  .vb  .resx
