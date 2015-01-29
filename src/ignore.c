@@ -277,7 +277,6 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
     }
 
     ag_asprintf(&temp, "%s/%s", path[0] == '.' ? path + 1 : path, filename);
-    log_debug("temp: %s abs path: %s", temp, ig->abs_path);
 
     if (strncmp(temp, ig->abs_path, ig->abs_path_len) == 0) {
         char *slash_filename = temp + ig->abs_path_len;
@@ -329,8 +328,6 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
         }
         log_debug("pattern %s doesn't match file %s", ig->regexes[i], filename);
     }
-
-    log_debug("file %s not ignored", filename);
 
     int rv = ackmate_dir_match(temp);
     free(temp);
@@ -420,5 +417,6 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         ig = ig->parent;
     }
 
+    log_debug("%s not ignored", filename);
     return 1;
 }
