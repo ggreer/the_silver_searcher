@@ -350,6 +350,16 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     const char *path_start = path;
     char *temp;
 
+    if (!opts.search_hidden_files && filename[0] == '.') {
+        return 0;
+    }
+
+    for (i = 0; evil_hardcoded_ignore_files[i] != NULL; i++) {
+        if (strcmp(filename, evil_hardcoded_ignore_files[i]) == 0) {
+            return 0;
+        }
+    }
+
     if (!opts.follow_symlinks && is_symlink(path, dir)) {
         log_debug("File %s ignored becaused it's a symlink", dir->d_name);
         return 0;
@@ -360,15 +370,6 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         return 0;
     }
 
-    for (i = 0; evil_hardcoded_ignore_files[i] != NULL; i++) {
-        if (strcmp(filename, evil_hardcoded_ignore_files[i]) == 0) {
-            return 0;
-        }
-    }
-
-    if (!opts.search_hidden_files && filename[0] == '.') {
-        return 0;
-    }
     if (opts.search_all_files && !opts.path_to_agignore) {
         return 1;
     }
