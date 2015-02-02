@@ -27,6 +27,11 @@ AX_PTHREAD(
 CFLAGS="$CFLAGS $PTHREAD_CFLAGS $PCRE_CFLAGS -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -Wshadow -Wpointer-arith -Wcast-qual -Wmissing-prototypes -Wno-missing-braces -std=gnu89 -D_GNU_SOURCE -O2"
 LDFLAGS="$LDFLAGS"
 
+case $host in
+*mingw*)
+    AC_CHECK_LIB(shlwapi, main,, AC_MSG_ERROR(libshlwapi missing))
+esac
+
 LIBS="$PTHREAD_LIBS $LIBS"
 
 AC_ARG_ENABLE([zlib],
