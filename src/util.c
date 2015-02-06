@@ -52,6 +52,17 @@ char *ag_strndup(const char *s, size_t size) {
 #endif
 }
 
+void free_strings(char **strs, const size_t strs_len) {
+    if (strs == NULL) {
+        return;
+    }
+    size_t i;
+    for (i = 0; i < strs_len; i++) {
+        free(strs[i]);
+    }
+    free(strs);
+}
+
 void generate_alpha_skip(const char *find, size_t f_len, size_t skip_lookup[], const int case_sensitive) {
     size_t i;
 
@@ -253,7 +264,9 @@ void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opt
 
     *re = pcre_compile(q, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
     if (*re == NULL) {
-        die("pcre_compile failed at position %i. Error: %s", pcre_err_offset, pcre_err);
+        die("Bad regex! pcre_compile() failed at position %i: %s\nIf you meant to search for a literal string, run ag with -Q",
+            pcre_err_offset,
+            pcre_err);
     }
     *re_extra = pcre_study(*re, study_opts, &pcre_err);
     if (*re_extra == NULL) {
