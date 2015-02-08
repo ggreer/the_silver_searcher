@@ -378,7 +378,7 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     log_debug("path_start %s filename %s", path_start, filename);
 
     const char *extension = NULL;
-    for (i = filename_len - 1; filename_len > 1; i--) {
+    for (i = filename_len - 1; i > 0; i--) {
         if (filename[i] == '.') {
             extension = filename + i + 1;
             break;
@@ -397,7 +397,7 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         if (extension) {
             int match_pos = binary_search(extension, ig->extensions, 0, ig->extensions_len);
             if (match_pos >= 0) {
-                log_debug("file %s ignored because name matches extension %s", extension, ig->extensions[match_pos]);
+                log_debug("file %s ignored because name matches extension %s", filename, ig->extensions[match_pos]);
                 return 0;
             }
         }
