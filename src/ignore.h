@@ -9,9 +9,6 @@
 #define SVN_PROP_IGNORE "svn:ignore"
 
 struct ignores {
-    char **extensions; /* File extensions to ignore */
-    size_t extensions_len;
-
     char **names; /* Non-regex ignore lines. Sorted so we can binary search them. */
     size_t names_len;
     char **slash_names; /* Same but starts with a slash */

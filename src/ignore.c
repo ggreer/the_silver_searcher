@@ -38,13 +38,11 @@ const char *ignore_pattern_files[] = {
 };
 
 int is_empty(ignores *ig) {
-    return (ig->extensions_len + ig->names_len + ig->slash_names_len + ig->regexes_len + ig->slash_regexes_len == 0);
+    return (ig->names_len + ig->slash_names_len + ig->regexes_len + ig->slash_regexes_len == 0);
 };
 
 ignores *init_ignore(ignores *parent, const char *dirname, const size_t dirname_len) {
     ignores *ig = ag_malloc(sizeof(ignores));
-    ig->extensions = NULL;
-    ig->extensions_len = 0;
     ig->names = NULL;
     ig->names_len = 0;
     ig->slash_names = NULL;
@@ -80,7 +78,6 @@ void cleanup_ignore(ignores *ig) {
     if (ig == NULL) {
         return;
     }
-    free_strings(ig->extensions, ig->extensions_len);
     free_strings(ig->names, ig->names_len);
     free_strings(ig->slash_names, ig->slash_names_len);
     free_strings(ig->regexes, ig->regexes_len);
@@ -115,11 +112,7 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
     char ***patterns_p;
     size_t *patterns_len;
     if (is_fnmatch(pattern)) {
-        if (pattern[0] == '*' && pattern[1] == '.' && !(is_fnmatch(pattern + 2))) {
-            patterns_p = &(ig->extensions);
-            patterns_len = &(ig->extensions_len);
-            pattern += 2;
-        } else if (pattern[0] == '/') {
+        if (pattern[0] == '/') {
             patterns_p = &(ig->slash_regexes);
             patterns_len = &(ig->slash_regexes_len);
             pattern++;
@@ -381,29 +374,10 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     }
     log_debug("path_start %s filename %s", path_start, filename);
 
-    const char *extension = NULL;
-    for (i = filename_len - 1; i > 0; i--) {
-        if (filename[i] == '.') {
-            extension = filename + i + 1;
-            break;
-        }
-    }
-    if (extension && extension[0] == '\0') {
-        extension = NULL;
-    }
-
     while (ig != NULL) {
         if (strncmp(filename, "./", 2) == 0) {
             filename++;
             filename_len--;
-        }
-
-        if (extension) {
-            int match_pos = binary_search(extension, ig->extensions, 0, ig->extensions_len);
-            if (match_pos >= 0) {
-                log_debug("file %s ignored because name matches extension %s", filename, ig->extensions[match_pos]);
-                return 0;
-            }
         }
 
         if (path_ignore_search(ig, path_start, filename)) {
