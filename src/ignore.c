@@ -338,7 +338,11 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
 int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     const char *filename = dir->d_name;
     /* TODO: don't call strlen on filename every time we call filename_filter() */
+#ifdef HAVE_DIRENT_DNAMLEN
+    size_t filename_len = dir->d_namlen;
+#else
     size_t filename_len = strlen(filename);
+#endif
     size_t i;
     scandir_baton_t *scandir_baton = (scandir_baton_t *)baton;
     const ignores *ig = scandir_baton->ig;
