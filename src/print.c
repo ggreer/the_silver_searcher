@@ -35,9 +35,9 @@ void print_path_count(const char *path, const char sep, const size_t count) {
         print_path(path, ':');
     }
     if (opts.color) {
-        fprintf(out_fd, "%s%lu%s%c", opts.color_line_number, count, color_reset, sep);
+        fprintf(out_fd, "%s%lu%s%c", opts.color_line_number, (unsigned long)count, color_reset, sep);
     } else {
-        fprintf(out_fd, "%lu%c", count, sep);
+        fprintf(out_fd, "%lu%c", (unsigned long)count, sep);
     }
 }
 
@@ -148,8 +148,8 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                     print_line_number(line, ';');
                     for (; last_printed_match < cur_match; last_printed_match++) {
                         fprintf(out_fd, "%lu %lu",
-                                (matches[last_printed_match].start - prev_line_offset),
-                                (matches[last_printed_match].end - matches[last_printed_match].start));
+                                (unsigned long)(matches[last_printed_match].start - prev_line_offset),
+                                (unsigned long)(matches[last_printed_match].end - matches[last_printed_match].start));
                         last_printed_match == cur_match - 1 ? fputc(':', out_fd) : fputc(',', out_fd);
                     }
                     print_line(buf, i, prev_line_offset);
@@ -259,7 +259,7 @@ void print_line_number(size_t line, const char sep) {
 void print_column_number(const match_t matches[], size_t last_printed_match,
                          size_t prev_line_offset, const char sep) {
     fprintf(out_fd, "%lu%c",
-            (matches[last_printed_match].start - prev_line_offset) + 1,
+            (unsigned long)(matches[last_printed_match].start - prev_line_offset) + 1,
             sep);
 }
 
