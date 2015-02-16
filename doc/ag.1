@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "AG" "1" "January 2015" "" ""
+.TH "AG" "1" "February 2015" "" ""
 .
 .SH "NAME"
 \fBag\fR \- The Silver Searcher\. Like ack, but faster\.
@@ -226,7 +226,7 @@ Search contents of compressed files\.
 Separate the filenames with \fB\e0\fR, rather than \fB\en\fR: this allows \fBxargs \-0 <command>\fR to correctly process filenames containing spaces or newlines\.
 .
 .SH "FILE TYPES"
-It is possible to restrict the types of files searched\. For example, passing \fB\-\-html\fR as the \fBfile\-types\fR parameter will search only files with the extensions \fBhtm\fR, \fBhtml\fR, \fBshtml\fR or \fBxhtml\fR\. For a list of supported \fBfile\- types\fR run \fBag \-\-list\-file\-types\fR\.
+It is possible to restrict the types of files searched\. For example, passing \fB\-\-html\fR as the \fBfile\-types\fR parameter will search only files with the extensions \fBhtm\fR, \fBhtml\fR, \fBshtml\fR or \fBxhtml\fR\. For a list of supported \fBfile\-types\fR run \fBag \-\-list\-file\-types\fR\.
 .
 .SH "IGNORING FILES"
 By default, ag will ignore files whose names match patterns in \.gitignore, \.hgignore, or \.agignore\. These files can be anywhere in the directories being searched\. Ag also ignores files matched by the svn:ignore property if \fBsvn \-\-version\fR is 1\.6 or older\. Finally, ag looks in $HOME/\.agignore for ignore patterns\. Binary files are ignored by default as well\.
