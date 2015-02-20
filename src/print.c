@@ -42,9 +42,7 @@ void print_path_count(const char *path, const char sep, const size_t count) {
 }
 
 void print_line(const char *buf, size_t buf_pos, size_t prev_line_offset) {
-    for (; prev_line_offset <= buf_pos; prev_line_offset++) {
-        fputc(buf[prev_line_offset], out_fd);
-    }
+    fwrite(buf + prev_line_offset, 1, buf_pos - prev_line_offset + 1, out_fd);
 }
 
 void print_binary_file_matches(const char *path) {
