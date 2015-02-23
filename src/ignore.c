@@ -10,6 +10,7 @@
 #include "options.h"
 #include "scandir.h"
 #include "util.h"
+#include "wildmatch.h"
 
 #ifdef _WIN32
 #include <shlwapi.h>
@@ -30,15 +31,27 @@ const char *evil_hardcoded_ignore_files[] = {
 /* Warning: changing the first string will break skip_vcs_ignores. */
 const char *ignore_pattern_files[] = {
     ".agignore",
-    ".gitignore",
-    ".git/info/exclude",
     ".hgignore",
     ".svn",
     NULL
 };
 
+/* gitignore has some special rules about how to interpret their contents and
+ * as such cannot be parsed as the other files */
+const char *gitignore_pattern_files[] = {
+    /* The order of the files should match the precedence order. Highest -> lowest. */
+    ".gitignore",
+    ".git/info/exclude",
+    NULL
+};
+
 int is_empty(ignores *ig) {
-    return (ig->extensions_len + ig->names_len + ig->slash_names_len + ig->regexes_len + ig->slash_regexes_len == 0);
+    return (ig->extensions_len
+            + ig->names_len
+            + ig->slash_names_len
+            + ig->regexes_len
+            + ig->gitignores_len
+            + ig->slash_regexes_len == 0);
 };
 
 ignores *init_ignore(ignores *parent, const char *dirname, const size_t dirname_len) {
@@ -55,6 +68,8 @@ ignores *init_ignore(ignores *parent, const char *dirname, const size_t dirname_
     ig->slash_regexes_len = 0;
     ig->dirname = dirname;
     ig->dirname_len = dirname_len;
+    ig->gitignores = NULL;
+    ig->gitignores_len = 0;
 
     if (parent && is_empty(parent) && parent->parent) {
         ig->parent = parent->parent;
@@ -80,15 +95,42 @@ void cleanup_ignore(ignores *ig) {
     if (ig == NULL) {
         return;
     }
+    size_t i;
     free_strings(ig->extensions, ig->extensions_len);
     free_strings(ig->names, ig->names_len);
     free_strings(ig->slash_names, ig->slash_names_len);
     free_strings(ig->regexes, ig->regexes_len);
     free_strings(ig->slash_regexes, ig->slash_regexes_len);
+    char *last_freed = NULL;
+    for(i = 0; i < ig->gitignores_len; ++i){
+        free(ig->gitignores[i]->pattern);
+        if(ig->gitignores[i]->prepend[0] != '\0' && last_freed != ig->gitignores[i]->prepend){
+            last_freed = ig->gitignores[i]->prepend;
+            free(ig->gitignores[i]->prepend);
+        }
+    }
     if (ig->abs_path) {
         free(ig->abs_path);
     }
     free(ig);
+}
+
+static enum pattern_type get_pattern_type(char const * pattern){
+    if (is_fnmatch(pattern)) {
+        if (pattern[0] == '*' && pattern[1] == '.' && !(is_fnmatch(pattern + 2))) {
+            return PT_extension;
+        } else if (pattern[0] == '/') {
+            return PT_slash_regex;
+        } else {
+            return PT_regex;
+        }
+    } else {
+        if (pattern[0] == '/') {
+            return PT_slash_name;
+        } else {
+            return PT_name;
+        }
+    }
 }
 
 void add_ignore_pattern(ignores *ig, const char *pattern) {
@@ -114,30 +156,37 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
 
     char ***patterns_p;
     size_t *patterns_len;
-    if (is_fnmatch(pattern)) {
-        if (pattern[0] == '*' && pattern[1] == '.' && !(is_fnmatch(pattern + 2))) {
+    switch(get_pattern_type(pattern)){
+        case PT_extension:
             patterns_p = &(ig->extensions);
             patterns_len = &(ig->extensions_len);
             pattern += 2;
-        } else if (pattern[0] == '/') {
+            break;
+        case PT_slash_regex:
             patterns_p = &(ig->slash_regexes);
             patterns_len = &(ig->slash_regexes_len);
             pattern++;
             pattern_len--;
-        } else {
+            break;
+        case PT_regex:
             patterns_p = &(ig->regexes);
             patterns_len = &(ig->regexes_len);
-        }
-    } else {
-        if (pattern[0] == '/') {
+            break;
+        case PT_slash_name:
             patterns_p = &(ig->slash_names);
             patterns_len = &(ig->slash_names_len);
             pattern++;
             pattern_len--;
-        } else {
+            break;
+        case PT_name:
             patterns_p = &(ig->names);
             patterns_len = &(ig->names_len);
-        }
+            break;
+        default:
+            patterns_p = NULL; /* silence compiler warnings */
+            patterns_len = NULL; /* silence compiler warnings */
+            die("Unknown pattern type");
+            break;
     }
 
     ++*patterns_len;
@@ -181,6 +230,74 @@ void load_ignore_patterns(ignores *ig, const char *path) {
         }
         add_ignore_pattern(ig, line);
     }
+
+    free(line);
+    fclose(fp);
+}
+
+void load_git_ignore_patterns(ignores *ig, const char *path, char *path_to_pwd) {
+    FILE *fp = NULL;
+    fp = fopen(path, "r");
+    if (fp == NULL) {
+        log_debug("Skipping gitignore file %s: not readable", path);
+        return;
+    }
+
+    char *line = NULL;
+    char *cline = NULL; /* corrected line */
+    ssize_t line_len = 0;
+    size_t line_cap = 0;
+    size_t line_count = 0;
+
+    log_debug("Loading ignore file %s.", path);
+
+    size_t path_len = strlen(path_to_pwd);
+
+    while ((line_len = getline(&line, &line_cap, fp)) > 0) {
+        if (line_len == 0 || line[0] == '\n' || line[0] == '#') {
+            continue;
+        }
+        if (line[line_len - 1] == '\n') {
+            line[line_len - 1] = '\0'; /* kill the \n */
+        }
+        cline = line;
+
+        ++ig->gitignores_len;
+        ig->gitignores = ag_realloc(ig->gitignores,
+                ig->gitignores_len * sizeof(struct gitignore));
+        if (ig->gitignores == NULL) {
+            die("Failed to calloc gitignores list");
+        }
+        struct gitignore *gi = ag_calloc(1, sizeof(struct gitignore));
+        if (gi == NULL) {
+            die("Failed calloc gitignore line");
+        }
+        int begins_backslash = (cline[0] == '\\');
+        if(begins_backslash){
+            ++cline;
+            --line_len;
+        }
+
+        if(!begins_backslash && cline[0] == '!'){
+            gi->action = PA_include;
+            ++cline;
+            --line_len;
+        }else{
+            gi->action = PA_exclude;
+        }
+        gi->pattern = ag_strndup(cline, line_len);
+        gi->len = line_len;
+        gi->prepend = path_to_pwd;
+        gi->prepend_len = path_len;
+        gi->type = get_pattern_type(cline);
+
+
+        ig->gitignores[ig->gitignores_len-1] = gi;
+        ++line_count;
+        log_debug("added ignore pattern %s to %s", line,
+            ig == root_ignores ? "root ignores" : ig->abs_path);
+    }
+
 
     free(line);
     fclose(fp);
@@ -264,8 +381,22 @@ static int ackmate_dir_match(const char *dir_name) {
     return pcre_exec(opts.ackmate_dir_filter, NULL, dir_name, strlen(dir_name), 0, 0, NULL, 0);
 }
 
-/* This is the hottest code in Ag. 10-15% of all execution time is spent here */
-static int path_ignore_search(const ignores *ig, const char *path, const char *filename) {
+enum pis_action {
+    PIS_include,
+    PIS_exclude,
+    PIS_reinclude ///< This is what happens with git patterns starting with !
+};
+
+/** This is the hottest code in Ag. 10-15% of all execution time is spent here.
+ * @param ig pointer to ignore information for this folder.
+ * @param path the path from command invocation to @ref filename.
+ *             Ensure paths startig with ./ are translated into /
+ * @param filename the current file to test ignore patterns agains.
+ * @param skip_git true will skip the git pattern matching part
+ *
+ * @returns action determined by the ignore files
+ */
+static enum pis_action path_ignore_search(const ignores *ig, const char *path, const char *filename, int skip_git) {
     char *temp;
     size_t i;
     int match_pos;
@@ -273,7 +404,7 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
     match_pos = binary_search(filename, ig->names, 0, ig->names_len);
     if (match_pos >= 0) {
         log_debug("file %s ignored because name matches static pattern %s", filename, ig->names[match_pos]);
-        return 1;
+        return PIS_exclude;
     }
 
     ag_asprintf(&temp, "%s/%s", path[0] == '.' ? path + 1 : path, filename);
@@ -287,14 +418,14 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
         if (match_pos >= 0) {
             log_debug("file %s ignored because name matches static pattern %s", temp, ig->names[match_pos]);
             free(temp);
-            return 1;
+            return PIS_exclude;
         }
 
         match_pos = binary_search(slash_filename, ig->slash_names, 0, ig->slash_names_len);
         if (match_pos >= 0) {
             log_debug("file %s ignored because name matches slash static pattern %s", slash_filename, ig->slash_names[match_pos]);
             free(temp);
-            return 1;
+            return PIS_exclude;
         }
 
         for (i = 0; i < ig->names_len; i++) {
@@ -304,7 +435,7 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
                 if (*pos == '\0' || *pos == '/') {
                     log_debug("file %s ignored because path somewhere matches name %s", slash_filename, ig->names[i]);
                     free(temp);
-                    return 1;
+                    return PIS_exclude;
                 }
             }
             log_debug("pattern %s doesn't match path %s", ig->names[i], slash_filename);
@@ -314,7 +445,7 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
             if (fnmatch(ig->slash_regexes[i], slash_filename, fnmatch_flags) == 0) {
                 log_debug("file %s ignored because name matches slash regex pattern %s", slash_filename, ig->slash_regexes[i]);
                 free(temp);
-                return 1;
+                return PIS_exclude;
             }
             log_debug("pattern %s doesn't match slash file %s", ig->slash_regexes[i], slash_filename);
         }
@@ -324,14 +455,115 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
         if (fnmatch(ig->regexes[i], filename, fnmatch_flags) == 0) {
             log_debug("file %s ignored because name matches regex pattern %s", filename, ig->regexes[i]);
             free(temp);
-            return 1;
+            return PIS_exclude;
         }
         log_debug("pattern %s doesn't match file %s", ig->regexes[i], filename);
     }
 
+    /* File might be INcluded by git, if that is the case no parent ignore
+     * can re-ignore it, so we can skip the match */
+    if(!skip_git){
+        int match = 0;
+        char const * pattern_type = NULL;
+        char * fullpath = NULL;
+        ag_asprintf(&fullpath, "%s/%s", path, filename);
+        char *fullpath_no_dot = fullpath;
+        char *fullpath_no_dotslash = fullpath;
+        if(fullpath[0] == '.') {
+            fullpath_no_dot = fullpath + 1;
+            if(fullpath[1] == '/'){
+                fullpath_no_dotslash = fullpath + 2;
+            }
+        }
+
+
+        struct gitignore *gi = NULL;
+        const char * last_prepend = NULL;
+        for(i = 0; i < ig->gitignores_len; ++i){
+            /* Iterate the gitignores list backwards because the last match tells you
+             * whether the file is to be ignored */
+            gi = ig->gitignores[ig->gitignores_len - i - 1];
+            match = 0;
+            if(last_prepend != gi->prepend && gi->prepend[0] != '\0'){
+                last_prepend = gi->prepend;
+                char * tmp = fullpath;
+                ag_asprintf(&fullpath, "./%s/%s", gi->prepend, fullpath_no_dotslash);
+                free(tmp);
+                fullpath_no_dot = fullpath+1;
+                fullpath_no_dotslash = fullpath+2;
+            }
+            switch(gi->type){
+                case PT_name:
+                    {
+                        log_debug("name: %s against pattern %s %d %d", fullpath, gi->pattern, gi->action, gi->len);
+                        char const * pos = strstr(fullpath, gi->pattern);
+                        if(pos){
+                            pos += gi->len - 1;
+                            if(*pos == '\0' || *pos == '/'){
+                                match = 1;
+                                pattern_type = "name";
+                            }
+                        }
+                    }
+                    break;
+                case PT_slash_name:
+                    log_debug("slash name: %s against pattern %s", filename, gi->pattern);
+                    if(strcmp(gi->pattern, filename) == 0){
+                        match = 1;
+                    } else if(strcmp(gi->pattern, fullpath_no_dot) == 0){
+                        match = 1;
+                    }
+                    if(match){
+                        pattern_type = "slash_name";
+                    }
+                    break;
+                case PT_extension:
+                case PT_regex:
+                    log_debug("regex: %s against pattern %s", fullpath_no_dotslash, gi->pattern);
+                    if(wildmatch(gi->pattern, fullpath_no_dotslash, 0, NULL) == WM_MATCH){
+                        match = 1;
+                        pattern_type = "regex";
+                    }
+                    break;
+                case PT_slash_regex:
+                    log_debug("slash regex: %s against pattern %s", fullpath_no_dot, gi->pattern);
+                    if(wildmatch(gi->pattern, fullpath_no_dot, WM_PATHNAME, NULL) == WM_MATCH){
+                        match = 1;
+                        pattern_type = "slash_regex";
+                    }
+                    break;
+                default:
+                    log_err("Found gitignore pattern '%s' that has an unknown type '%d'!", gi->pattern, gi->type);
+                    continue;
+            }
+            if(match){
+                break;
+            }
+        }
+        /* gi is always non-null if we had a match */
+        if(match) {
+            if(gi->action == PA_exclude){
+                // printf("ignored\n");
+                log_debug("file %s ignored because name matches pattern %s from git."
+                        " Type: %s", fullpath, gi->pattern, pattern_type);
+                free(temp);
+                return PIS_exclude;
+            }else if(gi->action == PA_include){
+                log_debug("file %s un-ignored because name matches patten %s from git."
+                        " Type: %s", fullpath, gi->pattern, pattern_type);
+                return PIS_reinclude;
+            }else{
+                log_err("Unknown pattern '%s' type %d found in git ignore pattern for folder %s",
+                        gi->pattern, gi->type, path);
+            }
+        }
+    }else{
+        log_debug("Skipped git ignore match!");
+    }
+
     int rv = ackmate_dir_match(temp);
     free(temp);
-    return rv;
+    return rv == 0 ? (skip_git ? PIS_reinclude : PIS_include) : PIS_exclude;
 }
 
 /* This function is REALLY HOT. It gets called for every file */
@@ -375,11 +607,10 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         return 1;
     }
 
-    for (i = 0; base_path[i] == path[i] && i < base_path_len; i++) {
-        /* base_path always ends with "/\0" while path doesn't, so this is safe */
-        path_start = path + i + 2;
-    }
-    log_debug("path_start %s filename %s", path_start, filename);
+    /* base_path always ends with "/\0" while path doesn't, so this is safe */
+    for (i = 0; base_path[i] == path[i] && i < base_path_len; i++);
+    path_start = path + i;
+    log_debug("fname_filter: path_start %s filename %s", path_start, filename);
 
     const char *extension = strchr(filename, '.');
     if (extension) {
@@ -392,6 +623,7 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         }
     }
 
+    enum pis_action last_ignore = PIS_include;
     while (ig != NULL) {
         if (strncmp(filename, "./", 2) == 0) {
             filename++;
@@ -406,15 +638,16 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
             }
         }
 
-        if (path_ignore_search(ig, path_start, filename)) {
+        last_ignore = path_ignore_search(ig, path_start, filename, last_ignore == PIS_reinclude);
+        if (last_ignore == PIS_exclude) {
             return 0;
         }
 
         if (is_directory(path, dir) && filename[filename_len - 1] != '/') {
             ag_asprintf(&temp, "%s/", filename);
-            int rv = path_ignore_search(ig, path_start, temp);
+            last_ignore = path_ignore_search(ig, path_start, temp, last_ignore == PIS_reinclude);
             free(temp);
-            if (rv) {
+            if (last_ignore == PIS_exclude) {
                 return 0;
             }
         }
