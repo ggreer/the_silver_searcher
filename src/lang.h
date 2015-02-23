@@ -1,12 +1,12 @@
 #ifndef LANG_H
 #define LANG_H
 
-#define MAX_EXTENSIONS 12
-#define SINGLE_EXT_LEN 20
+#define MAX_PATTERNS 12
+#define SINGLE_PAT_LEN 20
 
 typedef struct {
     const char *name;
-    const char *extensions[MAX_EXTENSIONS];
+    const char *patterns[MAX_PATTERNS];
 } lang_spec_t;
 
 extern lang_spec_t langs[];
@@ -17,20 +17,22 @@ extern lang_spec_t langs[];
 size_t get_lang_count(void);
 
 /**
-Convert a NULL-terminated array of language extensions
-into a regular expression of the form \.(extension1|extension2...)$
+Convert a NULL-terminated array of language patterns
+into a regular expression of the form (\.?pattern1|\.?pattern2...)$
+Patterns that begin with ^ are interpreted as full names, those
+without are interpreted as file extensions.
 
 Caller is responsible for freeing the returned string.
 */
-char *make_lang_regex(char *ext_array, size_t num_exts);
+char *make_lang_regex(char *pat_array, size_t num_pats);
 
 
 /**
-Combine multiple file type extensions into one array.
+Combine multiple file type patterns into one array.
 
-The combined result is returned through *exts*;
-*exts* is one-dimension array, which can contain up to 100 extensions;
-The number of extensions that *exts* actually contain is returned.
+The combined result is returned through *pats*;
+*pats* is one-dimension array, which can contain up to 100 patterns;
+The number of patterns that *pats* actually contain is returned.
 */
-size_t combine_file_extensions(size_t *extension_index, size_t len, char **exts);
+size_t combine_file_patterns(size_t *pattern_index, size_t len, char **pats);
 #endif

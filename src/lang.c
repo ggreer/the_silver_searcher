@@ -109,20 +109,27 @@ size_t get_lang_count() {
     return sizeof(langs) / sizeof(lang_spec_t);
 }
 
-char *make_lang_regex(char *ext_array, size_t num_exts) {
+char *make_lang_regex(char *pat_array, size_t num_pats) {
     int regex_capacity = 100;
     char *regex = ag_malloc(regex_capacity);
-    int regex_length = 3;
+    int regex_length = 1;
     int subsequent = 0;
-    char *extension;
+    char *pattern;
+    const char *dot = "\\.";
+    size_t strlen_dot = strlen(dot);
     size_t i;
 
-    strcpy(regex, "\\.(");
+    strcpy(regex, "(");
 
-    for (i = 0; i < num_exts; ++i) {
-        extension = ext_array + i * SINGLE_EXT_LEN;
-        int extension_length = strlen(extension);
-        while (regex_length + extension_length + 3 + subsequent > regex_capacity) {
+    for (i = 0; i < num_pats; ++i) {
+        pattern = pat_array + i * SINGLE_PAT_LEN;
+        int is_extension = (*pattern == '^') ? 0 : 1;
+        int length = strlen(pattern);
+        if (is_extension == 0) {
+            pattern += 1;
+            length -= 1;
+        }
+        while (regex_length + length + 3 + subsequent > regex_capacity) {
             regex_capacity *= 2;
             regex = ag_realloc(regex, regex_capacity);
         }
@@ -131,8 +138,12 @@ char *make_lang_regex(char *ext_array, size_t num_exts) {
         } else {
             subsequent = 1;
         }
-        strcpy(regex + regex_length, extension);
-        regex_length += extension_length;
+        if (is_extension == 1) {
+            strcpy(regex + regex_length, dot);
+            regex_length += strlen_dot;
+        }
+        strcpy(regex + regex_length, pattern);
+        regex_length += length;
     }
 
     regex[regex_length++] = ')';
@@ -141,29 +152,29 @@ char *make_lang_regex(char *ext_array, size_t num_exts) {
     return regex;
 }
 
-size_t combine_file_extensions(size_t *extension_index, size_t len, char **exts) {
+size_t combine_file_patterns(size_t *pattern_index, size_t len, char **pats) {
     /* Keep it fixed as 100 for the reason that if you have more than 100
      * file types to search, you'd better search all the files.
      * */
-    size_t ext_capacity = 100;
-    (*exts) = (char *)ag_malloc(ext_capacity * SINGLE_EXT_LEN);
-    memset((*exts), 0, ext_capacity * SINGLE_EXT_LEN);
-    size_t num_of_extensions = 0;
+    size_t pat_capacity = 100;
+    (*pats) = (char *)ag_malloc(pat_capacity * SINGLE_PAT_LEN);
+    memset((*pats), 0, pat_capacity * SINGLE_PAT_LEN);
+    size_t num_of_patterns = 0;
 
     size_t i;
     for (i = 0; i < len; ++i) {
         size_t j = 0;
-        const char *ext = langs[extension_index[i]].extensions[j];
+        const char *pat = langs[pattern_index[i]].patterns[j];
         do {
-            if (num_of_extensions == ext_capacity) {
+            if (num_of_patterns == pat_capacity) {
                 break;
             }
-            char *pos = (*exts) + num_of_extensions * SINGLE_EXT_LEN;
-            strncpy(pos, ext, strlen(ext));
-            ++num_of_extensions;
-            ext = langs[extension_index[i]].extensions[++j];
-        } while (ext);
+            char *pos = (*pats) + num_of_patterns * SINGLE_PAT_LEN;
+            strncpy(pos, pat, strlen(pat));
+            ++num_of_patterns;
+            pat = langs[pattern_index[i]].patterns[++j];
+        } while (pat);
     }
 
-    return num_of_extensions;
+    return num_of_patterns;
 }

@@ -212,9 +212,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     size_t longopts_len, full_len;
     option_t *longopts;
     char *lang_regex = NULL;
-    size_t *ext_index = NULL;
-    char *extensions = NULL;
-    size_t num_exts = 0;
+    size_t *pat_index = NULL;
+    char *patterns = NULL;
+    size_t num_pats = 0;
 
     init_options();
 
@@ -318,8 +318,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     full_len = (longopts_len + lang_count + 1);
     longopts = ag_malloc(full_len * sizeof(option_t));
     memcpy(longopts, base_longopts, sizeof(base_longopts));
-    ext_index = (size_t *)ag_malloc(sizeof(size_t) * lang_count);
-    memset(ext_index, 0, sizeof(size_t) * lang_count);
+    pat_index = (size_t *)ag_malloc(sizeof(size_t) * lang_count);
+    memset(pat_index, 0, sizeof(size_t) * lang_count);
 
     for (i = 0; i < lang_count; i++) {
         option_t opt = { langs[i].name, no_argument, NULL, 0 };
@@ -561,7 +561,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 for (i = 0; i < lang_count; i++) {
                     if (strcmp(longopts[opt_index].name, langs[i].name) == 0) {
                         has_filetype = 1;
-                        ext_index[lang_num++] = i;
+                        pat_index[lang_num++] = i;
                         break;
                     }
                 }
@@ -595,15 +595,15 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     if (has_filetype) {
-        num_exts = combine_file_extensions(ext_index, lang_num, &extensions);
-        lang_regex = make_lang_regex(extensions, num_exts);
+        num_pats = combine_file_patterns(pat_index, lang_num, &patterns);
+        lang_regex = make_lang_regex(patterns, num_pats);
         compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, lang_regex, 0, 0);
     }
 
-    if (extensions) {
-        free(extensions);
+    if (patterns) {
+        free(patterns);
     }
-    free(ext_index);
+    free(pat_index);
     if (lang_regex) {
         free(lang_regex);
     }
@@ -644,8 +644,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         for (lang_index = 0; lang_index < lang_count; lang_index++) {
             printf("  --%s\n    ", langs[lang_index].name);
             int j;
-            for (j = 0; j < MAX_EXTENSIONS && langs[lang_index].extensions[j]; j++) {
-                printf("  .%s", langs[lang_index].extensions[j]);
+            for (j = 0; j < MAX_PATTERNS && langs[lang_index].patterns[j]; j++) {
+                printf("  .%s", langs[lang_index].patterns[j]);
             }
             printf("\n\n");
         }
