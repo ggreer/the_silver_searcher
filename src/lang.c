@@ -54,6 +54,7 @@ lang_spec_t langs[] = {
     { "python", { "py" } },
     { "rake", { "Rakefiles" } },
     { "rs", { "rs" } },
+    { "r", { "r", "rmd", "R", "Rmd" } },
     { "ruby", { "rb", "rhtml", "rjs", "rxml", "erb", "rake", "spec" } },
     { "rust", { "rs" } },
     { "salt", { "sls" } },
