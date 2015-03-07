@@ -52,18 +52,28 @@ void search_buf(const char *buf, const size_t buf_len,
                 break;
             }
 
-            if (opts.word_regexp) {
+            if (opts.word_regexp || opts.line_regexp) {
                 const char *start = match_ptr;
                 const char *end = match_ptr + opts.query_len;
 
-                /* Check whether both start and end of the match lie on a word
-                 * boundary
+                /*
+                 * In word_regexp mode we want the start and end of the match to lie
+                 * either on the buffer start/end or a word boundary; in line_regexp
+                 * mode we want the start and end of the match to lie either on the
+                 * buffer start/end or a new line
                  */
-                if ((start == buf ||
-                     is_wordchar(*(start - 1)) != opts.literal_starts_wordchar) &&
+                if (opts.word_regexp &&
+                    (start == buf ||
+                        is_wordchar(*(start - 1)) != opts.literal_starts_wordchar) &&
                     (end == buf + buf_len ||
-                     is_wordchar(*end) != opts.literal_ends_wordchar)) {
-                    /* It's a match */
+                        is_wordchar(*end) != opts.literal_ends_wordchar)
+                ) {
+                    /* It's a word match */
+                } else if (opts.line_regexp &&
+                    (start == buf || *(start - 1) == '\n') &&
+                    (end == buf + buf_len || *end == '\n')
+                ) {
+                    /* It's a line match */
                 } else {
                     /* It's not a match */
                     match_ptr += opts.query_len;
