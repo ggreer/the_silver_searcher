@@ -10,6 +10,12 @@
 #define DEFAULT_BEFORE_LEN 2
 #define DEFAULT_CONTEXT_LEN 2
 #define DEFAULT_MAX_SEARCH_DEPTH 25
+
+// on normal platforms opts.color acts as a boolean.
+// On Windows, non-zero opts.color is set explicitly to one of those.
+#define COLOR_MODE_ANSI 1
+#define COLOR_MODE_WIN_SCREEN 2
+
 enum case_behavior {
     CASE_DEFAULT, /* Changes to CASE_SMART at the end of option parsing */
     CASE_SENSITIVE,
@@ -41,6 +47,7 @@ typedef struct {
     char *color_line_number;
     char *color_match;
     char *color_path;
+    int color_prefer_ansi;
     int column;
     int context;
     int follow_symlinks;

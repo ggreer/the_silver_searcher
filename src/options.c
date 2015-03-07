@@ -42,6 +42,8 @@ Output Options:\n\
      --color-line-number  Color codes for line numbers (Default: 1;33)\n\
      --color-match        Color codes for result match numbers (Default: 30;43)\n\
      --color-path         Color codes for path names (Default: 1;32)\n\
+     --color-prefer-ansi  Use ansi colors sequences instead of native when printing\n\
+                          to screen (Windows only, doesn't apply for --pager or pipe)\n\
      --column             Print column numbers in results\n\
      --[no]filename       Print file names (Enabled unless searching a single file)\n\
   -H --[no]heading        Print file names before each file's matches\n\
@@ -128,11 +130,8 @@ void print_version(void) {
 void init_options(void) {
     memset(&opts, 0, sizeof(opts));
     opts.casing = CASE_DEFAULT;
-#ifdef _WIN32
-    opts.color = (getenv("ANSICON") || getenv("CMDER_ROOT")) ? TRUE : FALSE;
-#else
     opts.color = TRUE;
-#endif
+    opts.color_prefer_ansi = FALSE;
     opts.max_matches_per_file = 0;
     opts.max_search_depth = DEFAULT_MAX_SEARCH_DEPTH;
     opts.path_sep = '\n';
@@ -182,6 +181,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     int path_len = 0;
     int useless = 0;
     int group = 1;
+    int has_tty = 1;
     int help = 0;
     int version = 0;
     int list_file_types = 0;
@@ -219,6 +219,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "color-line-number", required_argument, NULL, 0 },
         { "color-match", required_argument, NULL, 0 },
         { "color-path", required_argument, NULL, 0 },
+        { "color-prefer-ansi", no_argument, &opts.color_prefer_ansi, TRUE },
         { "column", no_argument, &opts.column, 1 },
         { "context", optional_argument, NULL, 'C' },
         { "count", no_argument, NULL, 'c' },
@@ -318,6 +319,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     if (!isatty(fileno(stdout))) {
         opts.color = 0;
         group = 0;
+        has_tty = 0;
 
         /* Don't search the file that stdout is redirected to */
         rv = fstat(fileno(stdout), &statbuf);
@@ -562,6 +564,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             perror("Failed to run pager");
             exit(1);
         }
+        has_tty = 0;
     }
 
     if (help) {
@@ -688,6 +691,21 @@ skip_group:
     if (!is_regex(opts.query)) {
         opts.literal = 1;
     }
+
+#ifdef _WIN32
+    // windows native colors call an API to change the current screen colors
+    // so it only works when the output is an actual tty. if we're forced to use
+    // colors while not directly to screen (e.g. --color), fallback to ansi.
+    // (ansicon or other console wrappers can handle ansi colors)
+    if (opts.color) {
+        if (opts.color_prefer_ansi || !has_tty) {
+          opts.color = COLOR_MODE_ANSI;
+        } else {
+          opts.color = COLOR_MODE_WIN_SCREEN;
+        }
+    }
+    log_debug("color mode: %d", opts.color);
+#endif
 
     char *path = NULL;
     char *tmp = NULL;
