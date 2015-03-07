@@ -106,7 +106,23 @@ For a list of supported file types run:\n\
 }
 
 void print_version(void) {
-    printf("ag version %s\n", PACKAGE_VERSION);
+    char jit = '-';
+    char lzma = '-';
+    char zlib = '-';
+
+#ifdef USE_PCRE_JIT
+    jit = '+';
+#endif
+#ifdef HAVE_LZMA_H
+    lzma = '+';
+#endif
+#ifdef HAVE_ZLIB_H
+    zlib = '+';
+#endif
+
+    printf("ag version %s\n\n", PACKAGE_VERSION);
+    printf("Features:\n");
+    printf("  %cjit %clzma %czlib\n", jit, lzma, zlib);
 }
 
 void init_options(void) {
