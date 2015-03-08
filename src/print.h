@@ -14,8 +14,4 @@ void print_column_number(const match_t matches[], size_t last_printed_match,
 void print_file_separator(void);
 const char *normalize_path(const char *path);
 
-#ifdef _WIN32
-void win_color_init(void);
-#endif
-
 #endif
