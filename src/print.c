@@ -12,13 +12,6 @@
 
 #ifdef _WIN32
 #include "win32/win_colors.h"
-
-static long win_current_color, win_default_color;
-
-void win_color_init() {
-    // store the initial console colors - windows has no set/get default colors API.
-    win_default_color = win_current_color = win_get_current_screen_color();
-}
 #endif
 
 int first_file_match = 1;
@@ -28,11 +21,17 @@ const char *color_reset = "\033[0m\033[K";
 static void set_color(const char *color) {
 #ifdef _WIN32
     if (opts.color == COLOR_MODE_WIN_SCREEN) {
+        static long current_color, default_color;
+        static int initialized = FALSE;
+        if (!initialized) {
+            // we need to store the initial color once as the default color
+            default_color = current_color = win_get_current_screen_color();
+            initialized = TRUE;
+        }
+
         const char *begin = ansi_first_color_value(color);
-        win_current_color = win_color_from_ansi_values(begin,
-                                                       win_current_color,
-                                                       win_default_color);
-        win_set_current_screen_color(win_current_color);
+        current_color = win_color_from_ansi_values(begin, current_color, default_color);
+        win_set_current_screen_color(current_color);
         return;
     }
 #endif

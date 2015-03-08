@@ -61,7 +61,6 @@ int main(int argc, char **argv) {
         SYSTEM_INFO si;
         GetSystemInfo(&si);
         num_cores = si.dwNumberOfProcessors;
-        win_color_init(); // stores the current console colors, but does nothing.
     }
 #else
     num_cores = (int)sysconf(_SC_NPROCESSORS_ONLN);
