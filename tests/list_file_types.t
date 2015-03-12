@@ -210,6 +210,12 @@ Language types are output:
     --vim
         .vim
   
+    --wsdl
+        .wsdl
+  
+    --wadl
+        .wadl
+  
     --xml
         .xml  .dtd  .xsl  .xslt  .ent
   
