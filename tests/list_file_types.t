@@ -82,7 +82,7 @@ Language types are output:
         .java  .properties
   
     --js
-        .js
+        .js  .jsx
   
     --json
         .json

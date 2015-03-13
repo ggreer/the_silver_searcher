@@ -30,7 +30,7 @@ lang_spec_t langs[] = {
     { "ini", { "ini" } },
     { "jade", { "jade" } },
     { "java", { "java", "properties" } },
-    { "js", { "js" } },
+    { "js", { "js", "jsx" } },
     { "json", { "json" } },
     { "jsp", { "jsp", "jspx", "jhtm", "jhtml" } },
     { "less", { "less" } },
