@@ -42,6 +42,8 @@ Output Options:\n\
      --color-line-number  Color codes for line numbers (Default: 1;33)\n\
      --color-match        Color codes for result match numbers (Default: 30;43)\n\
      --color-path         Color codes for path names (Default: 1;32)\n\
+     --color-win-ansi     Use ansi colors on Windows even if we can use native\n\
+                          (pager/pipe colors are ansi regardless) (Default: off)\n\
      --column             Print column numbers in results\n\
      --[no]filename       Print file names (Enabled unless searching a single file)\n\
   -H --[no]heading        Print file names before each file's matches\n\
@@ -128,11 +130,8 @@ void print_version(void) {
 void init_options(void) {
     memset(&opts, 0, sizeof(opts));
     opts.casing = CASE_DEFAULT;
-#ifdef _WIN32
-    opts.color = (getenv("ANSICON") || getenv("CMDER_ROOT")) ? TRUE : FALSE;
-#else
     opts.color = TRUE;
-#endif
+    opts.color_win_ansi = FALSE;
     opts.max_matches_per_file = 0;
     opts.max_search_depth = DEFAULT_MAX_SEARCH_DEPTH;
     opts.path_sep = '\n';
@@ -219,6 +218,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "color-line-number", required_argument, NULL, 0 },
         { "color-match", required_argument, NULL, 0 },
         { "color-path", required_argument, NULL, 0 },
+        { "color-win-ansi", no_argument, &opts.color_win_ansi, TRUE },
         { "column", no_argument, &opts.column, 1 },
         { "context", optional_argument, NULL, 'C' },
         { "count", no_argument, NULL, 'c' },
@@ -688,6 +688,21 @@ skip_group:
     if (!is_regex(opts.query)) {
         opts.literal = 1;
     }
+
+#ifdef _WIN32
+    // windows native colors call an API to change the current screen colors
+    // so it only works when the output is an actual tty. if we're forced to use
+    // colors while not directly to screen (e.g. --color), fallback to ansi.
+    // (ansicon or other console wrappers can handle ansi colors)
+    if (opts.color) {
+        if (opts.color_win_ansi || !isatty(fileno(out_fd))) {
+          opts.color = COLOR_MODE_ANSI;
+        } else {
+          opts.color = COLOR_MODE_WIN_SCREEN;
+        }
+    }
+    log_debug("color mode: %d", opts.color);
+#endif
 
     char *path = NULL;
     char *tmp = NULL;

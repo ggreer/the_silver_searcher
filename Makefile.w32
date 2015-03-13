@@ -13,7 +13,8 @@ SRCS = \
 	src/print.c \
 	src/scandir.c \
 	src/search.c \
-	src/util.c
+	src/util.c \
+	src/win32/win_colors.c
 OBJS = $(subst .c,.o,$(SRCS))
 
 CFLAGS = -O2 -Isrc/win32 -DPACKAGE_VERSION=\"$(VERSION)\"

@@ -10,9 +10,36 @@
 #include "print.h"
 #include "util.h"
 
+#ifdef _WIN32
+#include "win32/win_colors.h"
+#endif
+
 int first_file_match = 1;
 
 const char *color_reset = "\033[0m\033[K";
+
+static void set_color(const char *color) {
+#ifdef _WIN32
+    if (opts.color == COLOR_MODE_WIN_SCREEN) {
+        static long current_color, default_color;
+        static int initialized = FALSE;
+        if (!initialized) {
+            // we need to store the initial color once as the default color
+            default_color = current_color = win_get_current_screen_color();
+            initialized = TRUE;
+        }
+
+        const char *begin = ansi_first_color_value(color);
+        current_color = win_color_from_ansi_values(begin, current_color, default_color);
+        win_set_current_screen_color(current_color);
+        return;
+    }
+#endif
+
+    if (opts.color) {
+        fprintf(out_fd, "%s", color);
+    }
+}
 
 void print_path(const char *path, const char sep) {
     path = normalize_path(path);
@@ -22,11 +49,10 @@ void print_path(const char *path, const char sep) {
     } else if (opts.vimgrep) {
         fprintf(out_fd, "%s%c", path, sep);
     } else {
-        if (opts.color) {
-            fprintf(out_fd, "%s%s%s%c", opts.color_path, path, color_reset, sep);
-        } else {
-            fprintf(out_fd, "%s%c", path, sep);
-        }
+        set_color(opts.color_path);
+        fprintf(out_fd, "%s", path);
+        set_color(color_reset);
+        fprintf(out_fd, "%c", sep);
     }
 }
 
@@ -34,11 +60,10 @@ void print_path_count(const char *path, const char sep, const size_t count) {
     if (*path) {
         print_path(path, ':');
     }
-    if (opts.color) {
-        fprintf(out_fd, "%s%lu%s%c", opts.color_line_number, (unsigned long)count, color_reset, sep);
-    } else {
-        fprintf(out_fd, "%lu%c", (unsigned long)count, sep);
-    }
+    set_color(opts.color_line_number);
+    fprintf(out_fd, "%lu", (unsigned long)count);
+    set_color(color_reset);
+    fprintf(out_fd, "%c", sep);
 }
 
 void print_line(const char *buf, size_t buf_pos, size_t prev_line_offset) {
@@ -165,14 +190,12 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                         print_column_number(matches, last_printed_match, prev_line_offset, ':');
                     }
 
-                    if (printing_a_match && opts.color) {
-                        fprintf(out_fd, "%s", opts.color_match);
+                    if (printing_a_match) {
+                        set_color(opts.color_match);
                     }
                     for (j = prev_line_offset; j <= i; j++) {
                         if (last_printed_match < matches_len && j == matches[last_printed_match].end) {
-                            if (opts.color) {
-                                fprintf(out_fd, "%s", color_reset);
-                            }
+                            set_color(color_reset);
                             printing_a_match = FALSE;
                             last_printed_match++;
                             printed_match = TRUE;
@@ -190,9 +213,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                                     print_column_number(matches, last_printed_match, prev_line_offset, ':');
                                 }
                             }
-                            if (opts.color) {
-                                fprintf(out_fd, "%s", opts.color_match);
-                            }
+                            set_color(opts.color_match);
                             printing_a_match = TRUE;
                         }
                         /* Don't print the null terminator */
@@ -203,8 +224,8 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                             }
                         }
                     }
-                    if (printing_a_match && opts.color) {
-                        fprintf(out_fd, "%s", color_reset);
+                    if (printing_a_match) {
+                        set_color(color_reset);
                     }
                 }
             } else if (lines_since_last_match <= opts.after) {
@@ -247,11 +268,10 @@ void print_line_number(size_t line, const char sep) {
     if (opts.search_stream && opts.stream_line_num) {
         line = opts.stream_line_num;
     }
-    if (opts.color) {
-        fprintf(out_fd, "%s%lu%s%c", opts.color_line_number, (unsigned long)line, color_reset, sep);
-    } else {
-        fprintf(out_fd, "%lu%c", (unsigned long)line, sep);
-    }
+    set_color(opts.color_line_number);
+    fprintf(out_fd, "%lu", (unsigned long)line);
+    set_color(color_reset);
+    fprintf(out_fd, "%c", sep);
 }
 
 void print_column_number(const match_t matches[], size_t last_printed_match,
