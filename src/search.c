@@ -1,24 +1,23 @@
 #include "search.h"
 #include "scandir.h"
 
-void search_buf(const char *buf, const size_t buf_len,
-                const char *dir_full_path) {
-    int binary = -1; /* 1 = yes, 0 = no, -1 = don't know */
+search_results_t search_buf(const char *buf, const size_t buf_len, const char *dir_full_path) {
     size_t buf_offset = 0;
+    search_results_t sr;
+    sr.binary = AG_BINARY_UNKNOWN;
 
     if (opts.search_stream) {
-        binary = 0;
+        sr.binary = AG_BINARY_FALSE;
     } else if (!opts.search_binary_files) {
-        binary = is_binary((const void *)buf, buf_len);
+        int binary = is_binary((const void *)buf, buf_len);
         if (binary) {
             log_debug("File %s is binary. Skipping...", dir_full_path);
-            return;
+            return sr;
         }
+        sr.binary = binary ? AG_BINARY_TRUE : AG_BINARY_FALSE;
     }
 
-    size_t matches_len = 0;
-    match_t *matches;
-    size_t matches_size;
+    sr.matches_len = 0;
     size_t matches_spare;
 
     if (opts.invert_match) {
@@ -27,22 +26,22 @@ void search_buf(const char *buf, const size_t buf_len,
          * sure we have a nonempty array; and make sure we always have spare
          * capacity for one extra.
          */
-        matches_size = 100;
-        matches = ag_malloc(matches_size * sizeof(match_t));
+        sr.matches_size = 100;
+        sr.matches = ag_malloc(sr.matches_size * sizeof(match_t));
         matches_spare = 1;
     } else {
-        matches_size = 0;
-        matches = NULL;
+        sr.matches_size = 0;
+        sr.matches = NULL;
         matches_spare = 0;
     }
 
     if (!opts.literal && opts.query_len == 1 && opts.query[0] == '.') {
         /* Don't even PCRE, just match everything */
-        matches_size = 1;
-        matches = matches == NULL ? ag_malloc(matches_size * sizeof(match_t)) : matches;
-        matches[0].start = 0;
-        matches[0].end = buf_len;
-        matches_len = 1;
+        sr.matches_size = 1;
+        sr.matches = sr.matches == NULL ? ag_malloc(sr.matches_size * sizeof(match_t)): sr.matches;
+        sr.matches[0].start = 0;
+        sr.matches[0].end = buf_len;
+        sr.matches_len = 1;
     } else if (opts.literal) {
         const char *match_ptr = buf;
         strncmp_fp ag_strnstr_fp = get_strstr(opts.casing);
@@ -73,16 +72,15 @@ void search_buf(const char *buf, const size_t buf_len,
                 }
             }
 
-            realloc_matches(&matches, &matches_size, matches_len + matches_spare);
-
-            matches[matches_len].start = match_ptr - buf;
-            matches[matches_len].end = matches[matches_len].start + opts.query_len;
-            buf_offset = matches[matches_len].end;
-            log_debug("Match found. File %s, offset %lu bytes.", dir_full_path, matches[matches_len].start);
-            matches_len++;
+            realloc_matches(&sr, matches_spare);
+            sr.matches[sr.matches_len].start = match_ptr - buf;
+            sr.matches[sr.matches_len].end = sr.matches[sr.matches_len].start + opts.query_len;
+            buf_offset = sr.matches[sr.matches_len].end;
+            log_debug("Match found. File %s, offset %lu bytes.", dir_full_path, sr.matches[sr.matches_len].start);
+            sr.matches_len++;
             match_ptr += opts.query_len;
 
-            if (opts.max_matches_per_file > 0 && matches_len >= opts.max_matches_per_file) {
+            if (opts.max_matches_per_file > 0 && sr.matches_len >= opts.max_matches_per_file) {
                 log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
                 break;
             }
@@ -99,13 +97,12 @@ void search_buf(const char *buf, const size_t buf_len,
                     log_debug("Regex match is of length zero. Advancing offset one byte.");
                 }
 
-                realloc_matches(&matches, &matches_size, matches_len + matches_spare);
+                realloc_matches(&sr, matches_spare);
+                sr.matches[sr.matches_len].start = offset_vector[0];
+                sr.matches[sr.matches_len].end = offset_vector[1];
+                sr.matches_len++;
 
-                matches[matches_len].start = offset_vector[0];
-                matches[matches_len].end = offset_vector[1];
-                matches_len++;
-
-                if (opts.max_matches_per_file > 0 && matches_len >= opts.max_matches_per_file) {
+                if (opts.max_matches_per_file > 0 && sr.matches_len >= opts.max_matches_per_file) {
                     log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
                     break;
                 }
@@ -131,13 +128,12 @@ void search_buf(const char *buf, const size_t buf_len,
                         log_debug("Regex match is of length zero. Advancing offset one byte.");
                     }
 
-                    realloc_matches(&matches, &matches_size, matches_len + matches_spare);
+                    realloc_matches(&sr, matches_spare);
+                    sr.matches[sr.matches_len].start = offset_vector[0] + line_to_buf;
+                    sr.matches[sr.matches_len].end = offset_vector[1] + line_to_buf;
+                    sr.matches_len++;
 
-                    matches[matches_len].start = offset_vector[0] + line_to_buf;
-                    matches[matches_len].end = offset_vector[1] + line_to_buf;
-                    matches_len++;
-
-                    if (opts.max_matches_per_file > 0 && matches_len >= opts.max_matches_per_file) {
+                    if (opts.max_matches_per_file > 0 && sr.matches_len >= opts.max_matches_per_file) {
                         log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
                         goto multiline_done;
                     }
@@ -150,56 +146,21 @@ void search_buf(const char *buf, const size_t buf_len,
 multiline_done:
 
     if (opts.invert_match) {
-        matches_len = invert_matches(buf, buf_len, matches, matches_len);
+        sr.matches_len = invert_matches(buf, buf_len, sr.matches, sr.matches_len);
     }
 
     if (opts.stats) {
         pthread_mutex_lock(&stats_mtx);
         stats.total_bytes += buf_len;
         stats.total_files++;
-        stats.total_matches += matches_len;
-        if (matches_len > 0) {
+        stats.total_matches += sr.matches_len;
+        if (sr.matches_len > 0) {
             stats.total_file_matches++;
         }
         pthread_mutex_unlock(&stats_mtx);
     }
 
-    if (matches_len > 0) {
-        if (binary == -1 && !opts.print_filename_only) {
-            binary = is_binary((const void *)buf, buf_len);
-        }
-        pthread_mutex_lock(&print_mtx);
-        if (opts.print_filename_only) {
-            /* If the --files-without-matches or -L option is passed we should
-             * not print a matching line. This option currently sets
-             * opts.print_filename_only and opts.invert_match. Unfortunately
-             * setting the latter has the side effect of making matches.len = 1
-             * on a file-without-matches which is not desired behaviour. See
-             * GitHub issue 206 for the consequences if this behaviour is not
-             * checked. */
-            if (!opts.invert_match || matches_len < 2) {
-                if (opts.print_count) {
-                    print_path_count(dir_full_path, opts.path_sep, (size_t)matches_len);
-                } else {
-                    print_path(dir_full_path, opts.path_sep);
-                }
-            }
-        } else if (binary) {
-            print_binary_file_matches(dir_full_path);
-        } else {
-            print_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
-        }
-        pthread_mutex_unlock(&print_mtx);
-        opts.match_found = 1;
-    } else if (opts.search_stream && opts.passthrough) {
-        fprintf(out_fd, "%s", buf);
-    } else {
-        log_debug("No match in %s", dir_full_path);
-    }
-
-    if (matches_size > 0) {
-        free(matches);
-    }
+    return sr;
 }
 
 /* TODO: this will only match single lines. multi-line regexes silently don't match */
@@ -211,7 +172,8 @@ void search_stream(FILE *stream, const char *path) {
 
     for (i = 1; (line_len = getline(&line, &line_cap, stream)) > 0; i++) {
         opts.stream_line_num = i;
-        search_buf(line, line_len, path);
+        search_results_t sr = search_buf(line, line_len, path);
+        print_results(line, line_len, path, &sr);
     }
 
     free(line);
@@ -308,13 +270,15 @@ void search_file(const char *file_full_path) {
                 log_err("Cannot decompress zipped file %s", file_full_path);
                 goto cleanup;
             }
-            search_buf(_buf, _buf_len, file_full_path);
+            search_results_t sr = search_buf(_buf, _buf_len, file_full_path);
+            print_results(_buf, _buf_len, file_full_path, &sr);
             free(_buf);
             goto cleanup;
         }
     }
 
-    search_buf(buf, f_len, file_full_path);
+    search_results_t sr = search_buf(buf, f_len, file_full_path);
+    print_results(buf, f_len, file_full_path, &sr);
 
 cleanup:
 

@@ -316,3 +316,42 @@ const char *normalize_path(const char *path) {
     }
     return path;
 }
+
+void print_results(const char *buf, const size_t buf_len, const char *dir_full_path, search_results_t *sr) {
+    if (sr->matches_len > 0) {
+        if (sr->binary == AG_BINARY_UNKNOWN && !opts.print_filename_only) {
+            sr->binary = is_binary((const void *)buf, buf_len) ? AG_BINARY_TRUE : AG_BINARY_FALSE;
+        }
+        pthread_mutex_lock(&print_mtx);
+        if (opts.print_filename_only) {
+            /* If the --files-without-matches or -L option is passed we should
+             * not print a matching line. This option currently sets
+             * opts.print_filename_only and opts.invert_match. Unfortunately
+             * setting the latter has the side effect of making matches.len = 1
+             * on a file-without-matches which is not desired behaviour. See
+             * GitHub issue 206 for the consequences if this behaviour is not
+             * checked. */
+            if (!opts.invert_match || sr->matches_len < 2) {
+                if (opts.print_count) {
+                    print_path_count(dir_full_path, opts.path_sep, (size_t)sr->matches_len);
+                } else {
+                    print_path(dir_full_path, opts.path_sep);
+                }
+            }
+        } else if (sr->binary == AG_BINARY_TRUE) {
+            print_binary_file_matches(dir_full_path);
+        } else {
+            print_file_matches(dir_full_path, buf, buf_len, sr->matches, sr->matches_len);
+        }
+        pthread_mutex_unlock(&print_mtx);
+        opts.match_found = 1;
+    } else if (opts.search_stream && opts.passthrough) {
+        fprintf(out_fd, "%s", buf);
+    } else {
+        log_debug("No match in %s", dir_full_path);
+    }
+
+    if (sr->matches_size > 0) {
+        free(sr->matches);
+    }
+}
