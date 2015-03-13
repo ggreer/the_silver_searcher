@@ -37,6 +37,7 @@ void search_buf(const char *buf, const size_t buf_len,
     }
 
     if (!opts.literal && opts.query_len == 1 && opts.query[0] == '.') {
+        /* Don't even PCRE, just match everything */
         matches_size = 1;
         matches = matches == NULL ? ag_malloc(matches_size * sizeof(match_t)) : matches;
         matches[0].start = 0;

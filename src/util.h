@@ -28,10 +28,30 @@ void *ag_calloc(size_t nelem, size_t elsize);
 char *ag_strdup(const char *s);
 char *ag_strndup(const char *s, size_t size);
 
+typedef enum {
+    AG_BINARY_UNKNOWN,
+    AG_BINARY_FALSE,
+    AG_BINARY_TRUE
+} ag_binary_type;
+
+typedef enum {
+    AG_NO_COMPRESSION,
+    AG_GZIP,
+    AG_COMPRESS,
+    AG_ZIP
+} ag_compression_type;
+
 typedef struct {
     size_t start; /* Byte at which the match starts */
     size_t end;   /* and where it ends */
 } match_t;
+
+typedef struct {
+    match_t *matches;
+    size_t matches_len;
+    size_t matches_size;
+    ag_binary_type binary;
+} search_results_t;
 
 typedef struct {
     long total_bytes;
@@ -41,7 +61,6 @@ typedef struct {
     struct timeval time_start;
     struct timeval time_end;
 } ag_stats;
-
 
 ag_stats stats;
 
