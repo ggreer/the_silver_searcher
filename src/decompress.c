@@ -24,7 +24,7 @@ const uint8_t LZMA_HEADER_SOMETIMES[3] = { 0x5D, 0x00, 0x00 };
  *    Not copyrighted -- provided to the public domain
  *    Version 1.4  11 December 2005  Mark Adler 
  */
-static void *decompress_zlib(void *buf, const int buf_len,
+static void *decompress_zlib(const void *buf, const int buf_len,
                              const char *dir_full_path, int *new_buf_len) {
     int ret = 0;
     unsigned char *result = NULL;
@@ -188,7 +188,7 @@ error_out:
 
 
 /* This function is very hot. It's called on every file when zip is enabled. */
-void *decompress(const ag_compression_type zip_type, void *buf, const int buf_len,
+void *decompress(const ag_compression_type zip_type, const void *buf, const int buf_len,
                  const char *dir_full_path, int *new_buf_len) {
     switch (zip_type) {
 #ifdef HAVE_ZLIB_H
