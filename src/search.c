@@ -189,7 +189,7 @@ void search_file(const char *file_full_path) {
     char *buf = NULL;
     struct stat statbuf;
     int rv = 0;
-    FILE *pipe = NULL;
+    FILE *search_pipe = NULL;
 
     fd = open(file_full_path, O_RDONLY);
     if (fd < 0) {
@@ -216,9 +216,9 @@ void search_file(const char *file_full_path) {
 
     if (statbuf.st_mode & S_IFIFO) {
         log_debug("%s is a named pipe. stream searching", file_full_path);
-        pipe = fdopen(fd, "r");
-        search_stream(pipe, file_full_path);
-        fclose(pipe);
+        search_pipe = fdopen(fd, "r");
+        search_stream(search_pipe, file_full_path);
+        fclose(search_pipe);
         goto cleanup;
     }
 
