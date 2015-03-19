@@ -169,14 +169,40 @@ void search_stream(FILE *stream, const char *path) {
     ssize_t line_len = 0;
     size_t line_cap = 0;
     size_t i;
+    search_results_t sr;
+    char **context_lines = NULL;
+    size_t context_lines_len = opts.before + opts.after + 1;
+
+    if (opts.before || opts.after) {
+        context_lines = ag_calloc(sizeof(char *), context_lines_len);
+    }
 
     for (i = 1; (line_len = getline(&line, &line_cap, stream)) > 0; i++) {
         opts.stream_line_num = i;
-        search_results_t sr = search_buf(line, line_len, path);
-        print_results(line, line_len, path, &sr);
+        search_results_t line_results = search_buf(line, line_len, path);
+        if (opts.after == 0 && opts.before == 0) {
+            print_results(line, line_len, path, &line_results);
+            continue;
+        }
+        context_lines[i] = line;
+        /* getline will malloc/realloc this */
+        line = NULL;
+        char *lines;
+        size_t lines_len = 0;
+        size_t j;
+        for (j = 0; j < context_lines_len; j++) {
+            ag_asprintf(&(lines), "%s%s", lines, context_lines[j]);
+            lines_len += strlen(context_lines[j]);
+        }
+        /* TODO: munge results */
+        print_results(lines, lines_len, path, &line_results);
     }
 
-    free(line);
+    if (context_lines_len) {
+        /* TODO */
+    } else {
+        free(line);
+    }
 }
 
 void search_file(const char *file_full_path) {
