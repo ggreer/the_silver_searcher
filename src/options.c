@@ -70,6 +70,8 @@ Search Options:\n\
                           or patterns from ignore files)\n\
   -D --debug              Ridiculous debugging (probably not useful)\n\
      --depth NUM          Search up to NUM directories deep (Default: 25)\n\
+  -E --ignore-environment\n\
+                          Do not read configuration from environment variables\n\
   -f --follow             Follow symlinks\n\
   -F --fixed-strings      Alias for --literal for compatibility with grep\n\
   -G --file-search-regex  PATTERN Limit search to filenames matching PATTERN\n\
@@ -144,6 +146,215 @@ void init_options(void) {
     opts.color_match = ag_strdup(color_match);
     opts.color_line_number = ag_strdup(color_line_number);
     opts.use_thread_affinity = TRUE;
+}
+
+void environment_options(int argc, char **argv) {
+    char *env_value = NULL;
+    int heading_group = -1;
+    int i;
+
+    if (env_bool_option("AG_IGNORE_ENVIRONMENT", NULL) == 1) {
+        log_debug("Skipping environment: AG_IGNORE_ENVIRONMENT is set");
+        return;
+    }
+
+    /* A simple getopt before we call getopt_long to avoid a chicken & egg problem */
+    for (i = 1 ; i < argc ; i++) {
+        if (!strcmp(argv[i], "-E")) {
+            log_debug("Skipping environment: -E");
+            return;
+        }
+        if (!strcmp(argv[i], "--ignore-environment")) {
+            log_debug("Skipping environment: --ignore-environment");
+            return;
+        }
+    }
+
+    env_string_option("AG_LOG_LEVEL", &env_value);
+    if (env_value && *env_value) {
+        if(!strcasecmp(env_value, "debug")) {
+            set_log_level(LOG_LEVEL_DEBUG);
+            log_debug("Setting log level to debug via AG_LOG_LEVEL");
+        } else if (!strcasecmp(env_value, "msg")) {
+            set_log_level(LOG_LEVEL_MSG);
+            log_msg("Setting log level to msg via AG_LOG_LEVEL");
+        } else if (!strcasecmp(env_value, "warn")) {
+            set_log_level(LOG_LEVEL_WARN);
+            log_warn("Setting log level to warn via AG_LOG_LEVEL");
+        } else if (!strncasecmp(env_value, "err", 3)) {
+            set_log_level(LOG_LEVEL_ERR);
+            log_err("Setting log level to err via AG_LOG_LEVEL");
+        } else {
+            log_warn("Unknown level in AG_LOG_LEVEL: %s. "
+                "Valid values: debug, msg, warn, err.", env_value);
+        }
+    }
+
+    env_size_option("AG_AFTER", &opts.after);
+    env_size_option("AG_BEFORE", &opts.before);
+
+    env_bool_option("AG_COLOR", &opts.color);
+
+    /* Ack backward compatibility */
+    env_color_option("AG_COLOR_LINENO", &opts.color_line_number);
+    env_color_option("AG_COLOR_FILENAME", &opts.color_path);
+
+    env_color_option("AG_COLOR_MATCH", &opts.color_match);
+    env_color_option("AG_COLOR_LINE_NUMBER", &opts.color_line_number);
+    env_color_option("AG_COLOR_PATH", &opts.color_path);
+
+    env_int_option("AG_CONTEXT", &opts.context);
+
+    env_bool_option("AG_BREAK", &opts.print_break);
+    env_bool_option("AG_LINE_NUMBERS", &opts.print_line_numbers);
+    env_bool_option("AG_COLUMN_NUMBERS", &opts.column);
+    env_bool_option("AG_HEADING", &heading_group);
+
+    if (heading_group == 0) {
+        opts.print_path = PATH_PRINT_EACH_LINE;
+    } else if (heading_group == 1) {
+        opts.print_path = PATH_PRINT_TOP;
+    }
+
+    heading_group = env_bool_option("AG_GROUP", &heading_group);
+
+    if (heading_group == 0) {
+        opts.print_path = PATH_PRINT_EACH_LINE;
+    } else if (heading_group == 1) {
+        opts.print_path = PATH_PRINT_TOP;
+    }
+
+    env_bool_option("AG_ALL_FILES", &opts.search_all_files);
+    env_bool_option("AG_BINARY_FILES", &opts.search_binary_files);
+    env_bool_option("AG_HIDDEN_FILES", &opts.search_hidden_files);
+
+    env_string_option("AG_IGNORE_FILE", &opts.path_to_agignore);
+    env_bool_option("AG_SKIP_VCS_IGNORE", &opts.skip_vcs_ignores);
+
+    env_bool_option("AG_FOLLOW_SYMLINKS", &opts.follow_symlinks);
+
+    env_string_option("AG_CASE", &env_value);
+
+    if (env_value) {
+        if (!strcmp(env_value, "smart")){
+            opts.casing = CASE_SMART;
+        } else if (!strcmp(env_value, "sensitive")){
+            opts.casing = CASE_SENSITIVE;
+        }    else if (!strcmp(env_value, "insensitive")){
+            opts.casing = CASE_INSENSITIVE;
+        } else {
+            log_warn("Unknown AG_CASE value: %s. Valid values: smart, sensitive, insensitive.", env_value);
+        }
+    }
+
+    env_size_option("AG_MAX_COUNT", &opts.max_matches_per_file);
+    env_bool_option("AG_LITERAL", &opts.literal);
+
+    env_bool_option("AG_WHOLE_WORD", &opts.word_regexp);
+    env_bool_option("AG_ZIP", &opts.search_zip_files);
+}
+
+int env_int_option(const char *name, int *var) {
+    char *val = getenv(name);
+    char *endptr;
+    int test;
+
+    if (!val || *val == '\0') { return -1; }
+
+    test = strtol(val, &endptr, 10);
+
+    if (endptr == val) { return -1; }
+
+    log_debug("Using environment variable: %s (%d)", name, test);
+
+    if (var) {
+        *var = test;
+    }
+
+    return test;
+}
+
+size_t env_size_option(const char *name, size_t *var) {
+    char *val = getenv(name);
+    char *endptr;
+    size_t test;
+
+    if (!val || *val == '\0') { return (size_t) -1; }
+
+    test = strtoul(val, &endptr, 10);
+
+    if (endptr == val) { return (size_t) -1; }
+
+    log_debug("Using environment variable: %s (%lu)", name, test);
+
+    if (var) {
+        *var = test;
+    }
+
+    return test;
+}
+
+int env_bool_option(const char *name, int *var) {
+    char *val = getenv(name);
+    int ret;
+
+    /* an empty string means the variable was set, but not given a value.
+       Should that be a boolean true value, or a default value? */
+    if (!val || *val == '\0') { return -1; }
+
+    switch (val[0]) {
+        case 'n':
+        case 'N':
+        case 'f':
+        case 'F':
+        case '0':
+            ret = FALSE;
+            break;
+        default:
+            ret = TRUE;
+            break;
+    }
+
+    if (var) {
+        *var = ret;
+    }
+
+    log_debug("Using environment variable: %s (%s)", name, ret ? "true" : "false");
+    return ret;
+}
+
+const char *env_string_option(const char *name, char **var) {
+    char *val = getenv(name);
+
+    if (!val || *val == '\0') { return NULL; }
+
+    if (var) {
+        *var = ag_strdup(val);
+    }
+
+    log_debug("Using environment variable: %s (%s)", name, *var);
+    return *var;
+}
+
+const char *env_color_option(const char *name, char **var) {
+    char *val = getenv(name);
+
+    if (!val || *val == '\0') { return NULL; }
+
+    if (var) {
+        replace_color(var, val);
+    }
+
+    log_debug("Using environment variable: %s (%s)", name, val);
+    return val;
+}
+
+void replace_color(char **color, char *val) {
+    if (*color) {
+        free(*color);
+    }
+
+    ag_asprintf(color, "\033[%sm", val);
 }
 
 void cleanup_options(void) {
@@ -237,6 +448,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "ignore", required_argument, NULL, 0 },
         { "ignore-case", no_argument, NULL, 'i' },
         { "ignore-dir", required_argument, NULL, 0 },
+        { "ignore-environment", no_argument, NULL, 'E' },
         { "invert-match", no_argument, NULL, 'v' },
         /* deprecated for --numbers. Remove eventually. */
         { "line-numbers", no_argument, &opts.print_line_numbers, 2 },
@@ -327,8 +539,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.stdout_inode = statbuf.st_ino;
     }
 
+    environment_options(argc, argv);
+
     int pcre_opts = 0;
-    while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:FfHhiLlm:nop:QRrSsvVtuUwz0", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:cDEG:g:FfHhiLlm:nop:QRrSsvVtuUwz0", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 if (optarg) {
@@ -376,6 +590,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'D':
                 set_log_level(LOG_LEVEL_DEBUG);
+                break;
+            case 'E':
+                opts.ignore_environment = 1;
                 break;
             case 'f':
                 opts.follow_symlinks = 1;
@@ -495,16 +712,13 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                     opts.workers = atoi(optarg);
                     break;
                 } else if (strcmp(longopts[opt_index].name, "color-line-number") == 0) {
-                    free(opts.color_line_number);
-                    ag_asprintf(&opts.color_line_number, "\033[%sm", optarg);
+                    replace_color(&opts.color_line_number, optarg);
                     break;
                 } else if (strcmp(longopts[opt_index].name, "color-match") == 0) {
-                    free(opts.color_match);
-                    ag_asprintf(&opts.color_match, "\033[%sm", optarg);
+                    replace_color(&opts.color_match, optarg);
                     break;
                 } else if (strcmp(longopts[opt_index].name, "color-path") == 0) {
-                    free(opts.color_path);
-                    ag_asprintf(&opts.color_path, "\033[%sm", optarg);
+                    replace_color(&opts.color_path, optarg);
                     break;
                 } else if (strcmp(longopts[opt_index].name, "silent") == 0) {
                     set_log_level(LOG_LEVEL_NONE);
