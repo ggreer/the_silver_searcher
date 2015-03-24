@@ -21,6 +21,17 @@ long win_color_from_ansi_values(const char *seq, const long initial, const long 
 // use the first color escape sequence in a string.
 const char *ansi_first_color_value(const char *ansi_escape);
 
+// Windows console seem to completely ignore the inverse and underline attributes.
+// Applies the inverse bit by swapping fg/bg color + intensity and clears the bit.
+// Applies the underline bit as foreground intensity and clears the bit.
+// Note: win_get_current_screen_color will NOT be able to read these attributes
+//       from screen because they've been stripped and applied directly to the color.
+//       to keep the attributes state, use the original color as 'initial' at the
+//       next call to win_color_from_ansi_values(...).
+//       (however, color '0' with the original 'default' doesn't depend on state)
+long win_attributes_into_color(long color);
+
+
 #endif
 
 #endif

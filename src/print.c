@@ -31,7 +31,7 @@ static void set_color(const char *color) {
 
         const char *begin = ansi_first_color_value(color);
         current_color = win_color_from_ansi_values(begin, current_color, default_color);
-        win_set_current_screen_color(current_color);
+        win_set_current_screen_color(win_attributes_into_color(current_color));
         return;
     }
 #endif

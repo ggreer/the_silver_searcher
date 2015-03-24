@@ -90,7 +90,41 @@ const char *ansi_first_color_value(const char *ansi_escape) {
 #define BRGB (BR | BG | BB)
 #define BRGBI (BRGB | BI)
 
+// mask1/2 must be 1 bit
+static void swap_bits(long *val, long mask1, long mask2) {
+    long t1 = *val & mask1;
+
+    if (*val & mask2)
+        *val |=  mask1;
+    else
+        *val &= ~mask1;
+
+    if (t1)
+        *val |=  mask2;
+    else
+        *val &= ~mask2;
+}
+
+// see comment at win_colors.h
+long win_attributes_into_color(long color) {
+    if(color & CREV) {
+        color &= ~CREV;
+        swap_bits(&color, FR, BR);
+        swap_bits(&color, FG, BG);
+        swap_bits(&color, FB, BB);
+        swap_bits(&color, FI, BI);
+    }
+
+    if (color & CUND) {
+        color &= ~CUND;
+        color |= FI;
+    }
+
+    return color;
+}
+
 // native windows console supports 16 colors (bits: r, g, b, brightness) for fg/bg
+// and two global bits: inverse and underline (both don't seem to work) - overall 10 bits.
 // information gathered by experimenting and from:
 // - https://msdn.microsoft.com/en-us/library/windows/desktop/ms682088%28v=vs.85%29.aspx#_win32_character_attributes
 // - http://unix.stackexchange.com/questions/93814/cant-apply-brightness-to-terminals-background-color
@@ -98,26 +132,30 @@ const char *ansi_first_color_value(const char *ansi_escape) {
 static void win_apply_ansi_color_value(int code, long *color, const long def) {
     long embedded_intensity = 0;
     if ((code >= 90 && code <= 97) || (code >= 100 && code <= 107)) {
-        // fg, bg bright colors
+        // fg, bg bright colors - aixterm
         embedded_intensity = (code < 100) ? FI : BI;
         code -= 60;
     }
 
     switch (code) {
-        case  0: *color  = def;   break; // reset everything to default
+        // default colors with all attributes off
+        case  0: *color = def & (FRGB | BRGB); break;
 
         case  1: *color |=  FI;   break; // fg intensity on
+        case  5: *color |=  BI;   break; // blink on -> bg intensity on
 
-        // windows has 1 bit for brightness, so we treat "dim" as brightness off.
-        case  2:
-        case 22: *color &= ~FI;   break; // dim -> fg intensity off
+        case  2:                         // dim -> fg intensity off
+        case 22: *color &= ~FI;   break; // normal intensity -> fg intensity off
+        case 25: *color &= ~BI;   break; // blink off -> bg intensity off
 
-        // reverse/underscore don't work reliably, but at least try.
-        case  3: *color |=  CREV; break; // reverse on
-        case 23: *color &= ~CREV; break; // off
+        // reverse/underscore are unreliable (completely b0rked?). see apply_attributes
+        case  3:                         // italics (/reverse) on
+        case  7: *color |=  CREV; break; // reverse on
 
-        case  4:
-        case  5: *color |=  CUND; break; // underline on
+        case 23:                         // italics (/reverse) off
+        case 27: *color &= ~CREV; break; // reverse off
+
+        case  4: *color |=  CUND; break; // underline on
         case 24: *color &= ~CUND; break; // off
 
         // foreground colors - without affecting fg intensity
