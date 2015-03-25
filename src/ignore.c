@@ -338,7 +338,11 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
 int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     const char *filename = dir->d_name;
     /* TODO: don't call strlen on filename every time we call filename_filter() */
+#ifdef HAVE_DIRENT_DNAMLEN
+    size_t filename_len = dir->d_namlen;
+#else
     size_t filename_len = strlen(filename);
+#endif
     size_t i;
     scandir_baton_t *scandir_baton = (scandir_baton_t *)baton;
     const ignores *ig = scandir_baton->ig;
@@ -377,15 +381,15 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     }
     log_debug("path_start %s filename %s", path_start, filename);
 
-    const char *extension = NULL;
-    for (i = filename_len - 1; filename_len > 1; i--) {
-        if (filename[i] == '.') {
-            extension = filename + i + 1;
-            break;
+    const char *extension = strrchr(filename, '.');
+    if (extension) {
+        if (extension[1]) {
+            // The dot is not the last character, extension starts at the next one
+            ++extension;
+        } else {
+            // No extension
+            extension = NULL;
         }
-    }
-    if (extension && extension[0] == '\0') {
-        extension = NULL;
     }
 
     while (ig != NULL) {
@@ -397,7 +401,7 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         if (extension) {
             int match_pos = binary_search(extension, ig->extensions, 0, ig->extensions_len);
             if (match_pos >= 0) {
-                log_debug("file %s ignored because name matches extension %s", extension, ig->extensions[match_pos]);
+                log_debug("file %s ignored because name matches extension %s", filename, ig->extensions[match_pos]);
                 return 0;
             }
         }

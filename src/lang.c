@@ -30,7 +30,7 @@ lang_spec_t langs[] = {
     { "ini", { "ini" } },
     { "jade", { "jade" } },
     { "java", { "java", "properties" } },
-    { "js", { "js" } },
+    { "js", { "js", "jsx" } },
     { "json", { "json" } },
     { "jsp", { "jsp", "jspx", "jhtm", "jhtml" } },
     { "less", { "less" } },
@@ -73,6 +73,8 @@ lang_spec_t langs[] = {
     { "verilog", { "v", "vh", "sv" } },
     { "vhdl", { "vhd", "vhdl" } },
     { "vim", { "vim" } },
+    { "wsdl", { "wsdl" } },
+    { "wadl", { "wadl" } },
     { "xml", { "xml", "dtd", "xsl", "xslt", "ent" } },
     { "yaml", { "yaml", "yml" } }
 };
@@ -114,7 +116,7 @@ char *make_lang_regex(char *ext_array, size_t num_exts) {
 }
 
 size_t combine_file_extensions(size_t *extension_index, size_t len, char **exts) {
-    /* Keep it fixed as 100 for the reason that if you have more than 100 
+    /* Keep it fixed as 100 for the reason that if you have more than 100
      * file types to search, you'd better search all the files.
      * */
     size_t ext_capacity = 100;

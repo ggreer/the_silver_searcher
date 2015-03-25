@@ -82,7 +82,7 @@ Language types are output:
         .java  .properties
   
     --js
-        .js
+        .js  .jsx
   
     --json
         .json
@@ -209,6 +209,12 @@ Language types are output:
   
     --vim
         .vim
+  
+    --wsdl
+        .wsdl
+  
+    --wadl
+        .wadl
   
     --xml
         .xml  .dtd  .xsl  .xslt  .ent

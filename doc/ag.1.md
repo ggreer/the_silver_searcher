@@ -183,8 +183,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
 
 It is possible to restrict the types of files searched. For example, passing
 `--html` as the `file-types` parameter will search only files with the
-extensions `htm`, `html`, `shtml` or `xhtml`. For a list of supported `file-
-types` run `ag --list-file-types`.
+extensions `htm`, `html`, `shtml` or `xhtml`. For a list of supported `file-types`
+run `ag --list-file-types`.
 
 ## IGNORING FILES
 
