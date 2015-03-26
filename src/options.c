@@ -643,23 +643,12 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.search_stream = 0;
     }
 
-    if (opts.print_path != PATH_PRINT_DEFAULT || opts.print_break == 0) {
-        goto skip_group;
-    }
-
-    if (group) {
-        opts.print_break = 1;
-    } else {
-        opts.print_path = PATH_PRINT_DEFAULT_EACH_LINE;
-        opts.print_break = 0;
-    }
-
-skip_group:
-    if (opts.search_stream) {
-        opts.print_break = 0;
-        opts.print_path = PATH_PRINT_NOTHING;
-        if (opts.print_line_numbers != 2) {
-            opts.print_line_numbers = 0;
+    if (!(opts.print_path != PATH_PRINT_DEFAULT || opts.print_break == 0)) {
+        if (group) {
+            opts.print_break = 1;
+        } else {
+            opts.print_path = PATH_PRINT_DEFAULT_EACH_LINE;
+            opts.print_break = 0;
         }
     }
 
@@ -705,7 +694,24 @@ skip_group:
         /* Make sure we search these paths instead of stdin. */
         opts.search_stream = 0;
     } else {
-        path = ag_strdup(".");
+        /* If stdin is a regular file, try to open it as portably as possible.
+         * If none of the filesystem mappings for stdin exist, fall back to
+         * treating it as a stream. If stdin isn't regular, no file was
+         * specified by the user, so search the current directory.
+         */
+        rv = fstat(fileno(stdin), &statbuf);
+        if (rv == 0 && S_ISREG(statbuf.st_mode)) {
+            if (access("/dev/stdin", F_OK) != -1) {
+                path = ag_strdup("/dev/stdin");
+            } else if (access("/dev/fd/0", F_OK) != -1) {
+                path = ag_strdup("/dev/fd/0");
+            } else {
+                opts.search_stream = 1;
+                path = ag_strdup(".");
+            }
+        } else {
+            path = ag_strdup(".");
+        }
         *paths = ag_malloc(sizeof(char *) * 2);
         *base_paths = ag_malloc(sizeof(char *) * 2);
         (*paths)[0] = path;
@@ -715,4 +721,12 @@ skip_group:
     }
     (*paths)[i] = NULL;
     (*base_paths)[i] = NULL;
+
+    if (opts.search_stream) {
+        opts.print_break = 0;
+        opts.print_path = PATH_PRINT_NOTHING;
+        if (opts.print_line_numbers != 2) {
+            opts.print_line_numbers = 0;
+        }
+    }
 }
