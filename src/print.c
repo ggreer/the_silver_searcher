@@ -21,17 +21,7 @@ const char *color_reset = "\033[0m\033[K";
 static void set_color(const char *color) {
 #ifdef _WIN32
     if (opts.color == COLOR_MODE_WIN_SCREEN) {
-        static long current_color, default_color;
-        static int initialized = FALSE;
-        if (!initialized) {
-            // we need to store the initial color once as the default color
-            default_color = current_color = win_get_current_screen_color();
-            initialized = TRUE;
-        }
-
-        const char *begin = ansi_first_color_value(color);
-        current_color = win_color_from_ansi_values(begin, current_color, default_color);
-        win_set_current_screen_color(win_attributes_into_color(current_color));
+        win_set_ansi_screen_color(ansi_first_color_value(color));
         return;
     }
 #endif
