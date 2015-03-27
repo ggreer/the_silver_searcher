@@ -1,5 +1,10 @@
+#ifdef _WIN32
+
 #include <windows.h>
 #include <stdio.h>
+#include <io.h>
+#include <stdarg.h>
+#include "print.h"
 
 #ifndef FOREGROUND_MASK
 #define FOREGROUND_MASK (FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY)
@@ -10,8 +15,7 @@
 
 int fprintf_w32(FILE *fp, const char *format, ...) {
     va_list args;
-    int r;
-    char buf[BUFSIZ], *ptr = buf, *stop;
+    char buf[BUFSIZ], *ptr = buf;
     static WORD attr_old;
     static HANDLE stdo = INVALID_HANDLE_VALUE;
     WORD attr;
@@ -21,7 +25,7 @@ int fprintf_w32(FILE *fp, const char *format, ...) {
     COORD coord;
 
     va_start(args, format);
-    r = vsnprintf(buf, sizeof(buf), format, args);
+    vsnprintf(buf, sizeof(buf), format, args);
     va_end(args);
 
     stdo = (HANDLE)_get_osfhandle(fileno(fp));
@@ -34,7 +38,7 @@ int fprintf_w32(FILE *fp, const char *format, ...) {
     while (*ptr) {
         if (*ptr == '\033') {
             unsigned char c;
-            int i, n = 0, m, v[6], w, h;
+            int i, n = 0, m = '\0', v[6], w, h;
             for (i = 0; i < 6; i++)
                 v[i] = -1;
             ptr++;
@@ -286,3 +290,5 @@ int fprintf_w32(FILE *fp, const char *format, ...) {
     SetConsoleTextAttribute(stdo, attr_old);
     return ptr - buf;
 }
+
+#endif /* _WIN32 */

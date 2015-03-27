@@ -14,4 +14,8 @@ void print_column_number(const match_t matches[], size_t last_printed_match,
 void print_file_separator(void);
 const char *normalize_path(const char *path);
 
+#ifdef _WIN32
+int fprintf_w32(FILE* fp, const char* format, ...);
+#endif
+
 #endif
