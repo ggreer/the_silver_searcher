@@ -13,9 +13,14 @@
 #define BACKGROUND_MASK (BACKGROUND_RED | BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_INTENSITY)
 #endif
 
+// BUFSIZ is guarenteed to be "at least 256 bytes" which might
+// not be enough for us. Use an arbitrary but reasonably big
+// buffer. win32 colored output will be truncated to this length.
+#define BUF_SIZE (16 * 1024)
+
 int fprintf_w32(FILE *fp, const char *format, ...) {
     va_list args;
-    char buf[BUFSIZ], *ptr = buf;
+    char buf[BUF_SIZE] = {0}, *ptr = buf;
     static WORD attr_old;
     static HANDLE stdo = INVALID_HANDLE_VALUE;
     WORD attr;
@@ -24,14 +29,28 @@ int fprintf_w32(FILE *fp, const char *format, ...) {
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     COORD coord;
 
+    stdo = (HANDLE) _get_osfhandle(fileno(fp));
+    if (!isatty(fileno(fp)) || stdo == INVALID_HANDLE_VALUE) {
+        // if not a tty, skip ansi interpretation and just passthrough.
+        // colors are disabled for pipe unless --color was used,
+        // and a pager is assumed it knows how to handle ansi colors,
+        // and if it doesn't, the user can specify --nocolor.
+        // either way, modifying screen state (color/pos/etc) when the
+        // output doesn't go to screen is plain wrong.
+        int rv;
+        va_start(args, format);
+        rv = vfprintf(fp, format, args);
+        va_end(args);
+        return rv;
+    }
+
     va_start(args, format);
-    vsnprintf(buf, sizeof(buf), format, args);
+    // truncates to (null terminated) BUF_SIZE if too long.
+    // if too long - vsnprintf will fill count chars without
+    // terminating null. buf is zeroed, so make sure we don't fill it.
+    vsnprintf(buf, BUF_SIZE - 1, format, args);
     va_end(args);
 
-    stdo = (HANDLE)_get_osfhandle(fileno(fp));
-    if (stdo == INVALID_HANDLE_VALUE) {
-        return fwrite(buf, sizeof(buf), 1, fp);
-    }
     GetConsoleScreenBufferInfo(stdo, &csbi);
     attr = attr_old = csbi.wAttributes;
 
