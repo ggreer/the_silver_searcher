@@ -18,6 +18,12 @@
 // buffer. win32 colored output will be truncated to this length.
 #define BUF_SIZE (16 * 1024)
 
+static int g_use_ansi = 0;
+void windows_use_ansi(int use_ansi)
+{
+    g_use_ansi = use_ansi;
+}
+
 int fprintf_w32(FILE *fp, const char *format, ...) {
     va_list args;
     char buf[BUF_SIZE] = {0}, *ptr = buf;
@@ -30,7 +36,7 @@ int fprintf_w32(FILE *fp, const char *format, ...) {
     COORD coord;
 
     stdo = (HANDLE) _get_osfhandle(fileno(fp));
-    if (!isatty(fileno(fp)) || stdo == INVALID_HANDLE_VALUE) {
+    if (g_use_ansi || !isatty(fileno(fp)) || stdo == INVALID_HANDLE_VALUE) {
         // if not a tty, skip ansi interpretation and just passthrough.
         // colors are disabled for pipe unless --color was used,
         // and a pager is assumed it knows how to handle ansi colors,
