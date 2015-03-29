@@ -72,7 +72,7 @@ strncmp_fp get_strstr(enum case_behavior opts);
 size_t invert_matches(const char *buf, const size_t buf_len, match_t matches[], size_t matches_len);
 void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opts, const int study_opts);
 
-void *decompress(const ag_compression_type zip_type, const void *buf, const int buf_len, const char *dir_full_path, int *new_buf_len);
+void *decompress(const ag_compression_type zip_type, const void *buf, const int buf_len, const char *dir_full_path, unsigned int *new_buf_len);
 ag_compression_type is_zipped(const void *buf, const int buf_len);
 
 int is_binary(const void *buf, const size_t buf_len);
