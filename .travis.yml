@@ -17,7 +17,7 @@ before_install:
   - curl http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
   - sudo apt-get update -q
   - sudo apt-get install -q -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev
-  - sudo apt-get install -y clang-format-3.6
+  - sudo apt-get install -y clang-3.6 clang-modernize-3.6 clang-format-3.6
 
 before_script:
   - sudo pip install cram
