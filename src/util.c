@@ -427,6 +427,7 @@ int is_directory(const char *path, const struct dirent *d) {
 
 int is_symlink(const char *path, const struct dirent *d) {
 #ifdef _WIN32
+    AG_UNUSED(path); AG_UNUSED(d);
     return 0;
 #else
 #ifdef HAVE_DIRENT_DTYPE

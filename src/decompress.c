@@ -11,6 +11,17 @@ const uint8_t XZ_HEADER_MAGIC[6] = { 0xFD, '7', 'z', 'X', 'Z', 0x00 };
 const uint8_t LZMA_HEADER_SOMETIMES[3] = { 0x5D, 0x00, 0x00 };
 #endif
 
+#ifdef _WIN32
+#include <windows.h>
+static DWORD getpagesize_w32(void)
+{
+    SYSTEM_INFO si;
+    GetSystemInfo(&si);
+    return si.dwPageSize;
+}
+
+#define getpagesize getpagesize_w32
+#endif
 
 #ifdef HAVE_ZLIB_H
 #define ZLIB_CONST 1

@@ -326,6 +326,7 @@ void *search_file_worker(void *i) {
 
 static int check_symloop_enter(const char *path, dirkey_t *outkey) {
 #ifdef _WIN32
+    AG_UNUSED(path); AG_UNUSED(outkey);
     return SYMLOOP_OK;
 #else
     struct stat buf;
@@ -359,6 +360,7 @@ static int check_symloop_enter(const char *path, dirkey_t *outkey) {
 
 static int check_symloop_leave(dirkey_t *dirkey) {
 #ifdef _WIN32
+    AG_UNUSED(dirkey);
     return SYMLOOP_OK;
 #else
     symdir_t *item_found = NULL;
