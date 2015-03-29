@@ -9,7 +9,7 @@ notifications:
     - geoff@greer.fm
 
 install:
-  - sudo apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev
+  - sudo apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev clang-format-3.5
 
 script:
   - ./build.sh && make test
