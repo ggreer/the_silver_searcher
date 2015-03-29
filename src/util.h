@@ -109,6 +109,4 @@ size_t strlcpy(char *dest, const char *src, size_t size);
 int vasprintf(char **ret, const char *fmt, va_list args);
 #endif
 
-#define AG_UNUSED(x) (void)(x)
-
 #endif

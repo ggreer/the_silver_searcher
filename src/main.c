@@ -19,6 +19,7 @@
 #include "options.h"
 #include "search.h"
 #include "util.h"
+#include "osdep.h"
 
 typedef struct {
     pthread_t thread;
@@ -56,16 +57,7 @@ int main(int argc, char **argv) {
     parse_options(argc, argv, &base_paths, &paths);
     log_debug("PCRE Version: %s", pcre_version());
 
-#ifdef _WIN32
-    {
-        SYSTEM_INFO si;
-        GetSystemInfo(&si);
-        num_cores = si.dwNumberOfProcessors;
-    }
-#else
-    num_cores = (int)sysconf(_SC_NPROCESSORS_ONLN);
-#endif
-
+    num_cores = getnumcores_ag();
     workers_len = num_cores;
     if (opts.literal) {
         workers_len--;

@@ -7,12 +7,7 @@
 
 #include "util.h"
 #include "config.h"
-
-#ifdef _WIN32
-#define flockfile(x)
-#define funlockfile(x)
-#define getc_unlocked(x) getc(x)
-#endif
+#include "osdep.h"
 
 #define CHECK_AND_RETURN(ptr)             \
     if (ptr == NULL) {                    \
@@ -427,7 +422,7 @@ int is_directory(const char *path, const struct dirent *d) {
 
 int is_symlink(const char *path, const struct dirent *d) {
 #ifdef _WIN32
-    AG_UNUSED(path); AG_UNUSED(d);
+    AG_UNUSED2(path, d);
     return 0;
 #else
 #ifdef HAVE_DIRENT_DTYPE
