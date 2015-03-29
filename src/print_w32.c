@@ -13,10 +13,17 @@
 #define BACKGROUND_MASK (BACKGROUND_RED | BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_INTENSITY)
 #endif
 
+#define FG_RGB (FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN)
+#define BG_RGB (BACKGROUND_RED | BACKGROUND_BLUE | BACKGROUND_GREEN)
+
 // BUFSIZ is guarenteed to be "at least 256 bytes" which might
 // not be enough for us. Use an arbitrary but reasonably big
 // buffer. win32 colored output will be truncated to this length.
 #define BUF_SIZE (16 * 1024)
+
+// max consecutive ansi sequence values beyond which we're aborting
+// e.g. this is 3 values: \e[0;1;33m
+#define MAX_VALUES 8
 
 static int g_use_ansi = 0;
 void windows_use_ansi(int use_ansi)
@@ -27,7 +34,7 @@ void windows_use_ansi(int use_ansi)
 int fprintf_w32(FILE *fp, const char *format, ...) {
     va_list args;
     char buf[BUF_SIZE] = {0}, *ptr = buf;
-    static WORD attr_old;
+    static WORD attr_reset;
     static BOOL attr_initialized = FALSE;
     HANDLE stdo = INVALID_HANDLE_VALUE;
     WORD attr;
@@ -61,15 +68,16 @@ int fprintf_w32(FILE *fp, const char *format, ...) {
     GetConsoleScreenBufferInfo(stdo, &csbi);
     attr = csbi.wAttributes;
     if (!attr_initialized) {
-        attr_old = attr;
+        // reset is defined to have all (non color) attributes off
+        attr_reset = csbi.wAttributes & (FG_RGB | BG_RGB);
         attr_initialized = TRUE;
     }
 
     while (*ptr) {
         if (*ptr == '\033') {
             unsigned char c;
-            int i, n = 0, m = '\0', v[6], w, h;
-            for (i = 0; i < 6; i++)
+            int i, n = 0, m = '\0', v[MAX_VALUES], w, h;
+            for (i = 0; i < MAX_VALUES; i++)
                 v[i] = -1;
             ptr++;
         retry:
@@ -86,7 +94,7 @@ int fprintf_w32(FILE *fp, const char *format, ...) {
                 goto retry;
             }
             if (c == ';') {
-                if (++n == 6)
+                if (++n == MAX_VALUES)
                     break;
                 goto retry;
             }
@@ -96,6 +104,7 @@ int fprintf_w32(FILE *fp, const char *format, ...) {
             }
 
             switch (c) {
+                // n is the last occupied index, so we have n+1 values
                 case 'h':
                     if (m == '?') {
                         for (i = 0; i <= n; i++) {
@@ -186,13 +195,13 @@ int fprintf_w32(FILE *fp, const char *format, ...) {
                 case 'm':
                     for (i = 0; i <= n; i++) {
                         if (v[i] == -1 || v[i] == 0)
-                            attr = attr_old;
+                            attr = attr_reset;
                         else if (v[i] == 1)
                             attr |= FOREGROUND_INTENSITY;
                         else if (v[i] == 4)
                             attr |= FOREGROUND_INTENSITY;
-                        else if (v[i] == 5)
-                            attr |= FOREGROUND_INTENSITY;
+                        else if (v[i] == 5)  // blink is typically applied as bg intensity
+                            attr |= BACKGROUND_INTENSITY;
                         else if (v[i] == 7)
                             attr =
                                 ((attr & FOREGROUND_MASK) << 4) |
@@ -206,13 +215,13 @@ int fprintf_w32(FILE *fp, const char *format, ...) {
                         else if (v[i] == 24)
                             attr &= ~FOREGROUND_INTENSITY;
                         else if (v[i] == 25)
-                            attr &= ~FOREGROUND_INTENSITY;
+                            attr &= ~BACKGROUND_INTENSITY;
                         else if (v[i] == 27)
                             attr =
                                 ((attr & FOREGROUND_MASK) << 4) |
                                 ((attr & BACKGROUND_MASK) >> 4);
                         else if (v[i] >= 30 && v[i] <= 37) {
-                            attr = (attr & BACKGROUND_MASK) | FOREGROUND_INTENSITY;
+                            attr &= ~FG_RGB; // doesn't affect attributes
                             if ((v[i] - 30) & 1)
                                 attr |= FOREGROUND_RED;
                             if ((v[i] - 30) & 2)
@@ -220,10 +229,10 @@ int fprintf_w32(FILE *fp, const char *format, ...) {
                             if ((v[i] - 30) & 4)
                                 attr |= FOREGROUND_BLUE;
                         }
-                        //else if (v[i] == 39)
-                        //attr = (~attr & BACKGROUND_MASK);
+                        else if (v[i] == 39)  // reset fg color and attributes
+                            attr = (attr & ~FOREGROUND_MASK) | (attr_reset & FG_RGB);
                         else if (v[i] >= 40 && v[i] <= 47) {
-                            attr = (attr & FOREGROUND_MASK) | BACKGROUND_INTENSITY;
+                            attr &= ~BG_RGB;
                             if ((v[i] - 40) & 1)
                                 attr |= BACKGROUND_RED;
                             if ((v[i] - 40) & 2)
@@ -231,10 +240,8 @@ int fprintf_w32(FILE *fp, const char *format, ...) {
                             if ((v[i] - 40) & 4)
                                 attr |= BACKGROUND_BLUE;
                         }
-                        //else if (v[i] == 49)
-                        //attr = (~attr & FOREGROUND_MASK);
-                        else if (v[i] == 100)
-                            attr = attr_old;
+                        else if (v[i] == 49)  // reset bg color
+                            attr = (attr & ~BACKGROUND_MASK) | (attr_reset & BG_RGB);
                     }
                     SetConsoleTextAttribute(stdo, attr);
                     break;
