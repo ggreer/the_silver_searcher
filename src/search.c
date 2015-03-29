@@ -44,10 +44,11 @@ void search_buf(const char *buf, const size_t buf_len,
         matches_len = 1;
     } else if (opts.literal) {
         const char *match_ptr = buf;
-        strncmp_fp ag_strnstr_fp = get_strstr(opts.casing);
+        strncmp_fp ag_strnstr_fp = get_strstr(opts.casing, opts.algorithm);
+        size_t *lookup = (opts.algorithm == ALGORITHM_BOYER_MOORE) ? alpha_skip_lookup : bad_char_skip_lookup;
 
         while (buf_offset < buf_len) {
-            match_ptr = ag_strnstr_fp(match_ptr, opts.query, buf_len - buf_offset, opts.query_len, alpha_skip_lookup, find_skip_lookup);
+            match_ptr = ag_strnstr_fp(match_ptr, opts.query, buf_len - buf_offset, opts.query_len, lookup, find_skip_lookup);
             if (match_ptr == NULL) {
                 break;
             }
