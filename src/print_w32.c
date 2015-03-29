@@ -43,14 +43,16 @@ int fprintf_w32(FILE *fp, const char *format, ...) {
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     COORD coord;
 
-    stdo = (HANDLE) _get_osfhandle(fileno(fp));
-    if (g_use_ansi || !isatty(fileno(fp)) || stdo == INVALID_HANDLE_VALUE) {
-        // if not a tty, skip ansi interpretation and just passthrough.
-        // colors are disabled for pipe unless --color was used,
-        // and a pager is assumed it knows how to handle ansi colors,
-        // and if it doesn't, the user can specify --nocolor.
-        // either way, modifying screen state (color/pos/etc) when the
-        // output doesn't go to screen is plain wrong.
+    // if we don't output to screen (tty) e.g. for pager/pipe or
+    // if for other reason we can't access the screen info, of if
+    // the user just prefers ansi, do plain passthrough.
+    BOOL passthrough =
+        g_use_ansi ||
+        !isatty(fileno(fp)) ||
+        INVALID_HANDLE_VALUE == (stdo = (HANDLE)_get_osfhandle(fileno(fp))) ||
+        !GetConsoleScreenBufferInfo(stdo, &csbi);
+
+    if (passthrough) {
         int rv;
         va_start(args, format);
         rv = vfprintf(fp, format, args);
@@ -65,11 +67,10 @@ int fprintf_w32(FILE *fp, const char *format, ...) {
     vsnprintf(buf, BUF_SIZE - 1, format, args);
     va_end(args);
 
-    GetConsoleScreenBufferInfo(stdo, &csbi);
     attr = csbi.wAttributes;
     if (!attr_initialized) {
         // reset is defined to have all (non color) attributes off
-        attr_reset = csbi.wAttributes & (FG_RGB | BG_RGB);
+        attr_reset = attr & (FG_RGB | BG_RGB);
         attr_initialized = TRUE;
     }
 
