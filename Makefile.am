@@ -1,4 +1,5 @@
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS}
+AM_DEFAULT_VERBOSITY = 1
 
 bin_PROGRAMS = ag
 ag_SOURCES = src/ignore.c src/ignore.h src/log.c src/log.h src/options.c src/options.h src/print.c src/print.h src/scandir.c src/scandir.h src/search.c src/search.h src/lang.c src/lang.h src/util.c src/util.h src/decompress.c src/decompress.h src/uthash.h src/main.c
@@ -15,6 +16,9 @@ test: ag
 	cram -v tests/*.t
 
 test_big: ag
-	cram -v tests/big/*.t
+	cram -v tests/big/big_file.t
+
+test_big_compressed: ag
+	cram -v tests/big/big_file_compressed.t
 
 .PHONY : all test clean
