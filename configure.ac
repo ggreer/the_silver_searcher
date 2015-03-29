@@ -62,4 +62,12 @@ AC_CHECK_FUNCS(fgetln getline realpath strlcpy strndup vasprintf madvise posix_f
 AC_CONFIG_FILES([Makefile the_silver_searcher.spec])
 AC_CONFIG_HEADERS([src/config.h])
 
+AC_CHECK_PROG([HAS_CLANG_FORMAT], [clang-format], [true])
+AM_CONDITIONAL([HAS_CLANG_FORMAT], [test "x$HAS_CLANG_FORMAT" = xtrue])
+AM_COND_IF(
+    [HAS_CLANG_FORMAT],
+    [AC_MSG_NOTICE([clang-format found. 'make test' will detect improperly-formatted files.])],
+    [AC_MSG_WARN([clang-format not found. 'make test' will not detect improperly-formatted files.])]
+)
+
 AC_OUTPUT
