@@ -8,11 +8,19 @@ notifications:
   email:
     - geoff@greer.fm
 
-install:
-  - sudo apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev
+compiler:
+  - clang
+  - gcc
 
-script:
-  - ./build.sh && make test
+before_install:
+  - sudo add-apt-repository -y 'deb http://llvm.org/apt/precise/ llvm-toolchain-precise-3.6 main'
+  - curl http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
+  - sudo apt-get update -q
+  - sudo apt-get install -q -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev
+  - sudo apt-get install -y clang-3.6 clang-modernize-3.6 clang-format-3.6
 
 before_script:
   - sudo pip install cram
+
+script:
+  - ./build.sh && make test

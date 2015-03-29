@@ -128,11 +128,7 @@ void print_version(void) {
 void init_options(void) {
     memset(&opts, 0, sizeof(opts));
     opts.casing = CASE_DEFAULT;
-#ifdef _WIN32
-    opts.color = (getenv("ANSICON") || getenv("CMDER_ROOT")) ? TRUE : FALSE;
-#else
     opts.color = TRUE;
-#endif
     opts.max_matches_per_file = 0;
     opts.max_search_depth = DEFAULT_MAX_SEARCH_DEPTH;
     opts.path_sep = '\n';
@@ -295,7 +291,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         option_t opt = { langs[i].name, no_argument, NULL, 0 };
         longopts[i + longopts_len] = opt;
     }
-    longopts[full_len - 1] = (option_t) { NULL, 0, NULL, 0 };
+    longopts[full_len - 1] = (option_t){ NULL, 0, NULL, 0 };
 
     if (argc < 2) {
         usage();
@@ -647,18 +643,15 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.search_stream = 0;
     }
 
-    if (opts.print_path != PATH_PRINT_DEFAULT || opts.print_break == 0) {
-        goto skip_group;
+    if (!(opts.print_path != PATH_PRINT_DEFAULT || opts.print_break == 0)) {
+        if (group) {
+            opts.print_break = 1;
+        } else {
+            opts.print_path = PATH_PRINT_DEFAULT_EACH_LINE;
+            opts.print_break = 0;
+        }
     }
 
-    if (group) {
-        opts.print_break = 1;
-    } else {
-        opts.print_path = PATH_PRINT_DEFAULT_EACH_LINE;
-        opts.print_break = 0;
-    }
-
-skip_group:
     if (opts.search_stream) {
         opts.print_break = 0;
         opts.print_path = PATH_PRINT_NOTHING;

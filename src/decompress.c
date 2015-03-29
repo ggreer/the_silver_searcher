@@ -190,7 +190,7 @@ error_out:
 
 
 /* This function is very hot. It's called on every file when zip is enabled. */
-void *decompress(const ag_compression_type zip_type, void *buf, const int buf_len,
+void *decompress(const ag_compression_type zip_type, const void *buf, const int buf_len,
                  const char *dir_full_path, unsigned int *new_buf_len) {
 
     switch (zip_type) {

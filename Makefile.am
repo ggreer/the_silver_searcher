@@ -13,6 +13,11 @@ EXTRA_DIST = Makefile.w32 LICENSE NOTICE the_silver_searcher.spec README.md
 
 test: ag
 	cram -v tests/*.t
+if HAS_CLANG_FORMAT
+	CLANG_FORMAT=${CLANG_FORMAT} ./format.sh test
+else
+	@echo "clang-format is not available. Skipped clang-format test."
+endif
 
 test_big: ag
 	cram -v tests/big/big_file.t

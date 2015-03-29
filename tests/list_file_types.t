@@ -42,6 +42,9 @@ Language types are output:
     --delphi
         .pas  .int  .dfm  .nfm  .dof  .dpk  .dproj  .groupproj  .bdsgroup  .bdsproj
   
+    --ebuild
+        .ebuild  .eclass
+  
     --elisp
         .el
   
