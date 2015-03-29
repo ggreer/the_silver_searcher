@@ -64,7 +64,7 @@ AC_CONFIG_HEADERS([src/config.h])
 
 AC_CHECK_PROGS(
     [CLANG_FORMAT],
-    [clang-format clang-format-3.4 clang-format-3.5 clang-format-3.6 clang-format-3.7 clang-format-3.8],
+    [clang-format clang-format-3.5 clang-format-3.6 clang-format-3.7 clang-format-3.8],
     [no]
 )
 AM_CONDITIONAL([HAS_CLANG_FORMAT], [test "x$CLANG_FORMAT" != xno])

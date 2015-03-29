@@ -12,7 +12,7 @@ fi
 
 if [ -z "$CLANG_FORMAT" ]
 then
-    CLANG_FORMAT=clang-format-3.5
+    CLANG_FORMAT=clang-format
     echo "No CLANG_FORMAT set. Using $CLANG_FORMAT"
 fi
 
