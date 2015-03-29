@@ -8,8 +8,12 @@ notifications:
   email:
     - geoff@greer.fm
 
+compiler:
+  - clang
+  - gcc
+
 install:
-  - sudo apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev clang-format-3.5
+  - sudo apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev clang-format-3.4
 
 script:
   - ./build.sh && make test
