@@ -135,10 +135,10 @@ typedef unsigned char uint8_t;
 #define HASH_BLOOM_BITTEST(bv, idx) (bv[(idx) / 8] & (1U << ((idx) % 8)))
 
 #define HASH_BLOOM_ADD(tbl, hashv) \
-    HASH_BLOOM_BITSET((tbl)->bloom_bv, (hashv &(uint32_t)((1ULL << (tbl)->bloom_nbits) - 1)))
+    HASH_BLOOM_BITSET((tbl)->bloom_bv, (hashv & (uint32_t)((1ULL << (tbl)->bloom_nbits) - 1)))
 
 #define HASH_BLOOM_TEST(tbl, hashv) \
-    HASH_BLOOM_BITTEST((tbl)->bloom_bv, (hashv &(uint32_t)((1ULL << (tbl)->bloom_nbits) - 1)))
+    HASH_BLOOM_BITTEST((tbl)->bloom_bv, (hashv & (uint32_t)((1ULL << (tbl)->bloom_nbits) - 1)))
 
 #else
 #define HASH_BLOOM_MAKE(tbl)
@@ -205,9 +205,9 @@ typedef unsigned char uint8_t;
         HASH_FSCK(hh, head);                                                                \
     } while (0)
 
-#define HASH_TO_BKT(hashv, num_bkts, bkt)   \
-    do {                                    \
-        bkt = ((hashv) & ((num_bkts) - 1)); \
+#define HASH_TO_BKT(hashv, num_bkts, bkt) \
+    do {                                  \
+        bkt = ((hashv) & (num_bkts - 1)); \
     } while (0)
 
 /* delete "delptr" from the hash table.
@@ -600,7 +600,7 @@ typedef unsigned char uint8_t;
         }                                                                               \
         _mur_tail = (const uint8_t *)(_mur_data + _mur_nblocks * 4);                    \
         _mur_k1 = 0;                                                                    \
-        switch ((keylen) & 3) {                                                         \
+        switch (keylen & 3) {                                                           \
             case 3:                                                                     \
                 _mur_k1 ^= _mur_tail[2] << 16;                                          \
             case 2:                                                                     \
