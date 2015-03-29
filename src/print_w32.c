@@ -28,7 +28,8 @@ int fprintf_w32(FILE *fp, const char *format, ...) {
     va_list args;
     char buf[BUF_SIZE] = {0}, *ptr = buf;
     static WORD attr_old;
-    static HANDLE stdo = INVALID_HANDLE_VALUE;
+    static BOOL attr_initialized = FALSE;
+    HANDLE stdo = INVALID_HANDLE_VALUE;
     WORD attr;
     DWORD written, csize;
     CONSOLE_CURSOR_INFO cci;
@@ -58,7 +59,11 @@ int fprintf_w32(FILE *fp, const char *format, ...) {
     va_end(args);
 
     GetConsoleScreenBufferInfo(stdo, &csbi);
-    attr = attr_old = csbi.wAttributes;
+    attr = csbi.wAttributes;
+    if (!attr_initialized) {
+        attr_old = attr;
+        attr_initialized = TRUE;
+    }
 
     while (*ptr) {
         if (*ptr == '\033') {
@@ -179,7 +184,6 @@ int fprintf_w32(FILE *fp, const char *format, ...) {
                     }
                     break;
                 case 'm':
-                    attr = attr_old;
                     for (i = 0; i <= n; i++) {
                         if (v[i] == -1 || v[i] == 0)
                             attr = attr_old;
@@ -312,7 +316,6 @@ int fprintf_w32(FILE *fp, const char *format, ...) {
             ptr++;
         }
     }
-    SetConsoleTextAttribute(stdo, attr_old);
     return ptr - buf;
 }
 
