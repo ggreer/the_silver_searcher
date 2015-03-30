@@ -43,8 +43,14 @@ Output Options:\n\
      --color-line-number  Color codes for line numbers (Default: 1;33)\n\
      --color-match        Color codes for result match numbers (Default: 30;43)\n\
      --color-path         Color codes for path names (Default: 1;32)\n\
+");
+#ifdef _WIN32
+    printf("\
      --color-win-ansi     Use ansi colors on Windows even where we can use native\n\
                           (pager/pipe colors are ansi regardless) (Default: off)\n\
+");
+#endif
+    printf("\
      --column             Print column numbers in results\n\
      --[no]filename       Print file names (Enabled unless searching a single file)\n\
   -H --[no]heading        Print file names before each file's matches\n\
