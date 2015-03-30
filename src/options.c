@@ -725,6 +725,6 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     (*base_paths)[i] = NULL;
 
 #ifdef _WIN32
-     windows_use_ansi(opts.color_win_ansi);
+    windows_use_ansi(opts.color_win_ansi);
 #endif
 }

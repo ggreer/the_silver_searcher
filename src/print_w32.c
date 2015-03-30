@@ -26,14 +26,13 @@
 #define MAX_VALUES 8
 
 static int g_use_ansi = 0;
-void windows_use_ansi(int use_ansi)
-{
+void windows_use_ansi(int use_ansi) {
     g_use_ansi = use_ansi;
 }
 
 int fprintf_w32(FILE *fp, const char *format, ...) {
     va_list args;
-    char buf[BUF_SIZE] = {0}, *ptr = buf;
+    char buf[BUF_SIZE] = { 0 }, *ptr = buf;
     static WORD attr_reset;
     static BOOL attr_initialized = FALSE;
     HANDLE stdo = INVALID_HANDLE_VALUE;
@@ -201,7 +200,7 @@ int fprintf_w32(FILE *fp, const char *format, ...) {
                             attr |= FOREGROUND_INTENSITY;
                         else if (v[i] == 4)
                             attr |= FOREGROUND_INTENSITY;
-                        else if (v[i] == 5)  // blink is typically applied as bg intensity
+                        else if (v[i] == 5) // blink is typically applied as bg intensity
                             attr |= BACKGROUND_INTENSITY;
                         else if (v[i] == 7)
                             attr =
@@ -229,8 +228,7 @@ int fprintf_w32(FILE *fp, const char *format, ...) {
                                 attr |= FOREGROUND_GREEN;
                             if ((v[i] - 30) & 4)
                                 attr |= FOREGROUND_BLUE;
-                        }
-                        else if (v[i] == 39)  // reset fg color and attributes
+                        } else if (v[i] == 39) // reset fg color and attributes
                             attr = (attr & ~FOREGROUND_MASK) | (attr_reset & FG_RGB);
                         else if (v[i] >= 40 && v[i] <= 47) {
                             attr &= ~BG_RGB;
@@ -240,8 +238,7 @@ int fprintf_w32(FILE *fp, const char *format, ...) {
                                 attr |= BACKGROUND_GREEN;
                             if ((v[i] - 40) & 4)
                                 attr |= BACKGROUND_BLUE;
-                        }
-                        else if (v[i] == 49)  // reset bg color
+                        } else if (v[i] == 49) // reset bg color
                             attr = (attr & ~BACKGROUND_MASK) | (attr_reset & BG_RGB);
                     }
                     SetConsoleTextAttribute(stdo, attr);
