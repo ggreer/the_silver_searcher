@@ -120,6 +120,9 @@ Language types are output:
     --matlab
         .m
   
+    --mathematica
+        .m  .wl
+  
     --mercury
         .m  .moo
   
@@ -155,6 +158,9 @@ Language types are output:
   
     --rs
         .rs
+  
+    --r
+        .R  .Rmd  .Rnw  .Rtex  .Rrst
   
     --ruby
         .rb  .rhtml  .rjs  .rxml  .erb  .rake  .spec
@@ -203,6 +209,9 @@ Language types are output:
   
     --vb
         .bas  .cls  .frm  .ctl  .vb  .resx
+  
+    --velocity
+        .vm
   
     --verilog
         .v  .vh  .sv
