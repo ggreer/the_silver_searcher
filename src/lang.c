@@ -43,6 +43,7 @@ lang_spec_t langs[] = {
     { "markdown", { "markdown", "mdown", "mdwn", "mkdn", "mkd", "md" } },
     { "mason", { "mas", "mhtml", "mpl", "mtxt" } },
     { "matlab", { "m" } },
+    { "mathematica", { "m", "wl" } },
     { "mercury", { "m", "moo" } },
     { "objc", { "m", "h" } },
     { "objcpp", { "mm", "h" } },
