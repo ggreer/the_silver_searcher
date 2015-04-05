@@ -11,7 +11,7 @@ lang_spec_t langs[] = {
     { "batch", { "bat", "cmd" } },
     { "cc", { "c", "h", "xs" } },
     { "cfmx", { "cfc", "cfm", "cfml" } },
-    { "clojure", { "clj", "cljs", "cljx" } },
+    { "clojure", { "clj", "cljs", "cljc", "cljx" } },
     { "coffee", { "coffee" } },
     { "cpp", { "cpp", "cc", "C", "cxx", "m", "hpp", "hh", "h", "H", "hxx" } },
     { "csharp", { "cs" } },
