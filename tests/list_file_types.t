@@ -150,6 +150,9 @@ Language types are output:
     --plone
         .pt  .cpt  .metadata  .cpy  .py
   
+    --puppet
+        .pp
+  
     --python
         .py
   
