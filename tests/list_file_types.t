@@ -129,6 +129,9 @@ Language types are output:
     --mercury
         .m  .moo
   
+    --nim
+        .nim
+  
     --objc
         .m  .h
   
