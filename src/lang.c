@@ -52,6 +52,7 @@ lang_spec_t langs[] = {
     { "parrot", { "pir", "pasm", "pmc", "ops", "pod", "pg", "tg" } },
     { "perl", { "pl", "pm", "pm6", "pod", "t" } },
     { "php", { "php", "phpt", "php3", "php4", "php5", "phtml" } },
+    { "pike", { "pike", "pmod" } },
     { "plone", { "pt", "cpt", "metadata", "cpy", "py" } },
     { "puppet", { "pp" } },
     { "python", { "py" } },
