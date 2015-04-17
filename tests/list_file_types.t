@@ -147,6 +147,9 @@ Language types are output:
     --php
         .php  .phpt  .php3  .php4  .php5  .phtml
   
+    --pike
+        .pike  .pmod
+  
     --plone
         .pt  .cpt  .metadata  .cpy  .py
   
