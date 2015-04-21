@@ -11,4 +11,4 @@ PDF files are binary. Do not search them by default:
 OK, search binary files
 
   $ ag --search-binary PDF
-  file is_binary.pdf matches
+  Binary file is_binary.pdf matches.
