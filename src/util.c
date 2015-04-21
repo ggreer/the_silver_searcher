@@ -290,6 +290,11 @@ int is_binary(const void *buf, const size_t buf_len) {
         return 0;
     }
 
+    if (buf_len >= 4 && strncmp(buf, "%PDF-", 4) == 0) {
+        /* PDF. This is binary. */
+        return 1;
+    }
+
     for (i = 0; i < total_bytes; i++) {
         if (buf_c[i] == '\0') {
             /* NULL char. It's binary */
