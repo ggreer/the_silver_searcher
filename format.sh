@@ -16,6 +16,12 @@ then
     echo "No CLANG_FORMAT set. Using $CLANG_FORMAT"
 fi
 
+if ! type "$CLANG_FORMAT" &> /dev/null
+then
+    echo "The command \"$CLANG_FORMAT\" was not found"
+    exit 1
+fi
+
 SOURCE_FILES=`git ls-files src/`
 
 if [ "$1" == "reformat" ]

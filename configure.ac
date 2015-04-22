@@ -67,7 +67,7 @@ AC_CHECK_PROGS(
     [clang-format-3.7 clang-format-3.6 clang-format],
     [no]
 )
-AM_CONDITIONAL([HAS_CLANG_FORMAT], [test "x$CLANG_FORMAT" != xno])
+AM_CONDITIONAL([HAS_CLANG_FORMAT], [test x$CLANG_FORMAT != xno])
 AM_COND_IF(
     [HAS_CLANG_FORMAT],
     [AC_MSG_NOTICE([clang-format found. 'make test' will detect improperly-formatted files.])],
