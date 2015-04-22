@@ -290,7 +290,7 @@ int is_binary(const void *buf, const size_t buf_len) {
         return 0;
     }
 
-    if (buf_len >= 4 && strncmp(buf, "%PDF-", 4) == 0) {
+    if (buf_len >= 4 && strncmp(buf, "%PDF-", 5) == 0) {
         /* PDF. This is binary. */
         return 1;
     }
