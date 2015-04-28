@@ -73,18 +73,18 @@ size_t suffix_len(const char *s, const size_t s_len, const size_t pos, const int
 void generate_find_skip(const char *find, const size_t f_len, size_t **skip_lookup, const int case_sensitive);
 void generate_bad_char_skip(const char *needle, size_t nlen, size_t bad_char_skip_lookup[], const int case_sensitive);
 
-//const char *boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len,
-//                                const size_t alpha_skip_lookup[], const size_t *find_skip_lookup)
-//                                _GL_ATTRIBUTE_PURE _GL_ATTRIBUTE_HOT _GL_ATTRIBUTE_NOTHROW;
-//const char *boyer_moore_strncasestr(const char *s, const char *find, const size_t s_len, const size_t f_len,
-//                                    const size_t alpha_skip_lookup[], const size_t *find_skip_lookup)
-//                                   _GL_ATTRIBUTE_PURE _GL_ATTRIBUTE_HOT _GL_ATTRIBUTE_NOTHROW;
-//const char *boyer_moore_horspool_strnstr(const char* haystack, const char* needle, size_t hlen, size_t nlen,
-//                                         const size_t bad_char_skip_lookup[], const size_t *find_skip_lookup)
-//                                         _GL_ATTRIBUTE_PURE _GL_ATTRIBUTE_HOT _GL_ATTRIBUTE_NOTHROW;
-//const char *boyer_moore_horspool_strncasestr(const char* haystack, const char* needle, size_t hlen, size_t nlen,
-//                                             const size_t bad_char_skip_lookup[], const size_t *find_skip_lookup)
-//                                             _GL_ATTRIBUTE_PURE _GL_ATTRIBUTE_HOT _GL_ATTRIBUTE_NOTHROW;
+const char *boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len,
+                                const size_t alpha_skip_lookup[], const size_t *find_skip_lookup)
+                                _GL_ATTRIBUTE_PURE _GL_ATTRIBUTE_HOT _GL_ATTRIBUTE_NOTHROW;
+const char *boyer_moore_strncasestr(const char *s, const char *find, const size_t s_len, const size_t f_len,
+                                    const size_t alpha_skip_lookup[], const size_t *find_skip_lookup)
+                                   _GL_ATTRIBUTE_PURE _GL_ATTRIBUTE_HOT _GL_ATTRIBUTE_NOTHROW;
+const char *boyer_moore_horspool_strnstr(const char* haystack, const char* needle, size_t hlen, size_t nlen,
+                                         const size_t bad_char_skip_lookup[], const size_t *find_skip_lookup)
+                                         _GL_ATTRIBUTE_PURE _GL_ATTRIBUTE_HOT _GL_ATTRIBUTE_NOTHROW;
+const char *boyer_moore_horspool_strncasestr(const char* haystack, const char* needle, size_t hlen, size_t nlen,
+                                             const size_t bad_char_skip_lookup[], const size_t *find_skip_lookup)
+                                             _GL_ATTRIBUTE_PURE _GL_ATTRIBUTE_HOT _GL_ATTRIBUTE_NOTHROW;
 
 strncmp_fp get_strstr(enum case_behavior casing, enum algorithm_type algorithm);
 

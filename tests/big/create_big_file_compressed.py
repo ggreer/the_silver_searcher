@@ -3,12 +3,8 @@
 # Create an 8GB file of mostly "abcdefghijklmnopqrstuvwxyz01234",
 # with a few instances of "hello"
 
-<<<<<<< HEAD
 import os
 import sys
-=======
-import sys, os
->>>>>>> c96ae370a2e4fafa44d6035497a6ce56b5b8256c
 
 if len(sys.argv) != 2:
     print("Usage: %s big_file.txt" % sys.argv[0])

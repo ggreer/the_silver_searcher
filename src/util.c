@@ -170,7 +170,7 @@ void generate_find_skip(const char *find, const size_t f_len, size_t **skip_look
     }
 }
 
-#define AG_MAX(a, b) ((a < b) ? b : a)
+#define AG_MAX(a, b) ((b > a) ? b : a)
 
 /* Boyer-Moore strstr */
 static inline _GL_ATTRIBUTE_PURE _GL_ATTRIBUTE_HOT _GL_ATTRIBUTE_NOTHROW
@@ -198,7 +198,8 @@ const char *boyer_moore_strncasestr(const char *s, const char *find, const size_
     size_t pos = f_len - 1;
 
     while (pos < s_len) {
-        for (i = f_len - 1; i >= 0 && tolower(s[pos]) == find[i]; --pos, --i);
+        for (i = f_len - 1; i >= 0 && tolower(s[pos]) == find[i]; --pos, --i) {
+        }
         if (i < 0) {
             return s + pos + 1;
         }
