@@ -14,8 +14,9 @@
 #include "lang.h"
 #include "log.h"
 #include "util.h"
+#include "print.h"
 
-const char *color_line_number = "\033[1;33m"; /* yellow with black background */
+const char *color_line_number = "\033[1;33m"; /* bold yellow */
 const char *color_match = "\033[30;43m";      /* black with yellow background */
 const char *color_path = "\033[1;32m";        /* bold green */
 
@@ -42,6 +43,14 @@ Output Options:\n\
      --color-line-number  Color codes for line numbers (Default: 1;33)\n\
      --color-match        Color codes for result match numbers (Default: 30;43)\n\
      --color-path         Color codes for path names (Default: 1;32)\n\
+");
+#ifdef _WIN32
+    printf("\
+     --color-win-ansi     Use ansi colors on Windows even where we can use native\n\
+                          (pager/pipe colors are ansi regardless) (Default: off)\n\
+");
+#endif
+    printf("\
      --column             Print column numbers in results\n\
      --[no]filename       Print file names (Enabled unless searching a single file)\n\
   -H --[no]heading        Print file names before each file's matches\n\
@@ -130,6 +139,7 @@ void init_options(void) {
     memset(&opts, 0, sizeof(opts));
     opts.casing = CASE_DEFAULT;
     opts.color = TRUE;
+    opts.color_win_ansi = FALSE;
     opts.max_matches_per_file = 0;
     opts.max_search_depth = DEFAULT_MAX_SEARCH_DEPTH;
     opts.path_sep = '\n';
@@ -217,6 +227,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "color-line-number", required_argument, NULL, 0 },
         { "color-match", required_argument, NULL, 0 },
         { "color-path", required_argument, NULL, 0 },
+        { "color-win-ansi", no_argument, &opts.color_win_ansi, TRUE },
         { "column", no_argument, &opts.column, 1 },
         { "context", optional_argument, NULL, 'C' },
         { "count", no_argument, NULL, 'c' },
@@ -715,4 +726,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
     (*paths)[i] = NULL;
     (*base_paths)[i] = NULL;
+
+#ifdef _WIN32
+    windows_use_ansi(opts.color_win_ansi);
+#endif
 }
