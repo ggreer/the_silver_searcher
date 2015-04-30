@@ -127,6 +127,9 @@ void search_buf(const char *buf, const size_t buf_len,
         stats.total_bytes += buf_len;
         stats.total_files++;
         stats.total_matches += matches_len;
+        if (matches_len > 0) {
+            stats.total_file_matches++;
+        }
         pthread_mutex_unlock(&stats_mtx);
     }
 

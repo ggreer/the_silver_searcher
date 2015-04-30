@@ -37,6 +37,7 @@ typedef struct {
     long total_bytes;
     long total_files;
     long total_matches;
+    long total_file_matches;
     struct timeval time_start;
     struct timeval time_end;
 } ag_stats;
