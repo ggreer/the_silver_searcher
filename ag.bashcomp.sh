@@ -1,4 +1,3 @@
-have ag &&
 _ag() {
   local lngopt shtopt split=false
   local cur prev
@@ -11,31 +10,32 @@ _ag() {
 
   lngopt='
     --ackmate
+    --ackmate-dir-filter
+    --affinity
+    --after
     --all-text
     --all-types
-    --after
     --before
     --break
-    --nobreak
     --case-sensitive
+    --color
     --color-line-number
     --color-match
     --color-path
-    --color
-    --nocolor
+    --color-win-ansi
     --column
     --context
+    --count
     --debug
     --depth
     --file-search-regex
+    --filename
     --files-with-matches
     --files-without-matches
     --fixed-strings
     --follow
     --group
-    --nogroup
     --heading
-    --noheading
     --help
     --hidden
     --ignore
@@ -45,15 +45,32 @@ _ag() {
     --line-numbers
     --list-file-types
     --literal
+    --match
     --max-count
     --no-numbers
-    --pager
+    --no-recurse
+    --noaffinity
+    --nobreak
+    --nocolor
+    --nofilename
+    --nofollow
+    --nogroup
+    --noheading
+    --nonumbers
     --nopager
+    --norecurse
+    --null
+    --numbers
+    --one-device
+    --only-matching
+    --pager
     --parallel
+    --passthrough
+    --passthru
     --path-to-agignore
     --print-long-lines
+    --print0
     --recurse
-    --no-recurse
     --search-binary
     --search-files
     --search-zip
