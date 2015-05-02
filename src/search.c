@@ -405,7 +405,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
         return;
     }
 
-    /* find agignore/gitignore/hgignore/etc files to load ignore patterns from */
+    /* find agignore/gitignore/hgignore/etc files to load ignore patterns from 
     for (i = 0; opts.skip_vcs_ignores ? (i == 0) : (ignore_pattern_files[i] != NULL); i++) {
         ignore_file = ignore_pattern_files[i];
         ag_asprintf(&dir_full_path, "%s/%s", path, ignore_file);
@@ -416,7 +416,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
         }
         free(dir_full_path);
         dir_full_path = NULL;
-    }
+    }*/
 
     if (opts.path_to_agignore) {
         load_ignore_patterns(ig, opts.path_to_agignore);

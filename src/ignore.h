@@ -3,6 +3,7 @@
 
 #include <dirent.h>
 #include <sys/types.h>
+#include <stdio.h>
 
 #define SVN_DIR_PROP_BASE "dir-prop-base"
 #define SVN_DIR ".svn"
@@ -40,6 +41,7 @@ ignores *init_ignore(ignores *parent, const char *dirname, const size_t dirname_
 void cleanup_ignore(ignores *ig);
 
 void add_ignore_pattern(ignores *ig, const char *pattern);
+void load_ignored_git(ignores *ig, FILE *stdout_fp);
 
 void load_ignore_patterns(ignores *ig, const char *path);
 void load_svn_ignore_patterns(ignores *ig, const char *path);

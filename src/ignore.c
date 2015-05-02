@@ -186,6 +186,27 @@ void load_ignore_patterns(ignores *ig, const char *path) {
     fclose(fp);
 }
 
+void load_ignored_git(ignores *ig, FILE *stdout_fp) {
+    char *line = NULL;
+    ssize_t line_len = 0;
+    size_t line_cap = 0;
+
+    while ((line_len = getline(&line, &line_cap, stdout_fp)) > 0) {
+        if (line_len <= 3 || strncmp(line, "!! ", 3) != 0) {
+          log_err("Error: Failed to parse ignored files. Is git installed?");
+          continue;
+        }
+
+        if (line[line_len - 1] == '\n') {
+            line[line_len - 1] = '\0'; /* kill the \n */
+        }
+
+        // strip off the leading "!! "
+        add_ignore_pattern(ig, line + 3);
+    }
+    free(line);
+}
+
 void load_svn_ignore_patterns(ignores *ig, const char *path) {
     FILE *fp = NULL;
     char *dir_prop_base;

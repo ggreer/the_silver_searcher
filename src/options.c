@@ -628,6 +628,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             free(gitconfig_res);
             pclose(gitconfig_file);
         }
+        
+        FILE *ignored_files = gitconfig_file = popen("git status --ignored --porcelain", "r");
+        load_ignored_git(root_ignores, ignored_files);
     }
 
     if (opts.context > 0) {
