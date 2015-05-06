@@ -86,6 +86,11 @@ or
 
 
 
+### Windows
+
+See the dedicated [wiki article](https://github.com/ggreer/the_silver_searcher/wiki/Windows)
+
+
 ## Building from source
 
 ### Building master
