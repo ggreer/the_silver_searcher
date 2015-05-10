@@ -525,7 +525,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
                      * If the user didn't intentionally specify a particular depth,
                      * this is a warning...
                      */
-                    log_warn("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
+                    log_err("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
                 } else {
                     /* ... if they did, let's settle for debug. */
                     log_debug("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
