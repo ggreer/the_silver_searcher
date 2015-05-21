@@ -19,6 +19,7 @@ lang_spec_t langs[] = {
     { "delphi", { "pas", "int", "dfm", "nfm", "dof", "dpk", "dproj", "groupproj", "bdsgroup", "bdsproj" } },
     { "ebuild", { "ebuild", "eclass" } },
     { "elisp", { "el" } },
+    { "elixir", { "ex", "exs" } },
     { "erlang", { "erl", "hrl" } },
     { "fortran", { "f", "f77", "f90", "f95", "f03", "for", "ftn", "fpp" } },
     { "fsharp", { "fs", "fsi", "fsx" } },
