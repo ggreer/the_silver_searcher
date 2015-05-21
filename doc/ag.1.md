@@ -4,6 +4,7 @@ ag(1) -- The Silver Searcher. Like ack, but faster.
 ## SYNOPSIS
 
 `ag` [<file-type>] [<options>] PATTERN [PATH]
+`ag` [<file-type>] [<options>] [-e PATTERN] [PATH]
 
 ## DESCRIPTION
 
@@ -54,6 +55,10 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
 
   * `--depth NUM`:
     Search up to NUM directories deep, -1 for unlimited. Default is 25.
+
+  * `-e --regexp`:
+    Use PATTERN as the pattern.  This can be used to specify multiple search
+    patterns, or to protect a pattern beginning with a hyphen (-).
 
   * `--[no]filename`:
     Print file names. Enabled by default, except when searching a single file.
