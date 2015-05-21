@@ -22,3 +22,7 @@ Search for lines matching "->thread.*->" in psuedocode.txt:
   $ ag -e '->thread'
   psuedocode.txt:2:    $x = $api->thread->get();
   psuedocode.txt:3:    return $x->thread_base->url;
+
+Ensure usage mentions the option:
+
+  $ ag -h | grep -e '-e --regexp PATTERN' >/dev/null
