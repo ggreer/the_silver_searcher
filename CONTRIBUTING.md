@@ -14,3 +14,5 @@ The test suite uses [Cram](https://bitheap.org/cram/). You'll need to build ag
 first, and then you can run the suite from the root of the repository :
 
     make test
+
+You can run a single test manually with cram, like: `cram -v tests/option_e.t`
