@@ -57,8 +57,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Search up to NUM directories deep, -1 for unlimited. Default is 25.
 
   * `-e --regexp`:
-    Use PATTERN as the pattern.  This can be used to specify multiple search
-    patterns, or to protect a pattern beginning with a hyphen (-).
+    Use PATTERN as the pattern.  This can be used to protect a pattern
+    pattern beginning with a hyphen (-).
 
   * `--[no]filename`:
     Print file names. Enabled by default, except when searching a single file.
