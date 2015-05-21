@@ -19,7 +19,7 @@ Search for lines matching "->thread" in psuedocode.txt:
 
 Search for lines matching "->thread.*->" in psuedocode.txt:
 
-  $ ag -e '->thread'
+  $ ag -e '->thread.*->'
   psuedocode.txt:2:    $x = $api->thread->get();
   psuedocode.txt:3:    return $x->thread_base->url;
 
@@ -40,6 +40,6 @@ Same as prior search for "->thread", but use "--regexp":
 
 Same as prior search for "->thread.*->", but use "--regexp":
 
-  $ ag --regexp '->thread'
+  $ ag --regexp '->thread.*->'
   psuedocode.txt:2:    $x = $api->thread->get();
   psuedocode.txt:3:    return $x->thread_base->url;
