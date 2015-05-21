@@ -9,7 +9,7 @@ Setup:
 Search for lines matching "->thread->" in psuedocode.txt:
 
   $ ag -e '->thread->'
-  psuedocode.txt:2:    return $api->thread->get();
+  psuedocode.txt:2:    $x = $api->thread->get();
 
 Search for lines matching "->thread" in psuedocode.txt:
 

@@ -279,6 +279,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "print0", no_argument, NULL, '0' },
         { "print-long-lines", no_argument, &opts.print_long_lines, 1 },
         { "recurse", no_argument, NULL, 'r' },
+        { "regexp", required_argument, NULL, 'e' },
         { "search-binary", no_argument, &opts.search_binary_files, 1 },
         { "search-files", no_argument, &opts.search_stream, 0 },
         { "search-zip", no_argument, &opts.search_zip_files, 1 },
@@ -338,7 +339,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     int pcre_opts = 0;
-    while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:FfHhiLlm:nop:QRrSsvVtuUwz0", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:cDe:G:g:FfHhiLlm:nop:QRrSsvVtuUwz0", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 if (optarg) {
@@ -386,6 +387,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'D':
                 set_log_level(LOG_LEVEL_DEBUG);
+                break;
+            case 'e':
+                needs_query = accepts_query = 0;
+                opts.query = ag_strdup(optarg);
                 break;
             case 'f':
                 opts.follow_symlinks = 1;
@@ -500,6 +505,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                     break;
                 } else if (strcmp(longopts[opt_index].name, "pager") == 0) {
                     opts.pager = optarg;
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "regexp") == 0) {
+                    needs_query = accepts_query = 0;
+                    opts.query = ag_strdup(optarg);
                     break;
                 } else if (strcmp(longopts[opt_index].name, "workers") == 0) {
                     opts.workers = atoi(optarg);
@@ -674,14 +683,16 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         }
     }
 
-    if (accepts_query && argc > 0) {
-        // use the provided query
-        opts.query = ag_strdup(argv[0]);
-        argc--;
-        argv++;
-    } else if (!needs_query) {
-        // use default query
-        opts.query = ag_strdup(".");
+    if (! opts.query) {
+        if (accepts_query && argc > 0) {
+            // use the provided query
+            opts.query = ag_strdup(argv[0]);
+            argc--;
+            argv++;
+        } else if (!needs_query) {
+            // use default query
+            opts.query = ag_strdup(".");
+        }
     }
     opts.query_len = strlen(opts.query);
 
