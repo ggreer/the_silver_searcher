@@ -79,7 +79,7 @@ Search Options:\n\
                           or patterns from ignore files)\n\
   -D --debug              Ridiculous debugging (probably not useful)\n\
      --depth NUM          Search up to NUM directories deep (Default: 25)\n\
-  -e --regexp PATTERN     Use PATTERN as the pattern.  This can be used to\n\
+  -e --regexp PATTERN     Use PATTERN as the pattern.  This can be used\n\
                           to protect a pattern beginning with a hyphen (-).\n\
   -f --follow             Follow symlinks\n\
   -F --fixed-strings      Alias for --literal for compatibility with grep\n\

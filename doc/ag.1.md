@@ -58,7 +58,7 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
 
   * `-e --regexp`:
     Use PATTERN as the pattern.  This can be used to protect a pattern
-    pattern beginning with a hyphen (-).
+    beginning with a hyphen (-).
 
   * `--[no]filename`:
     Print file names. Enabled by default, except when searching a single file.
