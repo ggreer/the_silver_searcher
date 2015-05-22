@@ -48,6 +48,9 @@ Language types are output:
     --elisp
         .el
   
+    --elixir
+        .ex  .exs
+  
     --erlang
         .erl  .hrl
   
