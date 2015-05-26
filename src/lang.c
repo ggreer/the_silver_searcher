@@ -70,6 +70,7 @@ lang_spec_t langs[] = {
     { "scheme", { "scm", "ss" } },
     { "shell", { "sh", "bash", "csh", "tcsh", "ksh", "zsh" } },
     { "smalltalk", { "st" } },
+    { "sml", { "sml", "fun", "mlb", "sig" } },
     { "sql", { "sql", "ctl" } },
     { "stylus", { "styl" } },
     { "swift", { "swift" } },

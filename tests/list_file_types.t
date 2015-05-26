@@ -201,6 +201,9 @@ Language types are output:
     --smalltalk
         .st
   
+    --sml
+        .sml  .fun  .mlb  .sig
+  
     --sql
         .sql  .ctl
   
