@@ -59,6 +59,7 @@ lang_spec_t langs[] = {
     { "plone", { "pt", "cpt", "metadata", "cpy", "py" } },
     { "puppet", { "pp" } },
     { "python", { "py" } },
+    { "racket", { "rkt" } },
     { "rake", { "Rakefiles" } },
     { "rs", { "rs" } },
     { "r", { "R", "Rmd", "Rnw", "Rtex", "Rrst" } },
