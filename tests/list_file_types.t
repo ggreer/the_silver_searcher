@@ -168,6 +168,9 @@ Language types are output:
     --python
         .py
   
+    --racket
+        .rkt  .ss  .scm
+  
     --rake
         .Rakefiles
   
