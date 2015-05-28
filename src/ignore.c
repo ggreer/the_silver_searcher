@@ -381,7 +381,7 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     }
     log_debug("path_start %s filename %s", path_start, filename);
 
-    const char *extension = strrchr(filename, '.');
+    const char *extension = strchr(filename, '.');
     if (extension) {
         if (extension[1]) {
             // The dot is not the last character, extension starts at the next one
