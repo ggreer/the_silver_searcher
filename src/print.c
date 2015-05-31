@@ -259,9 +259,16 @@ void print_line_number(size_t line, const char sep) {
 
 void print_column_number(const match_t matches[], size_t last_printed_match,
                          size_t prev_line_offset, const char sep) {
-    fprintf(out_fd, "%lu%c",
-            (unsigned long)(matches[last_printed_match].start - prev_line_offset) + 1,
-            sep);
+    unsigned long start = matches[last_printed_match].start;
+
+    //check for underflow due to multiline matches
+    if (prev_line_offset <= start + 1) {
+        fprintf(out_fd, "%lu%c",
+                (unsigned long)(start - prev_line_offset) + 1,
+                sep);
+    } else {
+        fprintf(out_fd, "%d%c", 0, sep);
+    }
 }
 
 void print_file_separator(void) {
