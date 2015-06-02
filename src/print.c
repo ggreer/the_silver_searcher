@@ -148,9 +148,14 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                     /* print headers for ackmate to parse */
                     print_line_number(line, ';');
                     for (; last_printed_match < cur_match; last_printed_match++) {
-                        fprintf(out_fd, "%lu %lu",
-                                (unsigned long)(matches[last_printed_match].start - prev_line_offset),
-                                (unsigned long)(matches[last_printed_match].end - matches[last_printed_match].start));
+                        /* Don't print negative offsets. This isn't quite right, but not many people use --ackmate */
+                        long start = (long)(matches[last_printed_match].start - prev_line_offset);
+                        if (start < 0) {
+                            start = 0;
+                        }
+                        fprintf(out_fd, "%li %li",
+                                start,
+                                (long)(matches[last_printed_match].end - matches[last_printed_match].start));
                         last_printed_match == cur_match - 1 ? fputc(':', out_fd) : fputc(',', out_fd);
                     }
                     print_line(buf, i, prev_line_offset);

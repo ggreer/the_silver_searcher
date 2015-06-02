@@ -9,9 +9,10 @@ Ensure column is correct:
   blah.txt:1:1:blah
   blah.txt:2:0:blah2
 
-# Test ackmate output
+# Test ackmate output. Not quite right, but at least offsets are in the
+# ballpark instead of being 9 quintillion
 
-#   $ ag --ackmate "blah\nb"
-#   :blah.txt
-#   1;1 4:blah
-#   2;1 2:blah2
+  $ ag --ackmate "blah\nb"
+  :blah.txt
+  1;blah
+  2;0 6:blah2
