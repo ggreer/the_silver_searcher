@@ -122,6 +122,8 @@ or
 
 ### Building a release tarball
 
+GPG-signed releases are available [here](http://geoff.greer.fm/ag).
+
 Building release tarballs requires the same dependencies, except for automake and pkg-config. Once you've installed the dependencies, just run:
 
     ./configure
