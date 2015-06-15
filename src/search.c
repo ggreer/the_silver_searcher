@@ -1,7 +1,7 @@
 #include "search.h"
 #include "scandir.h"
 
-search_results_t search_buf(const char *buf, const size_t buf_len, const char *dir_full_path) {
+search_results_t *search_buf(const char *buf, const size_t buf_len, const char *dir_full_path) {
     size_t buf_offset = 0;
     search_results_t sr;
     sr.binary = AG_BINARY_UNKNOWN;
@@ -12,7 +12,7 @@ search_results_t search_buf(const char *buf, const size_t buf_len, const char *d
         int binary = is_binary((const void *)buf, buf_len);
         if (binary) {
             log_debug("File %s is binary. Skipping...", dir_full_path);
-            return sr;
+            return NULL;
         }
         sr.binary = binary ? AG_BINARY_TRUE : AG_BINARY_FALSE;
     }
@@ -160,7 +160,12 @@ multiline_done:
         pthread_mutex_unlock(&stats_mtx);
     }
 
-    return sr;
+    search_results_t *sr_ptr = ag_malloc(sizeof(search_results_t));
+    sr_ptr->matches = sr.matches;
+    sr_ptr->matches_len = sr.matches_len;
+    sr_ptr->matches_size = sr.matches_size;
+    sr_ptr->binary = sr.binary;
+    return sr_ptr;
 }
 
 /* TODO: this will only match single lines. multi-line regexes silently don't match */
@@ -169,19 +174,19 @@ void search_stream(FILE *stream, const char *path) {
     ssize_t line_len = 0;
     size_t line_cap = 0;
     size_t i;
-    search_results_t sr;
+    // search_results_t sr;
     char **context_lines = NULL;
-    size_t context_lines_len = opts.before + opts.after + 1;
+    size_t context_lines_len = opts.before + opts.after;
 
-    if (opts.before || opts.after) {
-        context_lines = ag_calloc(sizeof(char *), context_lines_len);
+    if (context_lines_len) {
+        context_lines = ag_calloc(sizeof(char *), context_lines_len + 1);
     }
 
     for (i = 1; (line_len = getline(&line, &line_cap, stream)) > 0; i++) {
         opts.stream_line_num = i;
-        search_results_t line_results = search_buf(line, line_len, path);
-        if (opts.after == 0 && opts.before == 0) {
-            print_results(line, line_len, path, &line_results);
+        search_results_t *line_results = search_buf(line, line_len, path);
+        if (context_lines_len == 0) {
+            print_results(line, line_len, path, line_results);
             continue;
         }
         context_lines[i] = line;
@@ -190,16 +195,19 @@ void search_stream(FILE *stream, const char *path) {
         char *lines;
         size_t lines_len = 0;
         size_t j;
-        for (j = 0; j < context_lines_len; j++) {
+        for (j = 0; j < context_lines_len + 1; j++) {
             ag_asprintf(&(lines), "%s%s", lines, context_lines[j]);
             lines_len += strlen(context_lines[j]);
         }
         /* TODO: munge results */
-        print_results(lines, lines_len, path, &line_results);
+        print_results(lines, lines_len, path, line_results);
     }
 
     if (context_lines_len) {
         /* TODO */
+        for (i = 0; i < context_lines_len + 1; i++) {
+            free(context_lines[i]);
+        }
     } else {
         free(line);
     }
@@ -212,6 +220,7 @@ void search_file(const char *file_full_path) {
     struct stat statbuf;
     int rv = 0;
     FILE *fp = NULL;
+    search_results_t *sr = NULL;
 
     fd = open(file_full_path, O_RDONLY);
     if (fd < 0) {
@@ -296,15 +305,15 @@ void search_file(const char *file_full_path) {
                 log_err("Cannot decompress zipped file %s", file_full_path);
                 goto cleanup;
             }
-            search_results_t sr = search_buf(_buf, _buf_len, file_full_path);
-            print_results(_buf, _buf_len, file_full_path, &sr);
+            sr = search_buf(_buf, _buf_len, file_full_path);
+            print_results(_buf, _buf_len, file_full_path, sr);
             free(_buf);
             goto cleanup;
         }
     }
 
-    search_results_t sr = search_buf(buf, f_len, file_full_path);
-    print_results(buf, f_len, file_full_path, &sr);
+    sr = search_buf(buf, f_len, file_full_path);
+    print_results(buf, f_len, file_full_path, sr);
 
 cleanup:
 
@@ -314,6 +323,12 @@ cleanup:
 #else
         munmap(buf, f_len);
 #endif
+    }
+    if (sr != NULL) {
+        if (sr->matches_size > 0) {
+            free(sr->matches);
+        }
+        free(sr);
     }
     if (fd != -1) {
         close(fd);
