@@ -4,7 +4,7 @@ A code searching tool similar to `ack`, with a focus on speed.
 
 [![Build Status](https://travis-ci.org/ggreer/the_silver_searcher.svg?branch=master)](https://travis-ci.org/ggreer/the_silver_searcher)
 
-[![Floobits Status](https://floobits.com/ggreer/ag.png)](https://floobits.com/ggreer/ag/redirect)
+[![Floobits Status](https://floobits.com/ggreer/ag.svg)](https://floobits.com/ggreer/ag/redirect)
 
 [![#ag on Freenode](http://img.shields.io/Freenode/%23ag.png)](https://webchat.freenode.net/?channels=ag)
 
