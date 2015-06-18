@@ -112,7 +112,7 @@ Alias for \-\-ignore for compatibility with ack\.
 .
 .TP
 \fB\-i \-\-ignore\-case\fR
-Match case\-insensitively\.
+Match case\-insensitively\.  Enabled by default if PATTERN is lowercase\.
 .
 .TP
 \fB\-l \-\-files\-with\-matches\fR
@@ -160,7 +160,8 @@ Do not parse PATTERN as a regular expression\. Try to match it literally\.
 .
 .TP
 \fB\-s \-\-case\-sensitive\fR
-Match case\-sensitively\.
+Match case\-sensitively\.  Enabled by default if PATTERN is \fBnot\fR
+lowercase\.
 .
 .TP
 \fB\-S \-\-smart\-case\fR
