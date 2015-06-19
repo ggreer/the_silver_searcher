@@ -410,7 +410,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.casing = CASE_INSENSITIVE;
                 break;
             case 'L':
-                opts.invert_match = 1;
+                opts.invert_match_filename = 1;
             /* fall through */
             case 'l':
                 needs_query = 0;
@@ -454,7 +454,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.skip_vcs_ignores = 1;
                 break;
             case 'v':
-                opts.invert_match = 1;
+                opts.invert_match_listing = 1;
                 /* Color highlighting doesn't make sense when inverting matches */
                 opts.color = 0;
                 break;
@@ -540,6 +540,16 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         }
     }
 
+    if (opts.invert_match_listing && opts.invert_match_filename) {
+        /* 
+         * User specified -L and -v at same time on the command line.
+         * These two options are inherently at conflict with each other.
+         * Opt to make -L the higher precedence option, which seems to give
+         * the least surprising results.
+         */
+        opts.invert_match_listing = FALSE;
+    }
+    opts.invert_match = (opts.invert_match_listing || opts.invert_match_filename);
 
     if (ext_index[0]) {
         num_exts = combine_file_extensions(ext_index, lang_num, &extensions);

@@ -118,8 +118,18 @@ void search_buf(const char *buf, const size_t buf_len,
         }
     }
 
+    size_t inverted_matches = 0;
+    int    invert_L = FALSE;      /* -L conditions met */
+    int    invert_v = FALSE;      /* -v conditions met */
     if (opts.invert_match) {
-        matches_len = invert_matches(buf, buf_len, matches, matches_len);
+        int all_inverted;         /* T => nothing in buffer matches PATTERN */
+
+        all_inverted = (matches_len == 0);
+        matches_len = inverted_matches = invert_matches(
+                                         buf, buf_len, matches, matches_len
+                                                       );
+        invert_v = (inverted_matches != 0 && opts.invert_match_listing);
+        invert_L = (all_inverted && opts.invert_match_filename);
     }
 
     if (opts.stats) {
@@ -133,29 +143,38 @@ void search_buf(const char *buf, const size_t buf_len,
         pthread_mutex_unlock(&stats_mtx);
     }
 
-    if (matches_len > 0) {
+    if (opts.invert_match) {
+        /*
+         * now that stats are recorded, whack "matches_len" so that it's
+         * not used for listing decisions in the next "if"
+         */
+
+        matches_len = 0;
+    }
+
+    if (matches_len > 0 || invert_L || invert_v) {
         if (binary == -1 && !opts.print_filename_only) {
             binary = is_binary((const void *)buf, buf_len);
         }
         pthread_mutex_lock(&print_mtx);
         if (opts.print_filename_only) {
-            /* If the --files-without-matches or -L option is passed we should
-             * not print a matching line. This option currently sets
-             * opts.print_filename_only and opts.invert_match. Unfortunately
-             * setting the latter has the side effect of making matches.len = 1
-             * on a file-without-matches which is not desired behaviour. See
-             * GitHub issue 206 for the consequences if this behaviour is not
-             * checked. */
-            if (!opts.invert_match || matches_len < 2) {
-                if (opts.print_count) {
-                    print_path_count(dir_full_path, opts.path_sep, (size_t)matches_len);
-                } else {
-                    print_path(dir_full_path, opts.path_sep);
-                }
+            if (opts.print_count) {
+                print_path_count(dir_full_path, opts.path_sep, (size_t)matches_len);
+            } else {
+                print_path(dir_full_path, opts.path_sep);
             }
         } else if (binary) {
             print_binary_file_matches(dir_full_path);
         } else {
+            if (opts.invert_match) {
+                /*
+                 * Restore the correct value of "matches_len" (which was
+                 * whacked up above) so that print_file_matches() works
+                 * correctly.
+                 */
+
+                matches_len = inverted_matches;
+            }
             print_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
         }
         pthread_mutex_unlock(&print_mtx);

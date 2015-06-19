@@ -45,7 +45,9 @@ typedef struct {
     int column;
     int context;
     int follow_symlinks;
-    int invert_match;
+    int invert_match_listing;   /* list inverted matches */
+    int invert_match_filename;  /* list only filename    */
+    int invert_match;           /* semi-logical OR of previous 2 fields */
     int literal;
     int literal_starts_wordchar;
     int literal_ends_wordchar;
