@@ -134,7 +134,7 @@ int main(int argc, char **argv) {
             workers[i].id = i;
             int rv = pthread_create(&(workers[i].thread), NULL, &search_file_worker, &(workers[i].id));
             if (rv != 0) {
-                die("error in pthread_create(): %s", strerror(rv));
+                die("Error in pthread_create(): %s", strerror(rv));
             }
 #if defined(HAVE_PTHREAD_SETAFFINITY_NP) && defined(USE_CPU_SET)
             if (opts.use_thread_affinity) {
@@ -143,7 +143,8 @@ int main(int argc, char **argv) {
                 CPU_SET(i % num_cores, &cpu_set);
                 rv = pthread_setaffinity_np(workers[i].thread, sizeof(cpu_set), &cpu_set);
                 if (rv != 0) {
-                    die("error in pthread_setaffinity_np(): %s", strerror(rv));
+                    log_err("Error in pthread_setaffinity_np(): %s", strerror(rv));
+                    log_err("Performance may be affected. Use --noaffinity to suppress this message.");
                 }
                 log_debug("Thread %i set to CPU %i", i, i);
             } else {
