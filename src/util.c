@@ -219,7 +219,17 @@ size_t invert_matches(const char *buf, const size_t buf_len, match_t matches[], 
 
     for (i = 0; i < buf_len; i++) {
         if (i == next_match.start) {
-            i = next_match.end - 1;
+            int zero_width_match = (next_match.end == next_match.start);
+
+            /*
+             * Avoid these 2 zero_width_match scenarios:
+             *
+             * if "i" is 0 => unsigned underflow... (effectively a loop)
+             * if "i"  > 0 => i is decremented and never advances (loop)
+             */
+            if (! zero_width_match) {
+                i = next_match.end - 1;
+            }
 
             match_read_index++;
 
@@ -234,7 +244,13 @@ size_t invert_matches(const char *buf, const size_t buf_len, match_t matches[], 
                 inverted_match_count++;
             }
 
-            in_inverted_match = FALSE;
+            if (! zero_width_match) {
+                in_inverted_match = FALSE;
+            } else {
+                in_inverted_match = TRUE;
+                last_line_end = i;              /* by definition. */
+                inverted_match_start = i + 1;   /* prime pump for next match */
+            }
         } else if (i == buf_len - 1 && in_inverted_match) {
             matches[inverted_match_count].start = inverted_match_start;
             matches[inverted_match_count].end = i;
