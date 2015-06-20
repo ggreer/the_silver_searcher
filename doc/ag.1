@@ -244,5 +244,73 @@ Use the \fB\-t\fR option to search all text files; \fB\-a\fR to search all files
 .P
 \fBag foo /bar/\fR: Find matches for "foo" in path /bar/\.
 .
+.SH "REGULAR EXPRESSIONS"
+Ag utilizes the pcre(3) regular expression library for pattern matching,
+with the PCRE_MULTILINE option enabled.
+This library's features are documented in the pcrepattern(3) man page.
+.
+.SH "MULTILINE REGEX CONSIDERATIONS"
+Based on peak efficiency considerations, ag does \fBnot\fR
+search a file line\-by\-line.
+Instead, a given file is mapped into memory and
+searched as one long string.  Consequently, the aforementioned
+Perl MULTILINE Regex
+feature is enabled to traverse an entire file's contents.
+.P
+MULTILINE searches treat newline (\\n) as just another character, which
+generally does not matter, \fBexcept\fR in the context of a negated
+character class (e.g., [^0-9]).  A negated character class matches \\n
+\fBunless\fR it is included in the class.  The net result is that seemingly
+simple patterns may match across one or more lines of a file.  This
+surprising result is often not desired.  An example illustrates the
+problem and its avoidance.
+.P
+Given file test.c with this snippet of code:
+.RS 4
+.P
+sub(int *abc)
+.br
+{
+.RS 4
+.br
+*abc = 700;
+.RE
+.br
+}
+.RE
+.P
+A simple search for an assignment to "abc":
+.RS 4
+.P
+ag 'abc[^=]+=' test.c
+.RE
+.P
+Yields this surprising result:
+.RS 4
+.P
+1:sub(int *abc)
+.br
+2:{
+.br
+3:    *abc = 700;
+.P
+.RE
+Initially, the regex matched "abc" on line 1.  Next, the [^=]+ pattern
+matched all characters not '=', including \\n .  In other words,
+Pcre gobbled up
+everything from "abc" on line 1 to the point that a terminating '='
+appeared on line 3.
+.P
+Adding \\n to the negated character class stops multi-line
+matching, like so:
+.RS 4
+.P
+ag 'abc[^=\\n]+=' test.c
+.br
+3:    *abc = 700;
+.RE
+.
 .SH "SEE ALSO"
-grep(1)
+.BR grep(1),
+.BR pcre(3),
+.BR pcrepattern(3)
