@@ -131,6 +131,19 @@ See \fBFILE TYPES\fR below\.
 Skip the rest of a file after NUM matches\. Default is 0, which never skips\.
 .
 .TP
+\fB\-\-mgi\fR
+Mimic Git Ignore. Force git to list all files it would ignore and
+ignore same in ag\.  The listing is generated via this git command:
+.RS 12
+.P
+git status --ignored --porcelain
+.P
+.RE
+.RS 8
+Not applicable if either \-U or \-a are selected.
+.RE
+.
+.TP
 \fB\-\-[no]numbers\fR
 Print line numbers\. Default is to omit line numbers when searching streams\.
 .

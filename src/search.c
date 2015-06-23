@@ -427,6 +427,11 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
     /* find agignore/gitignore/hgignore/etc files to load ignore patterns from */
     for (i = 0; opts.skip_vcs_ignores ? (i == 0) : (ignore_pattern_files[i] != NULL); i++) {
         ignore_file = ignore_pattern_files[i];
+        if (opts.mgi && strncmp(ignore_file, ".git", 4) == 0) {
+            /* git's ignored files are all loaded, don't need patterns... */
+
+            continue;
+        }
         ag_asprintf(&dir_full_path, "%s/%s", path, ignore_file);
         if (strcmp(SVN_DIR, ignore_file) == 0) {
             load_svn_ignore_patterns(ig, dir_full_path);

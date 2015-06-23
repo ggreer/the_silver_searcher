@@ -20,6 +20,8 @@ const char *color_line_number = "\033[1;33m"; /* bold yellow */
 const char *color_match = "\033[30;43m";      /* black with yellow background */
 const char *color_path = "\033[1;32m";        /* bold green */
 
+static void autoload_git_ignored_files(void);
+
 /* TODO: try to obey out_fd? */
 void usage(void) {
     printf("\n");
@@ -88,6 +90,8 @@ Search Options:\n\
                           (literal file/directory names also allowed)\n\
      --ignore-dir NAME    Alias for --ignore for compatibility with ack.\n\
   -m --max-count NUM      Skip the rest of a file after NUM matches (Default: 10,000)\n\
+     --mgi                Mimic GitIgnore. Force git to generate all files it\n\
+                          would ignore and ignore same in ag\n\
      --one-device         Don't follow links to other devices.\n\
   -p --path-to-agignore STRING\n\
                           Use .agignore file at STRING\n\
@@ -251,6 +255,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "literal", no_argument, NULL, 'Q' },
         { "match", no_argument, &useless, 0 },
         { "max-count", required_argument, NULL, 'm' },
+        { "mgi", no_argument, &opts.mgi, 1 },
         /* "no-" is deprecated. Remove these eventually. */
         { "no-numbers", no_argument, &opts.print_line_numbers, FALSE },
         { "no-recurse", no_argument, NULL, 'n' },
@@ -541,7 +546,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     if (opts.invert_match_listing && opts.invert_match_filename) {
-        /* 
+        /*
          * User specified -L and -v at same time on the command line.
          * These two options are inherently at conflict with each other.
          * Opt to make -L the higher precedence option, which seems to give
@@ -617,7 +622,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         free(ignore_file_path);
     }
 
-    if (!opts.skip_vcs_ignores) {
+    if (! (opts.skip_vcs_ignores || opts.mgi)) {
         FILE *gitconfig_file = NULL;
         size_t buf_len = 0;
         char *gitconfig_res = NULL;
@@ -638,6 +643,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             free(gitconfig_res);
             pclose(gitconfig_file);
         }
+    }
+
+    if (opts.mgi && !opts.skip_vcs_ignores && !opts.search_all_files) {
+        autoload_git_ignored_files();
     }
 
     if (opts.context > 0) {
@@ -737,4 +746,85 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 #ifdef _WIN32
     windows_use_ansi(opts.color_win_ansi);
 #endif
+}
+
+/*
+ * consume the output of `git status --ignored --porcelain` and
+ * load into Ag's "ignore" data structure.  Idea suggested by
+ * Jason Karns.
+ */
+static void
+autoload_git_ignored_files(void)
+{
+    FILE *popen_fp = NULL;
+
+#ifdef _WIN32
+    popen_fp = popen("git status --ignored --porcelain 2>NULL", "r");
+#else
+    popen_fp = popen("git status --ignored --porcelain 2>/dev/null", "r");
+#endif
+
+    if (!popen_fp || feof(popen_fp)) {
+        log_err("git failed to start, --mgi failed");
+        return;
+    }
+
+    size_t rawbuf_len = 0;
+    char *rawbuf = NULL;
+    do {
+        rawbuf = ag_realloc(rawbuf, rawbuf_len + 1024);
+        rawbuf_len += fread(rawbuf + rawbuf_len, 1, 1023, popen_fp);
+    } while (!feof(popen_fp) && rawbuf_len > 0 && rawbuf_len % 1023 == 0);
+    rawbuf[rawbuf_len] = '\0';
+    (void) pclose(popen_fp);
+
+    /*
+     * In a cygwin env (at the least), popen() will not return NULL if
+     * git is not reachable via $PATH and the returned file pointer will
+     * not indicate EOF either.  Instead, the first buffer read returns
+     * a single NUL char.  Whatever.
+     *
+     * And then there's the use case where "git --ignored --porcelain"
+     * returns nothing...and that actually happens in some clean repos.
+     *
+     * Leave a debug clue for the user.
+     */
+    if (rawbuf[0] == '\0') {
+        log_debug("git --ignored --porcelain returned no data.");
+        (void) free(rawbuf);
+        return;
+    }
+
+    /*
+     * git's listing format of ignored files is:
+     *
+     * !!<space><file_path>
+     *
+     * Strip out the prefix and other files that don't meet this criteria. E.g.,
+     * strip out untracked files from porcelain listing (ex:  "?? junk/").
+     */
+    char *gitpath = ag_malloc(PATH_MAX);
+    char *cp = rawbuf;
+    while (*cp)
+    {
+        if (*cp == '\n') {
+            cp++;
+        } else if (cp[0] == '!' && cp[1] == '!' && cp[2] == ' ') {
+            cp   += 3;
+            int i = 0;
+            while (*cp && (*cp != '\n') && (i < PATH_MAX - 2)) {
+                gitpath[i++] = *cp++;
+            }
+            gitpath[i] = '\0';
+            if (gitpath[0]) {
+                add_ignore_pattern(root_ignores, gitpath);
+            }
+        } else {
+            do {
+                cp++;
+            } while (*cp && *cp != '\n');
+        }
+    }
+    (void) free(gitpath);
+    (void) free(rawbuf);
 }
