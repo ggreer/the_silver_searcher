@@ -28,7 +28,7 @@ Language types are output:
         .clj  .cljs  .cljc  .cljx
   
     --coffee
-        .coffee
+        .coffee  .cjsx
   
     --cpp
         .cpp  .cc  .C  .cxx  .m  .hpp  .hh  .h  .H  .hxx
