@@ -11,10 +11,11 @@ const uint8_t XZ_HEADER_MAGIC[6] = { 0xFD, '7', 'z', 'X', 'Z', 0x00 };
 const uint8_t LZMA_HEADER_SOMETIMES[3] = { 0x5D, 0x00, 0x00 };
 #endif
 
-
 #ifdef HAVE_ZLIB_H
 #define ZLIB_CONST 1
 #include <zlib.h>
+
+#include "osdep.h"
 
 /* Code in decompress_zlib from
  *

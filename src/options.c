@@ -14,7 +14,7 @@
 #include "lang.h"
 #include "log.h"
 #include "util.h"
-#include "print.h"
+#include "osdep.h"
 
 const char *color_line_number = "\033[1;33m"; /* bold yellow */
 const char *color_match = "\033[30;43m";      /* black with yellow background */

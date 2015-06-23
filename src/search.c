@@ -1,5 +1,6 @@
 #include "search.h"
 #include "scandir.h"
+#include "osdep.h"
 
 void search_buf(const char *buf, const size_t buf_len,
                 const char *dir_full_path) {
@@ -329,6 +330,7 @@ void *search_file_worker(void *i) {
 
 static int check_symloop_enter(const char *path, dirkey_t *outkey) {
 #ifdef _WIN32
+    AG_UNUSED2(path, outkey);
     return SYMLOOP_OK;
 #else
     struct stat buf;
@@ -362,6 +364,7 @@ static int check_symloop_enter(const char *path, dirkey_t *outkey) {
 
 static int check_symloop_leave(dirkey_t *dirkey) {
 #ifdef _WIN32
+    AG_UNUSED(dirkey);
     return SYMLOOP_OK;
 #else
     symdir_t *item_found = NULL;

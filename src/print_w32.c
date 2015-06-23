@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <io.h>
 #include <stdarg.h>
-#include "print.h"
+#include "osdep.h"
 
 #ifndef FOREGROUND_MASK
 #define FOREGROUND_MASK (FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY)

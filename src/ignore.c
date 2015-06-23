@@ -10,14 +10,7 @@
 #include "options.h"
 #include "scandir.h"
 #include "util.h"
-
-#ifdef _WIN32
-#include <shlwapi.h>
-#define fnmatch(x, y, z) (!PathMatchSpec(y, x))
-#else
-#include <fnmatch.h>
-const int fnmatch_flags = FNM_PATHNAME;
-#endif
+#include "osdep.h"
 
 /* TODO: build a huge-ass list of files we want to ignore by default (build cache stuff, pyc files, etc) */
 
@@ -311,7 +304,7 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
         }
 
         for (i = 0; i < ig->slash_regexes_len; i++) {
-            if (fnmatch(ig->slash_regexes[i], slash_filename, fnmatch_flags) == 0) {
+            if (fnmatch_path_ag(ig->slash_regexes[i], slash_filename) == 0) {
                 log_debug("file %s ignored because name matches slash regex pattern %s", slash_filename, ig->slash_regexes[i]);
                 free(temp);
                 return 1;
@@ -321,7 +314,7 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
     }
 
     for (i = 0; i < ig->regexes_len; i++) {
-        if (fnmatch(ig->regexes[i], filename, fnmatch_flags) == 0) {
+        if (fnmatch_path_ag(ig->regexes[i], filename) == 0) {
             log_debug("file %s ignored because name matches regex pattern %s", filename, ig->regexes[i]);
             free(temp);
             return 1;
