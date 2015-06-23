@@ -44,6 +44,7 @@ void vplog(const unsigned int level, const char *fmt, va_list args) {
     }
 
     char *heading;
+    char *full_fmt;
     FILE *stream = out_fd;
 
     switch (level) {
@@ -61,9 +62,12 @@ void vplog(const unsigned int level, const char *fmt, va_list args) {
             heading = "ERR: ";
             break;
     }
-    char full_fmt[strlen(heading) + strlen(fmt) + 2];
+    full_fmt = (char *)ag_malloc(strlen(heading) + strlen(fmt) + 2);
     sprintf(full_fmt, "%s%s\n", heading, fmt);
+    pthread_mutex_lock(&print_mtx);
     vfprintf(stream, full_fmt, args);
+    pthread_mutex_unlock(&print_mtx);
+    free(full_fmt);
 }
 
 void plog(const unsigned int level, const char *fmt, ...) {

@@ -3,6 +3,12 @@
 
 #include <stdarg.h>
 
+#include "config.h"
+
+#ifdef HAVE_PTHREAD_H
+#include <pthread.h>
+#endif
+
 enum log_level {
     LOG_LEVEL_DEBUG = 10,
     LOG_LEVEL_MSG = 20,
@@ -10,6 +16,8 @@ enum log_level {
     LOG_LEVEL_ERR = 40,
     LOG_LEVEL_NONE = 100
 };
+
+extern pthread_mutex_t print_mtx;
 
 void set_log_level(enum log_level threshold);
 
