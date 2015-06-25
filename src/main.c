@@ -143,11 +143,12 @@ int main(int argc, char **argv) {
                 CPU_ZERO(&cpu_set);
                 CPU_SET(i % num_cores, &cpu_set);
                 rv = pthread_setaffinity_np(workers[i].thread, sizeof(cpu_set), &cpu_set);
-                if (rv != 0) {
+                if (rv) {
                     log_err("Error in pthread_setaffinity_np(): %s", strerror(rv));
                     log_err("Performance may be affected. Use --noaffinity to suppress this message.");
+                } else {
+                    log_debug("Thread %i set to CPU %i", i, i);
                 }
-                log_debug("Thread %i set to CPU %i", i, i);
             } else {
                 log_debug("Thread affinity disabled.");
             }
