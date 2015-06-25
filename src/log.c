@@ -10,7 +10,7 @@ void set_log_level(enum log_level threshold) {
     log_threshold = threshold;
 }
 
-void log_debug(const char *fmt, ...) {
+void log_debug_actual(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     vplog(LOG_LEVEL_DEBUG, fmt, args);

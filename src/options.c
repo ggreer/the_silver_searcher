@@ -233,7 +233,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "column", no_argument, &opts.column, 1 },
         { "context", optional_argument, NULL, 'C' },
         { "count", no_argument, NULL, 'c' },
-        { "debug", no_argument, NULL, 'D' },
+        { "debug", no_argument, &opts.debug, '1' },
         { "depth", required_argument, NULL, 0 },
         { "filename", no_argument, NULL, 0 },
         { "file-search-regex", required_argument, NULL, 'G' },
@@ -388,6 +388,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'D':
                 set_log_level(LOG_LEVEL_DEBUG);
+                opts.debug = 1;     /* referenced in log.h macro */
                 break;
             case 'f':
                 opts.follow_symlinks = 1;

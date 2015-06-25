@@ -44,6 +44,7 @@ typedef struct {
     int color_win_ansi;
     int column;
     int context;
+    int debug;
     int follow_symlinks;
     int invert_match_listing;   /* list inverted matches */
     int invert_match_filename;  /* list only filename    */
