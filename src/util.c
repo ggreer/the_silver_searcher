@@ -378,24 +378,28 @@ int is_fnmatch(const char *filename) {
     return (strpbrk(filename, fnmatch_chars) != NULL);
 }
 
+/* 
+ * Binary Search algorithm copied from Programming Pearls, by Jon Bentley.
+ * Note that the "end" parameter passed into this routine is actually the
+ * table size of haystack.
+ */
 int binary_search(const char *needle, char **haystack, int start, int end) {
     int mid;
     int rc;
 
-    if (start == end) {
-        return -1;
+    end--;    /* end => num elements in haystack */
+    while (start <= end) {
+        mid = (start + end) / 2;
+        rc = strcmp(haystack[mid], needle);
+        if (rc < 0) {
+            start = mid + 1;
+        } else if (rc > 0) {
+            end = mid - 1;
+        } else {
+            return mid;
+        }
     }
-
-    mid = (start + end) / 2; /* can screw up on arrays with > 2 billion elements */
-
-    rc = strcmp(needle, haystack[mid]);
-    if (rc < 0) {
-        return binary_search(needle, haystack, start, mid);
-    } else if (rc > 0) {
-        return binary_search(needle, haystack, mid + 1, end);
-    }
-
-    return mid;
+    return -1;
 }
 
 static int wordchar_table[256];

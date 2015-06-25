@@ -147,6 +147,9 @@ load_file_options(FILE *fp, const char *path)
 
     while ((line_len = getline(&line, &line_cap, fp)) > 0) {
         if (line_len == 0 || line[0] == '\n' || line[0] == '#') {
+            if (line_len > 0) {
+                file_line_no++;
+            }
             continue;
         }
         if (line[line_len-1] == '\n') {
