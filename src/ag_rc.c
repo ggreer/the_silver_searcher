@@ -21,6 +21,15 @@
 #include "log.h"
 #include "ag_rc.h"
 
+struct ag_rc_options {
+    char **new_argv;
+    char **options;
+    int  options_len;   /* new_argv[# of actual option/argument ptrs] */
+    int  options_size;  /* new_argv[size]. _size >= _len */
+    int  list_argv;
+};
+typedef struct ag_rc_options ag_rc_options;
+
 static ag_rc_options *ao = NULL;
 
 static const char *unix_paths[] = { 
@@ -267,8 +276,10 @@ parse_file_option(char *option, const char *path, int line_no)
 static void
 add_file_option(char *option)
 {
-    ao->options_len++;
-    ao->options = ag_realloc(ao->options, ao->options_len * sizeof(char*));
+    if (++ao->options_len >= ao->options_size) {
+        ao->options_size = (ao->options_size) ? ao->options_size * 2 : 16;
+        ao->options = ag_realloc(ao->options, ao->options_size * sizeof(char*));
+    }
     ao->options[ao->options_len - 1] = option;
 }
 
