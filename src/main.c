@@ -102,6 +102,8 @@ int main(int argc, char **argv) {
     }
     if (pthread_mutex_init(&print_mtx, NULL)) {
         die("pthread_mutex_init failed!");
+    } else {
+        print_mtx_initialized = TRUE;
     }
     if (opts.stats && pthread_mutex_init(&stats_mtx, NULL)) {
         die("pthread_mutex_init failed!");

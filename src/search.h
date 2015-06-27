@@ -47,6 +47,7 @@ pthread_mutex_t print_mtx;
 pthread_mutex_t stats_mtx;
 pthread_mutex_t work_queue_mtx;
 
+int print_mtx_initialized;
 
 /* For symlink loop detection */
 #define SYMLOOP_ERROR (-1)
