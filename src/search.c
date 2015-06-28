@@ -432,7 +432,10 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
 
             continue;
         }
-        ag_asprintf(&dir_full_path, "%s/%s", path, ignore_file);
+        ag_asprintf(&dir_full_path,
+                    "%s/%s",
+                    (path[0] == '/' && path[1] == '\0') ? "" : path,
+                    ignore_file);
         if (strcmp(SVN_DIR, ignore_file) == 0) {
             load_svn_ignore_patterns(ig, dir_full_path);
         } else {
@@ -480,7 +483,10 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
     for (i = 0; i < results; i++) {
         queue_item = NULL;
         dir = dir_list[i];
-        ag_asprintf(&dir_full_path, "%s/%s", path, dir->d_name);
+        ag_asprintf(&dir_full_path,
+                    "%s/%s",
+                    (path[0] == '/' && path[1] == '\0') ? "" : path,
+                    dir->d_name);
 #ifndef _WIN32
         if (opts.one_dev) {
             struct stat s;
