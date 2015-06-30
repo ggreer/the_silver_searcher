@@ -42,17 +42,8 @@ int is_empty(ignores *ig) {
 };
 
 ignores *init_ignore(ignores *parent, const char *dirname, const size_t dirname_len) {
-    ignores *ig = ag_malloc(sizeof(ignores));
-    ig->extensions = NULL;
-    ig->extensions_len = 0;
-    ig->names = NULL;
-    ig->names_len = 0;
-    ig->slash_names = NULL;
-    ig->slash_names_len = 0;
-    ig->regexes = NULL;
-    ig->regexes_len = 0;
-    ig->slash_regexes = NULL;
-    ig->slash_regexes_len = 0;
+    ignores *ig = ag_calloc(1, sizeof(ignores));
+
     ig->dirname = dirname;
     ig->dirname_len = dirname_len;
 
@@ -114,38 +105,48 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
 
     char ***patterns_p;
     size_t *patterns_len;
+    size_t *patterns_size;
     if (is_fnmatch(pattern)) {
         if (pattern[0] == '*' && pattern[1] == '.' && !(is_fnmatch(pattern + 2))) {
             patterns_p = &(ig->extensions);
             patterns_len = &(ig->extensions_len);
+            patterns_size = &(ig->extensions_size);
             pattern += 2;
         } else if (pattern[0] == '/') {
             patterns_p = &(ig->slash_regexes);
             patterns_len = &(ig->slash_regexes_len);
+            patterns_size = &(ig->slash_regexes_size);
             pattern++;
             pattern_len--;
         } else {
             patterns_p = &(ig->regexes);
             patterns_len = &(ig->regexes_len);
+            patterns_size = &(ig->regexes_size);
         }
     } else {
         if (pattern[0] == '/') {
             patterns_p = &(ig->slash_names);
             patterns_len = &(ig->slash_names_len);
+            patterns_size = &(ig->slash_names_size);
             pattern++;
             pattern_len--;
         } else {
             patterns_p = &(ig->names);
             patterns_len = &(ig->names_len);
+            patterns_size = &(ig->names_size);
         }
     }
 
     ++*patterns_len;
 
-    char **patterns;
-
     /* a balanced binary tree is best for performance, but I'm lazy */
-    *patterns_p = patterns = ag_realloc(*patterns_p, (*patterns_len) * sizeof(char *));
+    if (*patterns_size <= *patterns_len) {
+        *patterns_size = (*patterns_size) ? (*patterns_size * 2) : 16;
+        *patterns_p = ag_realloc(*patterns_p,(*patterns_size) * sizeof(char *));
+    }
+    char **patterns = *patterns_p;
+
+
     /* TODO: de-dupe these patterns */
     for (i = *patterns_len - 1; i > 0; i--) {
         if (strcmp(pattern, patterns[i - 1]) > 0) {
