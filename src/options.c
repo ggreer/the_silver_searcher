@@ -15,6 +15,7 @@
 #include "log.h"
 #include "util.h"
 #include "print.h"
+#include "mgi.h"
 
 const char *color_line_number = "\033[1;33m"; /* bold yellow */
 const char *color_match = "\033[30;43m";      /* black with yellow background */
@@ -88,6 +89,8 @@ Search Options:\n\
                           (literal file/directory names also allowed)\n\
      --ignore-dir NAME    Alias for --ignore for compatibility with ack.\n\
   -m --max-count NUM      Skip the rest of a file after NUM matches (Default: 10,000)\n\
+     --mgi                Mimic GitIgnore. Force git to generate all files it\n\
+                          would ignore and ignore same in ag\n\
      --one-device         Don't follow links to other devices.\n\
   -p --path-to-agignore STRING\n\
                           Use .agignore file at STRING\n\
@@ -229,7 +232,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "column", no_argument, &opts.column, 1 },
         { "context", optional_argument, NULL, 'C' },
         { "count", no_argument, NULL, 'c' },
-        { "debug", no_argument, NULL, 'D' },
+        { "debug", no_argument, &opts.debug, '1' },
         { "depth", required_argument, NULL, 0 },
         { "filename", no_argument, NULL, 0 },
         { "file-search-regex", required_argument, NULL, 'G' },
@@ -251,6 +254,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "literal", no_argument, NULL, 'Q' },
         { "match", no_argument, &useless, 0 },
         { "max-count", required_argument, NULL, 'm' },
+        { "mgi", no_argument, &opts.mgi, 1 },
         /* "no-" is deprecated. Remove these eventually. */
         { "no-numbers", no_argument, &opts.print_line_numbers, FALSE },
         { "no-recurse", no_argument, NULL, 'n' },
@@ -383,6 +387,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'D':
                 set_log_level(LOG_LEVEL_DEBUG);
+                opts.debug = 1;     /* referenced in log.h macro */
                 break;
             case 'f':
                 opts.follow_symlinks = 1;
@@ -410,7 +415,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.casing = CASE_INSENSITIVE;
                 break;
             case 'L':
-                opts.invert_match = 1;
+                opts.invert_match_filename = 1;
             /* fall through */
             case 'l':
                 needs_query = 0;
@@ -454,7 +459,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.skip_vcs_ignores = 1;
                 break;
             case 'v':
-                opts.invert_match = 1;
+                opts.invert_match_listing = 1;
                 /* Color highlighting doesn't make sense when inverting matches */
                 opts.color = 0;
                 break;
@@ -540,6 +545,16 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         }
     }
 
+    if (opts.invert_match_listing && opts.invert_match_filename) {
+        /*
+         * User specified -L and -v at same time on the command line.
+         * These two options are inherently at conflict with each other.
+         * Opt to make -L the higher precedence option, which seems to give
+         * the least surprising results.
+         */
+        opts.invert_match_listing = FALSE;
+    }
+    opts.invert_match = (opts.invert_match_listing || opts.invert_match_filename);
 
     if (ext_index[0]) {
         num_exts = combine_file_extensions(ext_index, lang_num, &extensions);
@@ -607,7 +622,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         free(ignore_file_path);
     }
 
-    if (!opts.skip_vcs_ignores) {
+    if (! (opts.skip_vcs_ignores || opts.mgi)) {
         FILE *gitconfig_file = NULL;
         size_t buf_len = 0;
         char *gitconfig_res = NULL;
@@ -628,6 +643,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             free(gitconfig_res);
             pclose(gitconfig_file);
         }
+    }
+
+    if (opts.mgi && !opts.skip_vcs_ignores && !opts.search_all_files) {
+        autoload_git_ignored_files();
     }
 
     if (opts.context > 0) {

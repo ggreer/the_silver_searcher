@@ -112,12 +112,21 @@ or
 
         ./build.sh
 
-  On Windows:
-
-        mingw32-make -f Makefile.w32
 3. Make install:
 
         sudo make install
+
+===================================================
+Windows Build/Install Mechanisms (Read This First!)
+===================================================
+There are several ways to build/install The Silver Searcher on Windows.
+Refer to this wiki for detailed instructions:
+
+    https://github.com/ggreer/the_silver_searcher/wiki/Windows
+
+Consult the wiki...don't try to build from a freshly cloned repository...or
+you'll be sorry.
+
 
 
 ### Building a release tarball

@@ -44,13 +44,17 @@ typedef struct {
     int color_win_ansi;
     int column;
     int context;
+    int debug;
     int follow_symlinks;
-    int invert_match;
+    int invert_match_listing;   /* list inverted matches */
+    int invert_match_filename;  /* list only filename    */
+    int invert_match;           /* semi-logical OR of previous 2 fields */
     int literal;
     int literal_starts_wordchar;
     int literal_ends_wordchar;
     size_t max_matches_per_file;
     int max_search_depth;
+    int mgi;  /* Mimic .GitIgnore (inhale `git status --ignored --porcelain`)*/
     int one_dev;
     int only_matching;
     char path_sep;

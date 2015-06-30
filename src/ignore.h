@@ -11,16 +11,23 @@
 struct ignores {
     char **extensions; /* File extensions to ignore */
     size_t extensions_len;
+    size_t extensions_size;   /* alloc'd array size; size > len */
 
     char **names; /* Non-regex ignore lines. Sorted so we can binary search them. */
     size_t names_len;
+    size_t names_size;
+
     char **slash_names; /* Same but starts with a slash */
     size_t slash_names_len;
+    size_t slash_names_size;
 
     char **regexes; /* For patterns that need fnmatch */
     size_t regexes_len;
+    size_t regexes_size;
+
     char **slash_regexes;
     size_t slash_regexes_len;
+    size_t slash_regexes_size;
 
     const char *dirname;
     size_t dirname_len;

@@ -219,7 +219,17 @@ size_t invert_matches(const char *buf, const size_t buf_len, match_t matches[], 
 
     for (i = 0; i < buf_len; i++) {
         if (i == next_match.start) {
-            i = next_match.end - 1;
+            int zero_width_match = (next_match.end == next_match.start);
+
+            /*
+             * Avoid these 2 zero_width_match scenarios:
+             *
+             * if "i" is 0 => unsigned underflow... (effectively a loop)
+             * if "i"  > 0 => i is decremented and never advances (loop)
+             */
+            if (! zero_width_match) {
+                i = next_match.end - 1;
+            }
 
             match_read_index++;
 
@@ -234,7 +244,13 @@ size_t invert_matches(const char *buf, const size_t buf_len, match_t matches[], 
                 inverted_match_count++;
             }
 
-            in_inverted_match = FALSE;
+            if (! zero_width_match) {
+                in_inverted_match = FALSE;
+            } else {
+                in_inverted_match = TRUE;
+                last_line_end = i;              /* by definition. */
+                inverted_match_start = i + 1;   /* prime pump for next match */
+            }
         } else if (i == buf_len - 1 && in_inverted_match) {
             matches[inverted_match_count].start = inverted_match_start;
             matches[inverted_match_count].end = i;
@@ -362,24 +378,28 @@ int is_fnmatch(const char *filename) {
     return (strpbrk(filename, fnmatch_chars) != NULL);
 }
 
+/* 
+ * Binary Search algorithm copied from Programming Pearls, by Jon Bentley.
+ * Note that the "end" parameter passed into this routine is actually the
+ * table size of haystack.
+ */
 int binary_search(const char *needle, char **haystack, int start, int end) {
     int mid;
     int rc;
 
-    if (start == end) {
-        return -1;
+    end--;    /* end => num elements in haystack */
+    while (start <= end) {
+        mid = (start + end) / 2;
+        rc = strcmp(haystack[mid], needle);
+        if (rc < 0) {
+            start = mid + 1;
+        } else if (rc > 0) {
+            end = mid - 1;
+        } else {
+            return mid;
+        }
     }
-
-    mid = (start + end) / 2; /* can screw up on arrays with > 2 billion elements */
-
-    rc = strcmp(needle, haystack[mid]);
-    if (rc < 0) {
-        return binary_search(needle, haystack, start, mid);
-    } else if (rc > 0) {
-        return binary_search(needle, haystack, mid + 1, end);
-    }
-
-    return mid;
+    return -1;
 }
 
 static int wordchar_table[256];

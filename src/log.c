@@ -2,6 +2,7 @@
 #include <stdarg.h>
 
 #include "log.h"
+#include "search.h"
 #include "util.h"
 
 static enum log_level log_threshold = LOG_LEVEL_ERR;
@@ -10,7 +11,7 @@ void set_log_level(enum log_level threshold) {
     log_threshold = threshold;
 }
 
-void log_debug(const char *fmt, ...) {
+void log_debug_actual(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     vplog(LOG_LEVEL_DEBUG, fmt, args);
@@ -45,6 +46,14 @@ void vplog(const unsigned int level, const char *fmt, va_list args) {
 
     FILE *stream = out_fd;
 
+    /*
+     * At early program startup, mutiple threads are not running,
+     * so this routine is thread safe.  Later...not so much.
+     */
+    if (print_mtx_initialized) {
+        pthread_mutex_lock(&print_mtx);
+    }
+
     switch (level) {
         case LOG_LEVEL_DEBUG:
             fprintf(stream, "DEBUG: ");
@@ -63,6 +72,10 @@ void vplog(const unsigned int level, const char *fmt, va_list args) {
 
     vfprintf(stream, fmt, args);
     fprintf(stream, "\n");
+
+    if (print_mtx_initialized) {
+        pthread_mutex_unlock(&print_mtx);
+    }
 }
 
 void plog(const unsigned int level, const char *fmt, ...) {

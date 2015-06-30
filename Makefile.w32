@@ -14,6 +14,8 @@ SRCS = \
 	src/scandir.c \
 	src/search.c \
 	src/util.c \
+	src/ag_rc.c \
+	src/mgi.c \
 	src/print_w32.c
 OBJS = $(subst .c,.o,$(SRCS))
 

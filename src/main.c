@@ -19,6 +19,7 @@
 #include "options.h"
 #include "search.h"
 #include "util.h"
+#include "ag_rc.h"
 
 typedef struct {
     pthread_t thread;
@@ -28,7 +29,7 @@ typedef struct {
 int main(int argc, char **argv) {
     char **base_paths = NULL;
     char **paths = NULL;
-    int i;
+    int i, list_argv;
     int pcre_opts = PCRE_MULTILINE;
     int study_opts = 0;
     worker_t *workers = NULL;
@@ -42,6 +43,21 @@ int main(int argc, char **argv) {
     root_ignores = init_ignore(NULL, "", 0);
     out_fd = stdout;
 
+    /*
+     * Read and parse external config file(s), if any.  Options
+     * found in config files are prepended to argv (which means that
+     * cmdline args take precedence).
+     */
+    argv = ag_rc_read_options(&argc, argv, &list_argv);
+    if (list_argv) {
+        /* user wants a peek at options in argv */
+
+        set_log_level(LOG_LEVEL_MSG);
+        for (i = 1; i < argc; i++) {
+            log_msg("argv[%d]: %s", i, argv[i]);
+        }
+        set_log_level(LOG_LEVEL_WARN);  /* put initial value back */
+    }
     parse_options(argc, argv, &base_paths, &paths);
     log_debug("PCRE Version: %s", pcre_version());
     if (opts.stats) {
@@ -86,6 +102,8 @@ int main(int argc, char **argv) {
     }
     if (pthread_mutex_init(&print_mtx, NULL)) {
         die("pthread_mutex_init failed!");
+    } else {
+        print_mtx_initialized = TRUE;
     }
     if (opts.stats && pthread_mutex_init(&stats_mtx, NULL)) {
         die("pthread_mutex_init failed!");
@@ -196,6 +214,7 @@ int main(int argc, char **argv) {
     if (opts.pager) {
         pclose(out_fd);
     }
+    ag_rc_cleanup_options();
     cleanup_options();
     pthread_cond_destroy(&files_ready);
     pthread_mutex_destroy(&work_queue_mtx);

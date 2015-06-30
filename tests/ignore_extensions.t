@@ -1,8 +1,9 @@
 Setup:
 
   $ . $TESTDIR/setup.sh
-  $ echo '*.js' > .gitignore
-  $ echo '\n*.test.txt' >> .gitignore
+  $ echo '*.js'       > .gitignore
+  $ echo              >> .gitignore   # echo '\nblah' broken on cygwin bash
+  $ echo '*.test.txt' >> .gitignore   # so add \n with empty echo...
   $ echo 'targetA' > something.js
   $ echo 'targetB' > aFile.test.txt
   $ echo 'targetC' > aFile.txt
