@@ -68,7 +68,6 @@ _ag() {
     --passthrough
     --passthru
     --path-to-agignore
-    --print-long-lines
     --print0
     --recurse
     --search-binary
