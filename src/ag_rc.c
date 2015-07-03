@@ -24,7 +24,7 @@
 struct ag_rc_options {
     char **new_argv;
     char **options;
-    int options_len; /* new_argv[# of actual option/argument ptrs] */
+    int options_len;  /* new_argv[# of actual option/argument ptrs] */
     int options_size; /* new_argv[size]. _size >= _len */
     int list_argv;
 };
@@ -284,7 +284,7 @@ update_argv(int *argc, char **argv) {
         return (argv); /* empty config file */
     }
     int old_argc = *argc;
-    ao->new_argv = ag_malloc((old_argc + 1 + ao->options_len) * sizeof(char*));
+    ao->new_argv = ag_malloc((old_argc + 1 + ao->options_len) * sizeof(char *));
 
     j = 0;
     ao->new_argv[j++] = argv[0]; /* program name */
