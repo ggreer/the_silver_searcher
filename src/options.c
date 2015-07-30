@@ -288,6 +288,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "unrestricted", no_argument, NULL, 'u' },
         { "version", no_argument, &version, 1 },
         { "vimgrep", no_argument, &opts.vimgrep, 1 },
+        { "width", required_argument, NULL, 'W' },
         { "word-regexp", no_argument, NULL, 'w' },
         { "workers", required_argument, NULL, 0 },
     };
