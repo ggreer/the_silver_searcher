@@ -82,6 +82,7 @@ typedef struct {
     int parallel;
     int use_thread_affinity;
     int vimgrep;
+    size_t width;
     int word_regexp;
     int workers;
 } cli_options;
