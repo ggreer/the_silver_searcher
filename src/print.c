@@ -18,6 +18,9 @@ int first_file_match = 1;
 const char *color_reset = "\033[0m\033[K";
 
 void print_path(const char *path, const char sep) {
+    if (opts.print_path == PATH_PRINT_NOTHING && !opts.vimgrep) {
+        return;
+    }
     path = normalize_path(path);
 
     if (opts.ackmate) {
