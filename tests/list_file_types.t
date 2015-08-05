@@ -33,6 +33,9 @@ Language types are output:
     --cpp
         .cpp  .cc  .C  .cxx  .m  .hpp  .hh  .h  .H  .hxx
   
+    --crystal
+        .cr  .ecr
+  
     --csharp
         .cs
   
