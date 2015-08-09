@@ -45,6 +45,7 @@ _ag() {
     --line-numbers
     --list-file-types
     --literal
+    --long-line-length
     --match
     --max-count
     --no-numbers
@@ -113,7 +114,7 @@ _ag() {
               COMPREPLY=( $(compgen -c -- "${cur}") )
               return 0;;
     --ackmate-dir-filter|--after|--before|--color-*|--context|--depth\
-    |--file-search-regex|--ignore|--max-count|--workers)
+    |--file-search-regex|--ignore|--long-line-length|--max-count|--workers)
               return 0;;
   esac
 

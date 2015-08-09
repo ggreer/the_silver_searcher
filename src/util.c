@@ -637,3 +637,25 @@ int vasprintf(char **ret, const char *fmt, va_list args) {
     return rv;
 }
 #endif
+
+int get_line_length(const char* buf, const int buf_len,
+                    const int match_start, const int match_end) {
+    /* count the number of characters before and after the match */
+    int line_length = match_end - match_start;
+    const char* c;
+    for(c = buf + match_start - 1; c >= buf; --c) {
+        if (*c == '\n') {
+            break;
+        }
+        line_length ++;
+    }
+
+    for(c = buf + match_end; c < buf + buf_len; ++c) {
+        if (*c == '\n') {
+            break;
+        }
+        line_length ++;
+    }
+
+    return line_length;
+}

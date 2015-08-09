@@ -52,6 +52,17 @@ void search_buf(const char *buf, const size_t buf_len,
                 break;
             }
 
+            if (!opts.print_long_lines) {
+                int line_length = get_line_length(buf, buf_len, match_ptr - buf, opts.query_len + match_ptr - buf);
+                if (line_length >= opts.long_line_length) {
+                    log_debug("Too long line: %d > %d.\n", line_length, opts.long_line_length);
+                    const char *end = match_ptr + opts.query_len;
+                    buf_offset = end - buf;
+                    match_ptr += opts.query_len;
+                    continue;
+                }
+            }
+
             if (opts.word_regexp) {
                 const char *start = match_ptr;
                 const char *end = match_ptr + opts.query_len;
@@ -99,6 +110,14 @@ void search_buf(const char *buf, const size_t buf_len,
             if (offset_vector[0] == offset_vector[1]) {
                 ++buf_offset;
                 log_debug("Regex match is of length zero. Advancing offset one byte.");
+            }
+
+            if (!opts.print_long_lines) {
+                int line_length = get_line_length(buf, buf_len, offset_vector[0], offset_vector[1]);
+                if (line_length >= opts.long_line_length) {
+                    log_debug("Too long line: %d > %d.\n", line_length, opts.long_line_length);
+                    continue;
+                }
             }
 
             /* TODO: copy-pasted from above. FIXME */
@@ -179,8 +198,10 @@ void search_stream(FILE *stream, const char *path) {
     size_t i;
 
     for (i = 1; (line_len = getline(&line, &line_cap, stream)) > 0; i++) {
-        opts.stream_line_num = i;
-        search_buf(line, line_len, path);
+        if (opts.print_long_lines || line_len < opts.long_line_length) {
+            opts.stream_line_num = i;
+            search_buf(line, line_len, path);
+        }
     }
 
     free(line);
