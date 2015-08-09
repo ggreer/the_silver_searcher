@@ -84,6 +84,7 @@ typedef struct {
     int vimgrep;
     int word_regexp;
     int workers;
+    int ignore_environment;
 } cli_options;
 
 /* global options. parse_options gives it sane values, everything else reads from it */
@@ -95,7 +96,14 @@ void usage(void);
 void print_version(void);
 
 void init_options(void);
+void environment_options(int argc, char **argv);
 void parse_options(int argc, char **argv, char **base_paths[], char **paths[]);
 void cleanup_options(void);
 
+int env_int_option(const char *name, int *var);
+int env_bool_option(const char *name, int *var);
+size_t env_size_option(const char *name, size_t *var);
+const char *env_string_option(const char *name, char **var);
+const char *env_color_option(const char *name, char **var);
+void replace_color(char **color, char *val);
 #endif
