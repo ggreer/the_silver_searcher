@@ -405,22 +405,97 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
         return;
     }
 
-    /* find agignore/gitignore/hgignore/etc files to load ignore patterns from */
-    for (i = 0; opts.skip_vcs_ignores ? (i == 0) : (ignore_pattern_files[i] != NULL); i++) {
-        ignore_file = ignore_pattern_files[i];
-        ag_asprintf(&dir_full_path, "%s/%s", path, ignore_file);
-        if (strcmp(SVN_DIR, ignore_file) == 0) {
-            load_svn_ignore_patterns(ig, dir_full_path);
-        } else {
-            load_ignore_patterns(ig, dir_full_path);
+    if ( !opts.skip_vcs_ignores) {
+        /* find agignore/gitignore/hgignore/etc files to load ignore patterns from */
+        for (i = 0; ignore_pattern_files[i] != NULL; i++) {
+            ignore_file = ignore_pattern_files[i];
+            ag_asprintf(&dir_full_path, "%s/%s", path, ignore_file);
+            if (strcmp(SVN_DIR, ignore_file) == 0) {
+                load_svn_ignore_patterns(ig, dir_full_path);
+            } else {
+                load_ignore_patterns(ig, dir_full_path);
+            }
+            free(dir_full_path);
+            dir_full_path = NULL;
         }
-        free(dir_full_path);
-        dir_full_path = NULL;
+
+        if(depth == 0){
+            // If we are in a git directory make sure we get all gitignores until we
+            // are at the top level of the repo, else we might get results that differ
+            #ifdef _WIN32
+            FILE* toplevel_file = popen("git rev-parse --show-toplevel 2> NUL", "r");
+            #else
+            FILE* toplevel_file = popen("git rev-parse --show-toplevel 2> /dev/null", "r");
+            #endif /* _WIN32 */
+            /* maybe it's faster to traverse ourselves the invoke an external
+             * command....*/
+            char* tl_path = NULL;
+            size_t tl_len = 0;
+            if(toplevel_file != 0){
+                do {
+                    tl_path = ag_realloc(tl_path, tl_len + 65);
+                    tl_len += fread(tl_path + tl_len, 1, 64, toplevel_file);
+                } while (!feof(toplevel_file) && tl_len > 0 && tl_len % 64 == 0);
+
+                // Maybe someone knows how to suppress the newline from rev-parse
+                // How well will this behave under windows?
+                if (tl_path[tl_len - 2] == '\n') {
+                    tl_path[tl_len - 2] = '\0';
+                } else if (tl_path[tl_len - 1] == '\n') {
+                    tl_path[tl_len - 1] = '\0';
+                } else {
+                    tl_path[tl_len] = '\0';
+                }
+                if (tl_len != 0) {
+                    log_debug("Found git top level at %s. Loading gitignores...", tl_path);
+                    char *ignorefile = NULL;
+                    ag_asprintf(&ignorefile, "%s/.git/info/exclude", tl_path);
+                    load_ignore_patterns(ig, ignorefile);
+                    free(ignorefile);
+
+                    /* I will be traversing this adding .gitignore to it without
+                     * mallocing more space, so make sure .gitignore will fit there */
+                    ag_asprintf(&ignorefile, "%s/%s/.gitignore", base_path
+                            , path[0] == '.' ? (path[1] == '/' ? path + 2 : path + 1) : path);
+                    size_t ignorefile_len = strlen(ignorefile) - 12;
+                    char* temp = strdup(ignorefile);
+                    size_t j;
+                    for(j = tl_len - 1; j < ignorefile_len; ++j){
+                        if(ignorefile[j] == '/'){
+                            strncpy(temp + j + 1, ".gitignore", 11);
+                            char * path_to_pwd = strdup(ignorefile + j + 1);
+                            path_to_pwd[strlen(path_to_pwd) - 12] = '\0';
+                            load_git_ignore_patterns(ig, temp, path_to_pwd);
+                            strncpy(temp, ignorefile, ignorefile_len);
+                            j += strstr(temp + j + 1, "/") - (temp + j + 1);
+                        }
+                    }
+                    free(temp);
+
+                    pclose(toplevel_file);
+                    free(ignorefile);
+                } else {
+                    log_debug("Failed to retrieve git top level dir");
+                }
+                free(tl_path);
+            } else {
+                log_debug("Failed to call git.");
+            }
+        }
+        /* see if a new git repo starts from here */
+        char *git = NULL;
+        ag_asprintf(&git, "%s/.git/info/exclude", path);
+        load_git_ignore_patterns(ig, git, "");
+        free(git);
+        ag_asprintf(&git, "%s/.gitignore", path);
+        load_git_ignore_patterns(ig, git, "");
+        free(git);
     }
 
     if (opts.path_to_agignore) {
         load_ignore_patterns(ig, opts.path_to_agignore);
     }
+
 
     scandir_baton.ig = ig;
     scandir_baton.base_path = base_path;
