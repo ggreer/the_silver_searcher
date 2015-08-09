@@ -80,7 +80,7 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Print filenames above matching contents.
 
   * `--hidden`:
-    Search hidden files. This option obeys ignore files.
+    Search hidden files. This option obeys ignored files.
 
   * `--ignore PATTERN`:
     Ignore files/directories whose names match this pattern. Literal
