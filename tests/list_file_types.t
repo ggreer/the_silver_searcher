@@ -18,6 +18,9 @@ Language types are output:
     --batch
         .bat  .cmd
   
+    --bro
+        .bro  .bif
+  
     --cc
         .c  .h  .xs
   
