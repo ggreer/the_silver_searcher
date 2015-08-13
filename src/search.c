@@ -131,7 +131,11 @@ void search_buf(const char *buf, const size_t buf_len,
             stats.total_file_matches++;
         }
         pthread_mutex_unlock(&stats_mtx);
-    }
+    } else if (opts.print_count && opts.print_filename_only && opts.print_path == PATH_PRINT_NOTHING){
+        pthread_mutex_lock(&stats_mtx);
+			stats.total_matches += matches_len;
+        pthread_mutex_unlock(&stats_mtx);
+	}
 
     if (matches_len > 0) {
         if (binary == -1 && !opts.print_filename_only) {
@@ -148,9 +152,11 @@ void search_buf(const char *buf, const size_t buf_len,
              * checked. */
             if (!opts.invert_match || matches_len < 2) {
                 if (opts.print_count) {
-                    print_path_count(dir_full_path, opts.path_sep, (size_t)matches_len);
-                } else {
-                    print_path(dir_full_path, opts.path_sep);
+					if (opts.print_path != PATH_PRINT_NOTHING){
+						print_path_count(dir_full_path, opts.path_sep, (size_t)matches_len);
+					}
+				} else {
+					print_path(dir_full_path, opts.path_sep);
                 }
             }
         } else if (binary) {

@@ -191,7 +191,9 @@ int main(int argc, char **argv) {
         printf("%ld matches\n%ld files contained matches\n%ld files searched\n%ld bytes searched\n%f seconds\n",
                stats.total_matches, stats.total_file_matches, stats.total_files, stats.total_bytes, time_diff);
         pthread_mutex_destroy(&stats_mtx);
-    }
+	} else if (opts.print_count && opts.print_filename_only && opts.print_path == PATH_PRINT_NOTHING) {
+		printf("%ld matches\n", stats.total_matches);
+	}
 
     if (opts.pager) {
         pclose(out_fd);
