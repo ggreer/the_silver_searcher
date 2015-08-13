@@ -131,7 +131,7 @@ void search_buf(const char *buf, const size_t buf_len,
             stats.total_file_matches++;
         }
         pthread_mutex_unlock(&stats_mtx);
-    } else if (opts.print_count && opts.print_filename_only && opts.print_path == PATH_PRINT_NOTHING){
+    } else if (opts.print_count && opts.print_filename_only && opts.print_path == PATH_PRINT_NOTHING && !opts.search_stream && errno != ENOTDIR){
         pthread_mutex_lock(&stats_mtx);
 			stats.total_matches += matches_len;
         pthread_mutex_unlock(&stats_mtx);
@@ -152,7 +152,7 @@ void search_buf(const char *buf, const size_t buf_len,
              * checked. */
             if (!opts.invert_match || matches_len < 2) {
                 if (opts.print_count) {
-					if (opts.print_path != PATH_PRINT_NOTHING){
+					if (opts.print_path != PATH_PRINT_NOTHING || opts.search_stream || errno == ENOTDIR){
 						print_path_count(dir_full_path, opts.path_sep, (size_t)matches_len);
 					}
 				} else {
