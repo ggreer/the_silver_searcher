@@ -635,7 +635,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.after = opts.context;
     }
 
-    if (opts.print_count && opts.print_path == PATH_PRINT_NOTHING) {
+    if (opts.print_count && opts.print_filename_only && opts.print_path == PATH_PRINT_NOTHING) {
         opts.print_total_count_only = 1;
     }
 

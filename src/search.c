@@ -142,7 +142,7 @@ void search_buf(const char *buf, const size_t buf_len,
             binary = is_binary((const void *)buf, buf_len);
         }
         pthread_mutex_lock(&print_mtx);
-        if (opts.print_filename_only && !opts.print_total_count_only) {
+        if (opts.print_filename_only) {
             /* If the --files-without-matches or -L option is passed we should
              * not print a matching line. This option currently sets
              * opts.print_filename_only and opts.invert_match. Unfortunately
@@ -152,7 +152,9 @@ void search_buf(const char *buf, const size_t buf_len,
 			 * checked. */
             if (!opts.invert_match || matches_len < 2) {
                 if (opts.print_count) {
-                    print_path_count(dir_full_path, opts.path_sep, (size_t)matches_len);
+                    if (!opts.print_total_count_only) {
+                        print_path_count(dir_full_path, opts.path_sep, (size_t)matches_len);
+                    }
                 } else {
                     print_path(dir_full_path, opts.path_sep);
                 }
