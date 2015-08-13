@@ -131,7 +131,7 @@ void search_buf(const char *buf, const size_t buf_len,
             stats.total_file_matches++;
         }
         pthread_mutex_unlock(&stats_mtx);
-    } else if (opts.print_count && opts.print_filename_only && opts.print_path == PATH_PRINT_NOTHING && !opts.search_stream && errno != ENOTDIR) {
+    } else if (opts.print_total_count_only) {
         pthread_mutex_lock(&stats_mtx);
         stats.total_matches += matches_len;
         pthread_mutex_unlock(&stats_mtx);
@@ -142,19 +142,17 @@ void search_buf(const char *buf, const size_t buf_len,
             binary = is_binary((const void *)buf, buf_len);
         }
         pthread_mutex_lock(&print_mtx);
-        if (opts.print_filename_only) {
+        if (opts.print_filename_only && !opts.print_total_count_only) {
             /* If the --files-without-matches or -L option is passed we should
              * not print a matching line. This option currently sets
              * opts.print_filename_only and opts.invert_match. Unfortunately
              * setting the latter has the side effect of making matches.len = 1
              * on a file-without-matches which is not desired behaviour. See
              * GitHub issue 206 for the consequences if this behaviour is not
-             * checked. */
+			 * checked. */
             if (!opts.invert_match || matches_len < 2) {
                 if (opts.print_count) {
-                    if (opts.print_path != PATH_PRINT_NOTHING || opts.search_stream || errno == ENOTDIR) {
-                        print_path_count(dir_full_path, opts.path_sep, (size_t)matches_len);
-                    }
+                    print_path_count(dir_full_path, opts.path_sep, (size_t)matches_len);
                 } else {
                     print_path(dir_full_path, opts.path_sep);
                 }
