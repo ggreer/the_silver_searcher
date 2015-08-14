@@ -103,6 +103,7 @@ Search Options:\n\
                           (.gitignore, .hgignore, .svnignore; still obey .agignore)\n\
   -v --invert-match\n\
   -w --word-regexp        Only match whole words\n\
+  -x --line-regexp        Only match whole lines\n\
   -z --search-zip         Search contents of compressed (e.g., gzip) files\n\
 \n");
     printf("File Types:\n\
@@ -247,6 +248,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "invert-match", no_argument, NULL, 'v' },
         /* deprecated for --numbers. Remove eventually. */
         { "line-numbers", no_argument, &opts.print_line_numbers, 2 },
+        { "line-regexp", no_argument, NULL, 'x' },
         { "list-file-types", no_argument, &list_file_types, 1 },
         { "literal", no_argument, NULL, 'Q' },
         { "match", no_argument, &useless, 0 },
@@ -335,7 +337,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     int pcre_opts = 0;
-    while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:FfHhiLlm:nop:QRrSsvVtuUwz0", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:FfHhiLlm:nop:QRrSsvVtuUwxz0", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 if (optarg) {
@@ -463,6 +465,11 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'w':
                 opts.word_regexp = 1;
+                opts.line_regexp = 0;
+                break;
+            case 'x':
+                opts.line_regexp = 1;
+                opts.word_regexp = 0;
                 break;
             case 'z':
                 opts.search_zip_files = 1;

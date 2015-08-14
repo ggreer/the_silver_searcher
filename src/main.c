@@ -109,6 +109,8 @@ int main(int argc, char **argv) {
         generate_alpha_skip(opts.query, opts.query_len, alpha_skip_lookup, opts.casing == CASE_SENSITIVE);
         find_skip_lookup = NULL;
         generate_find_skip(opts.query, opts.query_len, &find_skip_lookup, opts.casing == CASE_SENSITIVE);
+
+        // line_regexp is handled in the actual search
         if (opts.word_regexp) {
             init_wordchar_table();
             opts.literal_starts_wordchar = is_wordchar(opts.query[0]);
@@ -118,11 +120,17 @@ int main(int argc, char **argv) {
         if (opts.casing == CASE_INSENSITIVE) {
             pcre_opts |= PCRE_CASELESS;
         }
-        if (opts.word_regexp) {
-            char *word_regexp_query;
-            ag_asprintf(&word_regexp_query, "\\b%s\\b", opts.query);
+        if (opts.word_regexp || opts.line_regexp) {
+            char *word_or_line_regexp_query;
+
+            if (opts.word_regexp) {
+               ag_asprintf(&word_or_line_regexp_query, "\\b%s\\b", opts.query);
+            } else {
+               ag_asprintf(&word_or_line_regexp_query, "^%s$", opts.query);
+            }
+
             free(opts.query);
-            opts.query = word_regexp_query;
+            opts.query = word_or_line_regexp_query;
             opts.query_len = strlen(opts.query);
         }
         compile_study(&opts.re, &opts.re_extra, opts.query, pcre_opts, study_opts);

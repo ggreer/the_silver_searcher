@@ -46,6 +46,7 @@ typedef struct {
     int context;
     int follow_symlinks;
     int invert_match;
+    int line_regexp;
     int literal;
     int literal_starts_wordchar;
     int literal_ends_wordchar;
