@@ -285,7 +285,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "skip-vcs-ignores", no_argument, NULL, 'U' },
         { "smart-case", no_argument, NULL, 'S' },
         { "stats", no_argument, &opts.stats, 1 },
-		{ "stats-only", no_argument, NULL, 0 },
+        { "stats-only", no_argument, NULL, 0 },
         { "unrestricted", no_argument, NULL, 'u' },
         { "version", no_argument, &version, 1 },
         { "vimgrep", no_argument, &opts.vimgrep, 1 },
@@ -519,12 +519,12 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 } else if (strcmp(longopts[opt_index].name, "silent") == 0) {
                     set_log_level(LOG_LEVEL_NONE);
                     break;
-				} else if (strcmp(longopts[opt_index].name, "stats-only") == 0){
-					opts.print_filename_only = 1;
-					opts.print_path = PATH_PRINT_NOTHING;
-					opts.stats = 1;
-					break;
-				}
+                } else if (strcmp(longopts[opt_index].name, "stats-only") == 0) {
+                    opts.print_filename_only = 1;
+                    opts.print_path = PATH_PRINT_NOTHING;
+                    opts.stats = 1;
+                    break;
+                }
 
                 /* Continue to usage if we don't recognize the option */
                 if (longopts[opt_index].flag != 0) {
