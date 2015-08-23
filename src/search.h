@@ -32,6 +32,7 @@
 
 size_t alpha_skip_lookup[256];
 size_t *find_skip_lookup;
+offset_t h_table[H_SIZE] __attribute__((aligned(64)));
 
 struct work_queue_t {
     char *path;
