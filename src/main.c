@@ -98,6 +98,10 @@ int main(int argc, char **argv) {
         opts.casing = is_lowercase(opts.query) ? CASE_INSENSITIVE : CASE_SENSITIVE;
     }
 
+    if (opts.word_regexp) {
+        init_wordchar_table();
+    }
+
     if (opts.literal) {
         if (opts.casing == CASE_INSENSITIVE) {
             /* Search routine needs the query to be lowercase */
@@ -110,20 +114,12 @@ int main(int argc, char **argv) {
         find_skip_lookup = NULL;
         generate_find_skip(opts.query, opts.query_len, &find_skip_lookup, opts.casing == CASE_SENSITIVE);
         if (opts.word_regexp) {
-            init_wordchar_table();
             opts.literal_starts_wordchar = is_wordchar(opts.query[0]);
             opts.literal_ends_wordchar = is_wordchar(opts.query[opts.query_len - 1]);
         }
     } else {
         if (opts.casing == CASE_INSENSITIVE) {
             pcre_opts |= PCRE_CASELESS;
-        }
-        if (opts.word_regexp) {
-            char *word_regexp_query;
-            ag_asprintf(&word_regexp_query, "\\b%s\\b", opts.query);
-            free(opts.query);
-            opts.query = word_regexp_query;
-            opts.query_len = strlen(opts.query);
         }
         compile_study(&opts.re, &opts.re_extra, opts.query, pcre_opts, study_opts);
     }

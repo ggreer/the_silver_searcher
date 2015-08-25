@@ -59,10 +59,8 @@ void search_buf(const char *buf, const size_t buf_len,
                 /* Check whether both start and end of the match lie on a word
                  * boundary
                  */
-                if ((start == buf ||
-                     is_wordchar(*(start - 1)) != opts.literal_starts_wordchar) &&
-                    (end == buf + buf_len ||
-                     is_wordchar(*end) != opts.literal_ends_wordchar)) {
+                if ((start == buf || !opts.literal_starts_wordchar || !is_wordchar(*(start - 1))) &&
+                    (end == buf + buf_len || !opts.literal_ends_wordchar || !is_wordchar(*end))) {
                     /* It's a match */
                 } else {
                     /* It's not a match */
@@ -105,6 +103,18 @@ void search_buf(const char *buf, const size_t buf_len,
             if (matches_len + matches_spare >= matches_size) {
                 matches_size = matches ? matches_size * 2 : 100;
                 matches = ag_realloc(matches, matches_size * sizeof(match_t));
+            }
+
+            if (opts.word_regexp) {
+                const char *start = buf + offset_vector[0];
+                const char *end = buf + offset_vector[1];
+
+                if ((start == buf || !is_wordchar(*start) || !is_wordchar(*(start - 1))) &&
+                    (end == buf + buf_len || !is_wordchar(*(end - 1)) || !is_wordchar(*end))) {
+                    // It's a match.
+                } else {
+                    continue;
+                }
             }
 
             matches[matches_len].start = offset_vector[0];
