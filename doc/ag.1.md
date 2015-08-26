@@ -105,12 +105,15 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `-m --max-count NUM`:
     Skip the rest of a file after NUM matches. Default is 0, which never skips.
 
+  * `--[no]multiline`:
+    Match regexes across newlines. Enabled by default.
+
   * `--[no]numbers`:
     Print line numbers. Default is to omit line numbers when searching streams.
 
   * `-o --only-matching`:
     Print only the matching part of the lines.
-  
+
   * `-p --path-to-agignore STRING`:
     Provide a path to a specific .agignore file.
 
@@ -158,13 +161,13 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Match every line *not* containing the specified pattern.
 
   * `--vimgrep`:
-    Output results like vim's `:vimgrep /pattern/g` would (it reports every match on the line).   
+    Output results like vim's `:vimgrep /pattern/g` would (it reports every match on the line).
     Here's a ~/.vimrc configuration example:
 
-    `set grepprg=ag\ --vimgrep\ $*`   
+    `set grepprg=ag\ --vimgrep\ $*`
     `set grepformat=%f:%l:%c:%m`
 
-    Then use `:grep` to grep for something.   
+    Then use `:grep` to grep for something.
     Then use `:copen`, `:cn`, `:cp`, etc. to navigate through the matches.
 
   * `-w --word-regexp`:
