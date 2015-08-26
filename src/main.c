@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
     char **base_paths = NULL;
     char **paths = NULL;
     int i;
-    int pcre_opts = PCRE_MULTILINE;
+    int pcre_opts = 0;
     int study_opts = 0;
     worker_t *workers = NULL;
     int workers_len;
@@ -47,6 +47,9 @@ int main(int argc, char **argv) {
     if (opts.stats) {
         memset(&stats, 0, sizeof(stats));
         gettimeofday(&(stats.time_start), NULL);
+    }
+    if (opts.multiline) {
+        pcre_opts |= PCRE_MULTILINE;
     }
 
 #ifdef USE_PCRE_JIT
