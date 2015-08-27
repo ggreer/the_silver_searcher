@@ -16,3 +16,8 @@ No multiline:
 
   $ ag --nomultiline 'wh[^w]+er' .
   blah.txt:3:whatever
+
+No multiline 2:
+
+  $ ag --nomultiline '^^wh[^w]+er$$' .
+  blah.txt:3:whatever
