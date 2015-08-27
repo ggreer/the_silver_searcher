@@ -17,7 +17,7 @@ No multiline:
   $ ag --nomultiline 'wh[^w]+er' .
   blah.txt:3:whatever
 
-No multiline 2:
+Multiline explicit:
 
-  $ ag --nomultiline '^^wh[^w]+er$$' .
+  $ ag '^wh[^w\n]+er$' .
   blah.txt:3:whatever
