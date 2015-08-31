@@ -94,6 +94,8 @@ void die(const char *fmt, ...);
 
 void ag_asprintf(char **ret, const char *fmt, ...);
 
+ssize_t buf_getline(char **line, char *buf, size_t buf_len, size_t buf_offset);
+
 #ifndef HAVE_FGETLN
 char *fgetln(FILE *fp, size_t *lenp);
 #endif

@@ -556,6 +556,14 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
 }
 #endif
 
+ssize_t buf_getline(char **line, char *buf, size_t buf_len, size_t buf_offset) {
+    char *cur = buf + buf_offset;
+    for (ssize_t i = 0; cur[i] != '\n' && (buf_offset + i < buf_len); i++) {
+    }
+    *line = cur;
+    return i;
+}
+
 #ifndef HAVE_REALPATH
 /*
  * realpath() for Windows. Turns slashes into backslashes and calls _fullpath
