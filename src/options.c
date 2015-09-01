@@ -416,10 +416,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             case 'j':
                 temp_input = strtol(optarg, NULL, 10);
                 if (temp_input < 0) {
-                  log_debug("Invalid number of max matches %ld, defaulting to 0", temp_input);
-                  temp_input = 0;
+                    log_debug("Invalid number of max matches %ld, defaulting to 0", temp_input);
+                    temp_input = 0;
                 }
-                opts.max_matches = (unsigned long) temp_input;
+                opts.max_matches = (unsigned long)temp_input;
                 break;
             case 'L':
                 opts.invert_match = 1;

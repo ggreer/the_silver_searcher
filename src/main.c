@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
         gettimeofday(&(stats.time_start), NULL);
     }
 
-    if(opts.max_matches){
+    if (opts.max_matches) {
         total_matches = 0;
     }
 
@@ -176,9 +176,9 @@ int main(int argc, char **argv) {
             search_dir(ig, base_paths[i], paths[i], 0, s.st_dev);
             cleanup_ignore(ig);
 
-            if (opts.max_matches){
+            if (opts.max_matches) {
                 pthread_mutex_lock(&match_limit_mtx);
-                if (total_matches >= opts.max_matches){
+                if (total_matches >= opts.max_matches) {
                     pthread_mutex_unlock(&match_limit_mtx);
                     break;
                 }
