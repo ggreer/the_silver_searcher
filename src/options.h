@@ -83,6 +83,7 @@ typedef struct {
     int use_thread_affinity;
     int vimgrep;
     int word_regexp;
+    unsigned long max_matches;
     int workers;
 } cli_options;
 

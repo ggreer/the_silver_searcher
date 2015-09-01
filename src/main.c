@@ -49,6 +49,10 @@ int main(int argc, char **argv) {
         gettimeofday(&(stats.time_start), NULL);
     }
 
+    if(opts.max_matches){
+        total_matches = 0;
+    }
+
 #ifdef USE_PCRE_JIT
     int has_jit = 0;
     pcre_config(PCRE_CONFIG_JIT, &has_jit);
@@ -171,6 +175,15 @@ int main(int argc, char **argv) {
 #endif
             search_dir(ig, base_paths[i], paths[i], 0, s.st_dev);
             cleanup_ignore(ig);
+
+            if (opts.max_matches){
+                pthread_mutex_lock(&match_limit_mtx);
+                if (total_matches >= opts.max_matches){
+                    pthread_mutex_unlock(&match_limit_mtx);
+                    break;
+                }
+                pthread_mutex_unlock(&match_limit_mtx);
+            }
         }
         pthread_mutex_lock(&work_queue_mtx);
         done_adding_files = TRUE;
@@ -210,6 +223,14 @@ int main(int argc, char **argv) {
     free(paths);
     if (find_skip_lookup) {
         free(find_skip_lookup);
+    }
+
+    work_queue_t *queue_item;
+    while (work_queue) {
+        queue_item = work_queue;
+        work_queue = work_queue->next;
+        free(queue_item->path);
+        free(queue_item);
     }
     return !opts.match_found;
 }

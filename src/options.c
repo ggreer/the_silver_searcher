@@ -86,6 +86,7 @@ Search Options:\n\
   -i --ignore-case        Match case insensitively\n\
      --ignore PATTERN     Ignore files/directories matching PATTERN\n\
                           (literal file/directory names also allowed)\n\
+  -j --max-matches NUM    Stop after finding NUM matches\n\
      --ignore-dir NAME    Alias for --ignore for compatibility with ack.\n\
   -m --max-count NUM      Skip the rest of a file after NUM matches (Default: 10,000)\n\
      --one-device         Don't follow links to other devices.\n\
@@ -150,6 +151,7 @@ void init_options(void) {
     opts.color_match = ag_strdup(color_match);
     opts.color_line_number = ag_strdup(color_line_number);
     opts.use_thread_affinity = TRUE;
+    opts.max_matches = 0;
 }
 
 void cleanup_options(void) {
@@ -199,6 +201,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     int needs_query = 1;
     struct stat statbuf;
     int rv;
+    long temp_input;
     size_t lang_count;
     size_t lang_num = 0;
 
@@ -287,6 +290,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "version", no_argument, &version, 1 },
         { "vimgrep", no_argument, &opts.vimgrep, 1 },
         { "word-regexp", no_argument, NULL, 'w' },
+        { "max-matches", required_argument, NULL, 'j' },
         { "workers", required_argument, NULL, 0 },
     };
 
@@ -335,7 +339,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     int pcre_opts = 0;
-    while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:FfHhiLlm:nop:QRrSsvVtuUwz0", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:FfHhij:Llm:nop:QRrSsvVtuUwz0", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 if (optarg) {
@@ -408,6 +412,14 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'i':
                 opts.casing = CASE_INSENSITIVE;
+                break;
+            case 'j':
+                temp_input = strtol(optarg, NULL, 10);
+                if (temp_input < 0) {
+                  log_debug("Invalid number of max matches %ld, defaulting to 0", temp_input);
+                  temp_input = 0;
+                }
+                opts.max_matches = (unsigned long) temp_input;
                 break;
             case 'L':
                 opts.invert_match = 1;
