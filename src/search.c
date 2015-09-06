@@ -143,7 +143,7 @@ void search_buf(const char *buf, const size_t buf_len,
                 }
                 buf_offset += line_len + 1;
             }
-            multiline_done:;
+        multiline_done:;
         }
     }
 
