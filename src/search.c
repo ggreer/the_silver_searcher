@@ -72,11 +72,7 @@ void search_buf(const char *buf, const size_t buf_len,
                 }
             }
 
-            if (matches_len + matches_spare >= matches_size) {
-                /* TODO: benchmark initial size of matches. 100 may be too small/big */
-                matches_size = matches ? matches_size * 2 : 100;
-                matches = ag_realloc(matches, matches_size * sizeof(match_t));
-            }
+            realloc_matches(&matches, &matches_size, matches_len + matches_spare);
 
             matches[matches_len].start = match_ptr - buf;
             matches[matches_len].end = matches[matches_len].start + opts.query_len;
@@ -92,31 +88,65 @@ void search_buf(const char *buf, const size_t buf_len,
         }
     } else {
         int offset_vector[3];
-        while (buf_offset < buf_len &&
-               (pcre_exec(opts.re, opts.re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
-            log_debug("Regex match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
-            buf_offset = offset_vector[1];
-            if (offset_vector[0] == offset_vector[1]) {
-                ++buf_offset;
-                log_debug("Regex match is of length zero. Advancing offset one byte.");
+        if (opts.multiline) {
+            while (buf_offset < buf_len &&
+                   (pcre_exec(opts.re, opts.re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
+                log_debug("Regex match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
+                buf_offset = offset_vector[1];
+                if (offset_vector[0] == offset_vector[1]) {
+                    ++buf_offset;
+                    log_debug("Regex match is of length zero. Advancing offset one byte.");
+                }
+
+                realloc_matches(&matches, &matches_size, matches_len + matches_spare);
+
+                matches[matches_len].start = offset_vector[0];
+                matches[matches_len].end = offset_vector[1];
+                matches_len++;
+
+                if (opts.max_matches_per_file > 0 && matches_len >= opts.max_matches_per_file) {
+                    log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
+                    break;
+                }
             }
+        } else {
+            while (buf_offset < buf_len) {
+                char *line;
+                size_t line_len = buf_getline(&line, buf, buf_len, buf_offset);
+                if (!line) {
+                    break;
+                }
+                size_t line_offset = 0;
+                while (line_offset < line_len) {
+                    int rv = pcre_exec(opts.re, opts.re_extra, line, line_len, line_offset, 0, offset_vector, 3);
+                    if (rv < 0) {
+                        break;
+                    }
+                    size_t line_to_buf = buf_offset + line_offset;
+                    log_debug("Regex match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
+                    line_offset = offset_vector[1];
+                    if (offset_vector[0] == offset_vector[1]) {
+                        ++line_offset;
+                        log_debug("Regex match is of length zero. Advancing offset one byte.");
+                    }
 
-            /* TODO: copy-pasted from above. FIXME */
-            if (matches_len + matches_spare >= matches_size) {
-                matches_size = matches ? matches_size * 2 : 100;
-                matches = ag_realloc(matches, matches_size * sizeof(match_t));
-            }
+                    realloc_matches(&matches, &matches_size, matches_len + matches_spare);
 
-            matches[matches_len].start = offset_vector[0];
-            matches[matches_len].end = offset_vector[1];
-            matches_len++;
+                    matches[matches_len].start = offset_vector[0] + line_to_buf;
+                    matches[matches_len].end = offset_vector[1] + line_to_buf;
+                    matches_len++;
 
-            if (opts.max_matches_per_file > 0 && matches_len >= opts.max_matches_per_file) {
-                log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
-                break;
+                    if (opts.max_matches_per_file > 0 && matches_len >= opts.max_matches_per_file) {
+                        log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
+                        goto multiline_done;
+                    }
+                }
+                buf_offset += line_len + 1;
             }
         }
     }
+
+multiline_done:
 
     if (opts.invert_match) {
         matches_len = invert_matches(buf, buf_len, matches, matches_len);
