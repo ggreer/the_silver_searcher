@@ -567,7 +567,8 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
 
 ssize_t buf_getline(char **line, char *buf, size_t buf_len, size_t buf_offset) {
     char *cur = buf + buf_offset;
-    for (ssize_t i = 0; cur[i] != '\n' && (buf_offset + i < buf_len); i++) {
+    ssize_t i;
+    for (i = 0; cur[i] != '\n' && (buf_offset + i < buf_len); i++) {
     }
     *line = cur;
     return i;
