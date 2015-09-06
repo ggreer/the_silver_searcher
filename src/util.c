@@ -258,6 +258,15 @@ size_t invert_matches(const char *buf, const size_t buf_len, match_t matches[], 
     return inverted_match_count;
 }
 
+void realloc_matches(match_t **matches, size_t *matches_size, size_t matches_len) {
+    if (matches_len < *matches_size) {
+        return;
+    }
+    /* TODO: benchmark initial size of matches. 100 may be too small/big */
+    *matches_size = *matches ? *matches_size * 2 : 100;
+    *matches = ag_realloc(*matches, *matches_size * sizeof(match_t));
+}
+
 void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opts, const int study_opts) {
     const char *pcre_err = NULL;
     int pcre_err_offset = 0;

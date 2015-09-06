@@ -71,6 +71,7 @@ const char *boyer_moore_strncasestr(const char *s, const char *find, const size_
 strncmp_fp get_strstr(enum case_behavior opts);
 
 size_t invert_matches(const char *buf, const size_t buf_len, match_t matches[], size_t matches_len);
+void realloc_matches(match_t **matches, size_t *matches_size, size_t matches_len);
 void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opts, const int study_opts);
 
 void *decompress(const ag_compression_type zip_type, const void *buf, const int buf_len, const char *dir_full_path, int *new_buf_len);

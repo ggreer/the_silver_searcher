@@ -72,11 +72,7 @@ void search_buf(const char *buf, const size_t buf_len,
                 }
             }
 
-            if (matches_len + matches_spare >= matches_size) {
-                /* TODO: benchmark initial size of matches. 100 may be too small/big */
-                matches_size = matches ? matches_size * 2 : 100;
-                matches = ag_realloc(matches, matches_size * sizeof(match_t));
-            }
+            realloc_matches(&matches, &matches_size, matches_len + matches_spare);
 
             matches[matches_len].start = match_ptr - buf;
             matches[matches_len].end = matches[matches_len].start + opts.query_len;
@@ -102,11 +98,7 @@ void search_buf(const char *buf, const size_t buf_len,
                     log_debug("Regex match is of length zero. Advancing offset one byte.");
                 }
 
-                /* TODO: copy-pasted from above. FIXME */
-                if (matches_len + matches_spare >= matches_size) {
-                    matches_size = matches ? matches_size * 2 : 100;
-                    matches = ag_realloc(matches, matches_size * sizeof(match_t));
-                }
+                realloc_matches(&matches, &matches_size, matches_len + matches_spare);
 
                 matches[matches_len].start = offset_vector[0];
                 matches[matches_len].end = offset_vector[1];
@@ -138,11 +130,7 @@ void search_buf(const char *buf, const size_t buf_len,
                         log_debug("Regex match is of length zero. Advancing offset one byte.");
                     }
 
-                    /* TODO: copy-pasted from above. FIXME */
-                    if (matches_len + matches_spare >= matches_size) {
-                        matches_size = matches ? matches_size * 2 : 100;
-                        matches = ag_realloc(matches, matches_size * sizeof(match_t));
-                    }
+                    realloc_matches(&matches, &matches_size, matches_len + matches_spare);
 
                     matches[matches_len].start = offset_vector[0] + line_to_buf;
                     matches[matches_len].end = offset_vector[1] + line_to_buf;
