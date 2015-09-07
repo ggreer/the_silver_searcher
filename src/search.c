@@ -111,7 +111,7 @@ void search_buf(const char *buf, const size_t buf_len,
             }
         } else {
             while (buf_offset < buf_len) {
-                char *line;
+                const char *line;
                 size_t line_len = buf_getline(&line, buf, buf_len, buf_offset);
                 if (!line) {
                     break;
