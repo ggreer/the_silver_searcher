@@ -1,6 +1,6 @@
 AC_INIT(
     [the_silver_searcher],
-    [0.30.0],
+    [0.31.0],
     [https://github.com/ggreer/the_silver_searcher/issues],
     [the_silver_searcher],
     [https://github.com/ggreer/the_silver_searcher])
