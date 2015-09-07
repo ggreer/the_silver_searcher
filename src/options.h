@@ -18,6 +18,11 @@ enum case_behavior {
     CASE_SENSITIVE_RETRY_INSENSITIVE /* for future use */
 };
 
+enum algorithm_type {
+    ALGORITHM_BOYER_MOORE,
+    ALGORITHM_BOYER_MOORE_HORSPOOL,
+};
+
 enum path_print_behavior {
     PATH_PRINT_DEFAULT,           /* PRINT_TOP if > 1 file being searched, else PRINT_NOTHING */
     PATH_PRINT_DEFAULT_EACH_LINE, /* PRINT_EACH_LINE if > 1 file being searched, else PRINT_NOTHING */
@@ -31,6 +36,7 @@ typedef struct {
     pcre *ackmate_dir_filter;
     pcre_extra *ackmate_dir_filter_extra;
     size_t after;
+    enum algorithm_type algorithm;
     size_t before;
     enum case_behavior casing;
     const char *file_search_string;

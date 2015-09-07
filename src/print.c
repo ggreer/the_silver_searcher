@@ -71,6 +71,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
     size_t i, j;
     int in_a_match = FALSE;
     int printing_a_match = FALSE;
+    int opt_before_gt_zero = (opts.before > 0);
 
     if (opts.ackmate || opts.vimgrep) {
         sep = ':';
@@ -102,7 +103,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                 fprintf(out_fd, "--\n");
             }
 
-            if (lines_since_last_match > 0 && opts.before > 0) {
+            if (lines_since_last_match > 0 && opt_before_gt_zero) {
                 /* TODO: better, but still needs work */
                 /* print the previous line(s) */
                 lines_to_print = lines_since_last_match - (opts.after + 1);
@@ -133,7 +134,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
         }
 
         /* We found the end of a line. */
-        if (buf[i] == '\n' && opts.before > 0) {
+        if (opt_before_gt_zero && buf[i] == '\n') {
             if (context_prev_lines[last_prev_line] != NULL) {
                 free(context_prev_lines[last_prev_line]);
             }

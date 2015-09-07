@@ -27,5 +27,5 @@ src/config.h*
 stamp-h1
 tests/*.err
 tests/big/*.err
-tests/big/big_file.txt
+tests/big/big_file.txt*
 the_silver_searcher.spec

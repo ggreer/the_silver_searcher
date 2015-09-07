@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <limits.h>
 
 #include "util.h"
 #include "config.h"
@@ -66,7 +67,7 @@ void free_strings(char **strs, const size_t strs_len) {
 void generate_alpha_skip(const char *find, size_t f_len, size_t skip_lookup[], const int case_sensitive) {
     size_t i;
 
-    for (i = 0; i < 256; i++) {
+    for (i = 0; i < UCHAR_MAX + 1; i++) {
         skip_lookup[i] = f_len;
     }
 
@@ -74,13 +75,42 @@ void generate_alpha_skip(const char *find, size_t f_len, size_t skip_lookup[], c
 
     for (i = 0; i < f_len; i++) {
         if (case_sensitive) {
-            skip_lookup[(unsigned char)find[i]] = f_len - i;
+            skip_lookup[find[i]] = f_len - i;
         } else {
-            skip_lookup[(unsigned char)tolower(find[i])] = f_len - i;
-            skip_lookup[(unsigned char)toupper(find[i])] = f_len - i;
+            skip_lookup[tolower(find[i])] = f_len - i;
+            skip_lookup[toupper(find[i])] = f_len - i;
         }
     }
 }
+
+void generate_bad_char_skip(const char *needle, size_t nlen, size_t bad_char_skip_lookup[], const int case_sensitive) {
+    size_t scan = 0;
+
+    /* ---- Preprocess ---- */
+    /* Initialize the table to default value */
+    /* When a character is encountered that does not occur
+     * in the needle, we can safely skip ahead for the whole
+     * length of the needle.
+     */
+    for (scan = 0; scan <= UCHAR_MAX; ++scan) {
+        bad_char_skip_lookup[scan] = nlen;
+    }
+
+    /* C arrays have the first byte at [0], therefore:
+     * [nlen - 1] is the last byte of the array. */
+    size_t last = nlen - 1;
+
+    /* Then populate it with the analysis of the needle */
+    for (scan = 0; scan < last; ++scan) {
+        if (case_sensitive) {
+            bad_char_skip_lookup[needle[scan]] = last - scan;
+        } else {
+            bad_char_skip_lookup[tolower(needle[scan])] = last - scan;
+            bad_char_skip_lookup[toupper(needle[scan])] = last - scan;
+        }
+    }
+}
+
 
 int is_prefix(const char *s, const size_t s_len, const size_t pos, const int case_sensitive) {
     size_t i;
@@ -140,54 +170,153 @@ void generate_find_skip(const char *find, const size_t f_len, size_t **skip_look
     }
 }
 
-size_t ag_max(size_t a, size_t b) {
-    if (b > a) {
-        return b;
-    }
-    return a;
-}
+#define AG_MAX(a, b) ((b > a) ? b : a)
 
 /* Boyer-Moore strstr */
+static inline _GL_ATTRIBUTE_PURE _GL_ATTRIBUTE_HOT _GL_ATTRIBUTE_NOTHROW
 const char *boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len,
                                 const size_t alpha_skip_lookup[], const size_t *find_skip_lookup) {
     ssize_t i;
     size_t pos = f_len - 1;
 
     while (pos < s_len) {
-        for (i = f_len - 1; i >= 0 && s[pos] == find[i]; pos--, i--) {
-        }
+        for (i = f_len - 1; i >= 0 && s[pos] == find[i]; --pos, --i);
         if (i < 0) {
             return s + pos + 1;
         }
-        pos += ag_max(alpha_skip_lookup[(unsigned char)s[pos]], find_skip_lookup[i]);
+        pos += AG_MAX(alpha_skip_lookup[s[pos]], find_skip_lookup[i]);
     }
 
     return NULL;
 }
 
 /* Copy-pasted from above. Yes I know this is bad. One day I might even fix it. */
+static inline _GL_ATTRIBUTE_PURE _GL_ATTRIBUTE_HOT _GL_ATTRIBUTE_NOTHROW
 const char *boyer_moore_strncasestr(const char *s, const char *find, const size_t s_len, const size_t f_len,
-                                    const size_t alpha_skip_lookup[], const size_t *find_skip_lookup) {
+                                             const size_t alpha_skip_lookup[], const size_t *find_skip_lookup) {
     ssize_t i;
     size_t pos = f_len - 1;
 
     while (pos < s_len) {
-        for (i = f_len - 1; i >= 0 && tolower(s[pos]) == find[i]; pos--, i--) {
+        for (i = f_len - 1; i >= 0 && tolower(s[pos]) == find[i]; --pos, --i) {
         }
         if (i < 0) {
             return s + pos + 1;
         }
-        pos += ag_max(alpha_skip_lookup[(unsigned char)s[pos]], find_skip_lookup[i]);
+        pos += AG_MAX(alpha_skip_lookup[s[pos]], find_skip_lookup[i]);
     }
 
     return NULL;
 }
 
-strncmp_fp get_strstr(enum case_behavior casing) {
-    strncmp_fp ag_strncmp_fp = &boyer_moore_strnstr;
+/* Returns a pointer to the first occurrence of "needle"
+ * within "haystack", or NULL if not found. Works like
+ * memmem().
+ */
 
-    if (casing == CASE_INSENSITIVE) {
-        ag_strncmp_fp = &boyer_moore_strncasestr;
+/* Note: In this example needle is a C string. The ending
+ * 0x00 will be cut off, so you could call this example with
+ * boyermoore_horspool_strcasestr(haystack, hlen, "abc", sizeof("abc")-1)
+ */
+static inline _GL_ATTRIBUTE_PURE _GL_ATTRIBUTE_HOT _GL_ATTRIBUTE_NOTHROW
+const char *boyer_moore_horspool_strnstr(const char* haystack, const char* needle, size_t hlen, size_t nlen,
+                                         const size_t bad_char_skip_lookup[], const size_t *find_skip_lookup) {
+    printf("In boyer_moore_horspool_strnstr\n");
+    
+    /* Sanity checks on the parameters */
+    if (nlen <= 0 || !haystack || !needle)
+        return NULL;
+
+    size_t scan = 0;
+    
+    /* C arrays have the first byte at [0], therefore:
+     * [nlen - 1] is the last byte of the array. */
+    size_t last = nlen - 1;
+                                              
+    /* ---- Do the matching ---- */
+
+    /* Search the haystack, while the needle can still be within it. */
+    while (hlen >= nlen)
+    {
+        /* scan from the end of the needle */
+        for (scan = last; haystack[scan] == needle[scan]; --scan)
+            if (scan == 0) /* If the first byte matches, we've found it. */
+                return haystack;
+
+        /* otherwise, we need to skip some bytes and start again.
+           Note that here we are getting the skip value based on the last byte
+           of needle, no matter where we didn't match. So if needle is: "abcd"
+           then we are skipping based on 'd' and that value will be 4, and
+           for "abcdd" we again skip on 'd' but the value will be only 1.
+           The alternative of pretending that the mismatched character was
+           the last character is slower in the normal case (E.g. finding
+           "abcd" in "...azcd..." gives 4 by using 'd' but only
+           4-2==2 using 'z'. */
+        hlen     -= bad_char_skip_lookup[haystack[last]];
+        haystack += bad_char_skip_lookup[haystack[last]];
+    }
+
+    return NULL;
+}
+
+/* Returns a pointer to the first occurrence of "needle"
+ * within "haystack", or NULL if not found. Works like
+ * memmem().
+ */
+
+/* Note: In this example needle is a C string. The ending
+ * 0x00 will be cut off, so you could call this example with
+ * boyermoore_horspool_strcasestr(haystack, hlen, "abc", sizeof("abc")-1)
+ */
+static inline _GL_ATTRIBUTE_PURE _GL_ATTRIBUTE_HOT _GL_ATTRIBUTE_NOTHROW
+const char *boyer_moore_horspool_strncasestr(const char* haystack, const char* needle, size_t hlen, size_t nlen,
+                                             const size_t bad_char_skip_lookup[], const size_t *find_skip_lookup) {
+    printf("In boyer_moore_horspool_strncasestr\n");    
+    /* Sanity checks on the parameters */
+    if (nlen <= 0 || !haystack || !needle)
+        return NULL;
+
+    size_t scan = 0;
+
+    /* C arrays have the first byte at [0], therefore:
+     * [nlen - 1] is the last byte of the array. */
+    size_t last = nlen - 1;
+    
+    /* ---- Do the matching ---- */
+
+    /* Search the haystack, while the needle can still be within it. */
+    while (hlen >= nlen)
+    {
+        /* scan from the end of the needle */
+        for (scan = last; tolower(haystack[scan]) == needle[scan]; --scan)
+            if (scan == 0) /* If the first byte matches, we've found it. */
+                return haystack;
+
+        /* otherwise, we need to skip some bytes and start again.
+           Note that here we are getting the skip value based on the last byte
+           of needle, no matter where we didn't match. So if needle is: "abcd"
+           then we are skipping based on 'd' and that value will be 4, and
+           for "abcdd" we again skip on 'd' but the value will be only 1.
+           The alternative of pretending that the mismatched character was
+           the last character is slower in the normal case (E.g. finding
+           "abcd" in "...azcd..." gives 4 by using 'd' but only
+           4-2==2 using 'z'. */
+        hlen     -= bad_char_skip_lookup[haystack[last]];
+        haystack += bad_char_skip_lookup[haystack[last]];
+    }
+
+    return NULL;
+}
+
+
+strncmp_fp get_strstr(enum case_behavior casing, enum algorithm_type algorithm) {
+    strncmp_fp ag_strncmp_fp = NULL;
+
+    if (algorithm == ALGORITHM_BOYER_MOORE) {
+        ag_strncmp_fp = (casing == CASE_INSENSITIVE) ? &boyer_moore_strncasestr : &boyer_moore_strnstr;
+    }
+    else if (algorithm == ALGORITHM_BOYER_MOORE_HORSPOOL) {
+        ag_strncmp_fp = (casing == CASE_INSENSITIVE) ? &boyer_moore_horspool_strncasestr : &boyer_moore_horspool_strnstr;
     }
 
     return ag_strncmp_fp;
@@ -391,11 +520,11 @@ int binary_search(const char *needle, char **haystack, int start, int end) {
     return mid;
 }
 
-static int wordchar_table[256];
+static int wordchar_table[UCHAR_MAX + 1];
 
 void init_wordchar_table(void) {
     int i;
-    for (i = 0; i < 256; ++i) {
+    for (i = 0; i < UCHAR_MAX + 1; ++i) {
         char ch = (char)i;
         wordchar_table[i] =
             ('a' <= ch && ch <= 'z') ||
@@ -406,7 +535,7 @@ void init_wordchar_table(void) {
 }
 
 int is_wordchar(char ch) {
-    return wordchar_table[(unsigned char)ch];
+    return wordchar_table[ch];
 }
 
 int is_lowercase(const char *s) {

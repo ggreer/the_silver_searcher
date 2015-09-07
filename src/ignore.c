@@ -24,6 +24,16 @@ const int fnmatch_flags = FNM_PATHNAME;
 const char *evil_hardcoded_ignore_files[] = {
     ".",
     "..",
+    "BitKeeper",
+    ".bk",
+    "SCCS",
+    ".git",
+    ".svn",
+    ".bzr",
+    ".hg",
+    "RCS",
+    "CVS",
+    "_MTN",
     NULL
 };
 

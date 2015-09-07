@@ -22,6 +22,19 @@ FILE *out_fd;
 #define FALSE 0
 #endif
 
+/* The __attribute__ feature is available in gcc versions 2.5 and later.
+The attribute __pure__ was added in gcc 2.96. */
+#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 96)
+# define _GL_ATTRIBUTE_PURE __attribute__ ((__pure__))
+#else
+# define _GL_ATTRIBUTE_PURE /* empty */
+#endif
+
+# define _GL_ATTRIBUTE_HOT __attribute__ ((__hot__))
+# define _GL_ATTRIBUTE_PURE __attribute__ ((__pure__))
+# define _GL_ATTRIBUTE_NOTHROW __attribute__ ((__nothrow__))
+
+
 void *ag_malloc(size_t size);
 void *ag_realloc(void *ptr, size_t size);
 void *ag_calloc(size_t nelem, size_t elsize);
@@ -59,22 +72,28 @@ void generate_alpha_skip(const char *find, size_t f_len, size_t skip_lookup[], c
 int is_prefix(const char *s, const size_t s_len, const size_t pos, const int case_sensitive);
 size_t suffix_len(const char *s, const size_t s_len, const size_t pos, const int case_sensitive);
 void generate_find_skip(const char *find, const size_t f_len, size_t **skip_lookup, const int case_sensitive);
-
-/* max is already defined on spec-violating compilers such as MinGW */
-size_t ag_max(size_t a, size_t b);
+void generate_bad_char_skip(const char *needle, size_t nlen, size_t bad_char_skip_lookup[], const int case_sensitive);
 
 const char *boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len,
-                                const size_t alpha_skip_lookup[], const size_t *find_skip_lookup);
+                                const size_t alpha_skip_lookup[], const size_t *find_skip_lookup)
+                                _GL_ATTRIBUTE_PURE _GL_ATTRIBUTE_HOT _GL_ATTRIBUTE_NOTHROW;
 const char *boyer_moore_strncasestr(const char *s, const char *find, const size_t s_len, const size_t f_len,
-                                    const size_t alpha_skip_lookup[], const size_t *find_skip_lookup);
+                                    const size_t alpha_skip_lookup[], const size_t *find_skip_lookup)
+                                   _GL_ATTRIBUTE_PURE _GL_ATTRIBUTE_HOT _GL_ATTRIBUTE_NOTHROW;
+const char *boyer_moore_horspool_strnstr(const char* haystack, const char* needle, size_t hlen, size_t nlen,
+                                         const size_t bad_char_skip_lookup[], const size_t *find_skip_lookup)
+                                         _GL_ATTRIBUTE_PURE _GL_ATTRIBUTE_HOT _GL_ATTRIBUTE_NOTHROW;
+const char *boyer_moore_horspool_strncasestr(const char* haystack, const char* needle, size_t hlen, size_t nlen,
+                                             const size_t bad_char_skip_lookup[], const size_t *find_skip_lookup)
+                                             _GL_ATTRIBUTE_PURE _GL_ATTRIBUTE_HOT _GL_ATTRIBUTE_NOTHROW;
 
-strncmp_fp get_strstr(enum case_behavior opts);
+strncmp_fp get_strstr(enum case_behavior casing, enum algorithm_type algorithm);
 
 size_t invert_matches(const char *buf, const size_t buf_len, match_t matches[], size_t matches_len);
 void realloc_matches(match_t **matches, size_t *matches_size, size_t matches_len);
 void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opts, const int study_opts);
 
-void *decompress(const ag_compression_type zip_type, const void *buf, const int buf_len, const char *dir_full_path, int *new_buf_len);
+void *decompress(const ag_compression_type zip_type, const void *buf, const int buf_len, const char *dir_full_path, unsigned int *new_buf_len);
 ag_compression_type is_zipped(const void *buf, const int buf_len);
 
 int is_binary(const void *buf, const size_t buf_len);

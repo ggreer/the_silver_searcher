@@ -83,6 +83,7 @@ Search Options:\n\
   -F --fixed-strings      Alias for --literal for compatibility with grep\n\
   -G --file-search-regex  PATTERN Limit search to filenames matching PATTERN\n\
      --hidden             Search hidden files (obeys .*ignore files)\n\
+     --horspool           Use Boyer-Moore-Horspool algorithm\n\
   -i --ignore-case        Match case insensitively\n\
      --ignore PATTERN     Ignore files/directories matching PATTERN\n\
                           (literal file/directory names also allowed)\n\
@@ -151,6 +152,7 @@ void init_options(void) {
     opts.color_match = ag_strdup(color_match);
     opts.color_line_number = ag_strdup(color_line_number);
     opts.use_thread_affinity = TRUE;
+    opts.algorithm = ALGORITHM_BOYER_MOORE;
 }
 
 void cleanup_options(void) {
@@ -242,6 +244,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "heading", no_argument, &opts.print_path, PATH_PRINT_TOP },
         { "help", no_argument, NULL, 'h' },
         { "hidden", no_argument, &opts.search_hidden_files, 1 },
+        { "horspool", no_argument, (int*)(&opts.algorithm), ALGORITHM_BOYER_MOORE_HORSPOOL },
         { "ignore", required_argument, NULL, 0 },
         { "ignore-case", no_argument, NULL, 'i' },
         { "ignore-dir", required_argument, NULL, 0 },

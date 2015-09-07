@@ -44,10 +44,11 @@ void search_buf(const char *buf, const size_t buf_len,
         matches_len = 1;
     } else if (opts.literal) {
         const char *match_ptr = buf;
-        strncmp_fp ag_strnstr_fp = get_strstr(opts.casing);
+        strncmp_fp ag_strnstr_fp = get_strstr(opts.casing, opts.algorithm);
+        size_t *lookup = (opts.algorithm == ALGORITHM_BOYER_MOORE) ? alpha_skip_lookup : bad_char_skip_lookup;
 
         while (buf_offset < buf_len) {
-            match_ptr = ag_strnstr_fp(match_ptr, opts.query, buf_len - buf_offset, opts.query_len, alpha_skip_lookup, find_skip_lookup);
+            match_ptr = ag_strnstr_fp(match_ptr, opts.query, buf_len - buf_offset, opts.query_len, lookup, find_skip_lookup);
             if (match_ptr == NULL) {
                 break;
             }
@@ -222,7 +223,7 @@ void search_file(const char *file_full_path) {
     char *buf = NULL;
     struct stat statbuf;
     int rv = 0;
-    FILE *pipe = NULL;
+    FILE *search_pipe = NULL;
 
     fd = open(file_full_path, O_RDONLY);
     if (fd < 0) {
@@ -249,9 +250,9 @@ void search_file(const char *file_full_path) {
 
     if (statbuf.st_mode & S_IFIFO) {
         log_debug("%s is a named pipe. stream searching", file_full_path);
-        pipe = fdopen(fd, "r");
-        search_stream(pipe, file_full_path);
-        fclose(pipe);
+        search_pipe = fdopen(fd, "r");
+        search_stream(search_pipe, file_full_path);
+        fclose(search_pipe);
         goto cleanup;
     }
 
@@ -301,7 +302,7 @@ void search_file(const char *file_full_path) {
     if (opts.search_zip_files) {
         ag_compression_type zip_type = is_zipped(buf, f_len);
         if (zip_type != AG_NO_COMPRESSION) {
-            int _buf_len = (int)f_len;
+            unsigned int _buf_len = f_len;
             char *_buf = decompress(zip_type, buf, f_len, file_full_path, &_buf_len);
             if (_buf == NULL || _buf_len == 0) {
                 log_err("Cannot decompress zipped file %s", file_full_path);

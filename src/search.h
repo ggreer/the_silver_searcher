@@ -1,6 +1,7 @@
 #ifndef SEARCH_H
 #define SEARCH_H
 
+#include <limits.h>
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -30,7 +31,8 @@
 #include "util.h"
 #include "uthash.h"
 
-size_t alpha_skip_lookup[256];
+size_t bad_char_skip_lookup[UCHAR_MAX + 1];
+size_t alpha_skip_lookup[UCHAR_MAX + 1];
 size_t *find_skip_lookup;
 
 struct work_queue_t {
