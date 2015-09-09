@@ -79,6 +79,7 @@ Search Options:\n\
                           or patterns from ignore files)\n\
   -D --debug              Ridiculous debugging (probably not useful)\n\
      --depth NUM          Search up to NUM directories deep (Default: 25)\n\
+  -e --pattern PATTERN    Search for PATTERN\n\
   -f --follow             Follow symlinks\n\
   -F --fixed-strings      Alias for --literal for compatibility with grep\n\
   -G --file-search-regex  PATTERN Limit search to filenames matching PATTERN\n\
@@ -276,6 +277,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "passthrough", no_argument, &opts.passthrough, 1 },
         { "passthru", no_argument, &opts.passthrough, 1 },
         { "path-to-agignore", required_argument, NULL, 'p' },
+        { "pattern", required_argument, NULL, 'e' },
         { "print0", no_argument, NULL, '0' },
         { "print-long-lines", no_argument, &opts.print_long_lines, 1 },
         { "recurse", no_argument, NULL, 'r' },
@@ -338,7 +340,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     int pcre_opts = 0;
-    while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:FfHhiLlm:nop:QRrSsvVtuUwz0", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:cDe:G:g:FfHhiLlm:nop:QRrSsvVtuUwz0", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 if (optarg) {
@@ -386,6 +388,13 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'D':
                 set_log_level(LOG_LEVEL_DEBUG);
+                break;
+            case 'e':
+                if (optarg) {
+                    accepts_query = 0;
+                    needs_query = 1;
+                    opts.query = ag_strdup(optarg);
+                }
                 break;
             case 'f':
                 opts.follow_symlinks = 1;
