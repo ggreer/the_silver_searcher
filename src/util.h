@@ -51,6 +51,8 @@ typedef enum {
 
 ag_stats stats;
 
+unsigned long total_matches;
+
 typedef const char *(*strncmp_fp)(const char *, const char *, const size_t, const size_t, const size_t[], const size_t *);
 
 void free_strings(char **strs, const size_t strs_len);

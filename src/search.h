@@ -46,6 +46,7 @@ pthread_cond_t files_ready;
 pthread_mutex_t print_mtx;
 pthread_mutex_t stats_mtx;
 pthread_mutex_t work_queue_mtx;
+pthread_mutex_t match_limit_mtx;
 
 
 /* For symlink loop detection */

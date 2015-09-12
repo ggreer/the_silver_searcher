@@ -92,6 +92,10 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `-i --ignore-case`:
     Match case-insensitively.
 
+  * `-j --max-matches NUM`:
+    Stop after finding NUM matches. Default is 0, which does not limit the
+    number of matches.
+
   * `-l --files-with-matches`:
     Only print the names of files containing matches, not the matching
     lines. An empty query will print all files that would be searched.

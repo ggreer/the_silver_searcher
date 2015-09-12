@@ -152,6 +152,15 @@ multiline_done:
         matches_len = invert_matches(buf, buf_len, matches, matches_len);
     }
 
+    if (opts.max_matches) {
+        pthread_mutex_lock(&match_limit_mtx);
+        if (total_matches + matches_len > opts.max_matches) {
+            matches_len = opts.max_matches - total_matches;
+        }
+        total_matches += matches_len;
+        pthread_mutex_unlock(&match_limit_mtx);
+    }
+
     if (opts.stats) {
         pthread_mutex_lock(&stats_mtx);
         stats.total_bytes += buf_len;
@@ -354,6 +363,15 @@ void *search_file_worker(void *i) {
         search_file(queue_item->path);
         free(queue_item->path);
         free(queue_item);
+
+        if (opts.max_matches) {
+            pthread_mutex_lock(&match_limit_mtx);
+            if (total_matches >= opts.max_matches) {
+                pthread_mutex_unlock(&match_limit_mtx);
+                pthread_exit(NULL);
+            }
+            pthread_mutex_unlock(&match_limit_mtx);
+        }
     }
 }
 
@@ -417,6 +435,15 @@ static int check_symloop_leave(dirkey_t *dirkey) {
  */
 void search_dir(ignores *ig, const char *base_path, const char *path, const int depth,
                 dev_t original_dev) {
+    if (opts.max_matches) {
+        pthread_mutex_lock(&match_limit_mtx);
+        if (total_matches >= opts.max_matches) {
+            pthread_mutex_unlock(&match_limit_mtx);
+            return;
+        }
+        pthread_mutex_unlock(&match_limit_mtx);
+    }
+
     struct dirent **dir_list = NULL;
     struct dirent *dir = NULL;
     scandir_baton_t scandir_baton;
