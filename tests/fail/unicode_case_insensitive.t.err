@@ -1,0 +1,17 @@
+Setup:
+
+  $ . $TESTDIR/../setup.sh
+  $ echo "hello=你好" > test.txt
+  $ echo "hello=你好" >> test.txt
+
+Normal search:
+
+  $ $TESTDIR/../../ag --nocolor --workers=1 --parallel 你好
+  test.txt:1:hello=\xe4\xbd\xa0\xe5\xa5\xbd (esc)
+  test.txt:2:hello=\xe4\xbd\xa0\xe5\xa5\xbd (esc)
+
+Case-insensitive search:
+
+  $ $TESTDIR/../../ag --nocolor --workers=1 --parallel -i 你好
+  test.txt:1:hello=\xe4\xbd\xa0\xe5\xa5\xbd (esc)
+  test.txt:2:hello=\xe4\xbd\xa0\xe5\xa5\xbd (esc)

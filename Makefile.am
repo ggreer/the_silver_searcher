@@ -22,4 +22,7 @@ endif
 test_big: ag
 	cram -v tests/big/*.t
 
+test_fail: ag
+	cram -v tests/fail/*.t
+
 .PHONY : all test clean
