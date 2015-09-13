@@ -21,6 +21,9 @@ Language types are output:
     --bitbake
         .bb  .bbappend  .bbclass  .inc
   
+    --bro
+        .bro  .bif
+  
     --cc
         .c  .h  .xs
   
