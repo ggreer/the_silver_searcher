@@ -133,7 +133,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
         }
 
         /* We found the end of a line. */
-        if (buf[i] == '\n' && opts.before > 0) {
+        if ((i == buf_len || buf[i] == '\n') && opts.before > 0) {
             if (context_prev_lines[last_prev_line] != NULL) {
                 free(context_prev_lines[last_prev_line]);
             }
@@ -142,7 +142,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
             last_prev_line = (last_prev_line + 1) % opts.before;
         }
 
-        if (buf[i] == '\n' || i == buf_len) {
+        if (i == buf_len || buf[i] == '\n') {
             if (lines_since_last_match == 0) {
                 if (opts.print_path == PATH_PRINT_EACH_LINE && !opts.search_stream) {
                     print_path(path, ':');
@@ -237,7 +237,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                 lines_since_last_match++;
             }
             /* File doesn't end with a newline. Print one so the output is pretty. */
-            if (i == buf_len && buf[i] != '\n' && !opts.search_stream) {
+            if (i == buf_len && buf[i - 1] != '\n' && !opts.search_stream) {
                 fputc('\n', out_fd);
             }
         }
