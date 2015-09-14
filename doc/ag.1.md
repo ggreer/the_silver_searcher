@@ -146,6 +146,9 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `--stats`:
     Print stats (files scanned, time taken, etc).
 
+  * `--stats-only`:
+    Print stats (files scanned, time taken, etc) and nothing else.
+
   * `-t --all-text`:
     Search all text files. This doesn't include hidden files.
 
