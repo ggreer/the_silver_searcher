@@ -16,6 +16,7 @@ lang_spec_t langs[] = {
     { "clojure", { "clj", "cljs", "cljc", "cljx" } },
     { "coffee", { "coffee", "cjsx" } },
     { "cpp", { "cpp", "cc", "C", "cxx", "m", "hpp", "hh", "h", "H", "hxx" } },
+    { "crystal", { "cr", "ecr" } },
     { "csharp", { "cs" } },
     { "css", { "css" } },
     { "delphi", { "pas", "int", "dfm", "nfm", "dof", "dpk", "dproj", "groupproj", "bdsgroup", "bdsproj" } },
