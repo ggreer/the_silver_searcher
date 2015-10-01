@@ -237,6 +237,9 @@ Language types are output:
     --tt
         .tt  .tt2  .ttml
   
+    --toml
+        .toml
+  
     --vala
         .vala  .vapi
   
