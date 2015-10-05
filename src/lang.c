@@ -82,6 +82,7 @@ lang_spec_t langs[] = {
     { "tcl", { "tcl", "itcl", "itk" } },
     { "tex", { "tex", "cls", "sty" } },
     { "tt", { "tt", "tt2", "ttml" } },
+    { "toml", { "toml" } },
     { "vala", { "vala", "vapi" } },
     { "vb", { "bas", "cls", "frm", "ctl", "vb", "resx" } },
     { "velocity", { "vm" } },
