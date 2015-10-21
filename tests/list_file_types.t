@@ -186,6 +186,9 @@ Language types are output:
     --rake
         .Rakefiles
   
+    --restructuredtext
+        .rst
+  
     --rs
         .rs
   
