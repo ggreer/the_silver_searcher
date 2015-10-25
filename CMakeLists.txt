@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 2.8)
 
 project(AG)
 
-#get the version from configure.ac
-set(EXECUTE_COMMAND grep -Po "(?<=\\[)([0-9.]+.[0-9]+.[0-9]+)(?=\\])" ${AG_SOURCE_DIR}/configure.ac)
-execute_process(COMMAND ${EXECUTE_COMMAND} OUTPUT_VARIABLE AG_VERSION)
-#trim whitespace off of version
-string(STRIP ${AG_VERSION} AG_VERSION)
+#read the contents of configure.ac into AG_CONFIG
+file(READ ${AG_SOURCE_DIR}/configure.ac AG_CONFIG)
+
+#regex match the version in AG_CONFIG and put it into AG_VERSION
+string(REGEX MATCH "\\[[0-9]+.[0-9]+.[0-9]\\]" AG_VERSION ${AG_CONFIG})
 
 #set the output directory of ag.exe to be the main directory
 #could also set it to be ${AG_SOURCE_DIR}/bin if so choose
@@ -16,27 +16,27 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${AG_SOURCE_DIR})
 
 #the sources
 list(APPEND AG_SOURCES
-    src\decompress.c
-    src\decompress.h
-    src\ignore.c
-    src\ignore.h
-    src\lang.c
-    src\lang.h
-    src\log.c
-    src\log.h
-    src\main.c
-    src\options.c
-    src\options.h
-    src\print.c
-    src\print.h
-    src\print_w32.c
-    src\scandir.c
-    src\scandir.h
-    src\search.c
-    src\search.h
-    src\uthash.h
-    src\util.c
-    src\util.h
+    src/decompress.c
+    src/decompress.h
+    src/ignore.c
+    src/ignore.h
+    src/lang.c
+    src/lang.h
+    src/log.c
+    src/log.h
+    src/main.c
+    src/options.c
+    src/options.h
+    src/print.c
+    src/print.h
+    src/print_w32.c
+    src/scandir.c
+    src/scandir.h
+    src/search.c
+    src/search.h
+    src/uthash.h
+    src/util.c
+    src/util.h
 )
 
 #create executable
