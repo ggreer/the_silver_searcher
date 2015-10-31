@@ -68,6 +68,7 @@ lang_spec_t langs[] = {
     { "restructuredtext", { "rst" } },
     { "rs", { "rs" } },
     { "r", { "R", "Rmd", "Rnw", "Rtex", "Rrst" } },
+    { "rdoc", { "rdoc" } },
     { "ruby", { "rb", "rhtml", "rjs", "rxml", "erb", "rake", "spec" } },
     { "rust", { "rs" } },
     { "salt", { "sls" } },
