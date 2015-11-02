@@ -4,7 +4,9 @@
 #include "lang.h"
 #include "util.h"
 
-lang_spec_t langs[] = {
+#define MAX_LANGS 1000
+
+lang_spec_t langs[MAX_LANGS] = {
     { "actionscript", { "as", "mxml" } },
     { "ada", { "ada", "adb", "ads" } },
     { "asm", { "asm", "s" } },
@@ -96,8 +98,124 @@ lang_spec_t langs[] = {
     { "yaml", { "yaml", "yml" } }
 };
 
+lang_spec_t* get_lang_slot()
+    {
+    lang_spec_t * first_free = langs;
+    for (;first_free < langs + MAX_LANGS && first_free->name; ++first_free);
+
+    return first_free;
+    }
+
+bool lang_add_ext (lang_spec_t *l, char const * ext)
+    {
+    const char ** pExt = l->extensions;
+    for (size_t i = 0; i < MAX_EXTENSIONS && *pExt; ++pExt, ++i);
+
+    if (!*pExt)
+        {
+        *pExt = strdup (ext);
+        return true;
+        }
+    else
+        {
+        return  false;
+        }
+    }
+
+lang_spec_t * lang_new (char const* name)
+    {
+    lang_spec_t * result = get_lang_slot ();
+    if (result < langs + MAX_LANGS)
+        {
+        result->name = strdup (name);
+        return result;
+        }
+
+    return 0;
+    }
+
+lang_spec_t * lang_find (char const* name)
+    {
+    for (lang_spec_t * result = langs; result < langs + MAX_LANGS; ++result)
+        if (!_stricmp (name, result->name))
+            return result;
+
+    return 0;
+    }
+
+lang_spec_t * lang_parse_spec (char const * spec)
+    {
+    lang_spec_t * result = 0;
+    if (char * _spec = strdup (spec))
+        {
+        if (const char * name = strtok (_spec, " "))
+            {
+            if (const char * op = strtok(NULL, " "))
+                {
+                switch (op[0])
+                    {
+                    case ':':
+                        result = lang_new (name);
+                        break;
+                    case '+':
+                        result = lang_find (name);
+                        break;
+                    }
+                }
+            }
+
+        if (result)
+            {
+            while (const char * ext = strtok (NULL, " ,"))
+                lang_add_ext (result, ext);
+            }
+
+        free (_spec);
+        }
+
+    return result;
+    }
+
+void lang_parse_file (const char * path)
+    {
+    if (FILE* f = fopen(path, "rt"))
+        {
+        char * line = 0;
+        size_t len = 0, read = 0;
+
+        while ((read = getline (&line, &len, f)) != -1)
+            {
+            if (char * line_contents = strtok (line, "\n"))
+                {
+                if (line_contents[0] != '#' && line_contents[0] != 0)
+                    lang_parse_spec (line_contents);
+                }
+            }
+
+        if (line) free (line);
+        fclose (f);
+        }
+    }
+
+void lang_parse_user_spec ()
+    {
+    char dot_ag_path[1024] = { 0 };
+#ifdef _WIN32
+    strncat (dot_ag_path, getenv ("USERPROFILE"), sizeof (dot_ag_path));
+#else
+    strncat (dot_ag_path, getenv ("HOME"), sizeof (dot_ag_path));
+#endif
+    strncat (dot_ag_path, "\\.ag", sizeof (dot_ag_path));
+    if ( _access(dot_ag_path, 0) != -1)
+        lang_parse_file (dot_ag_path);
+    }
+
 size_t get_lang_count() {
-    return sizeof(langs) / sizeof(lang_spec_t);
+    return (get_lang_slot() - langs);
+}
+
+lang_spec_t const* get_langs(void) {
+    return langs;
 }
 
 char *make_lang_regex(char *ext_array, size_t num_exts) {
