@@ -205,7 +205,7 @@ void lang_parse_user_spec ()
 #else
     strncat (dot_ag_path, getenv ("HOME"), sizeof (dot_ag_path));
 #endif
-    strncat (dot_ag_path, "\\.ag", sizeof (dot_ag_path));
+    strncat (dot_ag_path, "\\.aglang", sizeof (dot_ag_path));
     if ( _access(dot_ag_path, 0) != -1)
         lang_parse_file (dot_ag_path);
     }
