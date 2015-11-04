@@ -4,6 +4,10 @@
 #include "lang.h"
 #include "util.h"
 
+#ifdef _WIN32
+#define strcasecmp _stricmp
+#endif
+
 #define MAX_LANGS 1000
 
 lang_spec_t langs[MAX_LANGS] = {
@@ -106,19 +110,19 @@ lang_spec_t* get_lang_slot()
     return first_free;
     }
 
-bool lang_add_ext (lang_spec_t *l, char const * ext)
+char const* lang_add_ext (lang_spec_t *l, char const * ext)
     {
     const char ** pExt = l->extensions;
-    for (size_t i = 0; i < MAX_EXTENSIONS && *pExt; ++pExt, ++i);
+    size_t i = 0;
+    for (; i < MAX_EXTENSIONS && *pExt; ++pExt, ++i);
 
     if (!*pExt)
         {
-        *pExt = strdup (ext);
-        return true;
+        return (*pExt = strdup (ext));
         }
     else
         {
-        return  false;
+        return  (*pExt);
         }
     }
 
@@ -136,8 +140,9 @@ lang_spec_t * lang_new (char const* name)
 
 lang_spec_t * lang_find (char const* name)
     {
-    for (lang_spec_t * result = langs; result < langs + MAX_LANGS; ++result)
-        if (!_stricmp (name, result->name))
+    lang_spec_t * result = langs;
+    for (; result < langs + MAX_LANGS; ++result)
+        if (!strcasecmp (name, result->name))
             return result;
 
     return 0;
@@ -146,11 +151,14 @@ lang_spec_t * lang_find (char const* name)
 lang_spec_t * lang_parse_spec (char const * spec)
     {
     lang_spec_t * result = 0;
-    if (char * _spec = strdup (spec))
+    char * _spec = strdup (spec);
+    if (_spec)
         {
-        if (const char * name = strtok (_spec, " "))
+        const char * name = strtok (_spec, " ");
+        if (name)
             {
-            if (const char * op = strtok(NULL, " "))
+            const char * op = strtok (NULL, " ");
+            if (op)
                 {
                 switch (op[0])
                     {
@@ -166,7 +174,8 @@ lang_spec_t * lang_parse_spec (char const * spec)
 
         if (result)
             {
-            while (const char * ext = strtok (NULL, " ,"))
+            const char * ext = 0;
+            while (ext = strtok (NULL, " ,"))
                 lang_add_ext (result, ext);
             }
 
@@ -178,14 +187,16 @@ lang_spec_t * lang_parse_spec (char const * spec)
 
 void lang_parse_file (const char * path)
     {
-    if (FILE* f = fopen(path, "rt"))
+    FILE* f = fopen (path, "rt");
+    if (f)
         {
         char * line = 0;
         size_t len = 0, read = 0;
 
         while ((read = getline (&line, &len, f)) != -1)
             {
-            if (char * line_contents = strtok (line, "\n"))
+            char * line_contents = strtok (line, "\n");
+            if (line_contents)
                 {
                 if (line_contents[0] != '#' && line_contents[0] != 0)
                     lang_parse_spec (line_contents);
@@ -206,7 +217,7 @@ void lang_parse_user_spec ()
     strncat (dot_ag_path, getenv ("HOME"), sizeof (dot_ag_path));
 #endif
     strncat (dot_ag_path, "\\.aglang", sizeof (dot_ag_path));
-    if ( _access(dot_ag_path, 0) != -1)
+    if ( access(dot_ag_path, 0) != -1)
         lang_parse_file (dot_ag_path);
     }
 
