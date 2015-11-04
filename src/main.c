@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
     root_ignores = init_ignore(NULL, "", 0);
     out_fd = stdout;
 
-    lang_parse_user_spec ();
+    lang_parse_user_spec();
     parse_options(argc, argv, &base_paths, &paths);
     log_debug("PCRE Version: %s", pcre_version());
     if (opts.stats) {
