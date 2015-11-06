@@ -435,13 +435,20 @@ int is_directory(const char *path, const struct dirent *d) {
         free(full_path);
         return FALSE;
     }
+#ifdef _WIN32
+    int is_dir = GetFileAttributes (full_path) & FILE_ATTRIBUTE_DIRECTORY;
+#else
+    int is_dir = S_ISDIR(s.st_mode);
+#endif
     free(full_path);
-    return S_ISDIR(s.st_mode);
+    return is_dir;
 }
 
 int is_symlink(const char *path, const struct dirent *d) {
 #ifdef _WIN32
-    return 0;
+    char full_path[MAX_PATH + 1] = { 0 };
+    sprintf(full_path, "%s\\%s", path, d->d_name);
+    return (GetFileAttributesA (full_path) & FILE_ATTRIBUTE_REPARSE_POINT);
 #else
 #ifdef HAVE_DIRENT_DTYPE
     /* Some filesystems, e.g. ReiserFS, always return a type DT_UNKNOWN from readdir or scandir. */
