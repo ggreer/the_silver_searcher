@@ -436,7 +436,7 @@ int is_directory(const char *path, const struct dirent *d) {
         return FALSE;
     }
 #ifdef _WIN32
-    int is_dir = GetFileAttributes(full_path) & FILE_ATTRIBUTE_DIRECTORY;
+    int is_dir = GetFileAttributesA(full_path) & FILE_ATTRIBUTE_DIRECTORY;
 #else
     int is_dir = S_ISDIR(s.st_mode);
 #endif
