@@ -195,6 +195,9 @@ Language types are output:
     --r
         .R  .Rmd  .Rnw  .Rtex  .Rrst
   
+    --rdoc
+        .rdoc
+  
     --ruby
         .rb  .rhtml  .rjs  .rxml  .erb  .rake  .spec
   
