@@ -29,11 +29,17 @@ Case sensitive mode:
   1:Foo
   $ ag -s 'F.o' sample
   1:Foo
+
 Case insensitive mode:
 
-  $ ag foo -i sample
+  $ ag fOO -i sample
   1:Foo
-  $ ag foo --ignore-case sample
+  $ ag fOO --ignore-case sample
   1:Foo
   $ ag 'f.o' -i sample
   1:Foo
+
+Case insensitive file regex
+
+  $ ag -i  -g 'Samp.*'
+  sample
