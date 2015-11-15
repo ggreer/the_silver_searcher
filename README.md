@@ -56,9 +56,12 @@ or
 * Ubuntu >= 13.10 (Saucy) or Debian >= 8 (Jessie)
 
         apt-get install silversearcher-ag
-* Fedora 19+
+* Fedora 21 and lower
 
         yum install the_silver_searcher
+* Fedora 22+
+
+        dnf install the_silver_searcher
 * RHEL7+
 
         rpm -Uvh http://download.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm

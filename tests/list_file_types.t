@@ -186,11 +186,17 @@ Language types are output:
     --rake
         .Rakefiles
   
+    --restructuredtext
+        .rst
+  
     --rs
         .rs
   
     --r
         .R  .Rmd  .Rnw  .Rtex  .Rrst
+  
+    --rdoc
+        .rdoc
   
     --ruby
         .rb  .rhtml  .rjs  .rxml  .erb  .rake  .spec
@@ -247,7 +253,7 @@ Language types are output:
         .bas  .cls  .frm  .ctl  .vb  .resx
   
     --velocity
-        .vm
+        .vm  .vtl  .vsl
   
     --verilog
         .v  .vh  .sv

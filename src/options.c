@@ -715,7 +715,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     char *path = NULL;
+#ifdef PATH_MAX
     char *tmp = NULL;
+#endif
     opts.paths_len = argc;
     if (argc > 0) {
         *paths = ag_calloc(sizeof(char *), argc + 1);
@@ -728,8 +730,12 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 path[path_len - 1] = '\0';
             }
             (*paths)[i] = path;
+#ifdef PATH_MAX
             tmp = ag_malloc(PATH_MAX);
             (*base_paths)[i] = realpath(path, tmp);
+#else
+            (*base_paths)[i] = realpath(path, NULL);
+#endif
         }
         /* Make sure we search these paths instead of stdin. */
         opts.search_stream = 0;
@@ -738,8 +744,12 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         *paths = ag_malloc(sizeof(char *) * 2);
         *base_paths = ag_malloc(sizeof(char *) * 2);
         (*paths)[0] = path;
+#ifdef PATH_MAX
         tmp = ag_malloc(PATH_MAX);
         (*base_paths)[0] = realpath(path, tmp);
+#else
+        (*base_paths)[0] = realpath(path, NULL);
+#endif
         i = 1;
     }
     (*paths)[i] = NULL;
