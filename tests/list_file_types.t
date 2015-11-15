@@ -253,7 +253,7 @@ Language types are output:
         .bas  .cls  .frm  .ctl  .vb  .resx
   
     --velocity
-        .vm
+        .vm  .vtl  .vsl
   
     --verilog
         .v  .vh  .sv

@@ -87,7 +87,7 @@ lang_spec_t langs[] = {
     { "toml", { "toml" } },
     { "vala", { "vala", "vapi" } },
     { "vb", { "bas", "cls", "frm", "ctl", "vb", "resx" } },
-    { "velocity", { "vm" } },
+    { "velocity", { "vm", "vtl", "vsl" } },
     { "verilog", { "v", "vh", "sv" } },
     { "vhdl", { "vhd", "vhdl" } },
     { "vim", { "vim" } },
