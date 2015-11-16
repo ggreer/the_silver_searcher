@@ -556,10 +556,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 
     if (file_search_regex) {
         int pcre_opts = 0;
-        if (opts.casing == CASE_SMART) {
-            opts.casing = is_lowercase(file_search_regex) ? CASE_INSENSITIVE : CASE_SENSITIVE;
-        }
-        if (opts.casing == CASE_INSENSITIVE) {
+        if (opts.casing == CASE_INSENSITIVE || (opts.casing == CASE_SMART && is_lowercase(file_search_regex))) {
             pcre_opts |= PCRE_CASELESS;
         }
         compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, file_search_regex, pcre_opts, 0);
