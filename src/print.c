@@ -17,6 +17,8 @@ int first_file_match = 1;
 
 const char *color_reset = "\033[0m\033[K";
 
+const char *truncate_marker = " [...]";
+
 void print_path(const char *path, const char sep) {
     if (opts.print_path == PATH_PRINT_NOTHING && !opts.vimgrep) {
         return;
@@ -48,7 +50,12 @@ void print_path_count(const char *path, const char sep, const size_t count) {
 }
 
 void print_line(const char *buf, size_t buf_pos, size_t prev_line_offset) {
-    fwrite(buf + prev_line_offset, 1, buf_pos - prev_line_offset + 1, out_fd);
+    size_t write_chars = buf_pos - prev_line_offset + 1;
+    if (opts.width > 0 && opts.width < write_chars) {
+        write_chars = opts.width;
+    }
+
+    fwrite(buf + prev_line_offset, 1, write_chars, out_fd);
 }
 
 void print_binary_file_matches(const char *path) {
@@ -180,6 +187,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                         fprintf(out_fd, "%s", opts.color_match);
                     }
                     for (j = prev_line_offset; j <= i; j++) {
+                        /* close highlight of match term */
                         if (last_printed_match < matches_len && j == matches[last_printed_match].end) {
                             if (opts.color) {
                                 fprintf(out_fd, "%s", color_reset);
@@ -191,6 +199,19 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                                 fputc('\n', out_fd);
                             }
                         }
+                        /* skip remaining characters if truncation width exceeded, needs to be done
+                         * before highlight opening */
+                        if (j < buf_len && opts.width > 0 && j - prev_line_offset >= opts.width) {
+                            if (j < i) {
+                                fputs(truncate_marker, out_fd);
+                            }
+                            fputc('\n', out_fd);
+
+                            /* prevent any more characters or highlights */
+                            j = i;
+                            last_printed_match = matches_len;
+                        }
+                        /* open highlight of match term */
                         if (last_printed_match < matches_len && j == matches[last_printed_match].start) {
                             if (opts.only_matching && printed_match) {
                                 if (opts.print_path == PATH_PRINT_EACH_LINE) {
@@ -210,7 +231,9 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                         if (j < buf_len) {
                             /* if only_matching is set, print only matches and newlines */
                             if (!opts.only_matching || printing_a_match) {
-                                fputc(buf[j], out_fd);
+                                if (opts.width == 0 || j - prev_line_offset < opts.width) {
+                                    fputc(buf[j], out_fd);
+                                }
                             }
                         }
                     }
