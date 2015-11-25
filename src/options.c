@@ -105,6 +105,7 @@ Search Options:\n\
                           (.gitignore, .hgignore, .svnignore; still obey .agignore)\n\
   -v --invert-match\n\
   -w --word-regexp        Only match whole words\n\
+  -W --width NUM          Truncate match lines after NUM characters\n\
   -z --search-zip         Search contents of compressed (e.g., gzip) files\n\
 \n");
     printf("File Types:\n\
@@ -144,6 +145,7 @@ void init_options(void) {
     opts.max_matches_per_file = 0;
     opts.max_search_depth = DEFAULT_MAX_SEARCH_DEPTH;
     opts.multiline = TRUE;
+    opts.width = 0;
     opts.path_sep = '\n';
     opts.print_break = TRUE;
     opts.print_path = PATH_PRINT_DEFAULT;
@@ -292,6 +294,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "unrestricted", no_argument, NULL, 'u' },
         { "version", no_argument, &version, 1 },
         { "vimgrep", no_argument, &opts.vimgrep, 1 },
+        { "width", required_argument, NULL, 'W' },
         { "word-regexp", no_argument, NULL, 'w' },
         { "workers", required_argument, NULL, 0 },
     };
@@ -341,7 +344,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     char *file_search_regex = NULL;
-    while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:FfHhiLlm:nop:QRrSsvVtuUwz0", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:FfHhiLlm:nop:QRrSsvVtuUwW:z0", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 if (optarg) {
@@ -468,6 +471,12 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'w':
                 opts.word_regexp = 1;
+                break;
+            case 'W':
+                opts.width = strtol(optarg, &num_end, 10);
+                if (num_end == optarg || *num_end != '\0' || errno == ERANGE) {
+                    die("Invalid width\n");
+                }
                 break;
             case 'z':
                 opts.search_zip_files = 1;
