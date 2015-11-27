@@ -246,6 +246,9 @@ Language types are output:
     --toml
         .toml
   
+    --ts
+        .ts  .tsx
+  
     --vala
         .vala  .vapi
   
