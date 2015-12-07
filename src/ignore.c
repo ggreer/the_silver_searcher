@@ -38,21 +38,30 @@ const char *ignore_pattern_files[] = {
 };
 
 int is_empty(ignores *ig) {
-    return (ig->extensions_len + ig->names_len + ig->slash_names_len + ig->regexes_len + ig->slash_regexes_len == 0);
+    return (ig->extensions_len + ig->names_len + ig->slash_names_len + ig->globs_len + ig->slash_globs_len == 0);
 };
 
 ignores *init_ignore(ignores *parent, const char *dirname, const size_t dirname_len) {
     ignores *ig = ag_malloc(sizeof(ignores));
+
     ig->extensions = NULL;
     ig->extensions_len = 0;
+
     ig->names = NULL;
     ig->names_len = 0;
     ig->slash_names = NULL;
     ig->slash_names_len = 0;
+
+    ig->globs = NULL;
+    ig->globs_len = 0;
+    ig->slash_globs = NULL;
+    ig->slash_globs_len = 0;
+
     ig->regexes = NULL;
     ig->regexes_len = 0;
     ig->slash_regexes = NULL;
     ig->slash_regexes_len = 0;
+
     ig->dirname = dirname;
     ig->dirname_len = dirname_len;
 
@@ -83,8 +92,8 @@ void cleanup_ignore(ignores *ig) {
     free_strings(ig->extensions, ig->extensions_len);
     free_strings(ig->names, ig->names_len);
     free_strings(ig->slash_names, ig->slash_names_len);
-    free_strings(ig->regexes, ig->regexes_len);
-    free_strings(ig->slash_regexes, ig->slash_regexes_len);
+    free_strings(ig->globs, ig->globs_len);
+    free_strings(ig->slash_globs, ig->slash_globs_len);
     if (ig->abs_path) {
         free(ig->abs_path);
     }
@@ -120,13 +129,13 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
             patterns_len = &(ig->extensions_len);
             pattern += 2;
         } else if (pattern[0] == '/') {
-            patterns_p = &(ig->slash_regexes);
-            patterns_len = &(ig->slash_regexes_len);
+            patterns_p = &(ig->slash_globs);
+            patterns_len = &(ig->slash_globs_len);
             pattern++;
             pattern_len--;
         } else {
-            patterns_p = &(ig->regexes);
-            patterns_len = &(ig->regexes_len);
+            patterns_p = &(ig->globs);
+            patterns_len = &(ig->globs_len);
         }
     } else {
         if (pattern[0] == '/') {
@@ -310,23 +319,23 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
             log_debug("pattern %s doesn't match path %s", ig->names[i], slash_filename);
         }
 
-        for (i = 0; i < ig->slash_regexes_len; i++) {
-            if (fnmatch(ig->slash_regexes[i], slash_filename, fnmatch_flags) == 0) {
-                log_debug("file %s ignored because name matches slash regex pattern %s", slash_filename, ig->slash_regexes[i]);
+        for (i = 0; i < ig->slash_globs_len; i++) {
+            if (fnmatch(ig->slash_globs[i], slash_filename, fnmatch_flags) == 0) {
+                log_debug("file %s ignored because name matches slash regex pattern %s", slash_filename, ig->slash_globs[i]);
                 free(temp);
                 return 1;
             }
-            log_debug("pattern %s doesn't match slash file %s", ig->slash_regexes[i], slash_filename);
+            log_debug("pattern %s doesn't match slash file %s", ig->slash_globs[i], slash_filename);
         }
     }
 
-    for (i = 0; i < ig->regexes_len; i++) {
-        if (fnmatch(ig->regexes[i], filename, fnmatch_flags) == 0) {
-            log_debug("file %s ignored because name matches regex pattern %s", filename, ig->regexes[i]);
+    for (i = 0; i < ig->globs_len; i++) {
+        if (fnmatch(ig->globs[i], filename, fnmatch_flags) == 0) {
+            log_debug("file %s ignored because name matches regex pattern %s", filename, ig->globs[i]);
             free(temp);
             return 1;
         }
-        log_debug("pattern %s doesn't match file %s", ig->regexes[i], filename);
+        log_debug("pattern %s doesn't match file %s", ig->globs[i], filename);
     }
 
     int rv = ackmate_dir_match(temp);

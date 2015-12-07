@@ -17,7 +17,12 @@ struct ignores {
     char **slash_names; /* Same but starts with a slash */
     size_t slash_names_len;
 
-    char **regexes; /* For patterns that need fnmatch */
+    char **globs; /* For patterns that need fnmatch */
+    size_t globs_len;
+    char **slash_globs;
+    size_t slash_globs_len;
+
+    char **regexes; /* For patterns that need PCRE, e.g. in .hgignore with syntax: regexp */
     size_t regexes_len;
     char **slash_regexes;
     size_t slash_regexes_len;
