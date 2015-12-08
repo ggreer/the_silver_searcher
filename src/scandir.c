@@ -8,70 +8,44 @@ int ag_scandir(const char *dirname,
                struct dirent ***namelist,
                filter_fp filter,
                void *baton) {
-    DIR *dirp = NULL;
-    struct dirent **names = NULL;
-    struct dirent *entry, *d;
-    int names_len = 32;
-    int results_len = 0;
+    struct dirent **results = NULL;
+    struct dirent **scanned_names = NULL;
+    int i, scanned_names_len, results_len = 0;
 
-    dirp = opendir(dirname);
-    if (dirp == NULL) {
+    scanned_names_len = scandir(dirname, &scanned_names, 0, alphasort);
+    if (scanned_names_len == -1) {
         goto fail;
     }
 
-    names = malloc(sizeof(struct dirent *) * names_len);
-    if (names == NULL) {
+    results = malloc(sizeof(struct dirent *) * scanned_names_len);
+    if (results == NULL) {
         goto fail;
     }
 
-    while ((entry = readdir(dirp)) != NULL) {
-        if ((*filter)(dirname, entry, baton) == FALSE) {
+    for (i = 0; i < scanned_names_len; i++) {
+        if ((*filter)(dirname, scanned_names[i], baton) == FALSE) {
+            free(scanned_names[i]);
+            scanned_names[i] = NULL;
             continue;
         }
-        if (results_len >= names_len) {
-            struct dirent **tmp_names = names;
-            names_len *= 2;
-            names = realloc(names, sizeof(struct dirent *) * names_len);
-            if (names == NULL) {
-                free(tmp_names);
-                goto fail;
-            }
-        }
-
-#if defined(__MINGW32__) || defined(__CYGWIN__)
-        d = malloc(sizeof(struct dirent));
-#else
-        d = malloc(entry->d_reclen);
-#endif
-
-        if (d == NULL) {
-            goto fail;
-        }
-#if defined(__MINGW32__) || defined(__CYGWIN__)
-        memcpy(d, entry, sizeof(struct dirent));
-#else
-        memcpy(d, entry, entry->d_reclen);
-#endif
-
-        names[results_len] = d;
+        results[results_len] = scanned_names[i];
         results_len++;
     }
 
-    closedir(dirp);
-    *namelist = names;
+    *namelist = results;
     return results_len;
 
 fail:
-    if (dirp) {
-        closedir(dirp);
-    }
-
-    if (names != NULL) {
-        int i;
+    if (results != NULL) {
         for (i = 0; i < results_len; i++) {
-            free(names[i]);
+            free(results[i]);
         }
-        free(names);
+        free(results);
+    }
+    if (scanned_names != NULL) {
+        for (i = 0; i < scanned_names_len; i++) {
+            free (scanned_names[i]);
+        }
     }
     return -1;
 }

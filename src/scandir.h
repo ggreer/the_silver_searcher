@@ -5,6 +5,10 @@
 
 typedef struct {
     const ignores *ig;
+    size_t names_i;
+    size_t slash_names_i;
+    size_t globs_i;
+    size_t slash_globs_i;
     const char *base_path;
     size_t base_path_len;
 } scandir_baton_t;
