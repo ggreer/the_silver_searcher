@@ -77,11 +77,12 @@ ignores *init_ignore(ignores *parent, const char *dirname, const size_t dirname_
         ig->partial_globs_len = partials->partial_glob_matches_len;
     }
 
-    if (parent && is_empty(parent) && parent->parent) {
-        ig->parent = parent->parent;
-    } else {
-        ig->parent = parent;
+    if (parent) {
+        while (is_empty(parent) && parent->parent) {
+            parent = parent->parent;
+        }
     }
+    ig->parent = parent;
 
     if (parent && parent->abs_path_len > 0) {
         ag_asprintf(&(ig->abs_path), "%s/%s", parent->abs_path, dirname);
