@@ -274,7 +274,7 @@ static int ackmate_dir_match(const char *dir_name) {
 }
 
 /* This is the hottest code in Ag. 10-15% of all execution time is spent here */
-static int path_ignore_search(const ignores *ig, const char *path, const char *filename) {
+static int path_ignore_search(const ignores *ig, struct ignore_iters *iters, int search_slashes, const char *path, const char *filename) {
     char *temp;
     size_t i;
     int match_pos;
@@ -292,18 +292,31 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
         if (slash_filename[0] == '/') {
             slash_filename++;
         }
-        match_pos = binary_search(slash_filename, ig->names, 0, ig->names_len);
-        if (match_pos >= 0) {
-            log_debug("file %s ignored because name matches static pattern %s", temp, ig->names[match_pos]);
-            free(temp);
-            return 1;
+
+        for (; iters->names_i < ig->names_len; iters->names_i++) {
+            int cmp = strcmp(slash_filename, ig->names[iters->names_i]);
+            if (cmp == 0) {
+                log_debug("file %s ignored because name matches static pattern %s", temp, ig->names[iters->names_i]);
+                free(temp);
+                return 1;
+            }
+            log_debug("file %s doesn't match static pattern %s at index %d", temp, ig->names[iters->names_i], iters->names_i);
+            if (cmp < 0) {
+                break;
+            }
         }
 
-        match_pos = binary_search(slash_filename, ig->slash_names, 0, ig->slash_names_len);
-        if (match_pos >= 0) {
-            log_debug("file %s ignored because name matches slash static pattern %s", slash_filename, ig->slash_names[match_pos]);
-            free(temp);
-            return 1;
+        for (; iters->slash_names_i < ig->slash_names_len; iters->slash_names_i++) {
+            int cmp = strcmp(slash_filename, ig->slash_names[iters->slash_names_i]);
+            if (cmp == 0) {
+                log_debug("file %s ignored because name matches slash static pattern %s", temp, ig->slash_names[iters->slash_names_i]);
+                free(temp);
+                return 1;
+            }
+            log_debug("file %s doesn't match slash static pattern %s at index %d", temp, ig->slash_names[iters->slash_names_i], iters->slash_names_i);
+            if (cmp < 0) {
+                break;
+            }
         }
 
         for (i = 0; i < ig->names_len; i++) {
@@ -344,7 +357,7 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
 }
 
 /* This function is REALLY HOT. It gets called for every file */
-int filename_filter(const char *path, const struct dirent *dir, void *baton) {
+int filename_filter(const char *path, const struct dirent *dir, void *baton_) {
     const char *filename = dir->d_name;
 /* TODO: don't call strlen on filename every time we call filename_filter() */
 #ifdef HAVE_DIRENT_DNAMLEN
@@ -353,12 +366,14 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     size_t filename_len = strlen(filename);
 #endif
     size_t i;
-    scandir_baton_t *scandir_baton = (scandir_baton_t *)baton;
-    const ignores *ig = scandir_baton->ig;
-    const char *base_path = scandir_baton->base_path;
-    const size_t base_path_len = scandir_baton->base_path_len;
+    scandir_baton_t *baton = (scandir_baton_t *)baton_;
+    struct ignore_iters *iters = &baton->iters;
+    const ignores *ig = baton->ig;
+    const char *base_path = baton->base_path;
+    const size_t base_path_len = baton->base_path_len;
     const char *path_start = path;
     char *temp;
+    int search_slashes = 1;
 
     if (!opts.search_hidden_files && filename[0] == '.') {
         return 0;
@@ -401,7 +416,7 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         }
     }
 
-    while (ig != NULL) {
+    while (1) {
         if (strncmp(filename, "./", 2) == 0) {
             filename++;
             filename_len--;
@@ -415,19 +430,32 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
             }
         }
 
-        if (path_ignore_search(ig, path_start, filename)) {
+        if (path_ignore_search(ig, iters, search_slashes, path_start, filename)) {
             return 0;
         }
 
         if (is_directory(path, dir) && filename[filename_len - 1] != '/') {
             ag_asprintf(&temp, "%s/", filename);
-            int rv = path_ignore_search(ig, path_start, temp);
+            int rv = path_ignore_search(ig, iters, search_slashes, path_start, temp);
             free(temp);
             if (rv) {
                 return 0;
             }
         }
+
         ig = ig->parent;
+        if (ig == NULL) {
+            break;
+        }
+        if (iters->parent == NULL) {
+            iters->parent = malloc(sizeof(*iters->parent));
+            if (iters->parent == NULL) {
+                return -1;
+            }
+            *iters->parent = (struct ignore_iters){0, 0, 0, 0, NULL};
+        }
+        iters = iters->parent;
+        search_slashes = 0;
     }
 
     log_debug("%s not ignored", filename);

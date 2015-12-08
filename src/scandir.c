@@ -23,7 +23,10 @@ int ag_scandir(const char *dirname,
     }
 
     for (i = 0; i < scanned_names_len; i++) {
-        if ((*filter)(dirname, scanned_names[i], baton) == FALSE) {
+        int result = (*filter)(dirname, scanned_names[i], baton);
+        if (result == -1) {
+            goto fail;
+        } else if (result == 0) {
             free(scanned_names[i]);
             scanned_names[i] = NULL;
             continue;
