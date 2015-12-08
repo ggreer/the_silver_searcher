@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <fnmatch.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -50,6 +51,19 @@ char *ag_strndup(const char *s, size_t size) {
     strlcpy(str, s, size + 1);
     return str;
 #endif
+}
+
+void ag_insert_str_sorted(char ***arr, size_t *len, const char *el, size_t el_len) {
+    ++*len;
+    *arr = ag_realloc(*arr, *len * sizeof(char **));
+    /* TODO: de-dupe */
+    for (size_t i = *len - 1; i > 0; i--) {
+        if (strcmp(el, (*arr)[i - 1]) > 0) {
+            break;
+        }
+        (*arr)[i] = (*arr)[i - 1];
+    }
+    (*arr)[i] = ag_strndup(el, el_len);
 }
 
 void free_strings(char **strs, const size_t strs_len) {
@@ -494,6 +508,154 @@ void die(const char *fmt, ...) {
     vplog(LOG_LEVEL_ERR, fmt, args);
     va_end(args);
     exit(2);
+}
+
+/*
+ * Compares the leading directories of two paths.
+ * Returns 0 if a matches b.
+ * Returns 1 if a is alphabetically after b.
+ * Returns -1 if a is alphabetically before b.
+ * Returns 2 if b describes a subdirectory of a.
+ * Returns -2 if a describes a subdirectory of b.
+ * Returns 3 otherwise.
+ */
+int cmp_leading_dir(const char *a, const char *b) {
+    char *a_slash, *b_slash;
+    size_t a_len, b_len;
+    int cmp;
+    a_slash = strchr(a, '/');
+    b_slash = strchr(b, '/');
+    if (a_slash) {
+        a_len = a_slash - a;
+    } else {
+        a_len = strlen(a);
+    }
+    if (b_slash) {
+        b_len = b_slash - b;
+    } else {
+        b_len = strlen(b);
+    }
+
+    if (a_len != b_len) {
+        cmp = strncmp(a, b, a_len > b_len ? b_len : a_len);
+        if (cmp == 0) {
+            return a_len > b_len ? 1 : -1;
+        } else {
+            return cmp > 0 ? 1 : -1;
+        }
+    }
+
+    cmp = strncmp(a, b, a_len);
+    if (cmp) {
+        return cmp > 0 ? 1 : -1;
+    }
+
+    int a_is_last, b_is_last;
+    a_is_last = a[a_len] == '\0' || (a[a_len] == '/' && a[a_len + 1] == '\0');
+    b_is_last = b[b_len] == '\0' || (b[b_len] == '/' && b[b_len + 1] == '\0');
+    if (a_is_last && b_is_last) {
+        return 0;
+    } else if (!a_is_last && a_is_last) {
+        return -2;
+    } else if (a_is_last && !b_is_last) {
+        return 2;
+    } else { /* a[a_len] == '/' && b[b_len] == '/' */
+        return 3;
+    }
+}
+
+static int globstrcmp(char *a, char *b) {
+    while (1) {
+        if (*a == '\0') {
+            if (*b == '\0') {
+                return 0;
+            } else {
+                return -1;
+            }
+        } else if (*b == '\0') {
+            return 1;
+        } else if (*b == '?' || *b == '*' || *b == '[') {
+            return -1;
+        } else if (*a != *b) {
+            return *a > *b ? 1 : -1;
+        }
+
+        a++;
+        b++;
+    }
+}
+
+/*
+ * Compares the leading directories of two paths.
+ * Returns 0 if a matches b.
+ * Returns 1 if a is alphabetically after b.
+ * Returns -1 if a is alphabetically before b.
+ * Returns 2 if b describes a subdirectory of a.
+ * Returns 3 otherwise.
+ */
+int cmp_leading_dir_glob(char *a, char *b) {
+    char *a_slash, *b_slash;
+    char a_old_end, b_old_end;
+    size_t a_len, b_len;
+    int ret;
+
+    a_slash = strchr(a, '/');
+    b_slash = strchr(b, '/');
+    if (a_slash) {
+        a_len = a_slash - a;
+        a_old_end = a[a_len];
+        a[a_len] = '\0';
+    } else {
+        a_len = strlen(a);
+        a_old_end = '\0';
+    }
+    if (b_slash) {
+        b_len = b_slash - b;
+        b_old_end = b[b_len];
+        b[b_len] = '\0';
+    } else {
+        b_len = strlen(b);
+        b_old_end = '\0';
+    }
+
+    int cmp = fnmatch(b, a, FNM_PATHNAME);
+    if (cmp == FNM_NOMATCH) {
+        ret = globstrcmp(a, b);
+        goto done;
+    }
+    if (cmp != 0) {
+        ret = 3;
+        goto done;
+    }
+
+    int a_is_last, b_is_last;
+    a_is_last = a_old_end == '\0' || (a_old_end == '/' && a[a_len + 1] == '\0');
+    b_is_last = b_old_end == '\0' || (b_old_end == '/' && b[b_len + 1] == '\0');
+    if (a_is_last && b_is_last) {
+        ret = 0;
+        goto done;
+    } else if (a_is_last && !b_is_last) {
+        ret = 2;
+        goto done;
+    } else {
+        ret = 3;
+        goto done;
+    }
+
+    done:
+    a[a_len] = a_old_end;
+    b[b_len] = b_old_end;
+    return ret;
+}
+
+size_t ag_subdir(const char **str) {
+    const char *slash = strchr(*str, '/');
+    if (slash == NULL) {
+        *str += strlen(*str);
+        return 0;
+    }
+    *str = slash + 1;
+    return strlen(*str);
 }
 
 #ifndef HAVE_FGETLN

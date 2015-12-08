@@ -17,10 +17,20 @@ struct ignores {
     char **slash_names; /* Same but starts with a slash */
     size_t slash_names_len;
 
+    char **partial_names; /* Partial matches from the parent directory. */
+    size_t partial_names_len;
+    char **partial_slash_names;
+    size_t partial_slash_names_len;
+
     char **globs; /* For patterns that need fnmatch */
     size_t globs_len;
     char **slash_globs;
     size_t slash_globs_len;
+
+    char **partial_globs;
+    size_t partial_globs_len;
+    char **partial_slash_globs;
+    size_t partial_slash_globs_len;
 
     char **regexes; /* For patterns that need PCRE, e.g. in .hgignore with syntax: regexp */
     size_t regexes_len;
@@ -35,13 +45,14 @@ struct ignores {
     struct ignores *parent;
 };
 typedef struct ignores ignores;
+struct ag_dirent;
 
 ignores *root_ignores;
 
 extern const char *evil_hardcoded_ignore_files[];
 extern const char *ignore_pattern_files[];
 
-ignores *init_ignore(ignores *parent, const char *dirname, const size_t dirname_len);
+ignores *init_ignore(ignores *parent, const char *dirname, const size_t dirname_len, struct ag_dirent *partials);
 void cleanup_ignore(ignores *ig);
 
 void add_ignore_pattern(ignores *ig, const char *pattern);
@@ -49,7 +60,7 @@ void add_ignore_pattern(ignores *ig, const char *pattern);
 void load_ignore_patterns(ignores *ig, const char *path);
 void load_svn_ignore_patterns(ignores *ig, const char *path);
 
-int filename_filter(const char *path, const struct dirent *dir, void *baton);
+int filename_filter(const char *path, struct ag_dirent *ag_dir, void *baton);
 
 int is_empty(ignores *ig);
 

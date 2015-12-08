@@ -5,10 +5,10 @@
 #include "util.h"
 
 int ag_scandir(const char *dirname,
-               struct dirent ***namelist,
+               struct ag_dirent ***namelist,
                filter_fp filter,
                void *baton) {
-    struct dirent **results = NULL;
+    struct ag_dirent **results = NULL;
     struct dirent **scanned_names = NULL;
     int i, scanned_names_len, results_len = 0;
 
@@ -17,21 +17,29 @@ int ag_scandir(const char *dirname,
         goto fail;
     }
 
-    results = malloc(sizeof(struct dirent *) * scanned_names_len);
+    results = malloc(sizeof(struct ag_dirent *) * scanned_names_len);
     if (results == NULL) {
         goto fail;
     }
 
     for (i = 0; i < scanned_names_len; i++) {
-        int result = (*filter)(dirname, scanned_names[i], baton);
+        struct ag_dirent *ag_dir = malloc(sizeof(struct ag_dirent));
+        if (ag_dir == NULL) {
+            goto fail;
+        }
+        *ag_dir = (struct ag_dirent){scanned_names[i], NULL, 0, NULL, 0};
+        int result = (*filter)(dirname, ag_dir, baton);
         if (result == -1) {
             goto fail;
         } else if (result == 0) {
             free(scanned_names[i]);
+            free(ag_dir->partial_name_matches);
+            free(ag_dir->partial_glob_matches);
+            free(ag_dir);
             scanned_names[i] = NULL;
             continue;
         }
-        results[results_len] = scanned_names[i];
+        results[results_len] = ag_dir;
         results_len++;
     }
 
@@ -41,7 +49,11 @@ int ag_scandir(const char *dirname,
 fail:
     if (results != NULL) {
         for (i = 0; i < results_len; i++) {
-            free(results[i]);
+            if (results[i] != NULL) {
+                free(results[i]->partial_name_matches);
+                free(results[i]->partial_glob_matches);
+                free(results[i]);
+            }
         }
         free(results);
     }
