@@ -397,7 +397,11 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
                 const char *subdir = ig->partial_globs[i];
                 size_t subdir_len = ag_subdir(&subdir);
                 log_debug("file %s's subdirectories may match glob pattern %s; adding subdir %s to child's ignores", temp, ig->partial_globs[i], subdir);
-                ag_insert_str_sorted(&ag_dir->partial_glob_matches, &ag_dir->partial_glob_matches_len, subdir, subdir_len);
+                if (is_fnmatch(subdir)) {
+                    ag_insert_str_sorted(&ag_dir->partial_glob_matches, &ag_dir->partial_glob_matches_len, subdir, subdir_len);
+                } else {
+                    ag_insert_str_sorted(&ag_dir->partial_name_matches, &ag_dir->partial_name_matches_len, subdir, subdir_len);
+                }
             } else {
                 log_debug("pattern %s doesn't match file %s", ig->partial_globs[i], filename);
             }
