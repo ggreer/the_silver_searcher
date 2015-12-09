@@ -27,7 +27,7 @@ int ag_scandir(const char *dirname,
         if (ag_dir == NULL) {
             goto fail;
         }
-        *ag_dir = (struct ag_dirent){scanned_names[i], NULL, 0, NULL, 0};
+        *ag_dir = (struct ag_dirent){ scanned_names[i], NULL, 0, NULL, 0 };
         int result = (*filter)(dirname, ag_dir, baton);
         if (result == -1) {
             goto fail;
@@ -60,7 +60,7 @@ fail:
     }
     if (scanned_names != NULL) {
         for (i = 0; i < scanned_names_len; i++) {
-            free (scanned_names[i]);
+            free(scanned_names[i]);
         }
     }
     free(scanned_names);

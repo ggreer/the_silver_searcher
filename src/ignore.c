@@ -270,7 +270,7 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
         log_debug("file %s ignored because name matches static pattern %s", filename, ig->names[match_pos]);
         return 1;
     }
- 
+
     ag_asprintf(&temp, "%s/%s", path[0] == '.' ? path + 2 : path, filename);
 
     if (strncmp(temp, ig->abs_path, ig->abs_path_len) == 0) {
@@ -443,7 +443,8 @@ int filename_filter(const char *path, struct ag_dirent *ag_dir, void *baton_) {
         return 1;
     }
 
-    for (i = 0; base_path[i] == path[i] && i < base_path_len; i++);
+    for (i = 0; base_path[i] == path[i] && i < base_path_len; i++)
+        ;
     if (i + 2 > base_path_len) {
         if (path[base_path_len] == '/') {
             path_start = path + base_path_len + 1;
@@ -495,7 +496,7 @@ int filename_filter(const char *path, struct ag_dirent *ag_dir, void *baton_) {
             if (iters->parent == NULL) {
                 return -1;
             }
-            *iters->parent = (struct ignore_iters){0, 0, 0, NULL};
+            *iters->parent = (struct ignore_iters){ 0, 0, 0, NULL };
         }
         iters = iters->parent;
         search_slashes = 0;

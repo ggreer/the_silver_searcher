@@ -648,7 +648,7 @@ int cmp_leading_dir_glob(char *a, char *b) {
         goto done;
     }
 
-    done:
+done:
     a[a_len] = a_old_end;
     b[b_len] = b_old_end;
     return ret;
