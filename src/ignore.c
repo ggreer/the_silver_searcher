@@ -271,7 +271,11 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
         return 1;
     }
 
-    ag_asprintf(&temp, "%s/%s", path[0] == '.' ? path + 2 : path, filename);
+    if (strncmp(".", path, 2) == 0) {
+        temp = ag_strdup(filename);
+    } else {
+        ag_asprintf(&temp, "%s/%s", path[0] == '.' ? path + 2 : path, filename);
+    }
 
     if (strncmp(temp, ig->abs_path, ig->abs_path_len) == 0) {
         char *slash_filename = temp + ig->abs_path_len;
