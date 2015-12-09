@@ -59,10 +59,11 @@ char *ag_strndup(const char *s, size_t size) {
 }
 
 void ag_insert_str_sorted(char ***arr, size_t *len, char *el, size_t el_len, int copy) {
+    size_t i;
     ++*len;
     *arr = ag_realloc(*arr, *len * sizeof(char **));
     /* TODO: de-dupe */
-    for (size_t i = *len - 1; i > 0; i--) {
+    for (i = *len - 1; i > 0; i--) {
         if (strcmp(el, (*arr)[i - 1]) > 0) {
             break;
         }
