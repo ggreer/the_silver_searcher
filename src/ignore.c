@@ -443,11 +443,19 @@ int filename_filter(const char *path, struct ag_dirent *ag_dir, void *baton_) {
         return 1;
     }
 
-    for (i = 0; base_path[i] == path[i] && i < base_path_len; i++) {
-        /* base_path always ends with "/\0" while path doesn't, so this is safe */
+    for (i = 0; base_path[i] == path[i] && i < base_path_len; i++);
+    if (i + 2 > base_path_len) {
+        if (path[base_path_len] == '/') {
+            path_start = path + base_path_len + 1;
+        } else {
+            path_start = path + base_path_len;
+        }
+    } else if (!strncmp(path, ".", 2)) {
+        path_start = path + 1;
+    } else {
         path_start = path + i + 2;
     }
-    log_debug("path_start %s filename %s", path_start, filename);
+    log_debug("path_start %s filename %s basepath \"%s\" path \"%s\"", path_start, filename, base_path, path);
 
     const char *extension = strchr(filename, '.');
     if (extension) {
