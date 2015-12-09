@@ -7,9 +7,6 @@ struct ignore_iters {
     size_t names_i;
     size_t slash_names_i;
     size_t partial_names_i;
-    size_t globs_i;
-    size_t slash_globs_i;
-    size_t partial_globs_i;
     struct ignore_iters *parent;
 };
 

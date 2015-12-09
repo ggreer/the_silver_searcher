@@ -13,6 +13,11 @@
 #define flockfile(x)
 #define funlockfile(x)
 #define getc_unlocked(x) getc(x)
+#include <shlwapi.h>
+#define fnmatch(x, y, z) (!PathMatchSpec(y, x))
+#else
+#include <fnmatch.h>
+const int fnmatch_flags = FNM_PATHNAME;
 #endif
 
 #define CHECK_AND_RETURN(ptr)             \
@@ -53,7 +58,7 @@ char *ag_strndup(const char *s, size_t size) {
 #endif
 }
 
-void ag_insert_str_sorted(char ***arr, size_t *len, const char *el, size_t el_len) {
+void ag_insert_str_sorted(char ***arr, size_t *len, char *el, size_t el_len, int copy) {
     ++*len;
     *arr = ag_realloc(*arr, *len * sizeof(char **));
     /* TODO: de-dupe */
@@ -63,7 +68,7 @@ void ag_insert_str_sorted(char ***arr, size_t *len, const char *el, size_t el_le
         }
         (*arr)[i] = (*arr)[i - 1];
     }
-    (*arr)[i] = ag_strndup(el, el_len);
+    (*arr)[i] = copy ? ag_strndup(el, el_len) : el;
 }
 
 void free_strings(char **strs, const size_t strs_len) {
@@ -648,8 +653,8 @@ int cmp_leading_dir_glob(char *a, char *b) {
     return ret;
 }
 
-size_t ag_subdir(const char **str) {
-    const char *slash = strchr(*str, '/');
+size_t ag_subdir(char **str) {
+    char *slash = strchr(*str, '/');
     if (slash == NULL) {
         *str += strlen(*str);
         return 0;

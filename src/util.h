@@ -28,7 +28,7 @@ void *ag_calloc(size_t nelem, size_t elsize);
 char *ag_strdup(const char *s);
 char *ag_strndup(const char *s, size_t size);
 
-void ag_insert_str_sorted(char ***arr, size_t *len, const char *el, size_t el_len);
+void ag_insert_str_sorted(char ***arr, size_t *len, char *el, size_t el_len, int copy);
 
 typedef struct {
     size_t start; /* Byte at which the match starts */
@@ -97,7 +97,7 @@ void die(const char *fmt, ...);
 
 int cmp_leading_dir(const char *a, const char *b);
 int cmp_leading_dir_glob(char *a, char *b);
-size_t ag_subdir(const char **str);
+size_t ag_subdir(char **str);
 
 void ag_asprintf(char **ret, const char *fmt, ...);
 

@@ -43,6 +43,7 @@ int ag_scandir(const char *dirname,
         results_len++;
     }
 
+    free(scanned_names);
     *namelist = results;
     return results_len;
 
@@ -62,5 +63,6 @@ fail:
             free (scanned_names[i]);
         }
     }
+    free(scanned_names);
     return -1;
 }

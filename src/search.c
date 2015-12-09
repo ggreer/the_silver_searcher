@@ -454,7 +454,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
     }
 
     scandir_baton.ig = ig;
-    scandir_baton.iters = (struct ignore_iters){0, 0, 0, 0, NULL};
+    scandir_baton.iters = (struct ignore_iters){0, 0, 0, NULL};
     scandir_baton.base_path = base_path;
     scandir_baton.base_path_len = base_path ? strlen(base_path) : 0;
     results = ag_scandir(path, &dir_list, &filename_filter, &scandir_baton);
