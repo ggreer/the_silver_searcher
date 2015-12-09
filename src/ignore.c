@@ -379,10 +379,28 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
         } else if (cmp == 2) {
             const char *subdir = ig->globs[i];
             size_t subdir_len = ag_subdir(&subdir);
-            log_debug("file %s's subdirectories may match glob pattern %s; adding subdir %s to child's ignores", temp, ig->globs[iters->globs_i], subdir);
+            log_debug("file %s's subdirectories may match glob pattern %s; adding subdir %s to child's ignores", temp, ig->globs[i], subdir);
             ag_insert_str_sorted(&ag_dir->partial_glob_matches, &ag_dir->partial_glob_matches_len, subdir, subdir_len);
         } else {
             log_debug("pattern %s doesn't match file %s", ig->globs[i], filename);
+        }
+    }
+
+    if (search_slashes) {
+        for (i = 0; i < ig->partial_globs_len; i++) {
+            int cmp = cmp_leading_dir_glob((char *)filename, ig->partial_globs[i]);
+            if (cmp == 0) {
+                log_debug("file %s ignored because name matches glob pattern %s", filename, ig->partial_globs[i]);
+                free(temp);
+                return 1;
+            } else if (cmp == 2) {
+                const char *subdir = ig->partial_globs[i];
+                size_t subdir_len = ag_subdir(&subdir);
+                log_debug("file %s's subdirectories may match glob pattern %s; adding subdir %s to child's ignores", temp, ig->partial_globs[i], subdir);
+                ag_insert_str_sorted(&ag_dir->partial_glob_matches, &ag_dir->partial_glob_matches_len, subdir, subdir_len);
+            } else {
+                log_debug("pattern %s doesn't match file %s", ig->partial_globs[i], filename);
+            }
         }
     }
 

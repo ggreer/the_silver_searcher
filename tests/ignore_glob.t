@@ -8,6 +8,7 @@ Setup:
 Ignore foo.yml but not blah.yml:
 
   $ ag whatever .
+  [1]
 
 Dont ignore anything (unrestricted search):
 
