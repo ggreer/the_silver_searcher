@@ -270,12 +270,8 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
         log_debug("file %s ignored because name matches static pattern %s", filename, ig->names[match_pos]);
         return 1;
     }
-
-    if (strncmp(".", path, 2) == 0) {
-        temp = ag_strdup(filename);
-    } else {
-        ag_asprintf(&temp, "%s/%s", path[0] == '.' ? path + 2 : path, filename);
-    }
+ 
+    ag_asprintf(&temp, "%s/%s", path[0] == '.' ? path + 2 : path, filename);
 
     if (strncmp(temp, ig->abs_path, ig->abs_path_len) == 0) {
         char *slash_filename = temp + ig->abs_path_len;
