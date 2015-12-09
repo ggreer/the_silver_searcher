@@ -32,11 +32,6 @@ struct ignores {
     char **partial_slash_globs;
     size_t partial_slash_globs_len;
 
-    char **regexes; /* For patterns that need PCRE, e.g. in .hgignore with syntax: regexp */
-    size_t regexes_len;
-    char **slash_regexes;
-    size_t slash_regexes_len;
-
     const char *dirname;
     size_t dirname_len;
     char *abs_path;

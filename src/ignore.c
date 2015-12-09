@@ -49,11 +49,6 @@ ignores *init_ignore(ignores *parent, const char *dirname, const size_t dirname_
     ig->slash_globs = NULL;
     ig->slash_globs_len = 0;
 
-    ig->regexes = NULL;
-    ig->regexes_len = 0;
-    ig->slash_regexes = NULL;
-    ig->slash_regexes_len = 0;
-
     ig->dirname = dirname;
     ig->dirname_len = dirname_len;
 
