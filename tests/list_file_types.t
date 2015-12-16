@@ -124,7 +124,7 @@ Language types are output:
         .m4
   
     --make
-        .Makefiles  .mk  .mak
+        .Makefiles  .mk  .mak  Makefile  GNUmakefile
   
     --mako
         .mako
