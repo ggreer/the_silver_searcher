@@ -569,9 +569,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             pcre_opts |= PCRE_CASELESS;
         }
         if (opts.word_regexp) {
-            char * old_file_search_regex = file_search_regex;
-            ag_asprintf (&file_search_regex, "\\b%s\\b", file_search_regex);
-            free (old_file_search_regex);
+            char *old_file_search_regex = file_search_regex;
+            ag_asprintf(&file_search_regex, "\\b%s\\b", file_search_regex);
+            free(old_file_search_regex);
         }
         compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, file_search_regex, pcre_opts, 0);
         free(file_search_regex);
