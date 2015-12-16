@@ -73,6 +73,7 @@ lang_spec_t langs[] = {
     { "rust", { "rs" }, {} },
     { "salt", { "sls" }, {} },
     { "sass", { "sass", "scss" }, {} },
+    { "scons", { "py" }, {"SConstruct"} },
     { "scala", { "scala" }, {} },
     { "scheme", { "scm", "ss" }, {} },
     { "shell", { "sh", "bash", "csh", "tcsh", "ksh", "zsh" }, {} },

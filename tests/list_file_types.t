@@ -210,6 +210,9 @@ Language types are output:
     --sass
         .sass  .scss
   
+    --scons
+        .py  SConstruct
+  
     --scala
         .scala
   
