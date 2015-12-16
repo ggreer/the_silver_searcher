@@ -33,6 +33,9 @@ Language types are output:
     --clojure
         .clj  .cljs  .cljc  .cljx
   
+    --cmake
+        .cmake  CMakeLists.txt
+  
     --coffee
         .coffee  .cjsx
   
