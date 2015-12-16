@@ -211,8 +211,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     option_t *longopts;
     char *lang_regex = NULL;
     size_t *ext_index = NULL;
-    char *extensions = NULL;
-    size_t num_exts = 0;
+    char *extensions = NULL, *full_filenames = NULL;
+    size_t num_exts = 0, num_names = 0;
 
     init_options();
 
@@ -574,12 +574,16 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 
     if (ext_index[0]) {
         num_exts = combine_file_extensions(ext_index, lang_num, &extensions);
-        lang_regex = make_lang_regex(extensions, num_exts);
+        num_names = combine_full_filenames(ext_index, lang_num, &full_filenames);
+        lang_regex = make_lang_regex(extensions, num_exts, full_filenames, num_names);
         compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, lang_regex, 0, 0);
     }
 
     if (extensions) {
         free(extensions);
+    }
+    if (full_filenames) {
+        free(full_filenames);
     }
     free(ext_index);
     if (lang_regex) {
@@ -616,6 +620,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             int j;
             for (j = 0; j < MAX_EXTENSIONS && langs[lang_index].extensions[j]; j++) {
                 printf("  .%s", langs[lang_index].extensions[j]);
+            }
+            for (j = 0; j < MAX_FILENAMES && langs[lang_index].full_filenames[j]; j++) {
+                printf("  %s", langs[lang_index].full_filenames[j]);
             }
             printf("\n\n");
         }
