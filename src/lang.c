@@ -63,6 +63,7 @@ lang_spec_t langs[] = {
     { "plone", { "pt", "cpt", "metadata", "cpy", "py" } },
     { "puppet", { "pp" } },
     { "python", { "py" } },
+    { "qml", { "qml" } },
     { "racket", { "rkt", "ss", "scm" } },
     { "rake", { "Rakefiles" } },
     { "restructuredtext", { "rst" } },

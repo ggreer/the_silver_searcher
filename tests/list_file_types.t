@@ -180,6 +180,9 @@ Language types are output:
     --python
         .py
   
+    --qml
+        .qml
+  
     --racket
         .rkt  .ss  .scm
   
