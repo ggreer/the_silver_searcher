@@ -33,6 +33,9 @@ Language types are output:
     --clojure
         .clj  .cljs  .cljc  .cljx
   
+    --cmake
+        .cmake  CMakeLists.txt
+  
     --coffee
         .coffee  .cjsx
   
@@ -124,7 +127,7 @@ Language types are output:
         .m4
   
     --make
-        .Makefiles  .mk  .mak
+        .Makefiles  .mk  .mak  Makefile  GNUmakefile
   
     --mako
         .mako
@@ -209,6 +212,9 @@ Language types are output:
   
     --sass
         .sass  .scss
+  
+    --scons
+        .py  SConstruct
   
     --scala
         .scala
