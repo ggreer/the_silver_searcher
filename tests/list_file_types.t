@@ -100,7 +100,7 @@ Language types are output:
         .java  .properties
   
     --js
-        .js  .jsx
+        .js  .jsx  .vue
   
     --json
         .json
