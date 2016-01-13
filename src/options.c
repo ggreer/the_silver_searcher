@@ -206,6 +206,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     int rv;
     size_t lang_count;
     size_t lang_num = 0;
+    int has_filetype = 0;
 
     size_t longopts_len, full_len;
     option_t *longopts;
@@ -544,6 +545,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 
                 for (i = 0; i < lang_count; i++) {
                     if (strcmp(longopts[opt_index].name, langs[i].name) == 0) {
+                        has_filetype = 1;
                         ext_index[lang_num++] = i;
                         break;
                     }
@@ -572,7 +574,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         free(file_search_regex);
     }
 
-    if (ext_index[0]) {
+    if (has_filetype) {
         num_exts = combine_file_extensions(ext_index, lang_num, &extensions);
         lang_regex = make_lang_regex(extensions, num_exts);
         compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, lang_regex, 0, 0);
