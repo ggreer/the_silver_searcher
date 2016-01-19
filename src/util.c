@@ -9,6 +9,7 @@
 #include "config.h"
 
 #ifdef _WIN32
+#include <windows.h>
 #define flockfile(x)
 #define funlockfile(x)
 #define getc_unlocked(x) getc(x)
