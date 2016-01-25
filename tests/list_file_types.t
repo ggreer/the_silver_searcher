@@ -270,6 +270,9 @@ Language types are output:
     --vim
         .vim
   
+    --wix
+        .wxi  .wxs
+  
     --wsdl
         .wsdl
   
