@@ -609,6 +609,14 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         }
     }
 
+#ifdef HAVE_PLEDGE
+    if (opts.skip_vcs_ignores) {
+        if (pledge("stdio rpath proc", NULL) == -1) {
+            die("pledge: %s", strerror(errno));
+        }
+    }
+#endif
+
     if (help) {
         usage();
         exit(0);
@@ -667,6 +675,12 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             pclose(gitconfig_file);
         }
     }
+
+#ifdef HAVE_PLEDGE
+    if (pledge("stdio rpath proc", NULL) == -1) {
+        die("pledge: %s", strerror(errno));
+    }
+#endif
 
     if (opts.context > 0) {
         opts.before = opts.context;
