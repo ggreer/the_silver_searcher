@@ -172,7 +172,7 @@ Language types are output:
         .pike  .pmod
   
     --plone
-        .pt  .cpt  .metadata  .cpy  .py
+        .pt  .cpt  .metadata  .cpy  .py  .xml  .zcml
   
     --puppet
         .pp
