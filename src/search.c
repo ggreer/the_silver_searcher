@@ -1,5 +1,6 @@
 #include "search.h"
 #include "scandir.h"
+
 #ifdef HAVE_ZIP_H
 #include <zip.h>
 
@@ -47,18 +48,17 @@ void process_zip(const char *buf, const size_t buf_len, const char *file_full_pa
             zip_stat_index(za, i, ZIP_FL_UNCHANGED, &zst);
             _buf_len = zst.size;
             zf = zip_fopen_index(za, i, ZIP_FL_UNCHANGED);
+            _buf = malloc(_buf_len);
             log_debug("bytes read %i", zip_fread(zf, _buf, _buf_len));
             if (_buf == NULL || _buf_len == 0) {
                 log_err("Cannot decompress zipped file %s", newname);
                 continue;
             }
             search_buf(_buf, _buf_len, newname);
-            zip_fclose(zf);
             free(newname);
             free(_buf);
     	}
     }
-
     zip_close(za);
 }
 #endif
@@ -371,15 +371,17 @@ void search_file(const char *file_full_path) {
 #endif
                 goto cleanup;
             }
-            int _buf_len = (int)f_len;
-            char *_buf = decompress(zip_type, buf, f_len, file_full_path, &_buf_len);
-            if (_buf == NULL || _buf_len == 0) {
-                log_err("Cannot decompress zipped file %s", file_full_path);
+            else {
+                int _buf_len = (int)f_len;
+                char *_buf = decompress(zip_type, buf, f_len, file_full_path, &_buf_len);
+                if (_buf == NULL || _buf_len == 0) {
+                    log_err("Cannot decompress zipped file %s", file_full_path);
+                    goto cleanup;
+                }
+                search_buf(_buf, _buf_len, file_full_path);
+                free(_buf);
                 goto cleanup;
             }
-            search_buf(_buf, _buf_len, file_full_path);
-            free(_buf);
-            goto cleanup;
         }
     }
 
