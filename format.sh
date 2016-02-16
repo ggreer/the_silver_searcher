@@ -22,18 +22,21 @@ then
     exit 1
 fi
 
-SOURCE_FILES=`git ls-files src/`
+SOURCE_FILES=$(git ls-files src/)
 
 if [ "$1" == "reformat" ]
 then
     echo "Reformatting source files"
+    # shellcheck disable=2086
     echo $CLANG_FORMAT -style=file -i $SOURCE_FILES
+    # shellcheck disable=2086
     $CLANG_FORMAT -style=file -i $SOURCE_FILES
     exit 0
 elif  [ "$1" == "test" ]
 then
-    RESULT=`$CLANG_FORMAT -style=file -output-replacements-xml $SOURCE_FILES | grep -c '<replacement '`
-    if [ $RESULT -eq 0 ]
+    # shellcheck disable=2086
+    RESULT=$($CLANG_FORMAT -style=file -output-replacements-xml $SOURCE_FILES | grep -c '<replacement ')
+    if [ "$RESULT" -eq 0 ]
     then
         echo "code is formatted correctly :)"
         exit 0
