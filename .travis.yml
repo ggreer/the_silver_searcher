@@ -25,7 +25,7 @@ before_script:
   - sudo pip install cram
   - wget http://nih.at/libzip/libzip-1.1.1.tar.gz -O /tmp/libzip-1.1.1.tar.gz
   - tar -xvf /tmp/libzip-1.1.1.tar.gz
-  - cd /tmp/libzip-1.1.1
+  - cd libzip-1.1.1
   - ./configure && make && make install
 
 script:
