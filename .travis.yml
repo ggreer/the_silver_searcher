@@ -17,7 +17,7 @@ before_install:
   - sudo add-apt-repository -y 'deb http://llvm.org/apt/precise/ llvm-toolchain-precise-3.6 main'
   - curl http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
   - sudo apt-get update -q
-  - sudo apt-get install -q -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev libzip-dev
+  - sudo apt-get install -q -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev
   - sudo apt-get install -y clang-format-3.6
 
 before_script:
@@ -25,3 +25,7 @@ before_script:
 
 script:
   - ./build.sh && make test
+  - wget http://nih.at/libzip/libzip-1.1.1.tar.gz -O /tmp/libzip-1.1.1.tar.gz
+  - tar -xvf /tmp/libzip-1.1.1.tar.gz
+  - cd /tmp/libzip-1.1.1
+  - ./configure && make && make install
