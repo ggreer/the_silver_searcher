@@ -7,7 +7,7 @@ branches:
 
 notifications:
   email:
-    - geoff@greer.fm
+    - mail@jschpp.de
 
 compiler:
   - clang
