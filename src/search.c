@@ -7,23 +7,23 @@
 void process_zip(const char *buf, const size_t buf_len, const char *file_full_path) {
     size_t len1, len2;
     len1 = strlen(file_full_path);
-    zip_t *za = NULL;
+    struct zip *za = NULL;
     const char slash = '/'; // needed for 'string' concat
-    zip_source_t *src;
-    zip_error_t error;
+    struct zip_source *src;
+    struct zip_error error;
 
     zip_error_init(&error);
     /* create source from buffer */
     if ((src = zip_source_buffer_create(buf, buf_len, 1, &error)) == NULL) {
-	zip_error_fini(&error);
-	return;
+    	zip_error_fini(&error);
+    	return;
     }
 
     /* open zip archive from source */
     if ((za = zip_open_from_source(src, 0, &error)) == NULL) {
-	zip_source_free(src);
-	zip_error_fini(&error);
-	return;
+    	zip_source_free(src);
+    	zip_error_fini(&error);
+    	return;
     }
     zip_error_fini(&error);
 
