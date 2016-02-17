@@ -52,9 +52,9 @@ AS_IF([test "x$enable_lzma" != "xno"], [
 ])
 
 AC_ARG_ENABLE([libzip],
-    AS_HELP_STRING([--enable-libzip], [Enable libzip compressed search support]))
+    AS_HELP_STRING([--disable-libzip], [Disable libzip compressed search support]))
 
-AS_IF([test "x$enable_libzip" != "xyes"], [
+AS_IF([test "x$enable_libzip" != "xno"], [
     AC_CHECK_HEADERS([zip.h])
 ])
 
