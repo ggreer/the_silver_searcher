@@ -27,7 +27,7 @@ before_script:
   - pushd /tmp
   - tar -xvf /tmp/libzip-1.1.1.tar.gz
   - cd libzip-1.1.1
-  - ./configure && make && sudo make install
+  - ./configure --prefix=/usr && make && sudo make install
   - popd
 
 script:
