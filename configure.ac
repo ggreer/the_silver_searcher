@@ -16,6 +16,7 @@ m4_ifdef(
     [AM_SILENT_RULES([yes])])
 
 PKG_CHECK_MODULES([PCRE], [libpcre])
+PKG_CHECK_MODULES([LIBZIP], [libzip >= 1.0])
 
 m4_include([m4/ax_pthread.m4])
 AX_PTHREAD(
@@ -24,7 +25,7 @@ AX_PTHREAD(
 )
 
 # Run CFLAGS="-pg" ./configure if you want debug symbols
-CFLAGS="$CFLAGS $PTHREAD_CFLAGS $PCRE_CFLAGS -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -Wshadow -Wpointer-arith -Wcast-qual -Wmissing-prototypes -Wno-missing-braces -std=gnu89 -D_GNU_SOURCE -O2"
+CFLAGS="$CFLAGS $PTHREAD_CFLAGS $PCRE_CFLAGS $LIBZIP_CFLAGS -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -Wshadow -Wpointer-arith -Wcast-qual -Wmissing-prototypes -Wno-missing-braces -std=gnu89 -D_GNU_SOURCE -O2"
 LDFLAGS="$LDFLAGS"
 
 case $host in
@@ -48,6 +49,13 @@ AC_ARG_ENABLE([lzma],
 AS_IF([test "x$enable_lzma" != "xno"], [
     AC_CHECK_HEADERS([lzma.h])
     PKG_CHECK_MODULES([LZMA], [liblzma])
+])
+
+AC_ARG_ENABLE([libzip],
+    AS_HELP_STRING([--disable-libzip], [Disable libzip compressed search support]))
+
+AS_IF([test "x$enable_libzip" != "xno"], [
+    AC_CHECK_HEADERS([zip.h])
 ])
 
 AC_CHECK_DECL([PCRE_CONFIG_JIT], [AC_DEFINE([USE_PCRE_JIT], [], [Use PCRE JIT])], [], [#include <pcre.h>])
