@@ -16,7 +16,7 @@ m4_ifdef(
     [AM_SILENT_RULES([yes])])
 
 PKG_CHECK_MODULES([PCRE], [libpcre])
-PKG_CHECK_MODULES([LIBZIP], [libzip])
+PKG_CHECK_MODULES([LIBZIP], [libzip >= 1.0])
 
 m4_include([m4/ax_pthread.m4])
 AX_PTHREAD(
@@ -52,9 +52,9 @@ AS_IF([test "x$enable_lzma" != "xno"], [
 ])
 
 AC_ARG_ENABLE([libzip],
-    AS_HELP_STRING([--disable-libzip], [Disable libzip compressed search support]))
+    AS_HELP_STRING([--enable-libzip], [Enable libzip compressed search support]))
 
-AS_IF([test "x$enable_libzip" != "xno"], [
+AS_IF([test "x$enable_libzip" != "xyes"], [
     AC_CHECK_HEADERS([zip.h])
 ])
 
