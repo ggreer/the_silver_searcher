@@ -66,7 +66,7 @@ typedef struct {
 symdir_t *symhash;
 #ifdef HAVE_ZIP_H
 void process_zip(const char *buf, const size_t buf_len,
-                      const char *file_full_path);
+                 const char *file_full_path);
 #endif
 void search_buf(const char *buf, const size_t buf_len,
                 const char *dir_full_path);

@@ -15,15 +15,15 @@ void process_zip(const char *buf, const size_t buf_len, const char *file_full_pa
     zip_error_init(&error);
     /* create source from buffer */
     if ((src = zip_source_buffer_create(buf, buf_len, 1, &error)) == NULL) {
-    	zip_error_fini(&error);
-    	return;
+        zip_error_fini(&error);
+        return;
     }
 
     /* open zip archive from source */
     if ((za = zip_open_from_source(src, 0, &error)) == NULL) {
-    	zip_source_free(src);
-    	zip_error_fini(&error);
-    	return;
+        zip_source_free(src);
+        zip_error_fini(&error);
+        return;
     }
     zip_error_fini(&error);
 
@@ -31,19 +31,19 @@ void process_zip(const char *buf, const size_t buf_len, const char *file_full_pa
 
     zip_int64_t i;
     for (i = 0; i < num_files; i++) {
-        const char *filename = zip_get_name(za, i,  ZIP_FL_ENC_GUESS);
+        const char *filename = zip_get_name(za, i, ZIP_FL_ENC_GUESS);
         len2 = strlen(filename);
-    	if (filename[len2 - 1] != '/'){
+        if (filename[len2 - 1] != '/') {
             log_debug("filename: %s", filename);
             zip_stat_t zst;
             zip_stat_init(&zst);
             void *_buf = NULL;
             zip_file_t *zf = NULL;
             int _buf_len = 0;
-            char *newname = malloc(len1+len2+2);//+1 for the zero-terminator +1 for another /
+            char *newname = malloc(len1 + len2 + 2); //+1 for the zero-terminator +1 for another /
             memcpy(newname, file_full_path, len1);
-            memcpy(newname+len1, &slash, 1);
-            memcpy(newname+len1 + 1, filename, len2+1);//+1 to copy the null-terminator
+            memcpy(newname + len1, &slash, 1);
+            memcpy(newname + len1 + 1, filename, len2 + 1); //+1 to copy the null-terminator
 
             zip_stat_index(za, i, ZIP_FL_UNCHANGED, &zst);
             _buf_len = zst.size;
@@ -57,7 +57,7 @@ void process_zip(const char *buf, const size_t buf_len, const char *file_full_pa
             search_buf(_buf, _buf_len, newname);
             free(newname);
             free(_buf);
-    	}
+        }
     }
     zip_close(za);
 }
@@ -370,8 +370,7 @@ void search_file(const char *file_full_path) {
                 log_err("Zip files not yet supported: %s", file_full_path);
 #endif
                 goto cleanup;
-            }
-            else {
+            } else {
                 int _buf_len = (int)f_len;
                 char *_buf = decompress(zip_type, buf, f_len, file_full_path, &_buf_len);
                 if (_buf == NULL || _buf_len == 0) {
