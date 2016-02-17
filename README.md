@@ -115,9 +115,9 @@ or
 
         ./build.sh
 
-  On Windows:
+  On Windows (inside an msys/MinGW shell):
 
-        mingw32-make -f Makefile.w32
+        make -f Makefile.w32
 3. Make install:
 
         sudo make install
