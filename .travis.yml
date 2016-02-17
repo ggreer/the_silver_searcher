@@ -4,10 +4,6 @@ branches:
   only:
     - master
 
-notifications:
-  email:
-    - geoff@greer.fm
-
 compiler:
   - clang
   - gcc
