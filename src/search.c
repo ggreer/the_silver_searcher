@@ -52,6 +52,7 @@ void process_zip(const char *buf, const size_t buf_len, const char *file_full_pa
             log_debug("bytes read %i", zip_fread(zf, _buf, _buf_len));
             if (_buf == NULL || _buf_len == 0) {
                 log_err("Cannot decompress zipped file %s", newname);
+                free(newname);
                 continue;
             }
             search_buf(_buf, _buf_len, newname);
