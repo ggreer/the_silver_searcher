@@ -26,4 +26,4 @@ before_script:
   - popd
 
 script:
-  - ./build.sh --enable-zip && make test
+  - ./build.sh --enable-libzip && make test
