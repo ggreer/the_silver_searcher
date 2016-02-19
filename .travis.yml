@@ -3,7 +3,6 @@ language: c
 branches:
   only:
     - master
-    - zip
 
 compiler:
   - clang
@@ -19,12 +18,6 @@ before_install:
 
 before_script:
   - sudo pip install cram
-  - wget http://nih.at/libzip/libzip-1.1.1.tar.gz -O /tmp/libzip-1.1.1.tar.gz
-  - pushd /tmp
-  - tar -xvf /tmp/libzip-1.1.1.tar.gz
-  - cd libzip-1.1.1
-  - ./configure --prefix=/usr && make && sudo make install
-  - popd
 
 script:
   - ./build.sh && make test

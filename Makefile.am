@@ -18,6 +18,11 @@ if HAS_CLANG_FORMAT
 else
 	@echo "clang-format is not available. Skipped clang-format test."
 endif
+if HAS_ZIP_SUPPORT
+	cram -v tests/zip/*.t
+else
+	@echo "ag wasn't compiled with zip support. Skipped zip test."
+endif
 
 test_big: ag
 	cram -v tests/big/*.t
