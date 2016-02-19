@@ -5,8 +5,8 @@ Setup:
 
 Searching zip files is not standard
 
-  $ ag test
+  $ $TESTDIR/../../ag --nocolor --workers=1 --parallel test
   [1]
 
-  $ ag -z test
+  $ $TESTDIR/../../ag --nocolor --workers=1 --parallel -z test
   test_file.zip/test.txt:1:test
