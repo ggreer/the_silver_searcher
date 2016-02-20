@@ -19,7 +19,7 @@ lang_spec_t langs[] = {
     { "crystal", { "cr", "ecr" } },
     { "csharp", { "cs" } },
     { "css", { "css" } },
-    { "cython", {"pyx", "pxd", "pxi"} },
+    { "cython", { "pyx", "pxd", "pxi" } },
     { "delphi", { "pas", "int", "dfm", "nfm", "dof", "dpk", "dproj", "groupproj", "bdsgroup", "bdsproj" } },
     { "ebuild", { "ebuild", "eclass" } },
     { "elisp", { "el" } },
