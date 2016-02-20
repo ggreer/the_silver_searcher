@@ -40,7 +40,7 @@ void process_zip(const char *buf, const size_t buf_len, const char *file_full_pa
             void *_buf = NULL;
             zip_file_t *zf = NULL;
             int _buf_len = 0;
-            char *newname = malloc(len1 + len2 + 2); //+1 for the zero-terminator +1 for another /
+            char *newname = ag_malloc(len1 + len2 + 2); //+1 for the zero-terminator +1 for another /
             memcpy(newname, file_full_path, len1);
             memcpy(newname + len1, &slash, 1);
             memcpy(newname + len1 + 1, filename, len2 + 1); //+1 to copy the null-terminator
@@ -48,7 +48,7 @@ void process_zip(const char *buf, const size_t buf_len, const char *file_full_pa
             zip_stat_index(za, i, ZIP_FL_UNCHANGED, &zst);
             _buf_len = zst.size;
             zf = zip_fopen_index(za, i, ZIP_FL_UNCHANGED);
-            _buf = malloc(_buf_len);
+            _buf = ag_malloc(_buf_len);
             log_debug("bytes read %i", zip_fread(zf, _buf, _buf_len));
             if (_buf == NULL || _buf_len == 0) {
                 log_err("Cannot decompress zipped file %s", newname);
