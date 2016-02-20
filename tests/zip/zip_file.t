@@ -1,6 +1,6 @@
 Setup:
 
-  $ . $TESTDIR/setup.sh
+  $ . $TESTDIR/../setup.sh
   $ cp $TESTDIR/test_file.zip .
 
 Searching zip files is not standard
