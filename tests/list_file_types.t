@@ -47,10 +47,10 @@ Language types are output:
   
     --css
         .css
-   
+  
     --cython
-	.pyx  .pxd  .pxi
-
+        .pyx  .pxd  .pxi
+  
     --delphi
         .pas  .int  .dfm  .nfm  .dof  .dpk  .dproj  .groupproj  .bdsgroup  .bdsproj
   
