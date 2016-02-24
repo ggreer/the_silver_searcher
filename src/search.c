@@ -62,7 +62,7 @@ void process_zip(const char *buf, const size_t buf_len, const char *file_full_pa
             free(_buf);
         }
     }
-    zip_close(za);
+    zip_discard(za);
 }
 #endif
 
