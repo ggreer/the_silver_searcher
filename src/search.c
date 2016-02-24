@@ -14,13 +14,13 @@ void process_zip(const char *buf, const size_t buf_len, const char *file_full_pa
 
     zip_error_init(&error);
     /* create source from buffer */
-    if ((src = zip_source_buffer_create(buf, buf_len, 1, &error)) == NULL) {
+    if ((src = zip_source_buffer_create(buf, buf_len, 0, &error)) == NULL) {
         zip_error_fini(&error);
         return;
     }
 
     /* open zip archive from source */
-    if ((za = zip_open_from_source(src, 0, &error)) == NULL) {
+    if ((za = zip_open_from_source(src, ZIP_RDONLY, &error)) == NULL) {
         zip_source_free(src);
         zip_error_fini(&error);
         return;
@@ -53,14 +53,16 @@ void process_zip(const char *buf, const size_t buf_len, const char *file_full_pa
             if (_buf == NULL || _buf_len == 0) {
                 log_err("Cannot decompress zipped file %s", newname);
                 free(newname);
+                zip_fclose(zf);
                 continue;
             }
             search_buf(_buf, _buf_len, newname);
             free(newname);
+            zip_fclose(zf);
             free(_buf);
         }
     }
-    zip_close(za);
+    zip_discard(za);
 }
 #endif
 
