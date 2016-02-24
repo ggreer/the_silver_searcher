@@ -20,7 +20,7 @@ void process_zip(const char *buf, const size_t buf_len, const char *file_full_pa
     }
 
     /* open zip archive from source */
-    if ((za = zip_open_from_source(src, 0, &error)) == NULL) {
+    if ((za = zip_open_from_source(src, ZIP_RDONLY, &error)) == NULL) {
         zip_source_free(src);
         zip_error_fini(&error);
         return;
