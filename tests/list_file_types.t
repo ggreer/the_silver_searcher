@@ -30,6 +30,9 @@ Language types are output:
     --cfmx
         .cfc  .cfm  .cfml
   
+    --chpl
+        .chpl
+  
     --clojure
         .clj  .cljs  .cljc  .cljx
   
