@@ -14,7 +14,7 @@ void process_zip(const char *buf, const size_t buf_len, const char *file_full_pa
 
     zip_error_init(&error);
     /* create source from buffer */
-    if ((src = zip_source_buffer_create(buf, buf_len, 1, &error)) == NULL) {
+    if ((src = zip_source_buffer_create(buf, buf_len, 0, &error)) == NULL) {
         zip_error_fini(&error);
         return;
     }
