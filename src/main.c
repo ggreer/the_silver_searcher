@@ -35,6 +35,12 @@ int main(int argc, char **argv) {
     int workers_len;
     int num_cores;
 
+#ifdef HAVE_PLEDGE
+    if (pledge("stdio rpath proc exec", NULL) == -1) {
+        die("pledge: %s", strerror(errno));
+    }
+#endif
+
     set_log_level(LOG_LEVEL_WARN);
 
     work_queue = NULL;
@@ -156,6 +162,12 @@ int main(int argc, char **argv) {
             log_debug("No CPU affinity support.");
 #endif
         }
+
+#ifdef HAVE_PLEDGE
+        if (pledge("stdio rpath", NULL) == -1) {
+            die("pledge: %s", strerror(errno));
+        }
+#endif
         for (i = 0; paths[i] != NULL; i++) {
             log_debug("searching path %s for %s", paths[i], opts.query);
             symhash = NULL;

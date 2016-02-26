@@ -48,6 +48,9 @@ Language types are output:
     --css
         .css
   
+    --cython
+        .pyx  .pxd  .pxi
+  
     --delphi
         .pas  .int  .dfm  .nfm  .dof  .dpk  .dproj  .groupproj  .bdsgroup  .bdsproj
   
@@ -110,6 +113,9 @@ Language types are output:
   
     --julia
         .jl
+  
+    --kotlin
+        .kt
   
     --less
         .less
