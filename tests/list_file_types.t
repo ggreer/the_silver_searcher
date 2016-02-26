@@ -111,6 +111,9 @@ Language types are output:
     --julia
         .jl
   
+    --kotlin
+        .kt
+  
     --less
         .less
   
