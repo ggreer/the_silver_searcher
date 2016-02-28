@@ -216,48 +216,48 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                                 fputs(truncate_marker_left, out_fd);
 
                                 if (printing_a_match) {
-                                  if (matches[last_printed_match].end <= i) {
-                                    /* it is now as if we had finished printing it */
-                                    last_printed_match++;
-                                  } else {
-                                    /* this match spans to a later line so we should highlight the truncate marker */
-                                    hidden_matches = TRUE;
-                                  }
+                                    if (matches[last_printed_match].end <= i) {
+                                        /* it is now as if we had finished printing it */
+                                        last_printed_match++;
+                                    } else {
+                                        /* this match spans to a later line so we should highlight the truncate marker */
+                                        hidden_matches = TRUE;
+                                    }
                                 }
 
                                 /* skip the rest of the matches which end on this line */
                                 while (last_printed_match < matches_len && matches[last_printed_match].end <= i) {
-                                  last_printed_match++;
-                                  hidden_matches = TRUE;
+                                    last_printed_match++;
+                                    hidden_matches = TRUE;
                                 }
 
                                 /* if there were matches in the skipped part we highlight the middle part of the truncate marker */
                                 if (hidden_matches) {
-                                  /* open highlight, if not done so already */
-                                  if (opts.color && !printing_a_match) {
-                                    fprintf(out_fd, "%s", opts.color_match);
-                                  }
-                                  printing_a_match = TRUE;
+                                    /* open highlight, if not done so already */
+                                    if (opts.color && !printing_a_match) {
+                                        fprintf(out_fd, "%s", opts.color_match);
+                                    }
+                                    printing_a_match = TRUE;
                                 } else {
-                                  /* close highlight, if not done so already */
-                                  if (opts.color && printing_a_match) {
-                                    fprintf(out_fd, "%s", color_reset);
-                                  }
-                                  printing_a_match = FALSE;
+                                    /* close highlight, if not done so already */
+                                    if (opts.color && printing_a_match) {
+                                        fprintf(out_fd, "%s", color_reset);
+                                    }
+                                    printing_a_match = FALSE;
                                 }
                                 fputs(truncate_marker_middle, out_fd);
 
                                 /* if the next match starts on this line and ends on a later one we highlight the last part of the truncate marker */
                                 if (last_printed_match < matches_len && matches[last_printed_match].start <= i) {
-                                  if (opts.color && !printing_a_match) {
-                                    fprintf(out_fd, "%s", opts.color_match);
-                                  }
-                                  printing_a_match = TRUE;
+                                    if (opts.color && !printing_a_match) {
+                                        fprintf(out_fd, "%s", opts.color_match);
+                                    }
+                                    printing_a_match = TRUE;
                                 } else {
-                                  if (opts.color && printing_a_match) {
-                                    fprintf(out_fd, "%s", color_reset);
-                                  }
-                                  printing_a_match = FALSE;
+                                    if (opts.color && printing_a_match) {
+                                        fprintf(out_fd, "%s", color_reset);
+                                    }
+                                    printing_a_match = FALSE;
                                 }
 
                                 /* print the last part of the truncate marker */
