@@ -1,7 +1,8 @@
-GREP=grep
-VERSION:=$(shell $(GREP) -Po "(?<=\[)([0-9.]+.[0-9]+.[0-9]+)(?=\])" configure.ac)
+SED=sed
+VERSION:=$(shell "$(SED)" -n "s/[^[]*\[\([0-9]\+\.[0-9]\+\.[0-9]\+\)\],/\1/p" configure.ac)
 
 CC=gcc
+RM=/bin/rm
 
 SRCS = \
 	src/decompress.c \
@@ -23,11 +24,12 @@ TARGET = ag.exe
 
 all : $(TARGET)
 
-$(TARGET) : $(OBJS)
+# depend on configure.ac to account for version changes
+$(TARGET) : $(OBJS) configure.ac
 	$(CC) -o $@ $(OBJS) $(LIBS)
 
 .c.o :
 	$(CC) -c $(CFLAGS) -Isrc $< -o $@
 
 clean :
-	rm -f src/*.o $(TARGET)
+	$(RM) -f src/*.o $(TARGET)
