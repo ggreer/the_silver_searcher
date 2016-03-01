@@ -417,7 +417,8 @@ static int check_symloop_leave(dirkey_t *dirkey) {
  */
 void search_dir(ignores *ig, const char *base_path, const char *path, const int depth,
                 dev_t original_dev) {
-    struct dirent **dir_list = NULL;
+    struct ag_dirent **dir_list = NULL;
+    struct ag_dirent *ag_dir = NULL;
     struct dirent *dir = NULL;
     scandir_baton_t scandir_baton;
     int results = 0;
@@ -453,9 +454,15 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
     }
 
     scandir_baton.ig = ig;
+    scandir_baton.iters = (struct ignore_iters){ 0, 0, 0, NULL };
     scandir_baton.base_path = base_path;
     scandir_baton.base_path_len = base_path ? strlen(base_path) : 0;
     results = ag_scandir(path, &dir_list, &filename_filter, &scandir_baton);
+    struct ignore_iters *it = scandir_baton.iters.parent, *next;
+    for (; it != NULL; it = next) {
+        next = it->parent;
+        free(it);
+    }
     if (results == 0) {
         log_debug("No results found in directory %s", path);
         goto search_dir_cleanup;
@@ -485,7 +492,8 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
 
     for (i = 0; i < results; i++) {
         queue_item = NULL;
-        dir = dir_list[i];
+        ag_dir = dir_list[i];
+        dir = ag_dir->dirent;
         ag_asprintf(&dir_full_path, "%s/%s", path, dir->d_name);
 #ifndef _WIN32
         if (opts.one_dev) {
@@ -542,9 +550,9 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
                 log_debug("Searching dir %s", dir_full_path);
                 ignores *child_ig;
 #ifdef HAVE_DIRENT_DNAMLEN
-                child_ig = init_ignore(ig, dir->d_name, dir->d_namlen);
+                child_ig = init_ignore(ig, dir->d_name, dir->d_namlen, ag_dir);
 #else
-                child_ig = init_ignore(ig, dir->d_name, strlen(dir->d_name));
+                child_ig = init_ignore(ig, dir->d_name, strlen(dir->d_name), ag_dir);
 #endif
                 search_dir(child_ig, base_path, dir_full_path, depth + 1,
                            original_dev);

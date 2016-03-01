@@ -11,14 +11,6 @@
 #include "scandir.h"
 #include "util.h"
 
-#ifdef _WIN32
-#include <shlwapi.h>
-#define fnmatch(x, y, z) (!PathMatchSpec(y, x))
-#else
-#include <fnmatch.h>
-const int fnmatch_flags = FNM_PATHNAME;
-#endif
-
 /* TODO: build a huge-ass list of files we want to ignore by default (build cache stuff, pyc files, etc) */
 
 const char *evil_hardcoded_ignore_files[] = {
@@ -38,29 +30,46 @@ const char *ignore_pattern_files[] = {
 };
 
 int is_empty(ignores *ig) {
-    return (ig->extensions_len + ig->names_len + ig->slash_names_len + ig->regexes_len + ig->slash_regexes_len == 0);
+    return (ig->extensions_len + ig->names_len + ig->slash_names_len + ig->partial_names_len + ig->partial_slash_names_len + ig->globs_len + ig->slash_globs_len + ig->partial_globs_len + ig->partial_slash_globs_len == 0);
 };
 
-ignores *init_ignore(ignores *parent, const char *dirname, const size_t dirname_len) {
+ignores *init_ignore(ignores *parent, const char *dirname, const size_t dirname_len, struct ag_dirent *partials) {
     ignores *ig = ag_malloc(sizeof(ignores));
+
     ig->extensions = NULL;
     ig->extensions_len = 0;
+
     ig->names = NULL;
     ig->names_len = 0;
     ig->slash_names = NULL;
     ig->slash_names_len = 0;
-    ig->regexes = NULL;
-    ig->regexes_len = 0;
-    ig->slash_regexes = NULL;
-    ig->slash_regexes_len = 0;
+
+    ig->globs = NULL;
+    ig->globs_len = 0;
+    ig->slash_globs = NULL;
+    ig->slash_globs_len = 0;
+
     ig->dirname = dirname;
     ig->dirname_len = dirname_len;
 
-    if (parent && is_empty(parent) && parent->parent) {
-        ig->parent = parent->parent;
+    if (partials == NULL) {
+        ig->partial_names = NULL;
+        ig->partial_names_len = 0;
+        ig->partial_globs = NULL;
+        ig->partial_globs_len = 0;
     } else {
-        ig->parent = parent;
+        ig->partial_names = partials->partial_name_matches;
+        ig->partial_names_len = partials->partial_name_matches_len;
+        ig->partial_globs = partials->partial_glob_matches;
+        ig->partial_globs_len = partials->partial_glob_matches_len;
     }
+
+    if (parent) {
+        while (is_empty(parent) && parent->parent) {
+            parent = parent->parent;
+        }
+    }
+    ig->parent = parent;
 
     if (parent && parent->abs_path_len > 0) {
         ag_asprintf(&(ig->abs_path), "%s/%s", parent->abs_path, dirname);
@@ -83,8 +92,8 @@ void cleanup_ignore(ignores *ig) {
     free_strings(ig->extensions, ig->extensions_len);
     free_strings(ig->names, ig->names_len);
     free_strings(ig->slash_names, ig->slash_names_len);
-    free_strings(ig->regexes, ig->regexes_len);
-    free_strings(ig->slash_regexes, ig->slash_regexes_len);
+    free_strings(ig->globs, ig->globs_len);
+    free_strings(ig->slash_globs, ig->slash_globs_len);
     if (ig->abs_path) {
         free(ig->abs_path);
     }
@@ -92,7 +101,6 @@ void cleanup_ignore(ignores *ig) {
 }
 
 void add_ignore_pattern(ignores *ig, const char *pattern) {
-    int i;
     int pattern_len;
 
     /* Strip off the leading dot so that matches are more likely. */
@@ -120,13 +128,13 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
             patterns_len = &(ig->extensions_len);
             pattern += 2;
         } else if (pattern[0] == '/') {
-            patterns_p = &(ig->slash_regexes);
-            patterns_len = &(ig->slash_regexes_len);
+            patterns_p = &(ig->slash_globs);
+            patterns_len = &(ig->slash_globs_len);
             pattern++;
             pattern_len--;
         } else {
-            patterns_p = &(ig->regexes);
-            patterns_len = &(ig->regexes_len);
+            patterns_p = &(ig->globs);
+            patterns_len = &(ig->globs_len);
         }
     } else {
         if (pattern[0] == '/') {
@@ -140,20 +148,7 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
         }
     }
 
-    ++*patterns_len;
-
-    char **patterns;
-
-    /* a balanced binary tree is best for performance, but I'm lazy */
-    *patterns_p = patterns = ag_realloc(*patterns_p, (*patterns_len) * sizeof(char *));
-    /* TODO: de-dupe these patterns */
-    for (i = *patterns_len - 1; i > 0; i--) {
-        if (strcmp(pattern, patterns[i - 1]) > 0) {
-            break;
-        }
-        patterns[i] = patterns[i - 1];
-    }
-    patterns[i] = ag_strndup(pattern, pattern_len);
+    ag_insert_str_sorted(patterns_p, patterns_len, pattern, pattern_len, 1);
     log_debug("added ignore pattern %s to %s", pattern,
               ig == root_ignores ? "root ignores" : ig->abs_path);
 }
@@ -265,7 +260,7 @@ static int ackmate_dir_match(const char *dir_name) {
 }
 
 /* This is the hottest code in Ag. 10-15% of all execution time is spent here */
-static int path_ignore_search(const ignores *ig, const char *path, const char *filename) {
+static int path_ignore_search(const ignores *ig, const char *path, const char *filename, struct ignore_iters *iters, int search_slashes, struct ag_dirent *ag_dir) {
     char *temp;
     size_t i;
     int match_pos;
@@ -276,57 +271,128 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
         return 1;
     }
 
-    ag_asprintf(&temp, "%s/%s", path[0] == '.' ? path + 1 : path, filename);
+    ag_asprintf(&temp, "%s/%s", path[0] == '.' ? path + 2 : path, filename);
 
     if (strncmp(temp, ig->abs_path, ig->abs_path_len) == 0) {
         char *slash_filename = temp + ig->abs_path_len;
         if (slash_filename[0] == '/') {
             slash_filename++;
         }
-        match_pos = binary_search(slash_filename, ig->names, 0, ig->names_len);
-        if (match_pos >= 0) {
-            log_debug("file %s ignored because name matches static pattern %s", temp, ig->names[match_pos]);
-            free(temp);
-            return 1;
-        }
 
-        match_pos = binary_search(slash_filename, ig->slash_names, 0, ig->slash_names_len);
-        if (match_pos >= 0) {
-            log_debug("file %s ignored because name matches slash static pattern %s", slash_filename, ig->slash_names[match_pos]);
-            free(temp);
-            return 1;
-        }
-
-        for (i = 0; i < ig->names_len; i++) {
-            char *pos = strstr(slash_filename, ig->names[i]);
-            if (pos == slash_filename || (pos && *(pos - 1) == '/')) {
-                pos += strlen(ig->names[i]);
-                if (*pos == '\0' || *pos == '/') {
-                    log_debug("file %s ignored because path somewhere matches name %s", slash_filename, ig->names[i]);
-                    free(temp);
-                    return 1;
-                }
-            }
-            log_debug("pattern %s doesn't match path %s", ig->names[i], slash_filename);
-        }
-
-        for (i = 0; i < ig->slash_regexes_len; i++) {
-            if (fnmatch(ig->slash_regexes[i], slash_filename, fnmatch_flags) == 0) {
-                log_debug("file %s ignored because name matches slash regex pattern %s", slash_filename, ig->slash_regexes[i]);
+        for (; iters->names_i < ig->names_len; iters->names_i++) {
+            int cmp = cmp_leading_dir(slash_filename, ig->names[iters->names_i]);
+            if (cmp == 0) {
+                log_debug("file %s ignored because name matches static pattern %s", temp, ig->names[iters->names_i]);
                 free(temp);
                 return 1;
+            } else if (cmp == 2) {
+                char *subdir = ig->names[iters->names_i];
+                size_t subdir_len = ag_subdir(&subdir);
+                log_debug("file %s's subdirectories may match static pattern %s; adding subdir %s to child's ignores", temp, ig->names[iters->names_i], subdir);
+                ag_insert_str_sorted(&ag_dir->partial_name_matches, &ag_dir->partial_name_matches_len, subdir, subdir_len, 0);
+            } else {
+                log_debug("file %s doesn't match static pattern %s at index %d", temp, ig->names[iters->names_i], iters->names_i);
             }
-            log_debug("pattern %s doesn't match slash file %s", ig->slash_regexes[i], slash_filename);
+            if (cmp < 0) {
+                break;
+            }
+        }
+
+        if (search_slashes) {
+            for (; iters->slash_names_i < ig->slash_names_len; iters->slash_names_i++) {
+                int cmp = cmp_leading_dir(slash_filename, ig->slash_names[iters->slash_names_i]);
+                if (cmp == 0) {
+                    log_debug("file %s ignored because name matches slash static pattern %s", temp, ig->slash_names[iters->slash_names_i]);
+                    free(temp);
+                    return 1;
+                } else if (cmp == 2) {
+                    char *subdir = ig->slash_names[iters->slash_names_i];
+                    size_t subdir_len = ag_subdir(&subdir);
+                    log_debug("file %s's subdirectories may match slash static pattern %s; adding subdir %s to child's ignores", temp, ig->slash_names[iters->slash_names_i], subdir);
+                    ag_insert_str_sorted(&ag_dir->partial_name_matches, &ag_dir->partial_name_matches_len, subdir, subdir_len, 0);
+                } else {
+                    log_debug("file %s doesn't match slash static pattern %s at index %d", temp, ig->slash_names[iters->slash_names_i], iters->slash_names_i);
+                }
+                if (cmp < 0) {
+                    break;
+                }
+            }
+
+            for (; iters->partial_names_i < ig->partial_names_len; iters->partial_names_i++) {
+                int cmp = cmp_leading_dir(slash_filename, ig->partial_names[iters->partial_names_i]);
+                if (cmp == 0) {
+                    log_debug("file %s ignored because name matches partial static pattern %s", temp, ig->partial_names[iters->partial_names_i]);
+                    free(temp);
+                    return 1;
+                } else if (cmp == 2) {
+                    char *subdir = ig->partial_names[iters->partial_names_i];
+                    size_t subdir_len = ag_subdir(&subdir);
+                    log_debug("file %s's subdirectories may match partial static pattern %s; adding subdir %s to child's ignores", temp, ig->partial_names[iters->partial_names_i], subdir);
+                    ag_insert_str_sorted(&ag_dir->partial_name_matches, &ag_dir->partial_name_matches_len, subdir, subdir_len, 0);
+                } else {
+                    log_debug("file %s doesn't match partial static pattern %s at index %d", temp, ig->partial_names[iters->partial_names_i], iters->partial_names_i);
+                }
+                if (cmp < 0) {
+                    break;
+                }
+            }
+
+            for (i = 0; i < ig->slash_globs_len; i++) {
+                /* cmp_leading_dir_glob modifies slash_filename, but restores it before it returns,
+                 * so this should be safe. */
+                int cmp = cmp_leading_dir_glob((char *)slash_filename, ig->slash_globs[i]);
+                if (cmp == 0) {
+                    log_debug("file %s ignored because name matches slash glob pattern %s", slash_filename, ig->slash_globs[i]);
+                    free(temp);
+                    return 1;
+                } else if (cmp == 2) {
+                    char *subdir = ig->slash_globs[i];
+                    size_t subdir_len = ag_subdir(&subdir);
+                    log_debug("file %s's subdirectories may match slash glob pattern %s; adding subdir %s to child's ignores", temp, ig->slash_globs[i], subdir);
+                    ag_insert_str_sorted(&ag_dir->partial_glob_matches, &ag_dir->partial_glob_matches_len, subdir, subdir_len, 0);
+                } else {
+                    log_debug("pattern %s doesn't match slash file %s", ig->slash_globs[i], slash_filename);
+                }
+            }
         }
     }
 
-    for (i = 0; i < ig->regexes_len; i++) {
-        if (fnmatch(ig->regexes[i], filename, fnmatch_flags) == 0) {
-            log_debug("file %s ignored because name matches regex pattern %s", filename, ig->regexes[i]);
+    for (i = 0; i < ig->globs_len; i++) {
+        int cmp = cmp_leading_dir_glob((char *)filename, ig->globs[i]);
+        if (cmp == 0) {
+            log_debug("file %s ignored because name matches glob pattern %s", filename, ig->globs[i]);
             free(temp);
             return 1;
+        } else if (cmp == 2) {
+            char *subdir = ig->globs[i];
+            size_t subdir_len = ag_subdir(&subdir);
+            log_debug("file %s's subdirectories may match glob pattern %s; adding subdir %s to child's ignores", temp, ig->globs[i], subdir);
+            ag_insert_str_sorted(&ag_dir->partial_glob_matches, &ag_dir->partial_glob_matches_len, subdir, subdir_len, 0);
+        } else {
+            log_debug("pattern %s doesn't match file %s", ig->globs[i], filename);
         }
-        log_debug("pattern %s doesn't match file %s", ig->regexes[i], filename);
+    }
+
+    if (search_slashes) {
+        for (i = 0; i < ig->partial_globs_len; i++) {
+            int cmp = cmp_leading_dir_glob((char *)filename, ig->partial_globs[i]);
+            if (cmp == 0) {
+                log_debug("file %s ignored because name matches glob pattern %s", filename, ig->partial_globs[i]);
+                free(temp);
+                return 1;
+            } else if (cmp == 2) {
+                char *subdir = ig->partial_globs[i];
+                size_t subdir_len = ag_subdir(&subdir);
+                log_debug("file %s's subdirectories may match glob pattern %s; adding subdir %s to child's ignores", temp, ig->partial_globs[i], subdir);
+                if (is_fnmatch(subdir)) {
+                    ag_insert_str_sorted(&ag_dir->partial_glob_matches, &ag_dir->partial_glob_matches_len, subdir, subdir_len, 0);
+                } else {
+                    ag_insert_str_sorted(&ag_dir->partial_name_matches, &ag_dir->partial_name_matches_len, subdir, subdir_len, 0);
+                }
+            } else {
+                log_debug("pattern %s doesn't match file %s", ig->partial_globs[i], filename);
+            }
+        }
     }
 
     int rv = ackmate_dir_match(temp);
@@ -335,7 +401,8 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
 }
 
 /* This function is REALLY HOT. It gets called for every file */
-int filename_filter(const char *path, const struct dirent *dir, void *baton) {
+int filename_filter(const char *path, struct ag_dirent *ag_dir, void *baton_) {
+    const struct dirent *dir = ag_dir->dirent;
     const char *filename = dir->d_name;
 /* TODO: don't call strlen on filename every time we call filename_filter() */
 #ifdef HAVE_DIRENT_DNAMLEN
@@ -344,12 +411,13 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     size_t filename_len = strlen(filename);
 #endif
     size_t i;
-    scandir_baton_t *scandir_baton = (scandir_baton_t *)baton;
-    const ignores *ig = scandir_baton->ig;
-    const char *base_path = scandir_baton->base_path;
-    const size_t base_path_len = scandir_baton->base_path_len;
+    scandir_baton_t *baton = (scandir_baton_t *)baton_;
+    struct ignore_iters *iters = &baton->iters;
+    const ignores *ig = baton->ig;
+    const char *base_path = baton->base_path;
+    const size_t base_path_len = baton->base_path_len;
     const char *path_start = path;
-    char *temp;
+    int search_slashes = 1;
 
     if (!opts.search_hidden_files && filename[0] == '.') {
         return 0;
@@ -375,11 +443,20 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         return 1;
     }
 
-    for (i = 0; base_path[i] == path[i] && i < base_path_len; i++) {
-        /* base_path always ends with "/\0" while path doesn't, so this is safe */
+    for (i = 0; base_path[i] == path[i] && i < base_path_len; i++)
+        ;
+    if (i + 2 > base_path_len) {
+        if (path[base_path_len] == '/') {
+            path_start = path + base_path_len + 1;
+        } else {
+            path_start = path + base_path_len;
+        }
+    } else if (!strncmp(path, ".", 2)) {
+        path_start = path + 1;
+    } else {
         path_start = path + i + 2;
     }
-    log_debug("path_start %s filename %s", path_start, filename);
+    log_debug("path_start %s filename %s basepath \"%s\" path \"%s\"", path_start, filename, base_path, path);
 
     const char *extension = strchr(filename, '.');
     if (extension) {
@@ -392,7 +469,7 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         }
     }
 
-    while (ig != NULL) {
+    while (1) {
         if (strncmp(filename, "./", 2) == 0) {
             filename++;
             filename_len--;
@@ -406,19 +483,23 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
             }
         }
 
-        if (path_ignore_search(ig, path_start, filename)) {
+        if (path_ignore_search(ig, path_start, filename, iters, search_slashes, ag_dir)) {
             return 0;
         }
 
-        if (is_directory(path, dir) && filename[filename_len - 1] != '/') {
-            ag_asprintf(&temp, "%s/", filename);
-            int rv = path_ignore_search(ig, path_start, temp);
-            free(temp);
-            if (rv) {
-                return 0;
-            }
-        }
         ig = ig->parent;
+        if (ig == NULL) {
+            break;
+        }
+        if (iters->parent == NULL) {
+            iters->parent = malloc(sizeof(*iters->parent));
+            if (iters->parent == NULL) {
+                return -1;
+            }
+            *iters->parent = (struct ignore_iters){ 0, 0, 0, NULL };
+        }
+        iters = iters->parent;
+        search_slashes = 0;
     }
 
     log_debug("%s not ignored", filename);

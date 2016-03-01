@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
 
     work_queue = NULL;
     work_queue_tail = NULL;
-    root_ignores = init_ignore(NULL, "", 0);
+    root_ignores = init_ignore(NULL, "", 0, NULL);
     out_fd = stdout;
 
     parse_options(argc, argv, &base_paths, &paths);
@@ -171,7 +171,7 @@ int main(int argc, char **argv) {
         for (i = 0; paths[i] != NULL; i++) {
             log_debug("searching path %s for %s", paths[i], opts.query);
             symhash = NULL;
-            ignores *ig = init_ignore(root_ignores, "", 0);
+            ignores *ig = init_ignore(root_ignores, "", 0, NULL);
             struct stat s = {.st_dev = 0 };
 #ifndef _WIN32
             /* The device is ignored if opts.one_dev is false, so it's fine
