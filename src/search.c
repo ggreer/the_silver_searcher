@@ -60,7 +60,25 @@ void process_zip(const char *buf, const size_t buf_len, const char *file_full_pa
                 zip_fclose(zf);
                 continue;
             }
-            search_buf(_buf, _buf_len, newname);
+
+            /* call correct methods */
+            ag_compression_type zip_type = is_zipped(_buf, _buf_len);
+            if (zip_type != AG_NO_COMPRESSION) {
+                if (zip_type != AG_ZIP) {
+                    int tmp_buf_len = (int)_buf_len;
+                    char *tmp_buf = decompress(zip_type, _buf, _buf_len, newname, &tmp_buf_len);
+                    if (tmp_buf == NULL || tmp_buf_len == 0) {
+                        log_err("Cannot decompress zipped file %s", newname);
+                    } else {
+                        search_buf(tmp_buf, tmp_buf_len, newname);
+                        free(tmp_buf);
+                    }
+                } else {
+                    process_zip(_buf, _buf_len, newname);
+                }
+            } else {
+                search_buf(_buf, _buf_len, newname);
+            }
             free(newname);
             zip_fclose(zf);
             free(_buf);
