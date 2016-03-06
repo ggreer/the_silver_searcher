@@ -29,22 +29,26 @@ void process_zip(const char *buf, const size_t buf_len, const char *file_full_pa
 
     const zip_int64_t num_files = zip_get_num_entries(za, ZIP_FL_UNCHANGED);
 
+    /* Load each zip file into a buffer and call the appropriate methods */
     zip_int64_t i;
     for (i = 0; i < num_files; i++) {
         const char *filename = zip_get_name(za, i, ZIP_FL_ENC_GUESS);
         len2 = strlen(filename);
-        if (filename[len2 - 1] != '/') {
+        if (filename[len2 - 1] != '/') { // ignore directories
             log_debug("filename: %s", filename);
             zip_stat_t zst;
             zip_stat_init(&zst);
             void *_buf = NULL;
             zip_file_t *zf = NULL;
             int _buf_len = 0;
+
+            /* create new filename: dir + zipfile.zip + '/' + file_in_zipfile */
             char *newname = ag_malloc(len1 + len2 + 2); //+1 for the zero-terminator +1 for another /
             memcpy(newname, file_full_path, len1);
             memcpy(newname + len1, &slash, 1);
             memcpy(newname + len1 + 1, filename, len2 + 1); //+1 to copy the null-terminator
 
+            /* Read file into buffer */
             zip_stat_index(za, i, ZIP_FL_UNCHANGED, &zst);
             _buf_len = zst.size;
             zf = zip_fopen_index(za, i, ZIP_FL_UNCHANGED);
