@@ -19,10 +19,12 @@ before_install:
 
 before_script:
   - sudo pip install cram
-  - wget http://nih.at/libzip/libzip-1.1.1.tar.gz -O /tmp/libzip-1.1.1.tar.gz
-  - tar -xvf /tmp/libzip-1.1.1.tar.gz
-  - cd /tmp/libzip-1.1.1
-  - ./configure && make && make install
+  - wget http://nih.at/libzip/libzip-1.1.2.tar.gz -O /tmp/libzip-1.1.2.tar.gz
+  - pushd /tmp
+  - tar -xvf /tmp/libzip-1.1.2.tar.gz
+  - cd libzip-1.1.2
+  - ./configure --prefix=/usr && make && sudo make install
+  - popd
 
 script:
-  - ./build.sh && make test
+  - ./build.sh --enable-libzip && make test
