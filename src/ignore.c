@@ -337,24 +337,11 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
 /* This function is REALLY HOT. It gets called for every file */
 int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     const char *filename = dir->d_name;
-/* TODO: don't call strlen on filename every time we call filename_filter() */
-#ifdef HAVE_DIRENT_DNAMLEN
-    size_t filename_len = dir->d_namlen;
-#else
-    size_t filename_len = strlen(filename);
-#endif
-    size_t i;
-    scandir_baton_t *scandir_baton = (scandir_baton_t *)baton;
-    const ignores *ig = scandir_baton->ig;
-    const char *base_path = scandir_baton->base_path;
-    const size_t base_path_len = scandir_baton->base_path_len;
-    const char *path_start = path;
-    char *temp;
-
     if (!opts.search_hidden_files && filename[0] == '.') {
         return 0;
     }
 
+    size_t i;
     for (i = 0; evil_hardcoded_ignore_files[i] != NULL; i++) {
         if (strcmp(filename, evil_hardcoded_ignore_files[i]) == 0) {
             return 0;
@@ -375,6 +362,11 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         return 1;
     }
 
+    scandir_baton_t *scandir_baton = (scandir_baton_t *)baton;
+    const char *base_path = scandir_baton->base_path;
+    const size_t base_path_len = scandir_baton->base_path_len;
+    const char *path_start = path;
+
     for (i = 0; base_path[i] == path[i] && i < base_path_len; i++) {
         /* base_path always ends with "/\0" while path doesn't, so this is safe */
         path_start = path + i + 2;
@@ -391,6 +383,14 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
             extension = NULL;
         }
     }
+
+/* TODO: don't call strlen on filename every time we call filename_filter() */
+#ifdef HAVE_DIRENT_DNAMLEN
+    size_t filename_len = dir->d_namlen;
+#else
+    size_t filename_len = strlen(filename);
+#endif
+    const ignores *ig = scandir_baton->ig;
 
     while (ig != NULL) {
         if (strncmp(filename, "./", 2) == 0) {
@@ -411,6 +411,7 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         }
 
         if (is_directory(path, dir) && filename[filename_len - 1] != '/') {
+            char *temp;
             ag_asprintf(&temp, "%s/", filename);
             int rv = path_ignore_search(ig, path_start, temp);
             free(temp);
