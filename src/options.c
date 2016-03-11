@@ -665,7 +665,16 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 buf_len += fread(gitconfig_res + buf_len, 1, 64, gitconfig_file);
             } while (!feof(gitconfig_file) && buf_len > 0 && buf_len % 64 == 0);
             gitconfig_res[buf_len] = '\0';
-            log_debug("Found user's global Git excludesfile: %s", gitconfig_res);
+            if (buf_len == 0) {
+                free(gitconfig_res);
+                const char *config_home = getenv("XDG_CONFIG_HOME");
+                if (config_home) {
+                    ag_asprintf(&gitconfig_res, "%s/%s", config_home, "git/ignore");
+                } else {
+                    ag_asprintf(&gitconfig_res, "%s/%s", home_dir, ".config/git/ignore");
+                }
+            }
+            log_debug("global core.excludesfile: %s", gitconfig_res);
             load_ignore_patterns(root_ignores, gitconfig_res);
             free(gitconfig_res);
             pclose(gitconfig_file);
