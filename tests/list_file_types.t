@@ -69,6 +69,9 @@ Language types are output:
     --erlang
         .erl  .hrl
   
+    --factor
+        .factor
+  
     --fortran
         .f  .f77  .f90  .f95  .f03  .for  .ftn  .fpp
   
