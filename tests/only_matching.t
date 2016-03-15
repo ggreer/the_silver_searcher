@@ -1,11 +1,11 @@
 Setup:
 
   $ . $TESTDIR/setup.sh
-  $ echo "the quick brown foxy" > blah.txt
-  $ echo "blah blah blah" >> blah.txt
-  $ echo "another foxlike word" >> blah.txt
-  $ echo "no matches here" >> blah.txt
-  $ echo "blah blah blah" >> blah.txt
+  $ printf "the quick brown foxy\n" > blah.txt
+  $ printf "blah blah blah\n" >> blah.txt
+  $ printf "another foxlike word\n" >> blah.txt
+  $ printf "no matches here\n" >> blah.txt
+  $ printf "blah blah blah\n" >> blah.txt
 
 Only print matches:
 

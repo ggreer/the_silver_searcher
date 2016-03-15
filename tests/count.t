@@ -3,10 +3,10 @@ Setup:
   $ . $TESTDIR/setup.sh
   $ unalias ag
   $ alias ag="$TESTDIR/../ag --nocolor --workers=1"
-  $ echo "blah" > blah.txt
-  $ echo "blah2" >> blah.txt
-  $ echo "blah_OTHER" > other_file.txt
-  $ echo "blah_OTHER" >> other_file.txt
+  $ printf "blah\n" > blah.txt
+  $ printf "blah2\n" >> blah.txt
+  $ printf "blah_OTHER\n" > other_file.txt
+  $ printf "blah_OTHER\n" >> other_file.txt
 
 Count matches:
 
@@ -16,7 +16,7 @@ Count matches:
 
 Count stream matches:
 
-  $ echo 'blah blah blah' | ag --count blah
+  $ printf 'blah blah blah\n' | ag --count blah
   3
 
 Count stream matches per line (not very useful since it does not print zero):

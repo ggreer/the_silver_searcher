@@ -2,9 +2,9 @@ Setup:
 
   $ . $TESTDIR/setup.sh
   $ mkdir subdir
-  $ echo 'first' > file1.txt
-  $ echo 'second' > subdir/file2.txt
-  $ echo '*.txt' > .gitignore
+  $ printf 'first\n' > file1.txt
+  $ printf 'second\n' > subdir/file2.txt
+  $ printf '*.txt\n' > .gitignore
 
 Ignore file based on extension match:
 

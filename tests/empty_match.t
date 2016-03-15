@@ -1,7 +1,7 @@
 Setup.
   $ . $TESTDIR/setup.sh
   $ touch empty.txt
-  $ echo foo > nonempty.txt
+  $ printf 'foo\n' > nonempty.txt
 
 Zero-length match on an empty file should fail silently with return code 1
 

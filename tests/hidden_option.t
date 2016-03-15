@@ -3,10 +3,10 @@ Setup:
   $ . $TESTDIR/setup.sh
   $ mkdir hidden_bug
   $ cd hidden_bug
-  $ echo "test" > a.txt
+  $ printf "test\n" > a.txt
   $ git init --quiet
   $ if [ ! -d .git/info ] ; then mkdir .git/info ; fi
-  $ echo "a.txt" > .git/info/exclude
+  $ printf "a.txt\n" > .git/info/exclude
 
   $ ag --ignore-dir .git test
   [1]
@@ -21,7 +21,7 @@ Setup:
   a.txt:1:test
 
   $ mkdir -p ./.hidden
-  $ echo 'whatever' > ./.hidden/a.txt
+  $ printf 'whatever\n' > ./.hidden/a.txt
 
   $ ag whatever
   [1]
@@ -29,7 +29,7 @@ Setup:
   $ ag --hidden whatever
   [1]
 
-  $ echo "" > .git/info/exclude
+  $ printf "\n" > .git/info/exclude
 
   $ ag whatever
   [1]

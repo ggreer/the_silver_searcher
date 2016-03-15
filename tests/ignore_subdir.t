@@ -2,11 +2,11 @@ Setup:
 
   $ . $TESTDIR/setup.sh
   $ mkdir -p ./a/b/c
-  $ echo 'whatever1' > ./a/b/c/blah.yml
-  $ echo 'whatever2' > ./a/b/foo.yml
-  $ echo 'a/b/foo.yml' > ./.gitignore
+  $ printf 'whatever1\n' > ./a/b/c/blah.yml
+  $ printf 'whatever2\n' > ./a/b/foo.yml
+  $ printf 'a/b/foo.yml\n' > ./.gitignore
 # TODO: have this work instead of the above
-# $ echo 'a/b/*.yml' > ./.gitignore
+# $ printf 'a/b/*.yml\n' > ./.gitignore
 
 Ignore foo.yml but not blah.yml:
 

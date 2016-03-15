@@ -1,18 +1,18 @@
 Setup:
 
   $ . $TESTDIR/setup.sh
-  $ echo "blah" > blah.txt
-  $ echo "blah2" >> blah.txt
-  $ echo "blah2" > blah2.txt
-  $ echo "blah2" >> blah2.txt
-  $ echo "blah2" >> blah2.txt
-  $ echo "blah2" >> blah2.txt
-  $ echo "blah2" >> blah2.txt
-  $ echo "blah2" >> blah2.txt
-  $ echo "blah2" >> blah2.txt
-  $ echo "blah2" >> blah2.txt
-  $ echo "blah2" >> blah2.txt
-  $ echo "blah2" >> blah2.txt # 10 lines
+  $ printf "blah\n" > blah.txt
+  $ printf "blah2\n" >> blah.txt
+  $ printf "blah2\n" > blah2.txt
+  $ printf "blah2\n" >> blah2.txt
+  $ printf "blah2\n" >> blah2.txt
+  $ printf "blah2\n" >> blah2.txt
+  $ printf "blah2\n" >> blah2.txt
+  $ printf "blah2\n" >> blah2.txt
+  $ printf "blah2\n" >> blah2.txt
+  $ printf "blah2\n" >> blah2.txt
+  $ printf "blah2\n" >> blah2.txt
+  $ printf "blah2\n" >> blah2.txt # 10 lines
 
 Max match of 1:
 

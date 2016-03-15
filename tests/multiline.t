@@ -1,9 +1,9 @@
 Setup:
 
   $ . $TESTDIR/setup.sh
-  $ echo 'what' > blah.txt
-  $ echo 'ever' >> blah.txt
-  $ echo 'whatever' >> blah.txt
+  $ printf 'what\n' > blah.txt
+  $ printf 'ever\n' >> blah.txt
+  $ printf 'whatever\n' >> blah.txt
 
 Multiline:
 

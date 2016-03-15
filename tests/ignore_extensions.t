@@ -1,15 +1,15 @@
 Setup:
 
   $ . $TESTDIR/setup.sh
-  $ echo '*.js' > .gitignore
-  $ echo '\n*.test.txt' >> .gitignore
-  $ echo 'targetA' > something.js
-  $ echo 'targetB' > aFile.test.txt
-  $ echo 'targetC' > aFile.txt
+  $ printf '*.js\n' > .gitignore
+  $ printf '\n*.test.txt\n' >> .gitignore
+  $ printf 'targetA\n' > something.js
+  $ printf 'targetB\n' > aFile.test.txt
+  $ printf 'targetC\n' > aFile.txt
   $ mkdir -p subdir
-  $ echo 'targetD' > subdir/somethingElse.js
-  $ echo 'targetE' > subdir/anotherFile.test.txt
-  $ echo 'targetF' > subdir/anotherFile.txt
+  $ printf 'targetD\n' > subdir/somethingElse.js
+  $ printf 'targetE\n' > subdir/anotherFile.test.txt
+  $ printf 'targetF\n' > subdir/anotherFile.txt
 
 Ignore patterns with single extension in root directory:
 

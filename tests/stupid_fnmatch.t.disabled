@@ -2,8 +2,8 @@ Setup:
 
   $ . $TESTDIR/setup.sh
   $ mkdir -p ./a/bomb
-  $ echo 'whatever' > ./a/bomb/foo.yml
-  $ echo '*b/foo.yml' > ./.gitignore
+  $ printf 'whatever\n' > ./a/bomb/foo.yml
+  $ printf '*b/foo.yml\n' > ./.gitignore
 
 Ignore foo.yml but not blah.yml:
 

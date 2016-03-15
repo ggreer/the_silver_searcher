@@ -3,7 +3,7 @@ Setup:
   $ . $TESTDIR/setup.sh
   $ export HOME=$PWD
   $ printf '[core]\nexcludesfile = ~/.gitignore.global' >> $HOME/.gitconfig
-  $ echo 'PATTERN_MARKER' > .gitignore.global
+  $ printf 'PATTERN_MARKER\n' > .gitignore.global
 
 Test that the ignore pattern got picked up:
 
