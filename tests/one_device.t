@@ -4,7 +4,7 @@ Setup:
   > if [ ! -e "/dev/shm" ]; then
   > echo "No /dev/shm. Skipping test."
   > exit 80
-  > elif [ "$(stat -c%d /dev/)" == "$(stat -c%d /dev/shm/)" ]; then
+  > elif [ "$(stat -c%d /dev/)" = "$(stat -c%d /dev/shm/)" ]; then
   > echo "/dev/shm not a different device.  Skipping test."
   > exit 80
   > fi
