@@ -135,6 +135,9 @@ Language types are output:
     --lua
         .lua
   
+    --lux
+        .lux
+  
     --m4
         .m4
   
@@ -299,4 +302,7 @@ Language types are output:
   
     --yaml
         .yaml  .yml
+  
+    --yang
+        .yang  .yin
   

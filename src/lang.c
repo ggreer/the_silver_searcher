@@ -48,6 +48,7 @@ lang_spec_t langs[] = {
     { "liquid", { "liquid" } },
     { "lisp", { "lisp", "lsp" } },
     { "lua", { "lua" } },
+    { "lux", { "lux" } },
     { "m4", { "m4" } },
     { "make", { "Makefiles", "mk", "mak" } },
     { "mako", { "mako" } },
@@ -102,7 +103,8 @@ lang_spec_t langs[] = {
     { "wsdl", { "wsdl" } },
     { "wadl", { "wadl" } },
     { "xml", { "xml", "dtd", "xsl", "xslt", "ent" } },
-    { "yaml", { "yaml", "yml" } }
+    { "yaml", { "yaml", "yml" } },
+    { "yang", { "yang", "yin" } }
 };
 
 size_t get_lang_count() {
