@@ -375,9 +375,24 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         return 1;
     }
 
-    for (i = 0; base_path[i] == path[i] && i < base_path_len; i++) {
-        /* base_path always ends with "/\0" while path doesn't, so this is safe */
-        path_start = path + i + 2;
+   /* sort of emulate basename() for base paths that begin with '/' */
+   if (base_path[0] == '/') {
+       for (i = 0; base_path[i] == path[i] && i < base_path_len; i++) {
+           ;
+       }
+       if (path[i] == '/') {
+           i++;
+       }
+       if (path[i] == '\0') {
+           /*
+            * base_path and path are identical...occurs when searching
+            * the (top-level) contents of base_path for the first time...
+            */
+
+           path_start = base_path;
+       } else {
+           path_start = path + i;
+       }
     }
     log_debug("path_start %s filename %s", path_start, filename);
 
