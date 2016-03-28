@@ -28,6 +28,7 @@
 #include "options.h"
 #include "print.h"
 #include "util.h"
+#include "decompress.h"
 #include "uthash.h"
 
 size_t alpha_skip_lookup[256];
