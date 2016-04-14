@@ -21,6 +21,86 @@
     }                                     \
     return ptr;
 
+static ag_ds ag_dsmakeroom(ag_ds s, size_t addlen) {
+    struct ag_dshdr *sh, *newsh;
+    size_t free = ag_dsavail(s);
+    size_t len, newlen;
+
+    if (free >= addlen) {
+        return s;
+    }
+    len = ag_dslen(s);
+    newlen = len + addlen;
+    if (newlen < MAX_AGDS_PREALLOC) {
+        newlen *= 2;
+    } else {
+        newlen += MAX_AGDS_PREALLOC;
+    }
+    sh = (void *) (s - sizeof(struct ag_dshdr));
+    newsh = ag_realloc(sh, sizeof(struct ag_dshdr) + newlen + 1);
+    newsh->free = newlen - len;
+    return (char *) newsh->buf;
+}
+
+ag_ds ag_dsnew(size_t size) {
+    struct ag_dshdr *sh;
+
+    sh = ag_calloc(sizeof(struct ag_dshdr) + size + 1, sizeof(char));
+    sh->len = 0;
+    sh->free = size;
+    return (char *)sh->buf;
+}
+
+void ag_dsfree(ag_ds s) {
+    if (s == NULL) {
+        return;
+    }
+    free(s - sizeof(struct ag_dshdr));
+}
+
+void ag_dsreset(ag_ds s) {
+    if (s == NULL) {
+        return;
+    }
+    struct ag_dshdr *sh;
+    sh = (void *) (s - sizeof(struct ag_dshdr));
+    sh->free += sh->len;
+    sh->len = 0;
+}
+
+int ag_vsprintf(ag_ds *s, const char *format, va_list ap) {
+    unsigned int ret;
+    struct ag_dshdr *sh = (void *) (*s - sizeof(struct ag_dshdr));
+    size_t curlen = ag_dslen(*s);
+
+    /* ret is the real length of the string */
+    ret = vsnprintf(*s + sh->len, sh->free, format, ap);
+    if (ret > sh->free) {
+        *s = ag_dsmakeroom(*s, ret);
+		sh = (void *) (*s - sizeof(struct ag_dshdr));
+        ret = vsnprintf(*s + sh->len, sh->free, format, ap);
+    } else if (ret == sh->free) {
+		ret = vsnprintf(*s + sh->len, sh->free + 1, format, ap);
+    }
+
+	sh->len = curlen + ret;
+	sh->free -= ret;
+    return ret;
+}
+
+int ag_dsncat(ag_ds *s, const char *t, size_t len) {
+    struct ag_dshdr *sh;
+    size_t curlen = ag_dslen(*s);
+
+    *s = ag_dsmakeroom(*s, len);
+    sh = (void *) (*s - sizeof(struct ag_dshdr));
+    memcpy(*s + sh->len, t, len);
+    sh->len = curlen + len;
+    sh->free -= len;
+    *s[sh->len] = '\0';
+    return len;
+}
+
 void *ag_malloc(size_t size) {
     void *ptr = malloc(size);
     CHECK_AND_RETURN(ptr)

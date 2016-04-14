@@ -22,6 +22,32 @@ FILE *out_fd;
 #define FALSE 0
 #endif
 
+#define MAX_AGDS_PREALLOC (1024*1024)
+
+typedef char *ag_ds;
+
+struct ag_dshdr {
+    unsigned int len;
+    unsigned int free;
+    char buf[];
+};
+
+static inline size_t ag_dslen(const ag_ds s) {
+    struct ag_dshdr *sh = (void *) (s - sizeof(struct ag_dshdr));
+    return sh->len;
+}
+
+static inline size_t ag_dsavail(const ag_ds s) {
+    struct ag_dshdr *sh = (void *) (s - sizeof(struct ag_dshdr));
+    return sh->free;
+}
+
+ag_ds ag_dsnew(size_t size);
+void ag_dsfree(ag_ds s);
+void ag_dsreset(ag_ds s);
+int ag_vsprintf(ag_ds *s, const char *format, va_list ap);
+int ag_dsncat(ag_ds *s, const char *t, size_t len);
+
 void *ag_malloc(size_t size);
 void *ag_realloc(void *ptr, size_t size);
 void *ag_calloc(size_t nelem, size_t elsize);
