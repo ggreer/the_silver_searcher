@@ -9,7 +9,7 @@ Setup:
   > exit 80
   > fi
   $ TEST_TMPDIR=`mktemp -d --tmpdir=/dev/shm ag_test.XXX`
-  $ echo "blah" > $TEST_TMPDIR/blah.txt
+  $ printf "blah\n" > $TEST_TMPDIR/blah.txt
   $ ln -s $TEST_TMPDIR other_device
 
 Should not descend into /dev/shm symlink when --one-device specified:

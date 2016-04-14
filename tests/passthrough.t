@@ -3,9 +3,9 @@ Setup:
   $ . $TESTDIR/setup.sh
   $ unalias ag
   $ alias ag="$TESTDIR/../ag --nocolor --workers=1"
-  $ echo "foo bar" > passthrough_test.txt
-  $ echo "zoo zar" >> passthrough_test.txt
-  $ echo "foo test" >> passthrough_test.txt
+  $ printf "foo bar\n" > passthrough_test.txt
+  $ printf "zoo zar\n" >> passthrough_test.txt
+  $ printf "foo test\n" >> passthrough_test.txt
 
 No impact on non-stream:
 

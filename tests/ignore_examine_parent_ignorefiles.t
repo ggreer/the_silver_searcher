@@ -2,8 +2,8 @@ Setup:
 
   $ . $TESTDIR/setup.sh
   $ mkdir -p subdir
-  $ echo 'match1' > subdir/file1.txt
-  $ echo 'file1.txt' > .gitignore
+  $ printf 'match1\n' > subdir/file1.txt
+  $ printf 'file1.txt\n' > .gitignore
 
 Ignore directory specified by name:
 

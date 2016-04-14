@@ -1,10 +1,10 @@
 Setup:
 
   $ . $TESTDIR/setup.sh
-  $ echo 'Hello, "Hello, world" programs output "Hello, world".' > ./test_vimgrep.txt
-  $ echo '"Hello, world" programs are simple programs.' >> ./test_vimgrep.txt
-  $ echo 'They illustrate the most basic syntax of a programming language' >> ./test_vimgrep.txt
-  $ echo 'In javascript: alert("Hello, world!");' >> ./test_vimgrep.txt
+  $ printf 'Hello, "Hello, world" programs output "Hello, world".\n' > ./test_vimgrep.txt
+  $ printf '"Hello, world" programs are simple programs.\n' >> ./test_vimgrep.txt
+  $ printf 'They illustrate the most basic syntax of a programming language\n' >> ./test_vimgrep.txt
+  $ printf 'In javascript: alert("Hello, world!");\n' >> ./test_vimgrep.txt
 
 Search for lines matching "hello" in test_vimgrep.txt:
 

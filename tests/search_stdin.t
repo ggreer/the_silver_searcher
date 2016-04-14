@@ -1,7 +1,7 @@
 Setup:
 
   $ . $TESTDIR/setup.sh
-  $ echo 'blah' > ./blah.txt
+  $ printf 'blah\n' > ./blah.txt
 
 Feed blah.txt from stdin:
 

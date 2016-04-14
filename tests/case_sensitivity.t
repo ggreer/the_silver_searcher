@@ -1,8 +1,8 @@
 Setup:
 
   $ . $TESTDIR/setup.sh
-  $ echo Foo >> ./sample
-  $ echo bar >> ./sample
+  $ printf 'Foo\n' >> ./sample
+  $ printf 'bar\n' >> ./sample
 
 Smart case by default:
 

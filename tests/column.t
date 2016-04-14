@@ -1,7 +1,7 @@
 Setup:
 
   $ . $TESTDIR/setup.sh
-  $ echo "blah\nblah2" > blah.txt
+  $ printf "blah\nblah2\n" > blah.txt
 
 Ensure column is correct:
 

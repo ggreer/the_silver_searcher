@@ -2,8 +2,8 @@ Setup:
 
   $ . $TESTDIR/setup.sh
   $ mkdir -p parent/multi-part
-  $ echo 'match1' > parent/multi-part/file1.txt
-  $ echo 'parent/multi-*' > .gitignore
+  $ printf 'match1\n' > parent/multi-part/file1.txt
+  $ printf 'parent/multi-*\n' > .gitignore
 
 # Ignore directory specified by glob:
 

@@ -1,8 +1,8 @@
 Setup:
 
   $ . $TESTDIR/../setup.sh
-  $ echo "hello=你好" > test.txt
-  $ echo "hello=你好" >> test.txt
+  $ printf "hello=你好\n" > test.txt
+  $ printf "hello=你好\n" >> test.txt
 
 Normal search:
 

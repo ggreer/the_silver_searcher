@@ -5,8 +5,8 @@ Setup:
   $ TEST_FILETYPE_EXT2=`ag --list-file-types | grep -E '^\s+\..+' | tail -n 1 | awk '{ print $1 }'`
   $ TEST_FILETYPE_DIR=filetype_test
   $ mkdir $TEST_FILETYPE_DIR
-  $ echo "This is filetype test1." >  $TEST_FILETYPE_DIR/test.$TEST_FILETYPE_EXT1
-  $ echo "This is filetype test2." >  $TEST_FILETYPE_DIR/test.$TEST_FILETYPE_EXT2
+  $ printf "This is filetype test1.\n" >  $TEST_FILETYPE_DIR/test.$TEST_FILETYPE_EXT1
+  $ printf "This is filetype test2.\n" >  $TEST_FILETYPE_DIR/test.$TEST_FILETYPE_EXT2
 
 Match only top file type:
 

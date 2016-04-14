@@ -1,8 +1,8 @@
 Setup:
 
   $ . $TESTDIR/setup.sh
-  $ echo foo > ./exitcodes_test.txt
-  $ echo bar >> ./exitcodes_test.txt
+  $ printf 'foo\n' > ./exitcodes_test.txt
+  $ printf 'bar\n' >> ./exitcodes_test.txt
 
 Normal matching:
 

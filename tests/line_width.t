@@ -1,7 +1,7 @@
 Setup:
 
   $ . $TESTDIR/setup.sh
-  $ echo "12345678901234567890123456789012345678901234567890" >> ./blah.txt
+  $ printf "12345678901234567890123456789012345678901234567890\n" >> ./blah.txt
 
 Truncate to width inside input line length:
 
