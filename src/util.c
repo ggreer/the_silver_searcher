@@ -74,17 +74,15 @@ int ag_vsprintf(ag_ds *s, const char *format, va_list ap) {
     size_t curlen = ag_dslen(*s);
 
     /* ret is the real length of the string */
-    ret = vsnprintf(*s + sh->len, sh->free, format, ap);
-    if (ret > sh->free) {
+    ret = vsnprintf(*s + sh->len, sh->free + 1, format, ap);
+    if (ret >= sh->free + 1) {
         *s = ag_dsmakeroom(*s, ret);
-		sh = (void *) (*s - sizeof(struct ag_dshdr));
-        ret = vsnprintf(*s + sh->len, sh->free, format, ap);
-    } else if (ret == sh->free) {
-		ret = vsnprintf(*s + sh->len, sh->free + 1, format, ap);
+        sh = (void *) (*s - sizeof(struct ag_dshdr));
+        ret = vsnprintf(*s + sh->len, sh->free + 1, format, ap);
     }
 
-	sh->len = curlen + ret;
-	sh->free -= ret;
+    sh->len = curlen + ret;
+    sh->free -= ret;
     return ret;
 }
 
