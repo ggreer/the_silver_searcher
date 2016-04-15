@@ -333,6 +333,8 @@ void *search_file_worker(void *i) {
     work_queue_t *queue_item;
     int worker_id = *(int *)i;
 
+    ag_setspecific();
+
     log_debug("Worker %i started", worker_id);
     while (TRUE) {
         pthread_mutex_lock(&work_queue_mtx);

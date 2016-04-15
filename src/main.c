@@ -122,6 +122,9 @@ int main(int argc, char **argv) {
     if (pthread_mutex_init(&work_queue_mtx, NULL)) {
         die("pthread_mutex_init failed!");
     }
+    if (pthread_key_create(&worker_key, ag_specific_free)) {
+        die("pthread_mutex_init failed!");
+    }
 
     if (opts.casing == CASE_SMART) {
         opts.casing = is_lowercase(opts.query) ? CASE_INSENSITIVE : CASE_SENSITIVE;

@@ -12,7 +12,12 @@
 #include "log.h"
 #include "options.h"
 
+#ifdef HAVE_PTHREAD_H
+#include <pthread.h>
+#endif
+
 FILE *out_fd;
+pthread_key_t worker_key;
 
 #ifndef TRUE
 #define TRUE 1
@@ -22,9 +27,15 @@ FILE *out_fd;
 #define FALSE 0
 #endif
 
+#define INIT_AGDSLEN 1024
 #define MAX_AGDS_PREALLOC (1024*1024)
 
 typedef char *ag_ds;
+
+typedef struct {
+    int lock;
+    ag_ds ds;
+} ag_specific_t;
 
 struct ag_dshdr {
     unsigned int len;
@@ -47,6 +58,9 @@ void ag_dsfree(ag_ds s);
 void ag_dsreset(ag_ds s);
 int ag_vsprintf(ag_ds *s, const char *format, va_list ap);
 int ag_dsncat(ag_ds *s, const char *t, size_t len);
+void ag_setspecific(void);
+void *ag_getspecific(void);
+void ag_specific_free(void *data);
 
 void *ag_malloc(size_t size);
 void *ag_realloc(void *ptr, size_t size);

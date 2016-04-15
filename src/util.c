@@ -99,6 +99,22 @@ int ag_dsncat(ag_ds *s, const char *t, size_t len) {
     return len;
 }
 
+void ag_setspecific(void) {
+    ag_specific_t *as = ag_malloc(sizeof(as));
+    as->lock = FALSE;
+    as->ds = ag_dsnew(INIT_AGDSLEN);
+    pthread_setspecific(worker_key, as);
+}
+
+void *ag_getspecific(void) {
+    return pthread_getspecific(worker_key);
+}
+
+void ag_specific_free(void *data) {
+    ag_dsfree(((ag_specific_t *)data)->ds);
+    free(data);
+}
+
 void *ag_malloc(size_t size) {
     void *ptr = malloc(size);
     CHECK_AND_RETURN(ptr)

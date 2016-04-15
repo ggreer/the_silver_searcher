@@ -19,18 +19,17 @@ const char *color_reset = "\033[0m\033[K";
 
 const char *truncate_marker = " [...]";
 
-ag_ds ds;
-
 static inline int ag_fprintf(FILE *stream, const char *format, ...) {
     int ret;
     va_list args;
+    ag_specific_t *as = (ag_specific_t *) ag_getspecific();
 
     va_start(args, format);
-#if 1
-    ret = fprintf(stream, format, args);
-#else
-	ret = ag_vsprintf(&ds, format, args);
-#endif
+    if (as->lock) {
+        ret = fprintf(stream, format, args);
+    } else {
+        ret = ag_vsprintf(&as->ds, format, args);
+    }
     va_end(args);
 
     return ret;
@@ -39,24 +38,26 @@ static inline int ag_fprintf(FILE *stream, const char *format, ...) {
 static inline size_t ag_fwrite(const void *ptr, size_t size, size_t nmemb,
 			FILE *stream) {
     size_t ret;
+    ag_specific_t *as = (ag_specific_t *) ag_getspecific();
 
-#if 1
-    ret = fwrite(ptr, size, nmemb, stream);
-#else
-    ret = ag_dsncat(&ds, ptr, (size * nmemb));
-#endif
+    if (as->lock) {
+        ret = fwrite(ptr, size, nmemb, stream);
+    } else {
+        ret = ag_dsncat(&as->ds, ptr, (size * nmemb));
+    }
 
     return ret;
 }
 
 static inline int ag_fputc(int c, FILE *stream) {
     int ret;
+    ag_specific_t *as = (ag_specific_t *) ag_getspecific();
 
-#if 1
-	ret = fputc(c, stream);
-#else
-    ret = ag_dsncat(&ds, (char *) &c, sizeof(char));
-#endif
+    if (as->lock) {
+        ret = fputc(c, stream);
+    } else {
+        ret = ag_dsncat(&as->ds, (char *) &c, sizeof(char));
+    }
 
     return ret;
 }
