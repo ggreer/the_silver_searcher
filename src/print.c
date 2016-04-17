@@ -28,7 +28,7 @@ static inline int ag_fprintf(FILE *stream, const char *format, ...) {
     if (as->lock) {
         ret = fprintf(stream, format, args);
     } else {
-        ret = ag_vsprintf(&as->ds, format, args);
+        as->ds = ag_vsprintf(as->ds, format, args, &ret);
     }
     va_end(args);
 
@@ -43,7 +43,8 @@ static inline size_t ag_fwrite(const void *ptr, size_t size, size_t nmemb,
     if (as->lock) {
         ret = fwrite(ptr, size, nmemb, stream);
     } else {
-        ret = ag_dsncat(&as->ds, ptr, (size * nmemb));
+        as->ds = ag_dsncat(as->ds, ptr, (size * nmemb));
+        ret = size * nmemb;
     }
 
     return ret;
@@ -56,7 +57,8 @@ static inline int ag_fputc(int c, FILE *stream) {
     if (as->lock) {
         ret = fputc(c, stream);
     } else {
-        ret = ag_dsncat(&as->ds, (char *) &c, sizeof(char));
+        as->ds = ag_dsncat(as->ds, (char *) &c, sizeof(char));
+        ret = sizeof(char);
     }
 
     return ret;
@@ -107,7 +109,12 @@ void print_binary_file_matches(const char *path) {
     ag_fprintf(out_fd, "Binary file %s matches.\n", path);
 }
 
-void print_file_matches(const char *path, const char *buf, const size_t buf_len, const match_t matches[], const size_t matches_len) {
+void print_file_matches(void) {
+    ag_specific_t *as = (ag_specific_t *) ag_getspecific();
+    fprintf(out_fd, "%s", as->ds);
+}
+
+void convert_file_matches(const char *path, const char *buf, const size_t buf_len, const match_t matches[], const size_t matches_len) {
     size_t line = 1;
     char **context_prev_lines = NULL;
     size_t prev_line = 0;
@@ -121,6 +128,9 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
     size_t i, j;
     int in_a_match = FALSE;
     int printing_a_match = FALSE;
+    ag_specific_t *as = (ag_specific_t *) ag_getspecific();
+
+    ag_dsreset(as->ds);
 
     if (opts.ackmate || opts.vimgrep) {
         sep = ':';

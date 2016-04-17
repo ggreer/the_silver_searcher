@@ -56,11 +56,14 @@ static inline size_t ag_dsavail(const ag_ds s) {
 ag_ds ag_dsnew(size_t size);
 void ag_dsfree(ag_ds s);
 void ag_dsreset(ag_ds s);
-int ag_vsprintf(ag_ds *s, const char *format, va_list ap);
-int ag_dsncat(ag_ds *s, const char *t, size_t len);
+ag_ds ag_vsprintf(ag_ds s, const char *format, va_list ap, int *len);
+ag_ds ag_dsncat(ag_ds s, const char *t, size_t len);
+
 void ag_setspecific(void);
 void *ag_getspecific(void);
-void ag_specific_free(void *data);
+void ag_lockspecific(void);
+void ag_unlockspecific(void);
+void ag_freespecific(void *data);
 
 void *ag_malloc(size_t size);
 void *ag_realloc(void *ptr, size_t size);

@@ -122,8 +122,8 @@ int main(int argc, char **argv) {
     if (pthread_mutex_init(&work_queue_mtx, NULL)) {
         die("pthread_mutex_init failed!");
     }
-    if (pthread_key_create(&worker_key, ag_specific_free)) {
-        die("pthread_mutex_init failed!");
+    if (pthread_key_create(&worker_key, ag_freespecific)) {
+        die("pthread_key_create failed!");
     }
 
     if (opts.casing == CASE_SMART) {
@@ -222,6 +222,7 @@ int main(int argc, char **argv) {
     pthread_cond_destroy(&files_ready);
     pthread_mutex_destroy(&work_queue_mtx);
     pthread_mutex_destroy(&print_mtx);
+    pthread_key_delete(worker_key);
     cleanup_ignore(root_ignores);
     free(workers);
     for (i = 0; paths[i] != NULL; i++) {

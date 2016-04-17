@@ -68,35 +68,40 @@ void ag_dsreset(ag_ds s) {
     sh->len = 0;
 }
 
-int ag_vsprintf(ag_ds *s, const char *format, va_list ap) {
+ag_ds ag_vsprintf(ag_ds s, const char *format, va_list ap, int *len) {
     unsigned int ret;
-    struct ag_dshdr *sh = (void *) (*s - sizeof(struct ag_dshdr));
-    size_t curlen = ag_dslen(*s);
+    struct ag_dshdr *sh = (void *) (s - sizeof(struct ag_dshdr));
+    size_t curlen = ag_dslen(s);
+    va_list aq;
 
+    /* Can't reuse va_list */
+    va_copy(aq, ap);
     /* ret is the real length of the string */
-    ret = vsnprintf(*s + sh->len, sh->free + 1, format, ap);
+    ret = vsnprintf(s + sh->len, sh->free + 1, format, ap);
     if (ret >= sh->free + 1) {
-        *s = ag_dsmakeroom(*s, ret);
-        sh = (void *) (*s - sizeof(struct ag_dshdr));
-        ret = vsnprintf(*s + sh->len, sh->free + 1, format, ap);
+        s = ag_dsmakeroom(s, ret);
+        sh = (void *) (s - sizeof(struct ag_dshdr));
+        ret = vsnprintf(s + sh->len, sh->free + 1, format, aq);
+        va_end(aq);
     }
 
     sh->len = curlen + ret;
     sh->free -= ret;
-    return ret;
+    *len = ret;
+    return s;
 }
 
-int ag_dsncat(ag_ds *s, const char *t, size_t len) {
+ag_ds ag_dsncat(ag_ds s, const char *t, size_t len) {
     struct ag_dshdr *sh;
-    size_t curlen = ag_dslen(*s);
+    size_t curlen = ag_dslen(s);
 
-    *s = ag_dsmakeroom(*s, len);
-    sh = (void *) (*s - sizeof(struct ag_dshdr));
-    memcpy(*s + sh->len, t, len);
+    s = ag_dsmakeroom(s, len);
+    sh = (void *) (s - sizeof(struct ag_dshdr));
+    memcpy(s + sh->len, t, len);
     sh->len = curlen + len;
     sh->free -= len;
-    *s[sh->len] = '\0';
-    return len;
+    s[sh->len] = '\0';
+    return s;
 }
 
 void ag_setspecific(void) {
@@ -110,7 +115,17 @@ void *ag_getspecific(void) {
     return pthread_getspecific(worker_key);
 }
 
-void ag_specific_free(void *data) {
+void ag_lockspecific(void) {
+    ag_specific_t *as = (ag_specific_t *) ag_getspecific();
+    as->lock = TRUE;
+}
+
+void ag_unlockspecific(void) {
+    ag_specific_t *as = (ag_specific_t *) ag_getspecific();
+    as->lock = FALSE;
+}
+
+void ag_freespecific(void *data) {
     ag_dsfree(((ag_specific_t *)data)->ds);
     free(data);
 }
