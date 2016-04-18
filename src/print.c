@@ -64,6 +64,19 @@ static inline int ag_fputc(int c, FILE *stream) {
     return ret;
 }
 
+static inline int ag_fputs(const char *s, FILE *stream) {
+    int ret;
+    ag_specific_t *as = (ag_specific_t *) ag_getspecific();
+
+    if (as->lock) {
+        ret = fputs(s, stream);
+    } else {
+        as->ds = ag_dsncat(as->ds, s, ret=strlen(s));
+    }
+
+    return ret;
+}
+
 void print_path(const char *path, const char sep) {
     if (opts.print_path == PATH_PRINT_NOTHING && !opts.vimgrep) {
         return;
@@ -256,7 +269,7 @@ void convert_file_matches(const char *path, const char *buf, const size_t buf_le
                          * before highlight opening */
                         if (j < buf_len && opts.width > 0 && j - prev_line_offset >= opts.width) {
                             if (j < i) {
-                                fputs(truncate_marker, out_fd);
+                                ag_fputs(truncate_marker, out_fd);
                             }
                             ag_fputc('\n', out_fd);
 

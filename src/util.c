@@ -83,6 +83,8 @@ ag_ds ag_vsprintf(ag_ds s, const char *format, va_list ap, int *len) {
         sh = (void *) (s - sizeof(struct ag_dshdr));
         ret = vsnprintf(s + sh->len, sh->free + 1, format, aq);
         va_end(aq);
+    } else {
+        va_end(aq);
     }
 
     sh->len = curlen + ret;
