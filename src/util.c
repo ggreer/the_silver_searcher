@@ -374,22 +374,22 @@ int is_fnmatch(const char *filename) {
 
 int binary_search(const char *needle, char **haystack, int start, int end) {
     int mid;
-    int rc;
 
-    if (start == end) {
+    while (start < end) {
+        mid = (start + end) / 2; 
+
+        if(strcmp(needle, haystack[mid]) > 0) {
+            start = mid + 1;
+        } else {
+            end = mid;
+        }
+    }
+
+    if (strcmp(needle, haystack[start]) != 0) {
         return -1;
     }
 
-    mid = (start + end) / 2; /* can screw up on arrays with > 2 billion elements */
-
-    rc = strcmp(needle, haystack[mid]);
-    if (rc < 0) {
-        return binary_search(needle, haystack, start, mid);
-    } else if (rc > 0) {
-        return binary_search(needle, haystack, mid + 1, end);
-    }
-
-    return mid;
+    return start;
 }
 
 static int wordchar_table[256];
