@@ -380,7 +380,7 @@ int binary_search(const char *needle, char **haystack, int start, int end) {
         return -1;
     }
 
-    mid = (start + end) / 2; /* can screw up on arrays with > 2 billion elements */
+    mid = start + ((end - start) / 2);
 
     rc = strcmp(needle, haystack[mid]);
     if (rc < 0) {
