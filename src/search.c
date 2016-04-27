@@ -160,7 +160,11 @@ void search_buf(const char *buf, const size_t buf_len,
 multiline_done:
 
     if (opts.invert_match) {
-        matches_len = invert_matches(buf, buf_len, matches, matches_len);
+        if (opts.print_filename_only) {
+            matches_len = matches_len > 0 ? 0 : 1;
+        } else {
+            matches_len = invert_matches(buf, buf_len, matches, matches_len);
+        }
     }
 
     if (opts.stats) {
@@ -187,7 +191,7 @@ multiline_done:
              * on a file-without-matches which is not desired behaviour. See
              * GitHub issue 206 for the consequences if this behaviour is not
              * checked. */
-            if (!opts.invert_match || matches_len < 2) {
+            if (!opts.invert_match) {
                 if (opts.print_count) {
                     print_path_count(dir_full_path, opts.path_sep, (size_t)matches_len);
                 } else {
