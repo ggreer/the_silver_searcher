@@ -235,7 +235,7 @@ Language types are output:
         .scm  .ss
   
     --shell
-        .sh  .bash  .csh  .tcsh  .ksh  .zsh
+        .sh  .bash  .csh  .tcsh  .ksh  .zsh  .fish
   
     --smalltalk
         .st

@@ -81,7 +81,7 @@ lang_spec_t langs[] = {
     { "sass", { "sass", "scss" } },
     { "scala", { "scala" } },
     { "scheme", { "scm", "ss" } },
-    { "shell", { "sh", "bash", "csh", "tcsh", "ksh", "zsh" } },
+    { "shell", { "sh", "bash", "csh", "tcsh", "ksh", "zsh", "fish" } },
     { "smalltalk", { "st" } },
     { "sml", { "sml", "fun", "mlb", "sig" } },
     { "sql", { "sql", "ctl" } },
