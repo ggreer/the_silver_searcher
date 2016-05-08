@@ -61,6 +61,41 @@ void print_cleanup_context(void) {
     print_context.context_prev_lines = NULL;
 }
 
+void print_context_append(const char *line, size_t len) {
+    if (opts.before == 0) {
+        return;
+    }
+    if (print_context.context_prev_lines[print_context.last_prev_line] != NULL) {
+        free(print_context.context_prev_lines[print_context.last_prev_line]);
+    }
+    print_context.context_prev_lines[print_context.last_prev_line] = ag_strndup(line, len);
+    print_context.last_prev_line = (print_context.last_prev_line + 1) % opts.before;
+}
+
+void print_trailing_context(const char *path, const char *buf, size_t n) {
+    char sep = '-';
+
+    if (opts.ackmate || opts.vimgrep) {
+        sep = ':';
+    }
+
+    if (print_context.lines_since_last_match != 0 &&
+        print_context.lines_since_last_match <= opts.after) {
+        if (opts.print_path == PATH_PRINT_EACH_LINE) {
+            print_path(path, ':');
+        }
+        print_line_number(print_context.line, sep);
+
+        fwrite(buf, 1, n, out_fd);
+        fputc('\n', out_fd);
+    }
+
+    print_context.line++;
+    if (!print_context.in_a_match && print_context.lines_since_last_match < INT_MAX) {
+        print_context.lines_since_last_match++;
+    }
+}
+
 void print_path(const char *path, const char sep) {
     if (opts.print_path == PATH_PRINT_NOTHING && !opts.vimgrep) {
         return;
@@ -172,12 +207,8 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
 
         /* We found the end of a line. */
         if ((i == buf_len || buf[i] == '\n') && opts.before > 0) {
-            if (print_context.context_prev_lines[print_context.last_prev_line] != NULL) {
-                free(print_context.context_prev_lines[print_context.last_prev_line]);
-            }
             /* We don't want to strcpy the \n */
-            print_context.context_prev_lines[print_context.last_prev_line] = ag_strndup(&buf[print_context.prev_line_offset], i - print_context.prev_line_offset);
-            print_context.last_prev_line = (print_context.last_prev_line + 1) % opts.before;
+            print_context_append(&buf[print_context.prev_line_offset], i - print_context.prev_line_offset);
         }
 
         if (i == buf_len || buf[i] == '\n') {
@@ -272,24 +303,17 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                         fprintf(out_fd, "%s", color_reset);
                     }
                 }
-            } else if (print_context.lines_since_last_match <= opts.after) {
-                /* print context after matching line */
-                if (opts.print_path == PATH_PRINT_EACH_LINE) {
-                    print_path(path, ':');
-                }
-                print_line_number(print_context.line, sep);
-
-                for (j = print_context.prev_line_offset; j < i; j++) {
-                    fputc(buf[j], out_fd);
-                }
-                fputc('\n', out_fd);
             }
+
+            if (opts.search_stream) {
+                break;
+            }
+
+            /* print context after matching line */
+            print_trailing_context(path, &buf[print_context.prev_line_offset], i - print_context.prev_line_offset);
 
             print_context.prev_line_offset = i + 1; /* skip the newline */
-            print_context.line++;
-            if (!print_context.in_a_match && print_context.lines_since_last_match < INT_MAX) {
-                print_context.lines_since_last_match++;
-            }
+
             /* File doesn't end with a newline. Print one so the output is pretty. */
             if (i == buf_len && buf[i - 1] != '\n' && !opts.search_stream) {
                 fputc('\n', out_fd);
@@ -301,9 +325,6 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
 void print_line_number(size_t line, const char sep) {
     if (!opts.print_line_numbers) {
         return;
-    }
-    if (opts.search_stream && opts.stream_line_num) {
-        line = opts.stream_line_num;
     }
     if (opts.color) {
         fprintf(out_fd, "%s%lu%s%c", opts.color_line_number, (unsigned long)line, color_reset, sep);
