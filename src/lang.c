@@ -21,7 +21,7 @@ lang_spec_t langs[] = {
     { "csharp", { "cs" } },
     { "css", { "css" } },
     { "cython", { "pyx", "pxd", "pxi" } },
-    { "delphi", { "pas", "int", "dfm", "nfm", "dof", "dpk", "dproj", "groupproj", "bdsgroup", "bdsproj" } },
+    { "delphi", { "pas", "int", "dfm", "nfm", "dof", "dpk", "dpr", "dproj", "groupproj", "bdsgroup", "bdsproj" } },
     { "ebuild", { "ebuild", "eclass" } },
     { "elisp", { "el" } },
     { "elixir", { "ex", "eex", "exs" } },
