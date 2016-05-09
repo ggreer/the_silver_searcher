@@ -107,8 +107,8 @@ ag_ds ag_dsncat(ag_ds s, const char *t, size_t len) {
 }
 
 void ag_setspecific(void) {
-    ag_specific_t *as = ag_malloc(sizeof(as));
-    as->lock = FALSE;
+    ag_specific_t *as = ag_malloc(sizeof(*as));
+    as->print = FALSE;
     as->ds = ag_dsnew(INIT_AGDSLEN);
     pthread_setspecific(worker_key, as);
 }
@@ -117,14 +117,14 @@ void *ag_getspecific(void) {
     return pthread_getspecific(worker_key);
 }
 
-void ag_lockspecific(void) {
+void ag_setprint(void) {
     ag_specific_t *as = (ag_specific_t *) ag_getspecific();
-    as->lock = TRUE;
+    as->print = TRUE;
 }
 
-void ag_unlockspecific(void) {
+void ag_unsetprint(void) {
     ag_specific_t *as = (ag_specific_t *) ag_getspecific();
-    as->lock = FALSE;
+    as->print = FALSE;
 }
 
 void ag_freespecific(void *data) {

@@ -168,10 +168,10 @@ multiline_done:
             binary = is_binary((const void *)buf, buf_len);
         }
         if (!opts.print_filename_only && !binary) {
-            convert_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
+            convert_file_matches_to_ds(dir_full_path, buf, buf_len, matches, matches_len);
         }
         pthread_mutex_lock(&print_mtx);
-        ag_lockspecific();
+        ag_setprint();
         if (opts.print_filename_only) {
             /* If the --files-without-matches or -L option is passed we should
              * not print a matching line. This option currently sets
@@ -191,9 +191,9 @@ multiline_done:
             print_binary_file_matches(dir_full_path);
         } else {
             /* Print file matches in dynamic string */
-            print_file_matches();
+            print_file_matches_in_ds(dir_full_path);
         }
-        ag_unlockspecific();
+        ag_unsetprint();
         pthread_mutex_unlock(&print_mtx);
         opts.match_found = 1;
     } else if (opts.search_stream && opts.passthrough) {

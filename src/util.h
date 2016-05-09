@@ -33,7 +33,7 @@ pthread_key_t worker_key;
 typedef char *ag_ds;
 
 typedef struct {
-    int lock;
+    volatile int print;
     ag_ds ds;
 } ag_specific_t;
 
@@ -61,8 +61,8 @@ ag_ds ag_dsncat(ag_ds s, const char *t, size_t len);
 
 void ag_setspecific(void);
 void *ag_getspecific(void);
-void ag_lockspecific(void);
-void ag_unlockspecific(void);
+void ag_setprint(void);
+void ag_unsetprint(void);
 void ag_freespecific(void *data);
 
 void *ag_malloc(size_t size);
