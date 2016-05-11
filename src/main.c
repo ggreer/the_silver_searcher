@@ -161,8 +161,10 @@ int main(int argc, char **argv) {
     }
 
     if (opts.search_stream) {
+        ag_setspecific();
         search_stream(stdin, "");
     } else {
+        ag_setspecific();
         set_affinity(pthread_self(), num_cores);
         for (i = 0; i < workers_len; i++) {
             workers[i].id = i;

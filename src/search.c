@@ -525,7 +525,9 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
                 } else if (opts.match_files) {
                     log_debug("match_files: file_search_regex matched for %s.", dir_full_path);
                     pthread_mutex_lock(&print_mtx);
+                    ag_setprint();
                     print_path(dir_full_path, opts.path_sep);
+                    ag_unsetprint();
                     pthread_mutex_unlock(&print_mtx);
                     opts.match_found = 1;
                     goto cleanup;

@@ -26,7 +26,7 @@ static inline int ag_fprintf(FILE *stream, const char *format, ...) {
 
     va_start(args, format);
     if (as->print) {
-        ret = fprintf(stream, format, args);
+        ret = vfprintf(stream, format, args);
     } else {
         as->ds = ag_vsprintf(as->ds, format, args, &ret);
     }
