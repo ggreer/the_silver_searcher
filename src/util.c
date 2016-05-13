@@ -473,7 +473,7 @@ int is_symlink(const char *path, const struct dirent *d) {
 int is_named_pipe(const char *path, const struct dirent *d) {
 #ifdef HAVE_DIRENT_DTYPE
     if (d->d_type != DT_UNKNOWN) {
-        return d->d_type == DT_FIFO;
+        return d->d_type == DT_FIFO || d->d_type == DT_SOCK;
     }
 #endif
     char *full_path;
@@ -484,7 +484,7 @@ int is_named_pipe(const char *path, const struct dirent *d) {
         return FALSE;
     }
     free(full_path);
-    return S_ISFIFO(s.st_mode);
+    return S_ISFIFO(s.st_mode) || S_ISSOCK(s.st_mode);
 }
 
 void ag_asprintf(char **ret, const char *fmt, ...) {
