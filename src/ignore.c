@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <dirent.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -208,6 +209,10 @@ void load_svn_ignore_patterns(ignores *ig, const char *path) {
     int matches;
 
     while (fscanf(fp, "K %zu\n", &key_len) == 1) {
+        if (key_len >= INT_MAX) {
+            log_debug("Unable to parse svnignore file %s: key is absurdly long.", dir_prop_base);
+            goto cleanup;
+        }
         key = ag_realloc(key, key_len + 1);
         bytes_read = fread(key, 1, key_len, fp);
         key[key_len] = '\0';
