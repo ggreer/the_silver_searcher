@@ -220,7 +220,11 @@ void load_svn_ignore_patterns(ignores *ig, const char *path) {
         if (strncmp(SVN_PROP_IGNORE, key, bytes_read) != 0) {
             log_debug("key is %s, not %s. skipping %u bytes", key, SVN_PROP_IGNORE, entry_len);
             /* Not the key we care about. fseek and repeat */
-            fseek(fp, entry_len + 1, SEEK_CUR); /* +1 to account for newline. yes I know this is hacky */
+            int rv = fseek(fp, entry_len + 1, SEEK_CUR); /* +1 to account for newline. yes I know this is hacky */
+            if (rv == -1) {
+                log_debug("Skipping svnignore file %s: fseek() error.", dir_prop_base);
+                goto cleanup;
+            }
             continue;
         }
         /* Aww yeah. Time to ignore stuff */
