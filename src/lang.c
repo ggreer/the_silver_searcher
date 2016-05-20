@@ -27,6 +27,7 @@ lang_spec_t langs[] = {
     { "elixir", { "ex", "eex", "exs" } },
     { "erlang", { "erl", "hrl" } },
     { "factor", { "factor" } },
+    { "freepascal", { "pas", "pp", "inc", "lpr", "dpr" } },
     { "fortran", { "f", "f77", "f90", "f95", "f03", "for", "ftn", "fpp" } },
     { "fsharp", { "fs", "fsi", "fsx" } },
     { "gettext", { "po", "pot", "mo" } },
