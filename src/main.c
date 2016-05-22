@@ -31,7 +31,7 @@ static void set_affinity(pthread_t tid, int num_cores) {
         static int cpu = 0;
         cpu_set_t cpu_set;
         CPU_ZERO(&cpu_set);
-        CPU_SET(cpu%num_cores, &cpu_set);
+        CPU_SET(cpu % num_cores, &cpu_set);
         int rv = pthread_setaffinity_np(tid, sizeof(cpu_set), &cpu_set);
         if (rv) {
             log_err("Error in pthread_setaffinity_np(): %s", strerror(rv));
