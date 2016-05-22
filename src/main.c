@@ -27,24 +27,24 @@ typedef struct {
 
 static void set_affinity(pthread_t tid, int num_cores) {
 #if defined(HAVE_PTHREAD_SETAFFINITY_NP) && defined(USE_CPU_SET)
-	if (opts.use_thread_affinity) {
-		static int cpu = 0;
-		cpu_set_t cpu_set;
-		CPU_ZERO(&cpu_set);
-		CPU_SET(cpu%num_cores, &cpu_set);
-		int rv = pthread_setaffinity_np(tid, sizeof(cpu_set), &cpu_set);
-		if (rv) {
-			log_err("Error in pthread_setaffinity_np(): %s", strerror(rv));
-			log_err("Performance may be affected. Use --noaffinity to suppress this message.");
-		} else {
-			log_debug("Thread %d set to CPU %d", tid, cpu);
-		}
-		cpu++;
-	} else {
-		log_debug("Thread affinity disabled.");
-	}
+    if (opts.use_thread_affinity) {
+        static int cpu = 0;
+        cpu_set_t cpu_set;
+        CPU_ZERO(&cpu_set);
+        CPU_SET(cpu%num_cores, &cpu_set);
+        int rv = pthread_setaffinity_np(tid, sizeof(cpu_set), &cpu_set);
+        if (rv) {
+            log_err("Error in pthread_setaffinity_np(): %s", strerror(rv));
+            log_err("Performance may be affected. Use --noaffinity to suppress this message.");
+        } else {
+            log_debug("Thread %d set to CPU %d", tid, cpu);
+        }
+        cpu++;
+    } else {
+        log_debug("Thread affinity disabled.");
+    }
 #else
-	log_debug("No CPU affinity support.");
+    log_debug("No CPU affinity support.");
 #endif
 }
 

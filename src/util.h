@@ -28,7 +28,7 @@ pthread_key_t worker_key;
 #endif
 
 #define INIT_AGDSLEN 1024
-#define MAX_AGDS_PREALLOC (1024*1024)
+#define MAX_AGDS_PREALLOC (1024 * 1024)
 
 typedef char *ag_ds;
 
@@ -44,12 +44,12 @@ struct ag_dshdr {
 };
 
 static inline size_t ag_dslen(const ag_ds s) {
-    struct ag_dshdr *sh = (void *) (s - sizeof(struct ag_dshdr));
+    struct ag_dshdr *sh = (void *)(s - sizeof(struct ag_dshdr));
     return sh->len;
 }
 
 static inline size_t ag_dsavail(const ag_ds s) {
-    struct ag_dshdr *sh = (void *) (s - sizeof(struct ag_dshdr));
+    struct ag_dshdr *sh = (void *)(s - sizeof(struct ag_dshdr));
     return sh->free;
 }
 

@@ -36,10 +36,10 @@ static ag_ds ag_dsmakeroom(ag_ds s, size_t addlen) {
     } else {
         newlen += MAX_AGDS_PREALLOC;
     }
-    sh = (void *) (s - sizeof(struct ag_dshdr));
+    sh = (void *)(s - sizeof(struct ag_dshdr));
     newsh = ag_realloc(sh, sizeof(struct ag_dshdr) + newlen + 1);
     newsh->free = newlen - len;
-    return (char *) newsh->buf;
+    return (char *)newsh->buf;
 }
 
 ag_ds ag_dsnew(size_t size) {
@@ -63,14 +63,14 @@ void ag_dsreset(ag_ds s) {
         return;
     }
     struct ag_dshdr *sh;
-    sh = (void *) (s - sizeof(struct ag_dshdr));
+    sh = (void *)(s - sizeof(struct ag_dshdr));
     sh->free += sh->len;
     sh->len = 0;
 }
 
 ag_ds ag_vsprintf(ag_ds s, const char *format, va_list ap, int *len) {
     unsigned int ret;
-    struct ag_dshdr *sh = (void *) (s - sizeof(struct ag_dshdr));
+    struct ag_dshdr *sh = (void *)(s - sizeof(struct ag_dshdr));
     size_t curlen = ag_dslen(s);
     va_list aq;
 
@@ -80,7 +80,7 @@ ag_ds ag_vsprintf(ag_ds s, const char *format, va_list ap, int *len) {
     ret = vsnprintf(s + sh->len, sh->free + 1, format, ap);
     if (ret >= sh->free + 1) {
         s = ag_dsmakeroom(s, ret);
-        sh = (void *) (s - sizeof(struct ag_dshdr));
+        sh = (void *)(s - sizeof(struct ag_dshdr));
         ret = vsnprintf(s + sh->len, sh->free + 1, format, aq);
         va_end(aq);
     } else {
@@ -98,7 +98,7 @@ ag_ds ag_dsncat(ag_ds s, const char *t, size_t len) {
     size_t curlen = ag_dslen(s);
 
     s = ag_dsmakeroom(s, len);
-    sh = (void *) (s - sizeof(struct ag_dshdr));
+    sh = (void *)(s - sizeof(struct ag_dshdr));
     memcpy(s + sh->len, t, len);
     sh->len = curlen + len;
     sh->free -= len;
@@ -118,12 +118,12 @@ void *ag_getspecific(void) {
 }
 
 void ag_setprint(void) {
-    ag_specific_t *as = (ag_specific_t *) ag_getspecific();
+    ag_specific_t *as = (ag_specific_t *)ag_getspecific();
     as->print = TRUE;
 }
 
 void ag_unsetprint(void) {
-    ag_specific_t *as = (ag_specific_t *) ag_getspecific();
+    ag_specific_t *as = (ag_specific_t *)ag_getspecific();
     as->print = FALSE;
 }
 

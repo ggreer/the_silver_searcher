@@ -22,7 +22,7 @@ const char *truncate_marker = " [...]";
 static inline int ag_fprintf(FILE *stream, const char *format, ...) {
     int ret;
     va_list args;
-    ag_specific_t *as = (ag_specific_t *) ag_getspecific();
+    ag_specific_t *as = (ag_specific_t *)ag_getspecific();
 
     va_start(args, format);
     if (as->print) {
@@ -36,9 +36,9 @@ static inline int ag_fprintf(FILE *stream, const char *format, ...) {
 }
 
 static inline size_t ag_fwrite(const void *ptr, size_t size, size_t nmemb,
-			FILE *stream) {
+                               FILE *stream) {
     size_t ret;
-    ag_specific_t *as = (ag_specific_t *) ag_getspecific();
+    ag_specific_t *as = (ag_specific_t *)ag_getspecific();
 
     if (as->print) {
         ret = fwrite(ptr, size, nmemb, stream);
@@ -52,12 +52,12 @@ static inline size_t ag_fwrite(const void *ptr, size_t size, size_t nmemb,
 
 static inline int ag_fputc(int c, FILE *stream) {
     int ret;
-    ag_specific_t *as = (ag_specific_t *) ag_getspecific();
+    ag_specific_t *as = (ag_specific_t *)ag_getspecific();
 
     if (as->print) {
         ret = fputc(c, stream);
     } else {
-        as->ds = ag_dsncat(as->ds, (char *) &c, sizeof(char));
+        as->ds = ag_dsncat(as->ds, (char *)&c, sizeof(char));
         ret = sizeof(char);
     }
 
@@ -66,12 +66,12 @@ static inline int ag_fputc(int c, FILE *stream) {
 
 static inline int ag_fputs(const char *s, FILE *stream) {
     int ret;
-    ag_specific_t *as = (ag_specific_t *) ag_getspecific();
+    ag_specific_t *as = (ag_specific_t *)ag_getspecific();
 
     if (as->print) {
         ret = fputs(s, stream);
     } else {
-        as->ds = ag_dsncat(as->ds, s, ret=strlen(s));
+        as->ds = ag_dsncat(as->ds, s, ret = strlen(s));
     }
 
     return ret;
@@ -123,7 +123,7 @@ void print_binary_file_matches(const char *path) {
 }
 
 void print_file_matches_in_ds(__attribute__((unused)) const char *path) {
-    ag_specific_t *as = (ag_specific_t *) ag_getspecific();
+    ag_specific_t *as = (ag_specific_t *)ag_getspecific();
     fprintf(out_fd, "%s", as->ds);
 }
 
@@ -141,7 +141,7 @@ void convert_file_matches_to_ds(const char *path, const char *buf, const size_t 
     size_t i, j;
     int in_a_match = FALSE;
     int printing_a_match = FALSE;
-    ag_specific_t *as = (ag_specific_t *) ag_getspecific();
+    ag_specific_t *as = (ag_specific_t *)ag_getspecific();
 
     ag_dsreset(as->ds);
 
@@ -230,8 +230,8 @@ void convert_file_matches_to_ds(const char *path, const char *buf, const size_t 
                             start = 0;
                         }
                         ag_fprintf(out_fd, "%li %li",
-                                start,
-                                (long)(matches[last_printed_match].end - matches[last_printed_match].start));
+                                   start,
+                                   (long)(matches[last_printed_match].end - matches[last_printed_match].start));
                         last_printed_match == cur_match - 1 ? ag_fputc(':', out_fd) : ag_fputc(',', out_fd);
                     }
                     print_line(buf, i, prev_line_offset);
