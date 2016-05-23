@@ -65,7 +65,6 @@ Output Options:\n\
      --[no]numbers        Print line numbers. Default is to omit line numbers\n\
                           when searching streams\n\
   -o --only-matching      Prints only the matching part of the lines\n\
-     --print-long-lines   Print matches on very long lines (Default: >2k characters)\n\
      --passthrough        When searching a stream, print all lines even if they\n\
                           don't match\n\
      --silent             Suppress all log messages, including errors\n\
@@ -282,7 +281,6 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "passthru", no_argument, &opts.passthrough, 1 },
         { "path-to-agignore", required_argument, NULL, 'p' },
         { "print0", no_argument, NULL, '0' },
-        { "print-long-lines", no_argument, &opts.print_long_lines, 1 },
         { "recurse", no_argument, NULL, 'r' },
         { "search-binary", no_argument, &opts.search_binary_files, 1 },
         { "search-files", no_argument, &opts.search_stream, 0 },
