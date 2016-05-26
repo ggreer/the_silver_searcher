@@ -300,3 +300,6 @@ Language types are output:
     --yaml
         .yaml  .yml
   
+    --yang
+        .yang
+  
