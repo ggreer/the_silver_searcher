@@ -121,6 +121,7 @@ void print_version(void) {
     char jit = '-';
     char lzma = '-';
     char zlib = '-';
+    char zip = '-';
 
 #ifdef USE_PCRE_JIT
     jit = '+';
@@ -131,10 +132,13 @@ void print_version(void) {
 #ifdef HAVE_ZLIB_H
     zlib = '+';
 #endif
+#ifdef HAVE_ZIP_H
+    zip = '+';
+#endif
 
     printf("ag version %s\n\n", PACKAGE_VERSION);
     printf("Features:\n");
-    printf("  %cjit %clzma %czlib\n", jit, lzma, zlib);
+    printf("  %cjit %clzma %czlib %czip\n", jit, lzma, zlib, zip);
 }
 
 void init_options(void) {
