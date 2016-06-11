@@ -223,7 +223,7 @@ void load_svn_ignore_patterns(ignores *ig, const char *path) {
         }
 
         if (strncmp(SVN_PROP_IGNORE, key, bytes_read) != 0) {
-            log_debug("key is %s, not %s. skipping %u bytes", key, SVN_PROP_IGNORE, entry_len);
+            log_debug("key is %s, not %s. skipping %zu bytes", key, SVN_PROP_IGNORE, entry_len);
             /* Not the key we care about. fseek and repeat */
             int rv = fseek(fp, entry_len + 1, SEEK_CUR); /* +1 to account for newline. yes I know this is hacky */
             if (rv == -1) {

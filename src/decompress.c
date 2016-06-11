@@ -61,7 +61,7 @@ static void *decompress_zlib(const void *buf, const int buf_len,
             result = (unsigned char *)realloc(result, result_size * sizeof(unsigned char));
             if (result == NULL) {
                 free(tmp_result);
-                log_err("Unable to allocate %d bytes to decompress file %s", result_size * sizeof(unsigned char), dir_full_path);
+                log_err("Unable to allocate %zd bytes to decompress file %s", result_size * sizeof(unsigned char), dir_full_path);
                 inflateEnd(&stream);
                 goto error_out;
             }
@@ -150,7 +150,7 @@ static void *decompress_lzma(const void *buf, const int buf_len,
             result = (unsigned char *)realloc(result, result_size * sizeof(unsigned char));
             if (result == NULL) {
                 free(tmp_result);
-                log_err("Unable to allocate %d bytes to decompress file %s", result_size * sizeof(unsigned char), dir_full_path);
+                log_err("Unable to allocate %zd bytes to decompress file %s", result_size * sizeof(unsigned char), dir_full_path);
                 goto error_out;
             }
 
