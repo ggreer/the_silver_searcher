@@ -34,13 +34,6 @@ typedef enum {
     AG_BINARY_TRUE
 } ag_binary_type;
 
-typedef enum {
-    AG_NO_COMPRESSION,
-    AG_GZIP,
-    AG_COMPRESS,
-    AG_ZIP
-} ag_compression_type;
-
 typedef struct {
     size_t start; /* Byte at which the match starts */
     size_t end;   /* and where it ends */

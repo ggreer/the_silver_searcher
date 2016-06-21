@@ -1,3 +1,4 @@
+#include "decompress.h"
 #include "search.h"
 #include "scandir.h"
 
@@ -38,7 +39,7 @@ search_results_t *search_buf(const char *buf, const size_t buf_len, const char *
     if (!opts.literal && opts.query_len == 1 && opts.query[0] == '.') {
         /* Don't even PCRE, just match everything */
         sr.matches_size = 1;
-        sr.matches = sr.matches == NULL ? ag_malloc(sr.matches_size * sizeof(match_t)): sr.matches;
+        sr.matches = sr.matches == NULL ? ag_malloc(sr.matches_size * sizeof(match_t)) : sr.matches;
         sr.matches[0].start = 0;
         sr.matches[0].end = buf_len;
         sr.matches_len = 1;
