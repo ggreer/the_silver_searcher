@@ -2,7 +2,7 @@ Setup. Note that we have to turn --color on manually since ag detects that
 stdout isn't a tty when running in cram.
 
   $ . $TESTDIR/setup.sh
-  $ alias ag="$TESTDIR/../ag --workers=1 --parallel --color"
+  $ alias ag="$TESTDIR/../ag --noaffinity --workers=1 --parallel --color"
   $ printf 'foo\n' > ./blah.txt
   $ printf 'bar\n' >> ./blah.txt
 
