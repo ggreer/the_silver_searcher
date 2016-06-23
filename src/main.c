@@ -1,8 +1,8 @@
+#include <ctype.h>
 #include <pcre.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
 #include <sys/time.h>
 #include <unistd.h>
 #ifdef _WIN32

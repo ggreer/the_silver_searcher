@@ -1,10 +1,10 @@
 #ifdef _WIN32
 
-#include <windows.h>
-#include <stdio.h>
+#include "print.h"
 #include <io.h>
 #include <stdarg.h>
-#include "print.h"
+#include <stdio.h>
+#include <windows.h>
 
 #ifndef FOREGROUND_MASK
 #define FOREGROUND_MASK (FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY)

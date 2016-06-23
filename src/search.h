@@ -23,13 +23,13 @@
 #include <pthread.h>
 #endif
 
+#include "decompress.h"
 #include "ignore.h"
 #include "log.h"
 #include "options.h"
 #include "print.h"
-#include "util.h"
-#include "decompress.h"
 #include "uthash.h"
+#include "util.h"
 
 size_t alpha_skip_lookup[256];
 size_t *find_skip_lookup;

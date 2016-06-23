@@ -10,11 +10,11 @@
 
 #include "config.h"
 #include "ignore.h"
-#include "options.h"
 #include "lang.h"
 #include "log.h"
-#include "util.h"
+#include "options.h"
 #include "print.h"
+#include "util.h"
 
 const char *color_line_number = "\033[1;33m"; /* bold yellow */
 const char *color_match = "\033[30;43m";      /* black with yellow background */
