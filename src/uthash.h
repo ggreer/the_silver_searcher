@@ -24,9 +24,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef UTHASH_H
 #define UTHASH_H
 
-#include <string.h> /* memcmp,strlen */
 #include <stddef.h> /* ptrdiff_t */
 #include <stdlib.h> /* exit() */
+#include <string.h> /* memcmp,strlen */
 
 /* These macros use decltype or the earlier __typeof GNU extension.
    As decltype is only available in newer compilers (VS2010 or gcc 4.3+

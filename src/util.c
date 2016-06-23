@@ -1,12 +1,12 @@
 #include <ctype.h>
-#include <string.h>
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 
-#include "util.h"
 #include "config.h"
+#include "util.h"
 
 #ifdef _WIN32
 #include <windows.h>
