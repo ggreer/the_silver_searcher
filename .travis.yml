@@ -24,14 +24,14 @@ addons:
 env:
   global:
     - LLVM_VERSION=3.8.0
-    - LLVM_ARCHIVE_PATH=$HOME/clang+llvm.tar.xz
-    - CLANG_FORMAT=$HOME/clang+llvm/bin/clang-format
+    - LLVM_PATH=$HOME/clang+llvm
+    - CLANG_FORMAT=$LLVM_PATH/bin/clang-format
 
 before_install:
-  - wget http://llvm.org/releases/$LLVM_VERSION/clang+llvm-$LLVM_VERSION-x86_64-linux-gnu-ubuntu-14.04.tar.xz -O $LLVM_ARCHIVE_PATH
-  - mkdir $HOME/clang-$LLVM_VERSION
-  - tar xf $LLVM_ARCHIVE_PATH -C $HOME/clang-$LLVM_VERSION --strip-components 1
-  - export PATH=$HOME/clang+llvm/bin:$HOME/.local/bin:$PATH
+  - wget http://llvm.org/releases/$LLVM_VERSION/clang+llvm-$LLVM_VERSION-x86_64-linux-gnu-ubuntu-14.04.tar.xz -O $LLVM_PATH.tar.xz
+  - mkdir $LLVM_PATH
+  - tar xf $LLVM_PATH.tar.xz -C $LLVM_PATH --strip-components=1
+  - export PATH=$HOME/.local/bin:$PATH
 
 install:
   - pip install --user cram
