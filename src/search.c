@@ -1,5 +1,5 @@
-#include "decompress.h"
 #include "search.h"
+#include "decompress.h"
 #include "scandir.h"
 
 search_results_t *search_buf(const char *buf, const size_t buf_len, const char *dir_full_path) {
