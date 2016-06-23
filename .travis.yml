@@ -23,7 +23,7 @@ addons:
 
 env:
   global:
-    - LLVM_VERSION=3.7.0
+    - LLVM_VERSION=3.6.0
     - LLVM_ARCHIVE_PATH=$HOME/clang+llvm.tar.xz
 
 before_install:
