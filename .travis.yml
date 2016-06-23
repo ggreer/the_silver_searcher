@@ -1,4 +1,6 @@
 language: c
+sudo: false
+dist: trusty
 
 branches:
   only:
@@ -8,16 +10,30 @@ compiler:
   - clang
   - gcc
 
-before_install:
-  - sudo add-apt-repository -y 'ppa:ubuntu-toolchain-r/test'
-  - sudo add-apt-repository -y 'deb http://llvm.org/apt/precise/ llvm-toolchain-precise-3.6 main'
-  - curl http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
-  - sudo apt-get update -q
-  - sudo apt-get install -q -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev
-  - sudo apt-get install -y clang-format-3.6
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - automake
+      - liblzma-dev
+      - libpcre3-dev
+      - pkg-config
+      - zlib1g-dev
 
-before_script:
-  - sudo pip install cram
+env:
+  global:
+    - LLVM_VERSION=3.7.0
+    - LLVM_ARCHIVE_PATH=$HOME/clang+llvm.tar.xz
+
+before_install:
+  - wget http://llvm.org/releases/$LLVM_VERSION/clang+llvm-$LLVM_VERSION-x86_64-linux-gnu-ubuntu-14.04.tar.xz -O $LLVM_ARCHIVE_PATH
+  - mkdir $HOME/clang-$LLVM_VERSION
+  - tar xf $LLVM_ARCHIVE_PATH -C $HOME/clang-$LLVM_VERSION --strip-components 1
+  - export PATH=$HOME/clang+llvm/bin:$HOME/.local/bin:$PATH
+
+install:
+  - pip install --user cram
 
 script:
   - ./build.sh && make test
