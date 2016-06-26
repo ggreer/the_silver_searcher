@@ -70,7 +70,7 @@ lang_spec_t langs[] = {
     { "python", { "py" } },
     { "qml", { "qml" } },
     { "racket", { "rkt", "ss", "scm" } },
-    { "rake", { "Rakefiles" } },
+    { "rake", { "Rakefile" } },
     { "restructuredtext", { "rst" } },
     { "rs", { "rs" } },
     { "r", { "R", "Rmd", "Rnw", "Rtex", "Rrst" } },

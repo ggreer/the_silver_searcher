@@ -202,7 +202,7 @@ Language types are output:
         .rkt  .ss  .scm
   
     --rake
-        .Rakefiles
+        .Rakefile
   
     --restructuredtext
         .rst
