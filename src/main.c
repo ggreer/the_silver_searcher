@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
     if (opts.casing == CASE_SMART) {
         opts.casing = is_lowercase(opts.query) ? CASE_INSENSITIVE : CASE_SENSITIVE;
     }
-    if(opts.search_hidden_files) {
+    if (opts.search_hidden_files) {
         log_warn("Hidden directories searchable with current flag.");
     }
 
