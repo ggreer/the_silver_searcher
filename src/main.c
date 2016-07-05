@@ -103,6 +103,10 @@ int main(int argc, char **argv) {
     if (opts.casing == CASE_SMART) {
         opts.casing = is_lowercase(opts.query) ? CASE_INSENSITIVE : CASE_SENSITIVE;
     }
+    if(opts.search_hidden_files) {
+        log_warn("--hidden flag enabled. Consider adding unwanted paths to an .*ignore file.");
+    }
+
 
     if (opts.literal) {
         if (opts.casing == CASE_INSENSITIVE) {
