@@ -16,5 +16,6 @@ Ignore foo.yml but not blah.yml:
 Dont ignore anything (unrestricted search):
 
   $ ag -u whatever . | sort
+  WARN: Hidden directories searchable with current flag.
   a/b/c/blah.yml:1:whatever1
   a/b/foo.yml:1:whatever2

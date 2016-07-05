@@ -12,12 +12,14 @@ Setup:
   [1]
 
   $ ag --hidden --ignore-dir .git test
+  WARN: Hidden directories searchable with current flag.
   [1]
 
   $ ag -U --ignore-dir .git test
   a.txt:1:test
 
   $ ag --hidden -U --ignore-dir .git test
+  WARN: Hidden directories searchable with current flag.
   a.txt:1:test
 
   $ mkdir -p ./.hidden
@@ -27,6 +29,7 @@ Setup:
   [1]
 
   $ ag --hidden whatever
+  WARN: Hidden directories searchable with current flag.
   [1]
 
   $ printf "\n" > .git/info/exclude
@@ -35,4 +38,5 @@ Setup:
   [1]
 
   $ ag --hidden whatever
+  WARN: Hidden directories searchable with current flag.
   .hidden/a.txt:1:whatever
