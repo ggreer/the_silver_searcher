@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
         opts.casing = is_lowercase(opts.query) ? CASE_INSENSITIVE : CASE_SENSITIVE;
     }
     if(opts.search_hidden_files) {
-        log_warn("--hidden flag enabled. Consider adding unwanted paths to an .*ignore file.");
+        log_warn("Hidden directories searchable with current flag.");
     }
 
 
