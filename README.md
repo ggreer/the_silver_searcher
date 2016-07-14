@@ -151,10 +151,6 @@ or:
 
 Which has the same effect but will report every match on the line.
 
-There's also a fork of ack.vim tailored for use with Ag: [ag.vim][]
-[ack.vim]: https://github.com/mileszs/ack.vim
-[ag.vim]: https://github.com/rking/ag.vim
-
 ### Emacs
 
 You can use [ag.el][] as an Emacs fronted to Ag. See also: [helm-ag].
@@ -171,7 +167,6 @@ TextMate users can use Ag with [my fork](https://github.com/ggreer/AckMate) of t
 * [Ack](https://github.com/petdance/ack2) - Better than grep. Without Ack, Ag would not exist.
 * [AckMate](https://github.com/protocool/AckMate) - An ack-powered replacement for TextMate's slow built-in search.
 * [ack.vim](https://github.com/mileszs/ack.vim)
-* [ag.vim]( https://github.com/rking/ag.vim)
 * [Exuberant Ctags](http://ctags.sourceforge.net/) - Faster than Ag, but it builds an index beforehand. Good for *really* big codebases.
 * [Git-grep](http://git-scm.com/docs/git-grep) - As fast as Ag but only works on git repos.
 * [Sack](https://github.com/sampson-chen/sack) - A utility that wraps Ack and Ag. It removes a lot of repetition from searching and opening matching files.
