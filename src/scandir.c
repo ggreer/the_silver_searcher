@@ -4,6 +4,13 @@
 #include "scandir.h"
 #include "util.h"
 
+static int dirent_cmp(const void *a, const void *b) {
+    struct dirent *const *c = a;
+    struct dirent *const *d = b;
+    return strcmp((*c)->d_name, (*d)->d_name);
+}
+
+
 int ag_scandir(const char *dirname,
                struct dirent ***namelist,
                filter_fp filter,
@@ -56,6 +63,8 @@ int ag_scandir(const char *dirname,
         names[results_len] = d;
         results_len++;
     }
+
+    qsort(names, results_len, sizeof(struct dirent *), dirent_cmp);
 
     closedir(dirp);
     *namelist = names;
