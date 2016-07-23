@@ -739,14 +739,6 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         }
     }
 
-    if (opts.search_stream) {
-        opts.print_break = 0;
-        opts.print_path = PATH_PRINT_NOTHING;
-        if (opts.print_line_numbers != 2) {
-            opts.print_line_numbers = 0;
-        }
-    }
-
     if (accepts_query && argc > 0) {
         // use the provided query
         opts.query = ag_strdup(argv[0]);
@@ -809,6 +801,14 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
     (*paths)[i] = NULL;
     (*base_paths)[i] = NULL;
+
+    if (opts.search_stream) {
+        opts.print_break = 0;
+        opts.print_path = PATH_PRINT_NOTHING;
+        if (opts.print_line_numbers != 2) {
+            opts.print_line_numbers = 0;
+        }
+    }
 
 #ifdef _WIN32
     windows_use_ansi(opts.color_win_ansi);
