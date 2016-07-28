@@ -40,7 +40,7 @@ Language types are output:
         .coffee  .cjsx
   
     --cpp
-        .cpp  .cc  .C  .cxx  .m  .hpp  .hh  .h  .H  .hxx
+        .cpp  .cc  .C  .cxx  .m  .hpp  .hh  .h  .H  .hxx  .tpp
   
     --crystal
         .cr  .ecr
