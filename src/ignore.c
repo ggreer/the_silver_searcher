@@ -393,18 +393,16 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         }
     }
 
-/* TODO: don't call strlen on filename every time we call filename_filter() */
-/* #ifdef HAVE_DIRENT_DNAMLEN
+#ifdef HAVE_DIRENT_DNAMLEN
     size_t filename_len = dir->d_namlen;
 #else
-    size_t filename_len = strlen(filename);
-#endif */
     size_t filename_len = 0;
+#endif
     const ignores *ig = scandir_baton->ig;
 
     while (ig != NULL) {
         if (strncmp(filename, "./", 2) == 0) {
-            if(!filename_len)
+            if (!filename_len)
                 filename_len = strlen(filename);
             filename++;
             filename_len--;
@@ -423,8 +421,8 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         }
 
         if (is_directory(path, dir)) {
-            if(!filename_len)
-                filename_len = strlen(filename); 
+            if (!filename_len)
+                filename_len = strlen(filename);
             if (filename[filename_len - 1] != '/') {
                 char *temp;
                 ag_asprintf(&temp, "%s/", filename);
@@ -434,7 +432,7 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
                     return 0;
                 }
             }
-	}
+        }
         ig = ig->parent;
     }
 
