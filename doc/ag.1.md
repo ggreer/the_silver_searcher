@@ -3,7 +3,7 @@ ag(1) -- The Silver Searcher. Like ack, but faster.
 
 ## SYNOPSIS
 
-`ag` [<file-type>] [<options>] PATTERN [PATH]
+`ag [<file-type>] [<options>] PATTERN [PATH]`
 
 ## DESCRIPTION
 
