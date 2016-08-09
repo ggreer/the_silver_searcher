@@ -94,7 +94,13 @@ lang_spec_t langs[] = {
     { "wsdl", { "wsdl" } },
     { "wadl", { "wadl" } },
     { "xml", { "xml", "dtd", "xsl", "xslt", "ent" } },
-    { "yaml", { "yaml", "yml" } }
+    { "yaml", { "yaml", "yml" } },
+    { "aml", { "aml" }  },
+    { "awl", { "awl" }  },
+    { "csv", { "csv" }  },
+    { "acf", { "acf" }  },
+    { "table", { "table" }  },
+    { "ariba", {"aml","awl","csv","acf","table"}  }
 };
 
 size_t get_lang_count() {
