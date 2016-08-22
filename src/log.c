@@ -43,26 +43,31 @@ void vplog(const unsigned int level, const char *fmt, va_list args) {
         return;
     }
 
+    char *heading;
+    char *full_fmt;
     FILE *stream = out_fd;
 
     switch (level) {
         case LOG_LEVEL_DEBUG:
-            fprintf(stream, "DEBUG: ");
+            heading = "DEBUG: ";
             break;
         case LOG_LEVEL_MSG:
-            fprintf(stream, "MSG: ");
+            heading = "MSG: ";
             break;
         case LOG_LEVEL_WARN:
-            fprintf(stream, "WARN: ");
+            heading = "WARN: ";
             break;
         case LOG_LEVEL_ERR:
             stream = stderr;
-            fprintf(stream, "ERR: ");
+            heading = "ERR: ";
             break;
     }
-
-    vfprintf(stream, fmt, args);
-    fprintf(stream, "\n");
+    full_fmt = (char *)ag_malloc(strlen(heading) + strlen(fmt) + 2);
+    sprintf(full_fmt, "%s%s\n", heading, fmt);
+    pthread_mutex_lock(&print_mtx);
+    vfprintf(stream, full_fmt, args);
+    pthread_mutex_unlock(&print_mtx);
+    free(full_fmt);
 }
 
 void plog(const unsigned int level, const char *fmt, ...) {
