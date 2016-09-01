@@ -45,24 +45,29 @@ void vplog(const unsigned int level, const char *fmt, va_list args) {
 
     FILE *stream = out_fd;
 
+    char *level_fmt = malloc(strlen(fmt) + 9);
+    level_fmt[0] = 0;
     switch (level) {
         case LOG_LEVEL_DEBUG:
-            fprintf(stream, "DEBUG: ");
+            strcat(level_fmt, "DEBUG: ");
             break;
         case LOG_LEVEL_MSG:
-            fprintf(stream, "MSG: ");
+            strcat(level_fmt, "MSG: ");
             break;
         case LOG_LEVEL_WARN:
-            fprintf(stream, "WARN: ");
+            strcat(level_fmt, "WARN: ");
             break;
         case LOG_LEVEL_ERR:
             stream = stderr;
-            fprintf(stream, "ERR: ");
+            strcat(level_fmt, "ERR: ");
             break;
     }
+    strcat(level_fmt, fmt);
+    strcat(level_fmt, "\n");
 
-    vfprintf(stream, fmt, args);
-    fprintf(stream, "\n");
+    vfprintf(stream, level_fmt, args);
+
+    free(level_fmt);
 }
 
 void plog(const unsigned int level, const char *fmt, ...) {
