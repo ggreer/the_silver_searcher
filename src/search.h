@@ -44,7 +44,6 @@ work_queue_t *work_queue;
 work_queue_t *work_queue_tail;
 int done_adding_files;
 pthread_cond_t files_ready;
-pthread_mutex_t print_mtx;
 pthread_mutex_t stats_mtx;
 pthread_mutex_t work_queue_mtx;
 
