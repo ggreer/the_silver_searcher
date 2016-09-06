@@ -121,9 +121,6 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Use a pager such as less. Use `--nopager` to override. This option
     is also ignored if output is piped to another program.
 
-  * `--print-long-lines`:
-    Print matches on very long lines (> 2k characters by default).
-
   * `--passthrough`:
     When searching a stream, print all lines even if they don't match.
 
