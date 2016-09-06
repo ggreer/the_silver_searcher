@@ -153,7 +153,7 @@ Which has the same effect but will report every match on the line.
 
 There's also a fork of ack.vim tailored for use with Ag: [ag.vim][]
 [ack.vim]: https://github.com/mileszs/ack.vim
-[ag.vim]: https://github.com/rking/ag.vim
+[ag.vim]: https://github.com/albfan/ag.vim
 
 ### Emacs
 
