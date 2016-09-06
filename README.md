@@ -171,7 +171,7 @@ TextMate users can use Ag with [my fork](https://github.com/ggreer/AckMate) of t
 * [Ack](https://github.com/petdance/ack2) - Better than grep. Without Ack, Ag would not exist.
 * [AckMate](https://github.com/protocool/AckMate) - An ack-powered replacement for TextMate's slow built-in search.
 * [ack.vim](https://github.com/mileszs/ack.vim)
-* [ag.vim]( https://github.com/rking/ag.vim)
+* [ag.vim]( https://github.com/albfan/ag.vim)
 * [Exuberant Ctags](http://ctags.sourceforge.net/) - Faster than Ag, but it builds an index beforehand. Good for *really* big codebases.
 * [Git-grep](http://git-scm.com/docs/git-grep) - As fast as Ag but only works on git repos.
 * [Sack](https://github.com/sampson-chen/sack) - A utility that wraps Ack and Ag. It removes a lot of repetition from searching and opening matching files.
