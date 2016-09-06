@@ -254,6 +254,9 @@ Language types are output:
   
     --tcl
         .tcl  .itcl  .itk
+
+    --templates
+        .jinja .tpl .twig
   
     --tex
         .tex  .cls  .sty
