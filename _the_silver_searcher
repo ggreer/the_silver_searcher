@@ -1,0 +1,86 @@
+#compdef ag
+
+# Completion function for zsh
+
+local ret=1
+local -a args expl
+
+# Intentionally avoided many possible mutual exlusions because it is
+# likely that earlier options come from an alias. In line with this
+# the following conditionally adds options that assert defaults.
+[[ -n $words[(r)(-[is]|--ignore-case|--case-sensitive)] ]] && args+=(
+  '(-S --smart-case -s -s --ignore-case --case-sensitive)'{-S,--smart-case}'[insensitive match unless pattern includes uppercase]'
+)
+[[ -n $words[(r)--nobreak] ]] && args+=(
+  "(--nobreak)--break[print newlines between matches in different files]"
+)
+[[ -n $words[(r)--nogroup] ]] && args+=(
+    "(--nogroup)--group[don't repeat filename for each match line]"
+)
+
+_tags normal-options file-types
+while _tags; do
+  _requested normal-options && _arguments -S -s $args \
+    '--ackmate[print results in AckMate-parseable format]' \
+    '(--after -A)'{--after=-,-A+}'[specify lines of trailing context]::lines [2]' \
+    '(--before -B)'{--before=-,-B+}'[specify lines of leading context]::lines [2]' \
+    "--nobreak[don't print newlines between matches in different files]" \
+    '(--count -c)'{--count,-c}'[only print a count of matching lines]' \
+    '--color[enable color highlighting of output]' \
+    '(--color-line-number --color-match --color-path)--nocolor[disable color highlighting of output]' \
+    '--color-line-number=[specify color for line numbers]:color [1;33]' \
+    '--color-match=[specify color for result match numbers]:color [30;43]' \
+    '--color-path=[specify color for path names]:color [1;32]' \
+    '--column[print column numbers in results]' \
+    '(--context -C)'{--context=-,-C+}'[specify lines of context]::lines' \
+    '(--debug -D)'{--debug,-D}'[output debug information]' \
+    '--depth=[specify directory levels to descend when searching]:levels [25]' \
+    '(--noheading)--nofilename[suppress printing of filenames]' \
+    '(-f --follow)'{-f,--follow}'[follow symlinks]' \
+    '(-F --fixed-strings --literal -Q)'{--fixed-strings,-F,--literal,-Q}'[use literal strings]' \
+    '--nogroup[repeat filename for each match line]' \
+    '(1 -G --file-search-regex)-g+[print filenames matching a pattern]:regex' \
+    '(-G --file-search-regex)'{-G+,--file-search-regex=}'[limit search to filenames matching pattern]:regex' \
+    '(-H --heading --noheading)'{-H,--heading}'[print filename with each match]' \
+    '(-H --heading --noheading --nofilename)--noheading[suppress printing of filenames]' \
+    '--hidden[search hidden files (obeying .*ignore files)]' \
+    {--ignore=,--ignore-dir=}'[ignore files/directories matching pattern]:regex' \
+    '(-i --ignore-case)'{-i,--ignore-case}'[match case-insensitively]' \
+    '(-l --files-with-matches)'{-l,--files-with-matches}"[output matching files' names only]" \
+    '(-L --files-without-matches)'{-L,--files-without-matches}"[output non-matching files' names only]" \
+    '(--max-count -m)'{--max-count=,-m+}'[stop after specified no of matches in each file]:max number of matches' \
+    '--numbers[prefix output with line numbers, even for streams]' \
+    '--nonumbers[suppress printing of line numbers]' \
+    '(--only-matching -o)'{--only-matching,-o}'[show only matching part of line]' \
+    '(-p --path-to-ignore)'{-p+,--path-to-ignore=}'[use specified .ignore file]:file:_files' \
+    '--print-long-lines[print matches on very long lines]' \
+    "--passthrough[when searching a stream, print all lines even if they don't match]" \
+    '(-s --case-sensitive)'{-s,--case-sensitive}'[match case]' \
+    '--silent[suppress all log messages, including errors]' \
+    '(--stats-only)--stats[print stats (files scanned, time taken, etc.)]' \
+    '(--stats)--stats-only[print stats and nothing else]' \
+    '(-U --skip-vcs-ignores)'{-U,--skip-vcs-ignores}'[ignore VCS files (stil obey .ignore)]' \
+    '(-v --invert-match)'{-v,--invert-match}'[select non-matching lines]' \
+    '--vimgrep[output results like vim :vimgrep /pattern/g would]' \
+    '(-w --word-regexp)'{-w,--word-regexp}'[force pattern to match only whole words]' \
+    '(-z --search-zip)'{-z,--search-zip}'[search contents of compressed files]' \
+    '(-0 --null)'{-0,--null}'[separate filenames with null]' \
+    ': :_guard "^-*" pattern' \
+    '*:file:_files' \
+    '(- :)--list-file-types[list supported file types]' \
+    '(- :)'{-h,--help}'[display help information]' \
+    '(- :)'{-V,--version}'[display version information]' \
+    - '(ignores)' \
+    '(-a --all-types)'{-a,--all-types}'[search all files]' \
+    '--search-binary[search binary files for matches]' \
+    {-t,--all-text}'[search all text files (not including hidden files)]' \
+    {-u,--unrestricted}'[search all files]' && ret=0
+
+ _requested file-types && { ! zstyle -T ":completion:${curcontext}:options" prefix-needed ||
+     [[ -prefix - ]] } && _all_labels file-types expl 'file type' \
+     compadd - ${(M)$(_call_program file-types $words[1] --list-file-types):#--*} && ret=0
+
+  (( ret )) || break
+done
+
+return ret
