@@ -144,6 +144,7 @@ void init_options(void) {
     opts.color_win_ansi = FALSE;
     opts.max_matches_per_file = 0;
     opts.max_search_depth = DEFAULT_MAX_SEARCH_DEPTH;
+    opts.mmap = TRUE;
     opts.multiline = TRUE;
     opts.width = 0;
     opts.path_sep = '\n';
@@ -257,6 +258,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "literal", no_argument, NULL, 'Q' },
         { "match", no_argument, &useless, 0 },
         { "max-count", required_argument, NULL, 'm' },
+        { "mmap", no_argument, &opts.mmap, TRUE },
         { "multiline", no_argument, &opts.multiline, TRUE },
         /* "no-" is deprecated. Remove these eventually. */
         { "no-numbers", no_argument, &opts.print_line_numbers, FALSE },
@@ -268,6 +270,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "nofollow", no_argument, &opts.follow_symlinks, 0 },
         { "nogroup", no_argument, &group, 0 },
         { "noheading", no_argument, &opts.print_path, PATH_PRINT_EACH_LINE },
+        { "nommap", no_argument, &opts.mmap, FALSE },
         { "nomultiline", no_argument, &opts.multiline, FALSE },
         { "nonumbers", no_argument, &opts.print_line_numbers, FALSE },
         { "nopager", no_argument, NULL, 0 },
