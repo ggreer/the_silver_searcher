@@ -99,10 +99,10 @@ Search Options:\n\
                           uppercase characters (Enabled by default)\n\
      --search-binary      Search binary files for matches\n\
   -t --all-text           Search all text files (doesn't include hidden files)\n\
-  -u --unrestricted       Search all files (ignore .agignore, .gitignore, etc.;\n\
+  -u --unrestricted       Search all files (ignore .ignore, .gitignore, etc.;\n\
                           searches binary and hidden files as well)\n\
   -U --skip-vcs-ignores   Ignore VCS ignore files\n\
-                          (.gitignore, .hgignore, .svnignore; still obey .agignore)\n\
+                          (.gitignore, .hgignore, .svnignore; still obey .ignore)\n\
   -v --invert-match\n\
   -w --word-regexp        Only match whole words\n\
   -W --width NUM          Truncate match lines after NUM characters\n\

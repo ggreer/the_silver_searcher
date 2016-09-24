@@ -22,7 +22,7 @@ An attempt to make something better than ack (which itself is better than grep).
 Why use Ag?
 * It searches code about 3–5× faster than ack.
 * It ignores file patterns from your .gitignore and .hgignore.
-* If there are files in your source repo you don't want to search, just add their patterns to a .agignore file. *cough* extern *cough*
+* If there are files in your source repo you don't want to search, just add their patterns to a .ignore file. *cough* extern *cough*
 * The command name is 33% shorter than ack!
 
 How is it so fast?
