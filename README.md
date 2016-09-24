@@ -157,7 +157,7 @@ There's also a fork of ack.vim tailored for use with Ag: [ag.vim][]
 
 ### Emacs
 
-You can use [ag.el][] as an Emacs fronted to Ag. See also: [helm-ag].
+You can use [ag.el][] as an Emacs front-end to Ag. See also: [helm-ag].
 
 [ag.el]: https://github.com/Wilfred/ag.el
 [helm-ag]: https://github.com/syohex/emacs-helm-ag
