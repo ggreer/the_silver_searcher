@@ -369,7 +369,7 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         return 0;
     }
 
-    if (opts.search_all_files && !opts.path_to_agignore) {
+    if (opts.search_all_files && !opts.path_to_ignore) {
         return 1;
     }
 

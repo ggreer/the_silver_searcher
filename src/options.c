@@ -91,8 +91,8 @@ Search Options:\n\
      --ignore-dir NAME    Alias for --ignore for compatibility with ack.\n\
   -m --max-count NUM      Skip the rest of a file after NUM matches (Default: 10,000)\n\
      --one-device         Don't follow links to other devices.\n\
-  -p --path-to-agignore STRING\n\
-                          Use .agignore file at STRING\n\
+  -p --path-to-ignore STRING\n\
+                          Use .ignore file at STRING\n\
   -Q --literal            Don't parse PATTERN as a regular expression\n\
   -s --case-sensitive     Match case sensitively\n\
   -S --smart-case         Match case insensitively unless PATTERN contains\n\
@@ -283,7 +283,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "parallel", no_argument, &opts.parallel, 1 },
         { "passthrough", no_argument, &opts.passthrough, 1 },
         { "passthru", no_argument, &opts.passthrough, 1 },
-        { "path-to-agignore", required_argument, NULL, 'p' },
+        { "path-to-ignore", required_argument, NULL, 'p' },
         { "print0", no_argument, NULL, '0' },
         { "print-long-lines", no_argument, &opts.print_long_lines, 1 },
         { "recurse", no_argument, NULL, 'r' },
@@ -435,7 +435,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.recurse_dirs = 0;
                 break;
             case 'p':
-                opts.path_to_agignore = optarg;
+                opts.path_to_ignore = optarg;
                 break;
             case 'o':
                 opts.only_matching = 1;
