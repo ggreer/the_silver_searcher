@@ -292,6 +292,7 @@ int is_binary(const void *buf, const size_t buf_len) {
     size_t i;
 
     if (buf_len == 0) {
+        /* Is an empty file binary? Is it text? */
         return 0;
     }
 
