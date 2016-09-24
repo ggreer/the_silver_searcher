@@ -3,7 +3,7 @@ Setup:
   $ . $TESTDIR/setup.sh
   $ mkdir -p subdir
   $ printf 'match1\n' > subdir/file1.txt
-  $ printf 'file1.txt\n' > .gitignore
+  $ printf 'file1.txt\n' > .ignore
 
 Ignore directory specified by name:
 
