@@ -400,16 +400,18 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
 #else
     size_t filename_len = 0;
 #endif
+
+    if (strncmp(filename, "./", 2) == 0) {
+#ifndef HAVE_DIRENT_DNAMLEN
+        filename_len = strlen(filename);
+#endif
+        filename++;
+        filename_len--;
+    }
+
     const ignores *ig = scandir_baton->ig;
 
     while (ig != NULL) {
-        if (strncmp(filename, "./", 2) == 0) {
-            if (!filename_len)
-                filename_len = strlen(filename);
-            filename++;
-            filename_len--;
-        }
-
         if (extension) {
             int match_pos = binary_search(extension, ig->extensions, 0, ig->extensions_len);
             if (match_pos >= 0) {
@@ -423,8 +425,11 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         }
 
         if (is_directory(path, dir)) {
-            if (!filename_len)
+#ifndef HAVE_DIRENT_DNAMLEN
+            if (!filename_len) {
                 filename_len = strlen(filename);
+            }
+#endif
             if (filename[filename_len - 1] != '/') {
                 char *temp;
                 ag_asprintf(&temp, "%s/", filename);
