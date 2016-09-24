@@ -28,9 +28,11 @@ const char *evil_hardcoded_ignore_files[] = {
     NULL
 };
 
-/* Warning: changing the first string will break skip_vcs_ignores. */
+/* Warning: changing the first two strings will break skip_vcs_ignores. */
 const char *ignore_pattern_files[] = {
+    /* Warning: .agignore will one day be removed in favor of .ignore */
     ".agignore",
+    ".ignore",
     ".gitignore",
     ".git/info/exclude",
     ".hgignore",
