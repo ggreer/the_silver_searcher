@@ -1,8 +1,8 @@
 Setup:
 
   $ . $TESTDIR/setup.sh
-  $ printf '*.js\n' > .gitignore
-  $ printf '\n*.test.txt\n' >> .gitignore
+  $ printf '*.js\n' > .ignore
+  $ printf '\n*.test.txt\n' >> .ignore
   $ printf 'targetA\n' > something.js
   $ printf 'targetB\n' > aFile.test.txt
   $ printf 'targetC\n' > aFile.txt
