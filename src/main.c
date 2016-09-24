@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
     num_cores = (int)sysconf(_SC_NPROCESSORS_ONLN);
 #endif
 
-    workers_len = num_cores;
+    workers_len = num_cores < 8 ? num_cores : 8;
     if (opts.literal) {
         workers_len--;
     }
