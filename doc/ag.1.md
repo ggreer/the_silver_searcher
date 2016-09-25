@@ -191,6 +191,7 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
 
   * `--vimgrep`:
     Output results in the same form as Vim's `:vimgrep /pattern/g`
+
     Here is a ~/.vimrc configuration example:
 
     `set grepprg=ag\ --vimgrep\ $*`
