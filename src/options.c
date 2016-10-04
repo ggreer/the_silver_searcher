@@ -633,7 +633,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             printf("  --%s\n    ", langs[lang_index].name);
             int j;
             for (j = 0; j < MAX_EXTENSIONS && langs[lang_index].extensions[j]; j++) {
-                printf("  .%s", langs[lang_index].extensions[j]);
+                const char *extension = langs[lang_index].extensions[j];
+                int full_name = extension[0] == '^';
+                printf("  %s%s", full_name ? "" : ".", extension + full_name);
             }
             printf("\n\n");
         }
