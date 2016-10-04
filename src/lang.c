@@ -15,6 +15,7 @@ lang_spec_t langs[] = {
     { "cfmx", { "cfc", "cfm", "cfml" } },
     { "chpl", { "chpl" } },
     { "clojure", { "clj", "cljs", "cljc", "cljx" } },
+    { "cmake", { "^CMakeLists.txt", "cmake" } },
     { "coffee", { "coffee", "cjsx" } },
     { "cpp", { "cpp", "cc", "C", "cxx", "m", "hpp", "hh", "h", "H", "hxx" } },
     { "crystal", { "cr", "ecr" } },
