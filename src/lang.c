@@ -116,27 +116,48 @@ char *make_lang_regex(char *ext_array, size_t num_exts) {
     int subsequent = 0;
     char *extension;
     size_t i;
+    size_t filenames_size = 0;
+    char **filenames = NULL;
 
     strcpy(regex, "\\.(");
 
     for (i = 0; i < num_exts; ++i) {
         extension = ext_array + i * SINGLE_EXT_LEN;
-        int extension_length = strlen(extension);
-        while (regex_length + extension_length + 3 + subsequent > regex_capacity) {
-            regex_capacity *= 2;
-            regex = ag_realloc(regex, regex_capacity);
-        }
-        if (subsequent) {
-            regex[regex_length++] = '|';
+        if (extension[0] == '^') {
+            filenames = ag_realloc(filenames, ++filenames_size * sizeof(char *));
+            filenames[filenames_size - 1] = extension;
         } else {
-            subsequent = 1;
+            int extension_length = strlen(extension);
+            while (regex_length + extension_length + 3 + subsequent > regex_capacity) {
+                regex_capacity *= 2;
+                regex = ag_realloc(regex, regex_capacity);
+            }
+            if (subsequent) {
+                regex[regex_length++] = '|';
+            } else {
+                subsequent = 1;
+            }
+            strcpy(regex + regex_length, extension);
+            regex_length += extension_length;
         }
-        strcpy(regex + regex_length, extension);
-        regex_length += extension_length;
     }
 
     regex[regex_length++] = ')';
     regex[regex_length++] = '$';
+
+    for (i = 0; i < filenames_size; ++i) {
+        int filename_length = strlen(filenames[i]) - 1;
+        while (regex_length + filename_length + 3 > regex_capacity) {
+            regex_capacity *= 2;
+            regex = ag_realloc(regex, regex_capacity);
+        }
+
+        regex[regex_length++] = '|';
+        strcpy(regex + regex_length, filenames[i] + 1);
+        regex_length += filename_length;
+        regex[regex_length++] = '$';
+    }
+
     regex[regex_length++] = 0;
     return regex;
 }
