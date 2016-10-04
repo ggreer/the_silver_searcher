@@ -49,7 +49,7 @@ lang_spec_t langs[] = {
     { "lisp", { "lisp", "lsp" } },
     { "lua", { "lua" } },
     { "m4", { "m4" } },
-    { "make", { "Makefiles", "mk", "mak" } },
+    { "make", { "^Makefile", "Makefiles", "mk", "mak" } },
     { "mako", { "mako" } },
     { "markdown", { "markdown", "mdown", "mdwn", "mkdn", "mkd", "md" } },
     { "mason", { "mas", "mhtml", "mpl", "mtxt" } },
