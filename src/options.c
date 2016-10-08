@@ -260,20 +260,30 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "max-count", required_argument, NULL, 'm' },
         { "mmap", no_argument, &opts.mmap, TRUE },
         { "multiline", no_argument, &opts.multiline, TRUE },
-        /* "no-" is deprecated. Remove these eventually. */
-        { "no-numbers", no_argument, &opts.print_line_numbers, FALSE },
-        { "no-recurse", no_argument, NULL, 'n' },
+        /* Accept both --no-* and --no* forms for convenience/BC */
+        { "no-affinity", no_argument, &opts.use_thread_affinity, 0 },
         { "noaffinity", no_argument, &opts.use_thread_affinity, 0 },
+        { "no-break", no_argument, &opts.print_break, 0 },
         { "nobreak", no_argument, &opts.print_break, 0 },
+        { "no-color", no_argument, &opts.color, 0 },
         { "nocolor", no_argument, &opts.color, 0 },
+        { "no-filename", no_argument, NULL, 0 },
         { "nofilename", no_argument, NULL, 0 },
+        { "no-follow", no_argument, &opts.follow_symlinks, 0 },
         { "nofollow", no_argument, &opts.follow_symlinks, 0 },
+        { "no-group", no_argument, &group, 0 },
         { "nogroup", no_argument, &group, 0 },
+        { "no-heading", no_argument, &opts.print_path, PATH_PRINT_EACH_LINE },
         { "noheading", no_argument, &opts.print_path, PATH_PRINT_EACH_LINE },
+        { "no-mmap", no_argument, &opts.mmap, FALSE },
         { "nommap", no_argument, &opts.mmap, FALSE },
+        { "no-multiline", no_argument, &opts.multiline, FALSE },
         { "nomultiline", no_argument, &opts.multiline, FALSE },
+        { "no-numbers", no_argument, &opts.print_line_numbers, FALSE },
         { "nonumbers", no_argument, &opts.print_line_numbers, FALSE },
+        { "no-pager", no_argument, NULL, 0 },
         { "nopager", no_argument, NULL, 0 },
+        { "no-recurse", no_argument, NULL, 'n' },
         { "norecurse", no_argument, NULL, 'n' },
         { "null", no_argument, NULL, '0' },
         { "numbers", no_argument, &opts.print_line_numbers, 2 },
@@ -505,11 +515,13 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 } else if (strcmp(longopts[opt_index].name, "ignore") == 0) {
                     add_ignore_pattern(root_ignores, optarg);
                     break;
-                } else if (strcmp(longopts[opt_index].name, "nofilename") == 0) {
+                } else if (strcmp(longopts[opt_index].name, "no-filename") == 0 ||
+                           strcmp(longopts[opt_index].name, "nofilename") == 0) {
                     opts.print_path = PATH_PRINT_NOTHING;
                     opts.print_line_numbers = FALSE;
                     break;
-                } else if (strcmp(longopts[opt_index].name, "nopager") == 0) {
+                } else if (strcmp(longopts[opt_index].name, "no-pager") == 0 ||
+                           strcmp(longopts[opt_index].name, "nopager") == 0) {
                     out_fd = stdout;
                     opts.pager = NULL;
                     break;
