@@ -515,19 +515,13 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 } else if (strcmp(longopts[opt_index].name, "ignore") == 0) {
                     add_ignore_pattern(root_ignores, optarg);
                     break;
-                } else if (strcmp(longopts[opt_index].name, "no-filename") == 0) {
+                } else if (strcmp(longopts[opt_index].name, "no-filename") == 0 ||
+                           strcmp(longopts[opt_index].name, "nofilename") == 0) {
                     opts.print_path = PATH_PRINT_NOTHING;
                     opts.print_line_numbers = FALSE;
                     break;
-                } else if (strcmp(longopts[opt_index].name, "nofilename") == 0) {
-                    opts.print_path = PATH_PRINT_NOTHING;
-                    opts.print_line_numbers = FALSE;
-                    break;
-                } else if (strcmp(longopts[opt_index].name, "no-pager") == 0) {
-                    out_fd = stdout;
-                    opts.pager = NULL;
-                    break;
-                } else if (strcmp(longopts[opt_index].name, "nopager") == 0) {
+                } else if (strcmp(longopts[opt_index].name, "no-pager") == 0 ||
+                           strcmp(longopts[opt_index].name, "nopager") == 0) {
                     out_fd = stdout;
                     opts.pager = NULL;
                     break;
