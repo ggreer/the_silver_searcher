@@ -244,6 +244,11 @@ to search all, including hidden files.
 `ag foo /bar/`:
   Find matches for "foo" in path /bar/.
 
+`ag -- --foo`:
+  Find matches for "--foo" in the current directory. (As with most UNIX command
+  line utilities, "--" is used to signify that the remaining arguments should
+  not be treated as options.)
+
 ## SEE ALSO
 
 grep(1)
