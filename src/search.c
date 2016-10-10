@@ -222,6 +222,7 @@ void search_file(const char *file_full_path) {
     char *buf = NULL;
     struct stat statbuf;
     int rv = 0;
+    int special_fs = 0;
     FILE *fp = NULL;
 
     fd = open(file_full_path, O_RDONLY);
@@ -255,9 +256,29 @@ void search_file(const char *file_full_path) {
         goto cleanup;
     }
 
+// Handle procfs/sysfs on Linux
+#ifdef __linux__
+    // Minor optimisation — procfs and sysfs always return 0 blocks, so let's
+    // not bother with the rest of this unless we see that
+    if (statbuf.st_blocks == 0) {
+        struct statfs statfsbuf;
+
+        if (statfs(file_full_path, &statfsbuf) != 0) {
+            log_err("Error statfs()ing %s.", file_full_path);
+        } else if (statfsbuf.f_type == PROC_SUPER_MAGIC) {
+            log_debug("%s is on a special file system: procfs", file_full_path);
+            special_fs = 1;
+        } else if (statfsbuf.f_type == SYSFS_MAGIC) {
+            log_debug("%s is on a special file system: sysfs", file_full_path);
+            special_fs = 1;
+        }
+    }
+#endif
+
     f_len = statbuf.st_size;
 
-    if (f_len == 0) {
+    // Don't check file length on special file systems — it's probably wrong
+    if (f_len == 0 && !special_fs) {
         log_debug("Skipping %s: file is empty.", file_full_path);
         goto cleanup;
     }
@@ -287,7 +308,33 @@ void search_file(const char *file_full_path) {
     }
 #else
 
-    if (opts.mmap) {
+    // Special file systems often don't support mmap() or read()
+    if (special_fs) {
+        FILE *special_fh;
+        char temp_buf[4096];
+
+        if ((special_fh = fopen(file_full_path, "rb")) == NULL) {
+            log_err("File %s failed to load: %s.", file_full_path, strerror(errno));
+            goto cleanup;
+        }
+
+        buf = ag_malloc(1);
+        buf[0] = '\0';
+
+        while (fgets(temp_buf, 4096, special_fh) != NULL) {
+            buf = ag_realloc(buf, strlen(temp_buf) + 1 + strlen(buf) + 1);
+            strcat(buf, temp_buf);
+        }
+
+        fclose(special_fh);
+        f_len = strlen(buf);
+
+        if (!opts.literal && f_len > INT_MAX) {
+            log_err("Skipping %s: pcre_exec() can't handle files larger than %i bytes.", file_full_path, INT_MAX);
+            goto cleanup;
+        }
+
+    } else if (opts.mmap) {
         buf = mmap(0, f_len, PROT_READ, MAP_PRIVATE, fd, 0);
         if (buf == MAP_FAILED) {
             log_err("File %s failed to load: %s.", file_full_path, strerror(errno));
@@ -330,7 +377,7 @@ cleanup:
 #ifdef _WIN32
         UnmapViewOfFile(buf);
 #else
-        if (opts.mmap) {
+        if (opts.mmap && !special_fs) {
             munmap(buf, f_len);
         } else {
             free(buf);
