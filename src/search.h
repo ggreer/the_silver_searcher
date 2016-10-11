@@ -10,8 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 #ifdef __linux__
-#include <sys/statfs.h>
 #include <linux/magic.h>
+#include <sys/statfs.h>
 #endif
 #ifdef _WIN32
 #include <windows.h>
