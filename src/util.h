@@ -28,10 +28,23 @@ void *ag_calloc(size_t nelem, size_t elsize);
 char *ag_strdup(const char *s);
 char *ag_strndup(const char *s, size_t size);
 
+typedef enum {
+    AG_BINARY_UNKNOWN,
+    AG_BINARY_FALSE,
+    AG_BINARY_TRUE
+} ag_binary_type;
+
 typedef struct {
     size_t start; /* Byte at which the match starts */
     size_t end;   /* and where it ends */
 } match_t;
+
+typedef struct {
+    match_t *matches;
+    size_t matches_len;
+    size_t matches_size;
+    ag_binary_type binary;
+} search_results_t;
 
 typedef struct {
     long total_bytes;
@@ -41,7 +54,6 @@ typedef struct {
     struct timeval time_start;
     struct timeval time_end;
 } ag_stats;
-
 
 ag_stats stats;
 
@@ -65,7 +77,7 @@ const char *boyer_moore_strncasestr(const char *s, const char *find, const size_
 strncmp_fp get_strstr(enum case_behavior opts);
 
 size_t invert_matches(const char *buf, const size_t buf_len, match_t matches[], size_t matches_len);
-void realloc_matches(match_t **matches, size_t *matches_size, size_t matches_len);
+void realloc_matches(search_results_t *sr, size_t matches_spare);
 void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opts, const int study_opts);
 
 
