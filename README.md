@@ -111,6 +111,9 @@ Run the relevant [`setup-*.exe`](https://cygwin.com/install.html), and select "t
 
             yum -y groupinstall "Development Tools"
             yum -y install pcre-devel xz-devel
+    * Arch
+
+            pacman -S automake pkg-config pcre xz
     * Windows: It's complicated. See [this wiki page](https://github.com/ggreer/the_silver_searcher/wiki/Windows).
 2. Run the build script (which just runs aclocal, automake, etc):
 
