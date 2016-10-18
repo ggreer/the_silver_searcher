@@ -78,6 +78,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
     size_t i, j;
     int in_a_match = FALSE;
     int printing_a_match = FALSE;
+    int blanks_between_matches = opts.context || opts.after || opts.before;
 
     if (opts.ackmate || opts.vimgrep) {
         sep = ':';
@@ -105,7 +106,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
         if (cur_match < matches_len && i == matches[cur_match].start) {
             in_a_match = TRUE;
             /* We found the start of a match */
-            if (cur_match > 0 && opts.context && lines_since_last_match > (opts.before + opts.after + 1)) {
+            if (cur_match > 0 && blanks_between_matches && lines_since_last_match > (opts.before + opts.after + 1)) {
                 fprintf(out_fd, "--\n");
             }
 
