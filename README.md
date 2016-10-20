@@ -75,6 +75,10 @@ or
 * Slackware
 
         sbopkg -i the_silver_searcher
+        
+* openSUSE
+
+        zypper install the_silver_searcher
 
 
 ### BSD
