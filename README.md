@@ -143,11 +143,15 @@ You may need to use `sudo` or run as root for the make install.
 
 You can use Ag with [ack.vim][] by adding the following line to your `.vimrc`:
 
-    let g:ackprg = 'ag --nogroup --nocolor --column'
+    if executable('ag')
+      let g:ackprg = 'ag --nogroup --nocolor --column'
+    endif
 
 or:
 
-    let g:ackprg = 'ag --vimgrep'
+    if executable('ag')
+      let g:ackprg = 'ag --vimgrep'
+    endif
 
 Which has the same effect but will report every match on the line.
 
