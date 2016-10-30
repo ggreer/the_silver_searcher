@@ -131,7 +131,7 @@ Language types are output:
   
     --lisp
         .lisp  .lsp
-        
+  
     --log
         .log
   
