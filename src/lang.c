@@ -67,6 +67,7 @@ lang_spec_t langs[] = {
     { "pike", { "pike", "pmod" } },
     { "plone", { "pt", "cpt", "metadata", "cpy", "py", "xml", "zcml" } },
     { "puppet", { "pp" } },
+    { "purescript", { "purs" } },
     { "python", { "py" } },
     { "qml", { "qml" } },
     { "racket", { "rkt", "ss", "scm" } },
