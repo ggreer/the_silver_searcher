@@ -217,9 +217,11 @@ void search_stream(FILE *stream, const char *path) {
     input = malloc(input_alloc);
 
     for (i = 1; (line_len = getline(&line, &line_cap, stream)) > 0; i++) {
-        while (input_alloc <= input_len + line_len)
-            input_alloc *= 1.5;
-        input = realloc(input, input_alloc);
+        if (input_alloc <= input_len + line_len) {
+            while (input_alloc <= input_len + line_len)
+                input_alloc *= 1.5;
+            input = realloc(input, input_alloc);
+        }
 
         char * const input1 = input + input_len;
         for (j = 0; j <= line_len; j++)
