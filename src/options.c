@@ -585,6 +585,11 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         if (opts.casing == CASE_INSENSITIVE || (opts.casing == CASE_SMART && is_lowercase(file_search_regex))) {
             pcre_opts |= PCRE_CASELESS;
         }
+        if (opts.literal) {
+            char *old_re = file_search_regex;
+            ag_asprintf(&file_search_regex, "\\Q%s\\E", file_search_regex);
+            free(old_re);
+        }
         if (opts.word_regexp) {
             char *old_file_search_regex = file_search_regex;
             ag_asprintf(&file_search_regex, "\\b%s\\b", file_search_regex);
