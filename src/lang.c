@@ -66,6 +66,7 @@ lang_spec_t langs[] = {
     { "php", { "php", "phpt", "php3", "php4", "php5", "phtml" } },
     { "pike", { "pike", "pmod" } },
     { "plone", { "pt", "cpt", "metadata", "cpy", "py", "xml", "zcml" } },
+    { "proto", { "proto" } },
     { "puppet", { "pp" } },
     { "python", { "py" } },
     { "qml", { "qml" } },
