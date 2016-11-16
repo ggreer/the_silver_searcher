@@ -614,11 +614,17 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             free(old_re);
         }
 
+        if (has_filetype) {
+          char *old_re = strdup(file_search_regex);
+          num_exts = combine_file_extensions(ext_index, lang_num, &extensions);
+          lang_regex = make_lang_regex(extensions, num_exts);
+          ag_asprintf(&file_search_regex, "%s.*%s", old_re, lang_regex);
+          free(old_re);
+        }
+
         compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, file_search_regex, pcre_opts, 0);
         free(file_search_regex);
-    }
-
-    if (has_filetype) {
+    } else if (has_filetype) {
         num_exts = combine_file_extensions(ext_index, lang_num, &extensions);
         lang_regex = make_lang_regex(extensions, num_exts);
         compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, lang_regex, 0, 0);
