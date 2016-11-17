@@ -277,8 +277,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "noheading", no_argument, &opts.print_path, PATH_PRINT_EACH_LINE },
         { "no-mmap", no_argument, &opts.mmap, FALSE },
         { "nommap", no_argument, &opts.mmap, FALSE },
-        { "no-multiline", no_argument, &opts.multiline, FALSE },
-        { "nomultiline", no_argument, &opts.multiline, FALSE },
+        { "no-multiline", no_argument, &opts.multiline, 'M' },
+        { "nomultiline", no_argument, &opts.multiline, 'M' },
         { "no-numbers", no_argument, &opts.print_line_numbers, FALSE },
         { "nonumbers", no_argument, &opts.print_line_numbers, FALSE },
         { "no-pager", no_argument, NULL, 0 },
@@ -358,7 +358,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     char *file_search_regex = NULL;
-    while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:FfHhiLlm:nop:QRrSsvVtuUwW:z0", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:FfHhiLlMm:nop:QRrSsvVtuUwW:z0", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 if (optarg) {
@@ -440,6 +440,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'm':
                 opts.max_matches_per_file = atoi(optarg);
+                break;
+            case 'M':
+                opts.multiline = FALSE;
                 break;
             case 'n':
                 opts.recurse_dirs = 0;
