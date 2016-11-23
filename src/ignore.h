@@ -33,7 +33,6 @@ typedef struct ignores ignores;
 
 ignores *root_ignores;
 
-extern const char *evil_hardcoded_ignore_files[];
 extern const char *ignore_pattern_files[];
 
 ignores *init_ignore(ignores *parent, const char *dirname, const size_t dirname_len);
