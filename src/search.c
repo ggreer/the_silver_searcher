@@ -551,28 +551,42 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
             pthread_cond_signal(&files_ready);
             pthread_mutex_unlock(&work_queue_mtx);
             log_debug("%s added to work queue", dir_full_path);
-        } else if (opts.recurse_dirs) {
-            if (depth < opts.max_search_depth || opts.max_search_depth == -1) {
-                log_debug("Searching dir %s", dir_full_path);
-                ignores *child_ig;
+        } else {
+            if (opts.match_files && opts.print_dirnames) {
+                rc = pcre_exec(opts.file_search_regex, NULL, dir_full_path, strlen(dir_full_path),
+                        0, 0, offset_vector, 3);
+                if (rc >= 0) {
+                    log_debug("match_files: file_search_regex matched for dir %s.", dir_full_path);
+                    pthread_mutex_lock(&print_mtx);
+                    print_path(dir_full_path, opts.path_sep);
+                    pthread_mutex_unlock(&print_mtx);
+                }
+                opts.match_found = 1;
+                goto cleanup;
+            }
+            if (opts.recurse_dirs) {
+                if (depth < opts.max_search_depth || opts.max_search_depth == -1) {
+                    log_debug("Searching dir %s", dir_full_path);
+                    ignores *child_ig;
 #ifdef HAVE_DIRENT_DNAMLEN
-                child_ig = init_ignore(ig, dir->d_name, dir->d_namlen);
+                    child_ig = init_ignore(ig, dir->d_name, dir->d_namlen);
 #else
-                child_ig = init_ignore(ig, dir->d_name, strlen(dir->d_name));
+                    child_ig = init_ignore(ig, dir->d_name, strlen(dir->d_name));
 #endif
-                search_dir(child_ig, base_path, dir_full_path, depth + 1,
-                           original_dev);
-                cleanup_ignore(child_ig);
-            } else {
-                if (opts.max_search_depth == DEFAULT_MAX_SEARCH_DEPTH) {
-                    /*
-                     * If the user didn't intentionally specify a particular depth,
-                     * this is a warning...
-                     */
-                    log_err("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
+                    search_dir(child_ig, base_path, dir_full_path, depth + 1,
+                               original_dev);
+                    cleanup_ignore(child_ig);
                 } else {
-                    /* ... if they did, let's settle for debug. */
-                    log_debug("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
+                    if (opts.max_search_depth == DEFAULT_MAX_SEARCH_DEPTH) {
+                        /*
+                         * If the user didn't intentionally specify a particular depth,
+                         * this is a warning...
+                         */
+                        log_err("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
+                    } else {
+                        /* ... if they did, let's settle for debug. */
+                        log_debug("Skipping %s. Use the --depth option to search deeper.", dir_full_path);
+                    }
                 }
             }
         }
