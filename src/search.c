@@ -216,23 +216,34 @@ void search_stream(FILE *stream, const char *path) {
     input_alloc = 500;
     input = malloc(input_alloc);
 
-    for (i = 1; (line_len = getline(&line, &line_cap, stream)) > 0; i++) {
-        if (input_alloc <= input_len + line_len) {
-            while (input_alloc <= input_len + line_len)
-                input_alloc *= 1.5;
-            input = realloc(input, input_alloc);
+    if (opts.multiline) {
+        /* Read all input, search it, print all matches */
+        for (i = 1; (line_len = getline(&line, &line_cap, stream)) > 0; i++) {
+            if (input_alloc <= input_len + line_len) {
+                while (input_alloc <= input_len + line_len)
+                    input_alloc *= 1.5;
+                input = realloc(input, input_alloc);
+            }
+
+            char * const input1 = input + input_len;
+            for (j = 0; j <= line_len; j++)
+                input1[j] = line[j];
+            input_len += line_len;
         }
 
-        char * const input1 = input + input_len;
-        for (j = 0; j <= line_len; j++)
-            input1[j] = line[j];
-        input_len += line_len;
+        search_buf(input, input_len, path);
+    } else {
+        /* Read a line, see if it matched.
+         * Print the line either as contenxt of an earlier match, or a new match.
+         * If this was the last line of an earlier context, print as much as possible
+         * of the following match (which could be on this line, or an earlier one).
+         * */
+        for (i = 1; (line_len = getline(&line, &line_cap, stream)) > 0; i++) {
+            search_buf(line, line_len, path);
+        }
     }
 
     free(line);
-
-    search_buf(input, input_len, path);
-
     free(input);
 }
 
