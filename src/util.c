@@ -21,6 +21,117 @@
     }                                     \
     return ptr;
 
+static ag_ds ag_dsmakeroom(ag_ds s, size_t addlen) {
+    struct ag_dshdr *sh, *newsh;
+    size_t free = ag_dsavail(s);
+    size_t len, newlen;
+
+    if (free >= addlen) {
+        return s;
+    }
+    len = ag_dslen(s);
+    newlen = len + addlen;
+    if (newlen < MAX_AGDS_PREALLOC) {
+        newlen *= 2;
+    } else {
+        newlen += MAX_AGDS_PREALLOC;
+    }
+    sh = (void *)(s - sizeof(struct ag_dshdr));
+    newsh = ag_realloc(sh, sizeof(struct ag_dshdr) + newlen + 1);
+    newsh->free = newlen - len;
+    return (char *)newsh->buf;
+}
+
+ag_ds ag_dsnew(size_t size) {
+    struct ag_dshdr *sh;
+
+    sh = ag_calloc(sizeof(struct ag_dshdr) + size + 1, sizeof(char));
+    sh->len = 0;
+    sh->free = size;
+    return (char *)sh->buf;
+}
+
+void ag_dsfree(ag_ds s) {
+    if (s == NULL) {
+        return;
+    }
+    free(s - sizeof(struct ag_dshdr));
+}
+
+void ag_dsreset(ag_ds s) {
+    if (s == NULL) {
+        return;
+    }
+    struct ag_dshdr *sh;
+    sh = (void *)(s - sizeof(struct ag_dshdr));
+    sh->free += sh->len;
+    sh->len = 0;
+}
+
+ag_ds ag_vsprintf(ag_ds s, const char *format, va_list ap, int *len) {
+    unsigned int ret;
+    struct ag_dshdr *sh = (void *)(s - sizeof(struct ag_dshdr));
+    size_t curlen = ag_dslen(s);
+    va_list aq;
+
+    /* Can't reuse va_list */
+    va_copy(aq, ap);
+    /* ret is the real length of the string */
+    ret = vsnprintf(s + sh->len, sh->free + 1, format, ap);
+    if (ret >= sh->free + 1) {
+        s = ag_dsmakeroom(s, ret);
+        sh = (void *)(s - sizeof(struct ag_dshdr));
+        ret = vsnprintf(s + sh->len, sh->free + 1, format, aq);
+        va_end(aq);
+    } else {
+        va_end(aq);
+    }
+
+    sh->len = curlen + ret;
+    sh->free -= ret;
+    *len = ret;
+    return s;
+}
+
+ag_ds ag_dsncat(ag_ds s, const char *t, size_t len) {
+    struct ag_dshdr *sh;
+    size_t curlen = ag_dslen(s);
+
+    s = ag_dsmakeroom(s, len);
+    sh = (void *)(s - sizeof(struct ag_dshdr));
+    memcpy(s + sh->len, t, len);
+    sh->len = curlen + len;
+    sh->free -= len;
+    s[sh->len] = '\0';
+    return s;
+}
+
+void ag_setspecific(void) {
+    ag_specific_t *as = ag_malloc(sizeof(*as));
+    as->print = FALSE;
+    as->ds = ag_dsnew(INIT_AGDSLEN);
+    pthread_setspecific(worker_key, as);
+}
+
+void *ag_getspecific(void) {
+    return pthread_getspecific(worker_key);
+}
+
+void ag_setprint(void) {
+    ag_specific_t *as = (ag_specific_t *)ag_getspecific();
+    as->print = TRUE;
+}
+
+void ag_unsetprint(void) {
+    ag_specific_t *as = (ag_specific_t *)ag_getspecific();
+    as->print = FALSE;
+}
+
+void ag_freespecific(void *data) {
+    ag_dsfree(((ag_specific_t *)data)->ds);
+    free(data);
+}
+
 void *ag_malloc(size_t size) {
     void *ptr = malloc(size);
     CHECK_AND_RETURN(ptr)

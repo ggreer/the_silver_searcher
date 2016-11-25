@@ -167,7 +167,11 @@ multiline_done:
         if (binary == -1 && !opts.print_filename_only) {
             binary = is_binary((const void *)buf, buf_len);
         }
+        if (!opts.print_filename_only && !binary) {
+            convert_file_matches_to_ds(dir_full_path, buf, buf_len, matches, matches_len);
+        }
         pthread_mutex_lock(&print_mtx);
+        ag_setprint();
         if (opts.print_filename_only) {
             /* If the --files-without-matches or -L option is passed we should
              * not print a matching line. This option currently sets
@@ -186,8 +190,10 @@ multiline_done:
         } else if (binary) {
             print_binary_file_matches(dir_full_path);
         } else {
-            print_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
+            /* Print file matches in dynamic string */
+            print_file_matches_in_ds(dir_full_path);
         }
+        ag_unsetprint();
         pthread_mutex_unlock(&print_mtx);
         opts.match_found = 1;
     } else if (opts.search_stream && opts.passthrough) {
@@ -349,6 +355,8 @@ cleanup:
 void *search_file_worker(void *i) {
     work_queue_t *queue_item;
     int worker_id = *(int *)i;
+
+    ag_setspecific();
 
     log_debug("Worker %i started", worker_id);
     while (TRUE) {
@@ -535,7 +543,9 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
                 } else if (opts.match_files) {
                     log_debug("match_files: file_search_regex matched for %s.", dir_full_path);
                     pthread_mutex_lock(&print_mtx);
+                    ag_setprint();
                     print_path(dir_full_path, opts.path_sep);
+                    ag_unsetprint();
                     pthread_mutex_unlock(&print_mtx);
                     opts.match_found = 1;
                     goto cleanup;

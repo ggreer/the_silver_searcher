@@ -25,6 +25,29 @@ typedef struct {
     int id;
 } worker_t;
 
+static void set_affinity(pthread_t tid, int num_cores) {
+#if defined(HAVE_PTHREAD_SETAFFINITY_NP) && defined(USE_CPU_SET)
+    if (opts.use_thread_affinity) {
+        static int cpu = 0;
+        cpu_set_t cpu_set;
+        CPU_ZERO(&cpu_set);
+        CPU_SET(cpu % num_cores, &cpu_set);
+        int rv = pthread_setaffinity_np(tid, sizeof(cpu_set), &cpu_set);
+        if (rv) {
+            log_err("Error in pthread_setaffinity_np(): %s", strerror(rv));
+            log_err("Performance may be affected. Use --noaffinity to suppress this message.");
+        } else {
+            log_debug("Thread %d set to CPU %d", tid, cpu);
+        }
+        cpu++;
+    } else {
+        log_debug("Thread affinity disabled.");
+    }
+#else
+    log_debug("No CPU affinity support.");
+#endif
+}
+
 int main(int argc, char **argv) {
     char **base_paths = NULL;
     char **paths = NULL;
@@ -99,6 +122,9 @@ int main(int argc, char **argv) {
     if (pthread_mutex_init(&work_queue_mtx, NULL)) {
         die("pthread_mutex_init failed!");
     }
+    if (pthread_key_create(&worker_key, ag_freespecific)) {
+        die("pthread_key_create failed!");
+    }
 
     if (opts.casing == CASE_SMART) {
         opts.casing = is_lowercase(opts.query) ? CASE_INSENSITIVE : CASE_SENSITIVE;
@@ -135,32 +161,18 @@ int main(int argc, char **argv) {
     }
 
     if (opts.search_stream) {
+        ag_setspecific();
         search_stream(stdin, "");
     } else {
+        ag_setspecific();
+        set_affinity(pthread_self(), num_cores);
         for (i = 0; i < workers_len; i++) {
             workers[i].id = i;
             int rv = pthread_create(&(workers[i].thread), NULL, &search_file_worker, &(workers[i].id));
             if (rv != 0) {
                 die("Error in pthread_create(): %s", strerror(rv));
             }
-#if defined(HAVE_PTHREAD_SETAFFINITY_NP) && defined(USE_CPU_SET)
-            if (opts.use_thread_affinity) {
-                cpu_set_t cpu_set;
-                CPU_ZERO(&cpu_set);
-                CPU_SET(i % num_cores, &cpu_set);
-                rv = pthread_setaffinity_np(workers[i].thread, sizeof(cpu_set), &cpu_set);
-                if (rv) {
-                    log_err("Error in pthread_setaffinity_np(): %s", strerror(rv));
-                    log_err("Performance may be affected. Use --noaffinity to suppress this message.");
-                } else {
-                    log_debug("Thread %i set to CPU %i", i, i);
-                }
-            } else {
-                log_debug("Thread affinity disabled.");
-            }
-#else
-            log_debug("No CPU affinity support.");
-#endif
+            set_affinity(workers[i].thread, num_cores);
         }
 
 #ifdef HAVE_PLEDGE
@@ -212,6 +224,7 @@ int main(int argc, char **argv) {
     pthread_cond_destroy(&files_ready);
     pthread_mutex_destroy(&work_queue_mtx);
     pthread_mutex_destroy(&print_mtx);
+    pthread_key_delete(worker_key);
     cleanup_ignore(root_ignores);
     free(workers);
     for (i = 0; paths[i] != NULL; i++) {
