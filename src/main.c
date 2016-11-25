@@ -115,6 +115,7 @@ int main(int argc, char **argv) {
         generate_alpha_skip(opts.query, opts.query_len, alpha_skip_lookup, opts.casing == CASE_SENSITIVE);
         find_skip_lookup = NULL;
         generate_find_skip(opts.query, opts.query_len, &find_skip_lookup, opts.casing == CASE_SENSITIVE);
+        generate_hash(opts.query, opts.query_len, h_table, opts.casing == CASE_SENSITIVE);
         if (opts.word_regexp) {
             init_wordchar_table();
             opts.literal_starts_wordchar = is_wordchar(opts.query[0]);
