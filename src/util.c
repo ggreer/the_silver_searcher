@@ -228,8 +228,7 @@ const char *hash_strnstr(const char *s, const char *find, const size_t s_len, co
                     goto next_hash_cell;
             }
             return R; // Found
-        next_hash_cell:
-            ;
+        next_hash_cell:;
         }
     }
     // Check tail
@@ -242,8 +241,7 @@ const char *hash_strnstr(const char *s, const char *find, const size_t s_len, co
                 goto next_start;
         }
         return R;
-    next_start:
-        ;
+    next_start:;
     }
     return NULL;
 }
