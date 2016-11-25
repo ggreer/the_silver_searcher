@@ -55,7 +55,7 @@ Language types are output:
         .pyx  .pxd  .pxi
   
     --delphi
-        .pas  .int  .dfm  .nfm  .dof  .dpk  .dproj  .groupproj  .bdsgroup  .bdsproj
+        .pas  .int  .dfm  .nfm  .dof  .dpk  .dpr  .dproj  .groupproj  .bdsgroup  .bdsproj
   
     --ebuild
         .ebuild  .eclass
