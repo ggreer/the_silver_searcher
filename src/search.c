@@ -1,8 +1,27 @@
 #include "search.h"
 #include "scandir.h"
 
+static void init_results(results_t *self, const char *dir_full_path) {
+    memset(self, 0, sizeof(results_t));
+    if (dir_full_path) {
+        self->dir_full_path = strdup(dir_full_path);
+    }
+}
+
+static void fini_results(results_t *self) {
+    free(self->dir_full_path);
+    if (self->matches_size > 0) {
+        free(self->matches);
+    }
+    memset(self, 0, sizeof(results_t));
+}
+
+static void clear_results(results_t *self) {
+    self->matches_len = 0;
+}
+
 void search_buf(const char *buf, const size_t buf_len,
-                const char *dir_full_path) {
+                const char *dir_full_path, results_t *results) {
     int binary = -1; /* 1 = yes, 0 = no, -1 = don't know */
     size_t buf_offset = 0;
 
@@ -15,6 +34,10 @@ void search_buf(const char *buf, const size_t buf_len,
             return;
         }
     }
+
+    results->buf = buf;
+    results->buf_len = buf_len;
+    results->binary = binary;
 
     size_t matches_len = 0;
     match_t *matches;
@@ -152,6 +175,10 @@ multiline_done:
         matches_len = invert_matches(buf, buf_len, matches, matches_len);
     }
 
+    results->matches = matches;
+    results->matches_len = matches_len;
+    results->matches_size = matches_size;
+
     if (opts.stats) {
         pthread_mutex_lock(&stats_mtx);
         stats.total_bytes += buf_len;
@@ -162,10 +189,12 @@ multiline_done:
         }
         pthread_mutex_unlock(&stats_mtx);
     }
+}
 
-    if (matches_len > 0) {
-        if (binary == -1 && !opts.print_filename_only) {
-            binary = is_binary((const void *)buf, buf_len);
+static void print_results(results_t *self) {
+    if (self->matches_len > 0) {
+        if (self->binary == -1 && !opts.print_filename_only) {
+            self->binary = is_binary((const void *)self->buf, self->buf_len);
         }
         pthread_mutex_lock(&print_mtx);
         if (opts.print_filename_only) {
@@ -176,44 +205,82 @@ multiline_done:
              * on a file-without-matches which is not desired behaviour. See
              * GitHub issue 206 for the consequences if this behaviour is not
              * checked. */
-            if (!opts.invert_match || matches_len < 2) {
+            if (!opts.invert_match || self->matches_len < 2) {
                 if (opts.print_count) {
-                    print_path_count(dir_full_path, opts.path_sep, (size_t)matches_len);
+                    print_path_count(self->dir_full_path, opts.path_sep,
+                            (size_t)self->matches_len);
                 } else {
-                    print_path(dir_full_path, opts.path_sep);
+                    print_path(self->dir_full_path, opts.path_sep);
                 }
             }
-        } else if (binary) {
-            print_binary_file_matches(dir_full_path);
+        } else if (self->binary) {
+            print_binary_file_matches(self->dir_full_path);
         } else {
-            print_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
+            print_file_matches(self->dir_full_path,
+                    self->buf, self->buf_len,
+                    self->matches, self->matches_len);
         }
         pthread_mutex_unlock(&print_mtx);
         opts.match_found = 1;
     } else if (opts.search_stream && opts.passthrough) {
-        fprintf(out_fd, "%s", buf);
+        fprintf(out_fd, "%s", self->buf);
     } else {
-        log_debug("No match in %s", dir_full_path);
-    }
-
-    if (matches_size > 0) {
-        free(matches);
+        log_debug("No match in %s", self->dir_full_path);
     }
 }
 
-/* TODO: this will only match single lines. multi-line regexes silently don't match */
 void search_stream(FILE *stream, const char *path) {
+    char *input = NULL;
+    size_t input_alloc = 0;
+    size_t input_len = 0;
+
     char *line = NULL;
     ssize_t line_len = 0;
     size_t line_cap = 0;
-    size_t i;
 
-    for (i = 1; (line_len = getline(&line, &line_cap, stream)) > 0; i++) {
-        opts.stream_line_num = i;
-        search_buf(line, line_len, path);
+    size_t i;
+    ssize_t j;
+
+    results_t results;
+
+    input_alloc = 500;
+    input = malloc(input_alloc);
+    init_results(&results, path);
+
+    if (opts.multiline) {
+        /* Read all input, search it, print all matches */
+
+        for (i = 1; (line_len = getline(&line, &line_cap, stream)) > 0; i++) {
+            if (input_alloc <= input_len + line_len) {
+                while (input_alloc <= input_len + line_len)
+                    input_alloc *= 1.5;
+                input = realloc(input, input_alloc);
+            }
+
+            char * const input1 = input + input_len;
+            for (j = 0; j <= line_len; j++)
+                input1[j] = line[j];
+            input_len += line_len;
+        }
+
+        search_buf(input, input_len, path, &results);
+        print_results(&results);
+    } else {
+        /* Read a line, see if it matched.
+         * Print the line either as contenxt of an earlier match, or a new match.
+         * If this was the last line of an earlier context, print as much as possible
+         * of the following match (which could be on this line, or an earlier one).
+         * */
+        for (i = 1; (line_len = getline(&line, &line_cap, stream)) > 0; i++) {
+            search_buf(line, line_len, path, &results);
+            print_results(&results);
+            clear_results(&results);
+        }
     }
 
+    fini_results(&results);
     free(line);
+    free(input);
 }
 
 void search_file(const char *file_full_path) {
@@ -223,6 +290,7 @@ void search_file(const char *file_full_path) {
     struct stat statbuf;
     int rv = 0;
     FILE *fp = NULL;
+    results_t results;
 
     fd = open(file_full_path, O_RDONLY);
     if (fd < 0) {
@@ -311,6 +379,8 @@ void search_file(const char *file_full_path) {
     }
 #endif
 
+    init_results(&results, file_full_path);
+
     if (opts.search_zip_files) {
         ag_compression_type zip_type = is_zipped(buf, f_len);
         if (zip_type != AG_NO_COMPRESSION) {
@@ -320,16 +390,19 @@ void search_file(const char *file_full_path) {
                 log_err("Cannot decompress zipped file %s", file_full_path);
                 goto cleanup;
             }
-            search_buf(_buf, _buf_len, file_full_path);
+            search_buf(_buf, _buf_len, file_full_path, &results);
+            print_results(&results);
             free(_buf);
             goto cleanup;
         }
     }
 
-    search_buf(buf, f_len, file_full_path);
+    search_buf(buf, f_len, file_full_path, &results);
+    print_results(&results);
 
 cleanup:
 
+    fini_results(&results);
     if (buf != NULL) {
 #ifdef _WIN32
         UnmapViewOfFile(buf);

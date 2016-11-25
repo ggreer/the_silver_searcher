@@ -63,10 +63,22 @@ typedef struct {
     UT_hash_handle hh;
 } symdir_t;
 
+typedef struct {
+    int binary;
+    char *dir_full_path;
+
+    const char *buf;
+    size_t buf_len;
+
+    match_t *matches;
+    size_t matches_len;
+    size_t matches_size;
+} results_t;
+
 symdir_t *symhash;
 
 void search_buf(const char *buf, const size_t buf_len,
-                const char *dir_full_path);
+                const char *dir_full_path, results_t *results);
 void search_stream(FILE *stream, const char *path);
 void search_file(const char *file_full_path);
 

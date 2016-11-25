@@ -278,9 +278,6 @@ void print_line_number(size_t line, const char sep) {
     if (!opts.print_line_numbers) {
         return;
     }
-    if (opts.search_stream && opts.stream_line_num) {
-        line = opts.stream_line_num;
-    }
     if (opts.color) {
         fprintf(out_fd, "%s%lu%s%c", opts.color_line_number, (unsigned long)line, color_reset, sep);
     } else {
