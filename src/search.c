@@ -258,7 +258,11 @@ void search_file(const char *file_full_path) {
     f_len = statbuf.st_size;
 
     if (f_len == 0) {
-        log_debug("Skipping %s: file is empty.", file_full_path);
+        if (opts.query[0] == '.' && opts.query_len == 1 && !opts.literal && opts.search_all_files) {
+            search_buf(buf, f_len, file_full_path);
+        } else {
+            log_debug("Skipping %s: file is empty.", file_full_path);
+        }
         goto cleanup;
     }
 
