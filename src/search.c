@@ -1,3 +1,4 @@
+#include "print.h"
 #include "search.h"
 #include "scandir.h"
 
@@ -196,6 +197,10 @@ multiline_done:
         log_debug("No match in %s", dir_full_path);
     }
 
+    if (matches_len == 0 && opts.search_stream) {
+        print_context_append(buf, buf_len - 1);
+    }
+
     if (matches_size > 0) {
         free(matches);
     }
@@ -208,12 +213,19 @@ void search_stream(FILE *stream, const char *path) {
     size_t line_cap = 0;
     size_t i;
 
+    print_init_context();
+
     for (i = 1; (line_len = getline(&line, &line_cap, stream)) > 0; i++) {
         opts.stream_line_num = i;
         search_buf(line, line_len, path);
+        if (line[line_len - 1] == '\n') {
+            line_len--;
+        }
+        print_trailing_context(path, line, line_len);
     }
 
     free(line);
+    print_cleanup_context();
 }
 
 void search_file(const char *file_full_path) {
@@ -246,6 +258,8 @@ void search_file(const char *file_full_path) {
         log_err("Skipping %s: Mode %u is not a file.", file_full_path, statbuf.st_mode);
         goto cleanup;
     }
+
+    print_init_context();
 
     if (statbuf.st_mode & S_IFIFO) {
         log_debug("%s is a named pipe. stream searching", file_full_path);
@@ -330,6 +344,7 @@ void search_file(const char *file_full_path) {
 
 cleanup:
 
+    print_cleanup_context();
     if (buf != NULL) {
 #ifdef _WIN32
         UnmapViewOfFile(buf);
