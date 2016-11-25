@@ -298,7 +298,7 @@ Language types are output:
         .wadl
   
     --xml
-        .xml  .dtd  .xsl  .xslt  .ent
+        .xml  .dtd  .xsl  .xslt  .ent  .tld
   
     --yaml
         .yaml  .yml

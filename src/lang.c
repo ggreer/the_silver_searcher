@@ -102,7 +102,7 @@ lang_spec_t langs[] = {
     { "wix", { "wxi", "wxs" } },
     { "wsdl", { "wsdl" } },
     { "wadl", { "wadl" } },
-    { "xml", { "xml", "dtd", "xsl", "xslt", "ent" } },
+    { "xml", { "xml", "dtd", "xsl", "xslt", "ent", "tld" } },
     { "yaml", { "yaml", "yml" } }
 };
 
