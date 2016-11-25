@@ -1,5 +1,5 @@
-#include "print.h"
 #include "search.h"
+#include "print.h"
 #include "scandir.h"
 
 void search_buf(const char *buf, const size_t buf_len,
