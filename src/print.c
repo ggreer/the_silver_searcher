@@ -17,7 +17,9 @@ int first_file_match = 1;
 
 const char *color_reset = "\033[0m\033[K";
 
-const char *truncate_marker = " [...]";
+const char *truncate_marker_left = " [";
+const char *truncate_marker_middle = "...";
+const char *truncate_marker_right = "]";
 
 void print_path(const char *path, const char sep) {
     if (opts.print_path == PATH_PRINT_NOTHING && !opts.vimgrep) {
@@ -202,14 +204,67 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                         /* skip remaining characters if truncation width exceeded, needs to be done
                          * before highlight opening */
                         if (j < buf_len && opts.width > 0 && j - prev_line_offset >= opts.width) {
+                            /* are we really truncating the line? the line may be exactly opts.width characters */
                             if (j < i) {
-                                fputs(truncate_marker, out_fd);
-                            }
-                            fputc('\n', out_fd);
+                                /* are there any matches in the truncated part of the line? */
+                                int hidden_matches = FALSE;
 
-                            /* prevent any more characters or highlights */
-                            j = i;
-                            last_printed_match = matches_len;
+                                /* prevent any more characters or highlights */
+                                j = i;
+
+                                /* print first part of truncate marker; if we are in a match it will be highlighted */
+                                fputs(truncate_marker_left, out_fd);
+
+                                if (printing_a_match) {
+                                    if (matches[last_printed_match].end <= i) {
+                                        /* it is now as if we had finished printing it */
+                                        last_printed_match++;
+                                    } else {
+                                        /* this match spans to a later line so we should highlight the truncate marker */
+                                        hidden_matches = TRUE;
+                                    }
+                                }
+
+                                /* skip the rest of the matches which end on this line */
+                                while (last_printed_match < matches_len && matches[last_printed_match].end <= i) {
+                                    last_printed_match++;
+                                    hidden_matches = TRUE;
+                                }
+
+                                /* if there were matches in the skipped part we highlight the middle part of the truncate marker */
+                                if (hidden_matches) {
+                                    /* open highlight, if not done so already */
+                                    if (opts.color && !printing_a_match) {
+                                        fprintf(out_fd, "%s", opts.color_match);
+                                    }
+                                    printing_a_match = TRUE;
+                                } else {
+                                    /* close highlight, if not done so already */
+                                    if (opts.color && printing_a_match) {
+                                        fprintf(out_fd, "%s", color_reset);
+                                    }
+                                    printing_a_match = FALSE;
+                                }
+                                fputs(truncate_marker_middle, out_fd);
+
+                                /* if the next match starts on this line and ends on a later one we highlight the last part of the truncate marker */
+                                if (last_printed_match < matches_len && matches[last_printed_match].start <= i) {
+                                    if (opts.color && !printing_a_match) {
+                                        fprintf(out_fd, "%s", opts.color_match);
+                                    }
+                                    printing_a_match = TRUE;
+                                } else {
+                                    if (opts.color && printing_a_match) {
+                                        fprintf(out_fd, "%s", color_reset);
+                                    }
+                                    printing_a_match = FALSE;
+                                }
+
+                                /* print the last part of the truncate marker */
+                                fputs(truncate_marker_right, out_fd);
+                            }
+
+                            fputc('\n', out_fd);
                         }
                         /* open highlight of match term */
                         if (last_printed_match < matches_len && j == matches[last_printed_match].start) {
