@@ -597,7 +597,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             j2 = 0;
             for (j1 = 0; j1 <= l; j1++) {
                 file_search_regex[j2++] = old_re[j1];
-                if (old_re[j1] == '\\' && old_re[j1+1] == 'E') {
+                if (old_re[j1] == '\\' && old_re[j1 + 1] == 'E') {
                     file_search_regex[j2++] = '\\';
                 }
             }
@@ -615,11 +615,11 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         }
 
         if (has_filetype) {
-          char *old_re = strdup(file_search_regex);
-          num_exts = combine_file_extensions(ext_index, lang_num, &extensions);
-          lang_regex = make_lang_regex(extensions, num_exts);
-          ag_asprintf(&file_search_regex, "%s.*%s", old_re, lang_regex);
-          free(old_re);
+            char *old_re = strdup(file_search_regex);
+            num_exts = combine_file_extensions(ext_index, lang_num, &extensions);
+            lang_regex = make_lang_regex(extensions, num_exts);
+            ag_asprintf(&file_search_regex, "%s.*%s", old_re, lang_regex);
+            free(old_re);
         }
 
         compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, file_search_regex, pcre_opts, 0);
