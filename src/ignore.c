@@ -37,6 +37,8 @@ const char *ignore_pattern_files[] = {
     ".git/info/exclude",
     ".hgignore",
     ".svn",
+    ".bzr",
+    ".bzrignore",
     NULL
 };
 
