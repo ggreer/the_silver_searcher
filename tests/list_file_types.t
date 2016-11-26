@@ -81,6 +81,9 @@ Language types are output:
     --gettext
         .po  .pot  .mo
   
+    --glsl
+        .vert  .tesc  .tese  .geom  .frag  .comp
+  
     --go
         .go
   

@@ -30,6 +30,7 @@ lang_spec_t langs[] = {
     { "fortran", { "f", "f77", "f90", "f95", "f03", "for", "ftn", "fpp" } },
     { "fsharp", { "fs", "fsi", "fsx" } },
     { "gettext", { "po", "pot", "mo" } },
+    { "glsl", { "vert", "tesc", "tese", "geom", "frag", "comp" } },
     { "go", { "go" } },
     { "groovy", { "groovy", "gtmpl", "gpp", "grunit" } },
     { "haml", { "haml" } },
