@@ -51,7 +51,7 @@ void search_buf(const char *buf, const size_t buf_len,
 /* hash_strnstr only for little-endian platforms that allow unaligned access */
 #if defined(__i386__) || defined(__x86_64__)
             /* Decide whether to fall back on boyer-moore */
-            if ((size_t)opts.query_len < 2 * sizeof(W_t) - 1 || opts.query_len >= UCHAR_MAX)
+            if ((size_t)opts.query_len < 2 * sizeof(uint16_t) - 1 || opts.query_len >= UCHAR_MAX)
                 match_ptr = ag_strnstr_fp(match_ptr, opts.query, buf_len - buf_offset, opts.query_len, alpha_skip_lookup, find_skip_lookup);
             else
                 match_ptr = hash_strnstr(match_ptr, opts.query, buf_len - buf_offset, opts.query_len, h_table, opts.casing == CASE_SENSITIVE);

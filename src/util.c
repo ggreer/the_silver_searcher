@@ -148,14 +148,14 @@ size_t ag_max(size_t a, size_t b) {
     return a;
 }
 
-void generate_hash(const char *find, const size_t f_len, offset_t *h_table, const int case_sensitive) {
+void generate_hash(const char *find, const size_t f_len, uint8_t *h_table, const int case_sensitive) {
     int i;
-    for (i = f_len - sizeof(W_t); i >= 0; i--) {
-        // Add all 2^sizeof(W_t) combinations of capital letters to the hash table
+    for (i = f_len - sizeof(uint16_t); i >= 0; i--) {
+        // Add all 2^sizeof(uint16_t) combinations of capital letters to the hash table
         int caps_set;
-        for (caps_set = 0; caps_set < (1 << sizeof(W_t)); caps_set++) {
+        for (caps_set = 0; caps_set < (1 << sizeof(uint16_t)); caps_set++) {
             word_t word;
-            memcpy(&word.as_chars, find + i, sizeof(W_t));
+            memcpy(&word.as_chars, find + i, sizeof(uint16_t));
             int cap_index;
             // Capitalize the letters whose corresponding bits in caps_set are 1
             for (cap_index = 0; caps_set >> cap_index; cap_index++) {
@@ -210,16 +210,16 @@ const char *boyer_moore_strncasestr(const char *s, const char *find, const size_
     return NULL;
 }
 
-const char *hash_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len, offset_t *h_table, const int case_sensitive) {
+const char *hash_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len, uint8_t *h_table, const int case_sensitive) {
     if (s_len < f_len)
         return NULL;
 
     // Step through s
-    const size_t step = f_len - sizeof(W_t) + 1;
-    size_t s_i = f_len - sizeof(W_t);
+    const size_t step = f_len - sizeof(uint16_t) + 1;
+    size_t s_i = f_len - sizeof(uint16_t);
     for (; s_i <= s_len - f_len; s_i += step) {
         size_t h;
-        for (h = *(const W_t *)(s + s_i) % H_SIZE; h_table[h]; h = (h + 1) % H_SIZE) {
+        for (h = *(const uint16_t *)(s + s_i) % H_SIZE; h_table[h]; h = (h + 1) % H_SIZE) {
             const char *R = s + s_i - (h_table[h] - 1);
             size_t i;
             // Check putative match

@@ -48,13 +48,11 @@ typedef struct {
 ag_stats stats;
 
 typedef const char *(*strncmp_fp)(const char *, const char *, const size_t, const size_t, const size_t[], const size_t *);
-typedef uint16_t W_t;
-typedef uint8_t offset_t;
 
 /* Union to translate between chars and words without violating strict aliasing */
 typedef union {
-    char as_chars[sizeof(W_t)];
-    W_t as_word;
+    char as_chars[sizeof(uint16_t)];
+    uint16_t as_word;
 } word_t;
 
 void free_strings(char **strs, const size_t strs_len);
@@ -63,7 +61,7 @@ void generate_alpha_skip(const char *find, size_t f_len, size_t skip_lookup[], c
 int is_prefix(const char *s, const size_t s_len, const size_t pos, const int case_sensitive);
 size_t suffix_len(const char *s, const size_t s_len, const size_t pos, const int case_sensitive);
 void generate_find_skip(const char *find, const size_t f_len, size_t **skip_lookup, const int case_sensitive);
-void generate_hash(const char *find, const size_t f_len, offset_t *H, const int case_sensitive);
+void generate_hash(const char *find, const size_t f_len, uint8_t *H, const int case_sensitive);
 
 /* max is already defined on spec-violating compilers such as MinGW */
 size_t ag_max(size_t a, size_t b);
@@ -72,7 +70,7 @@ const char *boyer_moore_strnstr(const char *s, const char *find, const size_t s_
                                 const size_t alpha_skip_lookup[], const size_t *find_skip_lookup);
 const char *boyer_moore_strncasestr(const char *s, const char *find, const size_t s_len, const size_t f_len,
                                     const size_t alpha_skip_lookup[], const size_t *find_skip_lookup);
-const char *hash_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len, offset_t *h_table, const int case_sensitive);
+const char *hash_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len, uint8_t *h_table, const int case_sensitive);
 
 strncmp_fp get_strstr(enum case_behavior opts);
 
