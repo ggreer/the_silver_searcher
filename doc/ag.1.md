@@ -151,7 +151,7 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Do not parse PATTERN as a regular expression. Try to match it literally.
 
   * `-r --recurse`:
-    Recurse into directories when seacrhing. Default is true.
+    Recurse into directories when searching. Default is true.
 
   * `-s --case-sensitive`:
     Match case-sensitively.
