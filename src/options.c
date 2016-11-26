@@ -342,9 +342,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     if (!opts.pager)
-      opts.pager = getenv("PAGER");
+        opts.pager = getenv("PAGER");
     if (opts.pager[0] == 0)
-      opts.pager = NULL;
+        opts.pager = NULL;
 
     /* If we're not outputting to a terminal. change output to:
         * turn off colors
