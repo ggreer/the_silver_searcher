@@ -661,7 +661,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 
     if (home_dir && !opts.search_all_files) {
         log_debug("Found user's home dir: %s", home_dir);
-        ag_asprintf(&ignore_file_path, "%s/%s", home_dir, ignore_pattern_files[0]);
+        ag_asprintf(&ignore_file_path, "%s/.agignore", home_dir);
         load_ignore_patterns(root_ignores, ignore_file_path);
         free(ignore_file_path);
     }
