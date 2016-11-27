@@ -77,8 +77,8 @@ void search_buf(const char *buf, const size_t buf_len,
                     /* It's a match */
                 } else {
                     /* It's not a match */
-                    match_ptr += opts.query_len;
-                    buf_offset = end - buf;
+                    match_ptr += find_skip_lookup[0] - opts.query_len + 1;
+                    buf_offset = match_ptr - buf;
                     continue;
                 }
             }
