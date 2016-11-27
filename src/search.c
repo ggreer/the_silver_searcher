@@ -481,11 +481,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
     for (i = 0; opts.skip_vcs_ignores ? (i <= 1) : (ignore_pattern_files[i] != NULL); i++) {
         ignore_file = ignore_pattern_files[i];
         ag_asprintf(&dir_full_path, "%s/%s", path, ignore_file);
-        if (strcmp(SVN_DIR, ignore_file) == 0) {
-            load_svn_ignore_patterns(ig, dir_full_path);
-        } else {
-            load_ignore_patterns(ig, dir_full_path);
-        }
+        load_ignore_patterns(ig, dir_full_path);
         free(dir_full_path);
         dir_full_path = NULL;
     }

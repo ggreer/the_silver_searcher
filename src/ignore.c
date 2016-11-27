@@ -36,7 +36,6 @@ const char *ignore_pattern_files[] = {
     ".gitignore",
     ".git/info/exclude",
     ".hgignore",
-    ".svn",
     NULL
 };
 
@@ -186,84 +185,6 @@ void load_ignore_patterns(ignores *ig, const char *path) {
     }
 
     free(line);
-    fclose(fp);
-}
-
-void load_svn_ignore_patterns(ignores *ig, const char *path) {
-    FILE *fp = NULL;
-    char *dir_prop_base;
-    ag_asprintf(&dir_prop_base, "%s/%s", path, SVN_DIR_PROP_BASE);
-
-    fp = fopen(dir_prop_base, "r");
-    if (fp == NULL) {
-        log_debug("Skipping svn ignore file %s", dir_prop_base);
-        free(dir_prop_base);
-        return;
-    }
-
-    char *entry = NULL;
-    size_t entry_len = 0;
-    char *key = ag_malloc(32); /* Sane start for max key length. */
-    size_t key_len = 0;
-    size_t bytes_read = 0;
-    char *entry_line;
-    size_t line_len;
-    int matches;
-
-    while (fscanf(fp, "K %zu\n", &key_len) == 1) {
-        if (key_len >= INT_MAX) {
-            log_debug("Unable to parse svnignore file %s: key is absurdly long.", dir_prop_base);
-            goto cleanup;
-        }
-        key = ag_realloc(key, key_len + 1);
-        bytes_read = fread(key, 1, key_len, fp);
-        key[key_len] = '\0';
-        matches = fscanf(fp, "\nV %zu\n", &entry_len);
-        if (matches != 1) {
-            log_debug("Unable to parse svnignore file %s: fscanf() got %i matches, expected 1.", dir_prop_base, matches);
-            goto cleanup;
-        }
-
-        if (strncmp(SVN_PROP_IGNORE, key, bytes_read) != 0) {
-            log_debug("key is %s, not %s. skipping %u bytes", key, SVN_PROP_IGNORE, entry_len);
-            /* Not the key we care about. fseek and repeat */
-            int rv = fseek(fp, entry_len + 1, SEEK_CUR); /* +1 to account for newline. yes I know this is hacky */
-            if (rv == -1) {
-                log_debug("Skipping svnignore file %s: fseek() error.", dir_prop_base);
-                goto cleanup;
-            }
-            continue;
-        }
-        /* Aww yeah. Time to ignore stuff */
-        entry = ag_malloc(entry_len + 1);
-        bytes_read = fread(entry, 1, entry_len, fp);
-        entry[bytes_read] = '\0';
-        log_debug("entry: %s", entry);
-        break;
-    }
-    if (entry == NULL) {
-        goto cleanup;
-    }
-    char *patterns = entry;
-    size_t patterns_len = strlen(patterns);
-    while (*patterns != '\0' && patterns < (entry + bytes_read)) {
-        for (line_len = 0; line_len < patterns_len; line_len++) {
-            if (patterns[line_len] == '\n') {
-                break;
-            }
-        }
-        if (line_len > 0) {
-            entry_line = ag_strndup(patterns, line_len);
-            add_ignore_pattern(ig, entry_line);
-            free(entry_line);
-        }
-        patterns += line_len + 1;
-        patterns_len -= line_len + 1;
-    }
-    free(entry);
-cleanup:
-    free(dir_prop_base);
-    free(key);
     fclose(fp);
 }
 

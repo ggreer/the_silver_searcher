@@ -4,10 +4,6 @@
 #include <dirent.h>
 #include <sys/types.h>
 
-#define SVN_DIR_PROP_BASE "dir-prop-base"
-#define SVN_DIR ".svn"
-#define SVN_PROP_IGNORE "svn:ignore"
-
 struct ignores {
     char **extensions; /* File extensions to ignore */
     size_t extensions_len;
@@ -42,7 +38,6 @@ void cleanup_ignore(ignores *ig);
 void add_ignore_pattern(ignores *ig, const char *pattern);
 
 void load_ignore_patterns(ignores *ig, const char *path);
-void load_svn_ignore_patterns(ignores *ig, const char *path);
 
 int filename_filter(const char *path, const struct dirent *dir, void *baton);
 

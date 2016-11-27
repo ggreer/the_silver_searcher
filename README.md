@@ -24,7 +24,7 @@ Ag is quite stable now. Most changes are new features, minor bug fixes, or perfo
 
     ag test_blah ~/code/  4.67s user 4.58s system 286% cpu 3.227 total
 
-Ack and Ag found the same results, but Ag was 34x faster (3.2 seconds vs 110 seconds). My `~/code` directory is about 8GB. Thanks to git/hg/svn-ignore, Ag only searched 700MB of that.
+Ack and Ag found the same results, but Ag was 34x faster (3.2 seconds vs 110 seconds). My `~/code` directory is about 8GB. Thanks to git/hg/ignore, Ag only searched 700MB of that.
 
 There are also [graphs of performance across releases](http://geoff.greer.fm/ag/speed/).
 
