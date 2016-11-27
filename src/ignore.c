@@ -365,7 +365,7 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     }
 
     if (is_named_pipe(path, dir)) {
-        log_debug("%s ignored because it's a named pipe", path);
+        log_debug("%s ignored because it's a named pipe or socket", path);
         return 0;
     }
 
