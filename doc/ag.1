@@ -220,7 +220,7 @@ Search \fIall\fR files\. This ignores \.ignore, \.gitignore, etc\. It searches b
 .
 .TP
 \fB\-U \-\-skip\-vcs\-ignores\fR
-Ignore VCS ignore files (\.gitignore, \.hgignore, svn:ignore), but still use \.ignore\.
+Ignore VCS ignore files (\.gitignore, \.hgignore), but still use \.ignore\.
 .
 .TP
 \fB\-v \-\-invert\-match\fR
@@ -263,10 +263,10 @@ Separate the filenames with \fB\e0\fR, rather than \fB\en\fR: this allows \fBxar
 It is possible to restrict the types of files searched\. For example, passing \fB\-\-html\fR will search only files with the extensions \fBhtm\fR, \fBhtml\fR, \fBshtml\fR or \fBxhtml\fR\. For a list of supported types, run \fBag \-\-list\-file\-types\fR\.
 .
 .SH "IGNORING FILES"
-By default, ag will ignore files whose names match patterns in \.gitignore, \.hgignore, or \.ignore\. These files can be anywhere in the directories being searched\. Ag also ignores files matched by the svn:ignore property if \fBsvn \-\-version\fR is 1\.6 or older\. Finally, ag looks in $HOME/\.agignore for ignore patterns\. Binary files are ignored by default as well\.
+By default, ag will ignore files whose names match patterns in \.gitignore, \.hgignore, or \.ignore\. These files can be anywhere in the directories being searched\. Binary files are ignored by default as well\. Finally, ag looks in $HOME/\.agignore for ignore patterns\.
 .
 .P
-If you want to ignore \.gitignore, \.hgignore, and svn:ignore, but still take \.ignore into account, use \fB\-U\fR\.
+If you want to ignore \.gitignore and \.hgignore, but still take \.ignore into account, use \fB\-U\fR\.
 .
 .P
 Use the \fB\-t\fR option to search all text files; \fB\-a\fR to search all files; and \fB\-u\fR to search all, including hidden files\.
@@ -279,6 +279,9 @@ Use the \fB\-t\fR option to search all text files; \fB\-a\fR to search all files
 .
 .P
 \fBag \-\- \-\-foo\fR: Find matches for "\-\-foo" in the current directory\. (As with most UNIX command line utilities, "\-\-" is used to signify that the remaining arguments should not be treated as options\.)
+.
+.SH "ABOUT"
+ag was originally created by Geoff Greer\. More information (and the latest release) can be found at http://geoff\.greer\.fm/ag
 .
 .SH "SEE ALSO"
 grep(1)
