@@ -1,5 +1,5 @@
-#include "print.h"
 #include "search.h"
+#include "print.h"
 #include "scandir.h"
 
 void search_buf(const char *buf, const size_t buf_len,
@@ -188,7 +188,7 @@ multiline_done:
             print_binary_file_matches(dir_full_path);
         } else {
             print_file_matches(dir_full_path, searching_a_stream,
-                    buf, buf_len, matches, matches_len);
+                               buf, buf_len, matches, matches_len);
         }
         pthread_mutex_unlock(&print_mtx);
         opts.match_found = 1;

@@ -142,7 +142,7 @@ void print_binary_file_matches(const char *path) {
 }
 
 void print_file_matches(const char *path, int searching_a_stream,
-        const char *buf, const size_t buf_len, const match_t matches[], const size_t matches_len) {
+                        const char *buf, const size_t buf_len, const match_t matches[], const size_t matches_len) {
     size_t cur_match = 0;
     ssize_t lines_to_print = 0;
     char sep = '-';
