@@ -323,7 +323,10 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
             }
         }
     }
-    fflush(out_fd);
+    /* Flush output if stdout is not a tty */
+    if (opts.stdout_inode) {
+        fflush(out_fd);
+    }
 }
 
 void print_line_number(size_t line, const char sep) {
