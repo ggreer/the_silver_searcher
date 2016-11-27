@@ -298,7 +298,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "print-long-lines", no_argument, &opts.print_long_lines, 1 },
         { "recurse", no_argument, NULL, 'r' },
         { "search-binary", no_argument, &opts.search_binary_files, 1 },
-        { "search-files", no_argument, &opts.search_stream, 0 },
+        { "search-files", no_argument, &opts.search_stdin, 0 },
         { "search-zip", no_argument, &opts.search_zip_files, 1 },
         { "silent", no_argument, NULL, 0 },
         { "skip-vcs-ignores", no_argument, NULL, 'U' },
@@ -337,7 +337,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     rv = fstat(fileno(stdin), &statbuf);
     if (rv == 0) {
         if (S_ISFIFO(statbuf.st_mode) || S_ISREG(statbuf.st_mode)) {
-            opts.search_stream = 1;
+            opts.search_stdin = 1;
         }
     }
 
@@ -711,19 +711,19 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.color = 0;
         opts.print_break = 1;
         group = 1;
-        opts.search_stream = 0;
+        opts.search_stdin = 0;
     }
 
     if (opts.vimgrep) {
         opts.color = 0;
         opts.print_break = 0;
         group = 1;
-        opts.search_stream = 0;
+        opts.search_stdin = 0;
         opts.print_path = PATH_PRINT_NOTHING;
     }
 
     if (opts.parallel) {
-        opts.search_stream = 0;
+        opts.search_stdin = 0;
     }
 
     if (!(opts.print_path != PATH_PRINT_DEFAULT || opts.print_break == 0)) {
@@ -735,7 +735,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         }
     }
 
-    if (opts.search_stream) {
+    if (opts.search_stdin) {
         opts.print_break = 0;
         opts.print_path = PATH_PRINT_NOTHING;
         if (opts.print_line_numbers != 2) {
@@ -789,7 +789,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 #endif
         }
         /* Make sure we search these paths instead of stdin. */
-        opts.search_stream = 0;
+        opts.search_stdin = 0;
     } else {
         path = ag_strdup(".");
         *paths = ag_malloc(sizeof(char *) * 2);

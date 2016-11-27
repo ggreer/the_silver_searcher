@@ -141,7 +141,8 @@ void print_binary_file_matches(const char *path) {
     fprintf(out_fd, "Binary file %s matches.\n", path);
 }
 
-void print_file_matches(const char *path, const char *buf, const size_t buf_len, const match_t matches[], const size_t matches_len) {
+void print_file_matches(const char *path, int searching_a_stream,
+        const char *buf, const size_t buf_len, const match_t matches[], const size_t matches_len) {
     size_t cur_match = 0;
     ssize_t lines_to_print = 0;
     char sep = '-';
@@ -213,7 +214,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
 
         if (i == buf_len || buf[i] == '\n') {
             if (print_context.lines_since_last_match == 0) {
-                if (opts.print_path == PATH_PRINT_EACH_LINE && !opts.search_stream) {
+                if (opts.print_path == PATH_PRINT_EACH_LINE && !searching_a_stream) {
                     print_path(path, ':');
                 }
                 if (opts.ackmate) {
@@ -305,7 +306,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                 }
             }
 
-            if (opts.search_stream) {
+            if (searching_a_stream) {
                 break;
             }
 
@@ -315,7 +316,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
             print_context.prev_line_offset = i + 1; /* skip the newline */
 
             /* File doesn't end with a newline. Print one so the output is pretty. */
-            if (i == buf_len && buf[i - 1] != '\n' && !opts.search_stream) {
+            if (i == buf_len && buf[i - 1] != '\n' && !searching_a_stream) {
                 fputc('\n', out_fd);
             }
         }

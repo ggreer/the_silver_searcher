@@ -3,11 +3,11 @@
 #include "scandir.h"
 
 void search_buf(const char *buf, const size_t buf_len,
-                const char *dir_full_path) {
+                const char *dir_full_path, int searching_a_stream) {
     int binary = -1; /* 1 = yes, 0 = no, -1 = don't know */
     size_t buf_offset = 0;
 
-    if (opts.search_stream) {
+    if (searching_a_stream) {
         binary = 0;
     } else if (!opts.search_binary_files) {
         binary = is_binary((const void *)buf, buf_len);
@@ -187,17 +187,18 @@ multiline_done:
         } else if (binary) {
             print_binary_file_matches(dir_full_path);
         } else {
-            print_file_matches(dir_full_path, buf, buf_len, matches, matches_len);
+            print_file_matches(dir_full_path, searching_a_stream,
+                    buf, buf_len, matches, matches_len);
         }
         pthread_mutex_unlock(&print_mtx);
         opts.match_found = 1;
-    } else if (opts.search_stream && opts.passthrough) {
+    } else if (searching_a_stream && opts.passthrough) {
         fprintf(out_fd, "%s", buf);
     } else {
         log_debug("No match in %s", dir_full_path);
     }
 
-    if (matches_len == 0 && opts.search_stream) {
+    if (matches_len == 0 && searching_a_stream) {
         print_context_append(buf, buf_len - 1);
     }
 
@@ -217,7 +218,7 @@ void search_stream(FILE *stream, const char *path) {
 
     for (i = 1; (line_len = getline(&line, &line_cap, stream)) > 0; i++) {
         opts.stream_line_num = i;
-        search_buf(line, line_len, path);
+        search_buf(line, line_len, path, TRUE);
         if (line[line_len - 1] == '\n') {
             line_len--;
         }
@@ -273,7 +274,7 @@ void search_file(const char *file_full_path) {
 
     if (f_len == 0) {
         if (opts.query[0] == '.' && opts.query_len == 1 && !opts.literal && opts.search_all_files) {
-            search_buf(buf, f_len, file_full_path);
+            search_buf(buf, f_len, file_full_path, 0);
         } else {
             log_debug("Skipping %s: file is empty.", file_full_path);
         }
@@ -334,13 +335,13 @@ void search_file(const char *file_full_path) {
                 log_err("Cannot decompress zipped file %s", file_full_path);
                 goto cleanup;
             }
-            search_buf(_buf, _buf_len, file_full_path);
+            search_buf(_buf, _buf_len, file_full_path, 0);
             free(_buf);
             goto cleanup;
         }
     }
 
-    search_buf(buf, f_len, file_full_path);
+    search_buf(buf, f_len, file_full_path, 0);
 
 cleanup:
 
