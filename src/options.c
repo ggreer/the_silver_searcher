@@ -114,7 +114,9 @@ The search can be restricted to certain types of files. Example:\n\
   - Searches for 'needle' in files with suffix .htm, .html, .shtml or .xhtml.\n\
 \n\
 For a list of supported file types run:\n\
-  ag --list-file-types\n\n");
+  ag --list-file-types\n\n\
+ag was originally created by Geoff Greer. More information (and the latest release)\n\
+can be found at http://geoff.greer.fm/ag\n");
 }
 
 void print_version(void) {

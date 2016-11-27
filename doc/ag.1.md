@@ -248,6 +248,11 @@ to search all, including hidden files.
   line utilities, "--" is used to signify that the remaining arguments should
   not be treated as options.)
 
+## ABOUT
+
+ag was originally created by Geoff Greer. More information (and the latest
+release) can be found at http://geoff.greer.fm/ag
+
 ## SEE ALSO
 
 grep(1)
