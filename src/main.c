@@ -135,7 +135,7 @@ int main(int argc, char **argv) {
         compile_study(&opts.re, &opts.re_extra, opts.query, pcre_opts, study_opts);
     }
 
-    if (opts.search_stream) {
+    if (opts.search_stdin) {
         search_stream(stdin, "");
     } else {
         for (i = 0; i < workers_len; i++) {
