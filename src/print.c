@@ -33,8 +33,9 @@ __thread struct print_context {
 } print_context;
 
 void print_init_context(void) {
-    if (print_context.context_prev_lines != NULL)
+    if (print_context.context_prev_lines != NULL) {
         return;
+    }
     print_context.context_prev_lines = ag_calloc(sizeof(char *), (opts.before + 1));
     print_context.line = 1;
     print_context.prev_line = 0;
@@ -49,8 +50,9 @@ void print_init_context(void) {
 void print_cleanup_context(void) {
     size_t i;
 
-    if (print_context.context_prev_lines == NULL)
+    if (print_context.context_prev_lines == NULL) {
         return;
+    }
 
     for (i = 0; i < opts.before; i++) {
         if (print_context.context_prev_lines[i] != NULL) {
@@ -316,7 +318,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
             print_context.prev_line_offset = i + 1; /* skip the newline */
 
             /* File doesn't end with a newline. Print one so the output is pretty. */
-            if (i == buf_len && buf[i - 1] != '\n' && !opts.search_stream) {
+            if (i == buf_len && buf[i - 1] != '\n') {
                 fputc('\n', out_fd);
             }
         }
