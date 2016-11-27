@@ -320,6 +320,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
             }
         }
     }
+    fflush(out_fd);
 }
 
 void print_line_number(size_t line, const char sep) {
