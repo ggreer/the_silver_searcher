@@ -102,7 +102,7 @@ Search Options:\n\
   -u --unrestricted       Search all files (ignore .ignore, .gitignore, etc.;\n\
                           searches binary and hidden files as well)\n\
   -U --skip-vcs-ignores   Ignore VCS ignore files\n\
-                          (.gitignore, .hgignore, .svnignore; still obey .ignore)\n\
+                          (.gitignore, .hgignore; still obey .ignore)\n\
   -v --invert-match\n\
   -w --word-regexp        Only match whole words\n\
   -W --width NUM          Truncate match lines after NUM characters\n\
