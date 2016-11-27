@@ -306,6 +306,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
             }
 
             if (opts.search_stream) {
+                print_context.last_printed_match = 0;
                 break;
             }
 
