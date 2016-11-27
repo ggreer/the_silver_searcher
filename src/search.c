@@ -486,11 +486,6 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
         dir_full_path = NULL;
     }
 
-    /* TODO: this is extremely wasteful */
-    if (opts.path_to_ignore) {
-        load_ignore_patterns(ig, opts.path_to_ignore);
-    }
-
     scandir_baton.ig = ig;
     scandir_baton.base_path = base_path;
     scandir_baton.base_path_len = base_path ? strlen(base_path) : 0;

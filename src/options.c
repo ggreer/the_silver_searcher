@@ -446,7 +446,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.recurse_dirs = 0;
                 break;
             case 'p':
-                opts.path_to_ignore = optarg;
+                opts.path_to_ignore = TRUE;
+                load_ignore_patterns(root_ignores, optarg);
                 break;
             case 'o':
                 opts.only_matching = 1;
