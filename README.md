@@ -42,7 +42,7 @@ I've written several blog posts showing how I've improved performance. These inc
 
 ## Installing
 
-### OS X
+### MacOS
 
     brew install the_silver_searcher
 
@@ -95,7 +95,7 @@ Run the relevant [`setup-*.exe`](https://cygwin.com/install.html), and select "t
 ### Building master
 
 1. Install dependencies (Automake, pkg-config, PCRE, LZMA):
-    * OS X:
+    * MacOS:
 
             brew install automake pkg-config pcre xz
         or
