@@ -109,7 +109,8 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Skip the rest of a file after NUM matches. Default is 0, which never skips.
 
   * `--[no]mmap`:
-    Toggle use of memory-mapped I/O. Defaults to true.
+    Toggle use of memory-mapped I/O. Defaults to true on platforms where
+    `mmap()` is faster than `read()`. (All but macOS.)
 
   * `--[no]multiline`:
     Match regexes across newlines. Enabled by default.

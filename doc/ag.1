@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "AG" "1" "November 2016" "" ""
+.TH "AG" "1" "December 2016" "" ""
 .
 .SH "NAME"
 \fBag\fR \- The Silver Searcher\. Like ack, but faster\.
@@ -136,7 +136,7 @@ Skip the rest of a file after NUM matches\. Default is 0, which never skips\.
 .
 .TP
 \fB\-\-[no]mmap\fR
-Toggle use of memory\-mapped I/O\. Defaults to true\.
+Toggle use of memory\-mapped I/O\. Defaults to true on platforms where \fBmmap()\fR is faster than \fBread()\fR\. (All but macOS\.)
 .
 .TP
 \fB\-\-[no]multiline\fR
