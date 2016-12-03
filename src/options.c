@@ -146,7 +146,12 @@ void init_options(void) {
     opts.color_win_ansi = FALSE;
     opts.max_matches_per_file = 0;
     opts.max_search_depth = DEFAULT_MAX_SEARCH_DEPTH;
+#if defined(__APPLE__) || defined(__MACH__)
+    /* mamp() is slower than normal read() on macos. default to off */
+    opts.mmap = FALSE;
+#else
     opts.mmap = TRUE;
+#endif
     opts.multiline = TRUE;
     opts.width = 0;
     opts.path_sep = '\n';
