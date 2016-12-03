@@ -15,7 +15,8 @@ m4_ifdef(
     [AM_SILENT_RULES],
     [AM_SILENT_RULES([yes])])
 
-PKG_CHECK_MODULES([PCRE], [libpcre])
+PKG_CHECK_MODULES([PCRE2], [libpcre2-8])
+AC_DEFINE([PCRE2_CODE_UNIT_WIDTH], [8], [Use utf8])
 
 m4_include([m4/ax_pthread.m4])
 AX_PTHREAD(
@@ -24,7 +25,7 @@ AX_PTHREAD(
 )
 
 # Run CFLAGS="-pg" ./configure if you want debug symbols
-CFLAGS="$CFLAGS $PTHREAD_CFLAGS $PCRE_CFLAGS -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -Wshadow -Wpointer-arith -Wcast-qual -Wmissing-prototypes -Wno-missing-braces -std=gnu89 -D_GNU_SOURCE -O2"
+CFLAGS="$CFLAGS $PTHREAD_CFLAGS $PCRE2_CFLAGS -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -Wshadow -Wpointer-arith -Wcast-qual -Wmissing-prototypes -Wno-missing-braces -std=gnu89 -D_GNU_SOURCE -O2"
 LDFLAGS="$LDFLAGS"
 
 case $host in
@@ -50,7 +51,7 @@ AS_IF([test "x$enable_lzma" != "xno"], [
     PKG_CHECK_MODULES([LZMA], [liblzma])
 ])
 
-AC_CHECK_DECL([PCRE_CONFIG_JIT], [AC_DEFINE([USE_PCRE_JIT], [], [Use PCRE JIT])], [], [#include <pcre.h>])
+AC_CHECK_DECL([PCRE2_CONFIG_JIT], [AC_DEFINE([USE_PCRE2_JIT], [], [Use PCRE2 JIT])], [], [#include <pcre2.h>])
 
 AC_CHECK_DECL([CPU_ZERO, CPU_SET], [AC_DEFINE([USE_CPU_SET], [], [Use CPU_SET macros])] , [], [#include <sched.h>])
 

@@ -1,10 +1,12 @@
 #ifndef OPTIONS_H
 #define OPTIONS_H
 
+#include "config.h"
+
 #include <getopt.h>
 #include <sys/stat.h>
 
-#include <pcre.h>
+#include <pcre2.h>
 
 #define DEFAULT_AFTER_LEN 2
 #define DEFAULT_BEFORE_LEN 2
@@ -28,15 +30,15 @@ enum path_print_behavior {
 
 typedef struct {
     int ackmate;
-    pcre *ackmate_dir_filter;
-    pcre_extra *ackmate_dir_filter_extra;
+    pcre2_code *ackmate_dir_filter;
+    pcre2_compile_context *ackmate_dir_filter_ctx;
     size_t after;
     size_t before;
     enum case_behavior casing;
     const char *file_search_string;
     int match_files;
-    pcre *file_search_regex;
-    pcre_extra *file_search_regex_extra;
+    pcre2_code *file_search_regex;
+    pcre2_compile_context *file_search_regex_ctx;
     int color;
     char *color_line_number;
     char *color_match;
@@ -64,8 +66,8 @@ typedef struct {
     int print_line_numbers;
     int print_long_lines; /* TODO: support this in print.c */
     int passthrough;
-    pcre *re;
-    pcre_extra *re_extra;
+    pcre2_code *re;
+    pcre2_compile_context *re_ctx;
     int recurse_dirs;
     int search_all_files;
     int skip_vcs_ignores;

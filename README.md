@@ -34,7 +34,7 @@ There are also [graphs of performance across releases](http://geoff.greer.fm/ag/
 * Files are `mmap()`ed instead of read into a buffer.
 * Literal string searching uses [Boyer-Moore strstr](https://en.wikipedia.org/wiki/Boyer%E2%80%93Moore_string_search_algorithm).
 * Regex searching uses [PCRE's JIT compiler](http://sljit.sourceforge.net/pcre.html) (if Ag is built with PCRE >=8.21).
-* Ag calls `pcre_study()` before executing the same regex on every file.
+* Ag calls `pcre2_study()` before executing the same regex on every file.
 * Instead of calling `fnmatch()` on every pattern in your ignore files, non-regex patterns are loaded into arrays and binary searched.
 
 I've written several blog posts showing how I've improved performance. These include how I [added pthreads](http://geoff.greer.fm/2012/09/07/the-silver-searcher-adding-pthreads/), [wrote my own `scandir()`](http://geoff.greer.fm/2012/09/03/profiling-ag-writing-my-own-scandir/), [benchmarked every revision to find performance regressions](http://geoff.greer.fm/2012/08/25/the-silver-searcher-benchmarking-revisions/), and profiled with [gprof](http://geoff.greer.fm/2012/02/08/profiling-with-gprof/) and [Valgrind](http://geoff.greer.fm/2012/01/23/making-programs-faster-profiling/).
@@ -94,23 +94,23 @@ Run the relevant [`setup-*.exe`](https://cygwin.com/install.html), and select "t
 
 ### Building master
 
-1. Install dependencies (Automake, pkg-config, PCRE, LZMA):
+1. Install dependencies (Automake, pkg-config, PCRE2, LZMA):
     * OS X:
 
-            brew install automake pkg-config pcre xz
+            brew install automake pkg-config pcre2 xz
         or
 
-            port install automake pkgconfig pcre xz
+            port install automake pkgconfig pcre2 xz
     * Ubuntu/Debian:
 
-            apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev
+            apt-get install -y automake pkg-config libpcre2-dev zlib1g-dev liblzma-dev
     * Fedora:
 
-            yum -y install pkgconfig automake gcc zlib-devel pcre-devel xz-devel
+            yum -y install pkgconfig automake gcc zlib-devel pcre2-devel xz-devel
     * CentOS:
 
             yum -y groupinstall "Development Tools"
-            yum -y install pcre-devel xz-devel
+            yum -y install pcre2-devel xz-devel
     * Windows: It's complicated. See [this wiki page](https://github.com/ggreer/the_silver_searcher/wiki/Windows).
 2. Run the build script (which just runs aclocal, automake, etc):
 

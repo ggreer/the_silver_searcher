@@ -12,8 +12,8 @@ URL:		https://github.com/ggreer/%{name}
 Source0:	https://github.com/downloads/ggreer/%{name}/%{name}-%{version}.tar.gz
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
-BuildRequires:	pcre-devel, xz-devel, zlib-devel
-Requires:	pcre, xz, zlib
+BuildRequires:	pcre2-devel, xz-devel, zlib-devel
+Requires:	pcre2, xz, zlib
 
 %description
 The Silver Searcher
@@ -29,7 +29,7 @@ How is it so fast?
 * Searching for literals (no regex) uses Boyer-Moore-Horspool strstr.
 * Files are mmap()ed instead of read into a buffer.
 * If you're building with PCRE 8.21 or greater, regex searches use the JIT compiler.
-* Ag calls pcre_study() before executing the regex on a jillion files.
+* Ag calls pcre2_study() before executing the regex on a jillion files.
 * Instead of calling fnmatch() on every pattern in your ignore files, non-regex patterns are loaded into an array and binary searched.
 * Ag uses Pthreads to take advantage of multiple CPU cores and search files in parallel.
 

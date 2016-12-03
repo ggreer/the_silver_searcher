@@ -100,8 +100,11 @@ void search_buf(const char *buf, const size_t buf_len,
     } else {
         int offset_vector[3];
         if (opts.multiline) {
+            /* we just care about the match, not where the matches are */
+            return pcre2_match(opts.ackmate_dir_filter, dir_name, strlen(dir_name), 0, 0, NULL, NULL);
+
             while (buf_offset < buf_len &&
-                   (pcre_exec(opts.re, opts.re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
+                   (pcre2_match(opts.re, buf, buf_len, buf_offset, 0, match_data)) >= 0) {
                 log_debug("Regex match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
                 buf_offset = offset_vector[1];
                 if (offset_vector[0] == offset_vector[1]) {
@@ -129,7 +132,7 @@ void search_buf(const char *buf, const size_t buf_len,
                 }
                 size_t line_offset = 0;
                 while (line_offset < line_len) {
-                    int rv = pcre_exec(opts.re, opts.re_extra, line, line_len, line_offset, 0, offset_vector, 3);
+                    int rv = pcre2_match(opts.re, opts.re_ctx, line, line_len, line_offset, 0, offset_vector, 3);
                     if (rv < 0) {
                         break;
                     }
@@ -290,11 +293,6 @@ void search_file(const char *file_full_path) {
         goto cleanup;
     }
 
-    if (!opts.literal && f_len > INT_MAX) {
-        log_err("Skipping %s: pcre_exec() can't handle files larger than %i bytes.", file_full_path, INT_MAX);
-        goto cleanup;
-    }
-
 #ifdef _WIN32
     {
         HANDLE hmmap = CreateFileMapping(
@@ -376,6 +374,7 @@ void *search_file_worker(void *i) {
     int worker_id = *(int *)i;
 
     log_debug("Worker %i started", worker_id);
+    match_data = pcre2_match_data_create_from_pattern(re, NULL);
     while (TRUE) {
         pthread_mutex_lock(&work_queue_mtx);
         while (work_queue == NULL) {
@@ -543,7 +542,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
 
         if (!is_directory(path, dir)) {
             if (opts.file_search_regex) {
-                rc = pcre_exec(opts.file_search_regex, NULL, dir_full_path, strlen(dir_full_path),
+                rc = pcre2_match(opts.file_search_regex, NULL, dir_full_path, strlen(dir_full_path),
                                0, 0, offset_vector, 3);
                 if (rc < 0) { /* no match */
                     log_debug("Skipping %s due to file_search_regex.", dir_full_path);

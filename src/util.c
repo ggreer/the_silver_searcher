@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -5,7 +7,6 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#include "config.h"
 #include "util.h"
 
 #ifdef _WIN32
@@ -331,19 +332,23 @@ void realloc_matches(match_t **matches, size_t *matches_size, size_t matches_len
     *matches = ag_realloc(*matches, *matches_size * sizeof(match_t));
 }
 
-void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opts, const int study_opts) {
+void compile_study(pcre2_code **re, pcre2_compile_context **re_ctx, char *q, const uint32_t pcre_opts, const int study_opts) {
     const char *pcre_err = NULL;
     int pcre_err_offset = 0;
 
-    *re = pcre_compile(q, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
+    *re = pcre2_compile(q, pcre_opts, &pcre_err, &pcre_err_offset, NULL, NULL);
     if (*re == NULL) {
-        die("Bad regex! pcre_compile() failed at position %i: %s\nIf you meant to search for a literal string, run ag with -Q",
+        // TODO: use pcre2_get_error_message()
+        die("Bad regex! pcre2_compile() failed at position %i: %s\nIf you meant to search for a literal string, run ag with -Q",
             pcre_err_offset,
             pcre_err);
     }
-    *re_extra = pcre_study(*re, study_opts, &pcre_err);
-    if (*re_extra == NULL) {
-        log_debug("pcre_study returned nothing useful. Error: %s", pcre_err);
+    pcre2_jit_compile(*re, pcre_opts);
+    *re_ctx = NULL;
+    *re_ctx = pcre2_match_data_create_from_pattern(*re, NULL);
+    // *re_ctx = pcre2_init_context(NULL);
+    if (*re_ctx == NULL) {
+        log_debug("pcre2_init_context returned nothing useful. Error: %s", pcre_err);
     }
 }
 

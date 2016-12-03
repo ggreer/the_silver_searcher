@@ -2,13 +2,14 @@
 #define UTIL_H
 
 #include <dirent.h>
-#include <pcre.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/time.h>
 
 #include "config.h"
+#include <pcre2.h>
+
 #include "log.h"
 #include "options.h"
 
@@ -76,7 +77,7 @@ strncmp_fp get_strstr(enum case_behavior opts);
 
 size_t invert_matches(const char *buf, const size_t buf_len, match_t matches[], size_t matches_len);
 void realloc_matches(match_t **matches, size_t *matches_size, size_t matches_len);
-void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opts, const int study_opts);
+void compile_study(pcre2_code **re, pcre2_compile_context **re_ctx, char *q, const uint32_t pcre_opts, const int study_opts);
 
 
 int is_binary(const void *buf, const size_t buf_len);

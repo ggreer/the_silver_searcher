@@ -1,11 +1,13 @@
 #ifndef SEARCH_H
 #define SEARCH_H
 
+#include "config.h"
+
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
-#include <pcre.h>
+#include <pcre2.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,8 +18,6 @@
 #endif
 #include <sys/stat.h>
 #include <unistd.h>
-
-#include "config.h"
 
 #ifdef HAVE_PTHREAD_H
 #include <pthread.h>

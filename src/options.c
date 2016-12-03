@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include <errno.h>
 #include <limits.h>
 #include <stdarg.h>
@@ -8,7 +10,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "config.h"
 #include "ignore.h"
 #include "lang.h"
 #include "log.h"
@@ -124,7 +125,7 @@ void print_version(void) {
     char lzma = '-';
     char zlib = '-';
 
-#ifdef USE_PCRE_JIT
+#ifdef USE_PCRE2_JIT
     jit = '+';
 #endif
 #ifdef HAVE_LZMA_H
@@ -169,24 +170,23 @@ void cleanup_options(void) {
         free(opts.query);
     }
 
-    pcre_free(opts.re);
-    if (opts.re_extra) {
-        /* Using pcre_free_study on pcre_extra* can segfault on some versions of PCRE */
-        pcre_free(opts.re_extra);
+    pcre2_code_free(opts.re);
+    if (opts.re_ctx) {
+        pcre2_compile_context_free(opts.re_ctx);
     }
 
     if (opts.ackmate_dir_filter) {
-        pcre_free(opts.ackmate_dir_filter);
+        pcre2_code_free(opts.ackmate_dir_filter);
     }
-    if (opts.ackmate_dir_filter_extra) {
-        pcre_free(opts.ackmate_dir_filter_extra);
+    if (opts.ackmate_dir_filter_ctx) {
+        pcre2_compile_context_free(opts.ackmate_dir_filter_ctx);
     }
 
     if (opts.file_search_regex) {
-        pcre_free(opts.file_search_regex);
+        pcre2_code_free(opts.file_search_regex);
     }
-    if (opts.file_search_regex_extra) {
-        pcre_free(opts.file_search_regex_extra);
+    if (opts.file_search_regex_ctx) {
+        pcre2_compile_context_free(opts.file_search_regex_ctx);
     }
 }
 
@@ -504,7 +504,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 0: /* Long option */
                 if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0) {
-                    compile_study(&opts.ackmate_dir_filter, &opts.ackmate_dir_filter_extra, optarg, 0, 0);
+                    compile_study(&opts.ackmate_dir_filter, &opts.ackmate_dir_filter_ctx, optarg, 0, 0);
                     break;
                 } else if (strcmp(longopts[opt_index].name, "depth") == 0) {
                     opts.max_search_depth = atoi(optarg);
@@ -587,21 +587,21 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     if (file_search_regex) {
         int pcre_opts = 0;
         if (opts.casing == CASE_INSENSITIVE || (opts.casing == CASE_SMART && is_lowercase(file_search_regex))) {
-            pcre_opts |= PCRE_CASELESS;
+            pcre_opts |= PCRE2_CASELESS;
         }
         if (opts.word_regexp) {
             char *old_file_search_regex = file_search_regex;
             ag_asprintf(&file_search_regex, "\\b%s\\b", file_search_regex);
             free(old_file_search_regex);
         }
-        compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, file_search_regex, pcre_opts, 0);
+        compile_study(&opts.file_search_regex, &opts.file_search_regex_ctx, file_search_regex, pcre_opts, 0);
         free(file_search_regex);
     }
 
     if (has_filetype) {
         num_exts = combine_file_extensions(ext_index, lang_num, &extensions);
         lang_regex = make_lang_regex(extensions, num_exts);
-        compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, lang_regex, 0, 0);
+        compile_study(&opts.file_search_regex, &opts.file_search_regex_ctx, lang_regex, 0, 0);
     }
 
     if (extensions) {
