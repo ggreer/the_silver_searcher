@@ -48,6 +48,7 @@ lang_spec_t langs[] = {
     { "less", { "less" } },
     { "liquid", { "liquid" } },
     { "lisp", { "lisp", "lsp" } },
+    { "log", { "log" } },
     { "lua", { "lua" } },
     { "m4", { "m4" } },
     { "make", { "Makefiles", "mk", "mak" } },
