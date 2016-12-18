@@ -331,22 +331,6 @@ void realloc_matches(match_t **matches, size_t *matches_size, size_t matches_len
     *matches = ag_realloc(*matches, *matches_size * sizeof(match_t));
 }
 
-void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opts, const int study_opts) {
-    const char *pcre_err = NULL;
-    int pcre_err_offset = 0;
-
-    *re = pcre_compile(q, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
-    if (*re == NULL) {
-        die("Bad regex! pcre_compile() failed at position %i: %s\nIf you meant to search for a literal string, run ag with -Q",
-            pcre_err_offset,
-            pcre_err);
-    }
-    *re_extra = pcre_study(*re, study_opts, &pcre_err);
-    if (*re_extra == NULL) {
-        log_debug("pcre_study returned nothing useful. Error: %s", pcre_err);
-    }
-}
-
 /* This function is very hot. It's called on every file. */
 int is_binary(const void *buf, const size_t buf_len) {
     size_t suspicious_bytes = 0;
