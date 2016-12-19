@@ -13,10 +13,17 @@ A genuine zero-length match should succeed:
   1:foo
 
 Empty files should be listed with --unrestricted --files-with-matches (-ul)
-  $ ag -lu --stats | sed '$d' # Remove the last line about timing which will differ
+The sed is used to remove the timing line from --stats which will vary
+Sort the files list since readdir() returns in an unknown order
+Note that output.txt is created by the shell before starting ag, so it is
+part of the expected output
+  $ ag -lu --stats | sed '$d' > output.txt
+  $ grep -v '^[0-9]' output.txt | sort
   empty.txt
   nonempty.txt
-  2 matches
-  2 files contained matches
-  2 files searched
+  output.txt
+  $ grep '^[0-9]' output.txt
+  3 matches
+  3 files contained matches
+  3 files searched
   4 bytes searched
