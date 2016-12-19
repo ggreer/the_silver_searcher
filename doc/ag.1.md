@@ -17,6 +17,10 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `--[no]affinity`:
     Set thread affinity (if platform supports it). Default is true.
 
+  * `--agrc=<path-to-agrc-file>`:
+    Use <path-to-agrc-file> instead of $AGRC or $HOME/.agrc for default options.
+    Specify `--no-agrc` to disable reading from an agrc file. See [AGRC][] for details.
+
   * `-a --all-types`:
     Search all files. This doesn't include hidden files, and doesn't respect any ignore files.
 
@@ -235,6 +239,20 @@ account, use `-U`.
 
 Use the `-t` option to search all text files; `-a` to search all files; and `-u`
 to search all, including hidden files.
+
+## AGRC
+
+To modify the "default" options, ag can read a list of command-line arguments
+from an "agrc" file. One "agrc" file will be selected as the first of 1) the
+`<path>` in `--agrc=<path>`, 2) the environment variable `AGRC`, or 3) the
+default `$HOME/.agrc`.
+
+If `--noagrc` is specified, an "agrc" file will not be used.
+
+The "agrc" file should contain a list of command-line arguments, one per line.
+You don't need to quote arguments as you would in a shell as the entire line
+will be considered a single argument. For long options which take a value, use
+the form `--option=value` rather than `--option value`.
 
 ## EXAMPLES
 
