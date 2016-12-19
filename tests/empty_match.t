@@ -13,10 +13,10 @@ A genuine zero-length match should succeed:
   1:foo
 
 Empty files should be listed with --unrestricted --files-with-matches (-ul)
-  $ ag -lu --stats | sed '$d' # Remove the last line about timing which will differ
-  empty.txt
-  nonempty.txt
-  2 matches
+  $ ag -lu --stats | sed '$d' | sort # Remove the last line about timing which will differ
   2 files contained matches
   2 files searched
+  2 matches
   4 bytes searched
+  empty.txt
+  nonempty.txt
