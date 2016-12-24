@@ -192,7 +192,9 @@ const char *boyer_moore_strnstr(const char *s, const char *find, const size_t s_
     return NULL;
 }
 
-const char *hash_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len, uint8_t *h_table, const int case_sensitive) {
+// Clang's -fsanitize=alignment (included in -fsanitize=undefined) will flag
+// the intentional unaligned access here, so suppress it for this function
+NO_SANITIZE_ALIGNMENT const char *hash_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len, uint8_t *h_table, const int case_sensitive) {
     if (s_len < f_len)
         return NULL;
 
