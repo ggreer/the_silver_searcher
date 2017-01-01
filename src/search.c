@@ -184,12 +184,10 @@ multiline_done:
         }
         pthread_mutex_lock(&print_mtx);
         if (opts.print_filename_only) {
-            if (!opts.invert_match) {
-                if (opts.print_count) {
-                    print_path_count(dir_full_path, opts.path_sep, (size_t)matches_len);
-                } else {
-                    print_path(dir_full_path, opts.path_sep);
-                }
+            if (opts.print_count) {
+                print_path_count(dir_full_path, opts.path_sep, (size_t)matches_len);
+            } else {
+                print_path(dir_full_path, opts.path_sep);
             }
         } else if (binary) {
             print_binary_file_matches(dir_full_path);
