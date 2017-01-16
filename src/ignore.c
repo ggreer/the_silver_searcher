@@ -117,10 +117,11 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
     char ***patterns_p;
     size_t *patterns_len;
     if (is_fnmatch(pattern)) {
-        if (pattern[0] == '*' && pattern[1] == '.' && !(is_fnmatch(pattern + 2))) {
+        if (pattern[0] == '*' && pattern[1] == '.' && strchr(pattern + 2, '.') && !is_fnmatch(pattern + 2)) {
             patterns_p = &(ig->extensions);
             patterns_len = &(ig->extensions_len);
             pattern += 2;
+            pattern_len -= 2;
         } else if (pattern[0] == '/') {
             patterns_p = &(ig->slash_regexes);
             patterns_len = &(ig->slash_regexes_len);
