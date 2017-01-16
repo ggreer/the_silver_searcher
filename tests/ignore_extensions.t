@@ -23,7 +23,7 @@ Ignore patterns with multiple extensions in root directory:
   $ ag "targetB"
   [1]
 
-Ignore files with multiple extensions in root directory:
+*.js ignores *.min.js in root directory:
 
   $ ag "targetG"
   [1]
@@ -43,7 +43,7 @@ Ignore patterns with multiple extensions in subdirectory:
   $ ag "targetE"
   [1]
 
-Ignore files with multiple extensions in subdirectory:
+*.js ignores *.min.js in subdirectory:
 
   $ ag "targetH"
   [1]
