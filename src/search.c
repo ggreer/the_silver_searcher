@@ -360,7 +360,9 @@ cleanup:
         UnmapViewOfFile(buf);
 #else
         if (opts.mmap) {
-            munmap(buf, f_len);
+            if (buf != MAP_FAILED) {
+                munmap(buf, f_len);
+            }
         } else {
             free(buf);
         }
