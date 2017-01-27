@@ -239,21 +239,14 @@ void search_stream(FILE *stream, const char *path) {
 }
 
 void search_file(const char *file_full_path) {
-    int fd;
+    int fd = -1;
     off_t f_len = 0;
     char *buf = NULL;
     struct stat statbuf;
     int rv = 0;
     FILE *fp = NULL;
 
-    fd = open(file_full_path, O_RDONLY);
-    if (fd < 0) {
-        /* XXXX: strerror is not thread-safe */
-        log_err("Skipping %s: Error opening file: %s", file_full_path, strerror(errno));
-        goto cleanup;
-    }
-
-    rv = fstat(fd, &statbuf);
+    rv = stat(file_full_path, &statbuf);
     if (rv != 0) {
         log_err("Skipping %s: Error fstat()ing file.", file_full_path);
         goto cleanup;
@@ -266,6 +259,13 @@ void search_file(const char *file_full_path) {
 
     if ((statbuf.st_mode & S_IFMT) == 0) {
         log_err("Skipping %s: Mode %u is not a file.", file_full_path, statbuf.st_mode);
+        goto cleanup;
+    }
+
+    fd = open(file_full_path, O_RDONLY);
+    if (fd < 0) {
+        /* XXXX: strerror is not thread-safe */
+        log_err("Skipping %s: Error opening file: %s", file_full_path, strerror(errno));
         goto cleanup;
     }
 
