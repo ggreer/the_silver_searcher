@@ -40,7 +40,7 @@ lang_spec_t langs[] = {
     { "ini", { "ini" } },
     { "jade", { "jade" } },
     { "java", { "java", "properties" } },
-    { "js", { "js", "jsx", "vue" } },
+    { "js", { "es6", "js", "jsx", "vue" } },
     { "json", { "json" } },
     { "jsp", { "jsp", "jspx", "jhtm", "jhtml" } },
     { "julia", { "jl" } },
