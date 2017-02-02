@@ -287,7 +287,7 @@ void search_file(const char *file_full_path) {
         log_err("Skipping %s: Mode %u is not a file.", file_full_path, statbuf.st_mode);
         goto cleanup;
     }
-  
+
     print_init_context();
 
     if (statbuf.st_mode & S_IFIFO) {
