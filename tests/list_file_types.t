@@ -88,7 +88,7 @@ Language types are output:
         .go
   
     --groovy
-        .groovy  .gtmpl  .gpp  .grunit
+        .groovy  .gtmpl  .gpp  .grunit  .gradle
   
     --haml
         .haml
