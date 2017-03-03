@@ -107,31 +107,53 @@ Run the relevant [`setup-*.exe`](https://cygwin.com/install.html), and select "t
         or
 
             port install automake pkgconfig pcre xz
+
     * Ubuntu/Debian:
 
-            apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev
+            apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev  
+
     * Fedora:
 
-            yum -y install pkgconfig automake gcc zlib-devel pcre-devel xz-devel
+            yum -y install pkgconfig automake gcc zlib-devel pcre-devel xz-devel  
+
     * CentOS:
 
             yum -y groupinstall "Development Tools"
-            yum -y install pcre-devel xz-devel
+            yum -y install pcre-devel xz-devel  
+
     * openSUSE:
 
-            zypper source-install --build-deps-only the_silver_searcher
+            zypper source-install --build-deps-only the_silver_searcher  
 
-    * Windows: It's complicated. See [this wiki page](https://github.com/ggreer/the_silver_searcher/wiki/Windows).
+    * Windows with Visual C++:
+
+            Nothing to do. All necessary libraries are provided in the [msc_libs](msc_libs/README.md) subdirectory.
+
+    * Windows with MinGW:  
+  
+            It's complicated. See [this wiki page](https://github.com/ggreer/the_silver_searcher/wiki/Windows).
+
 2. Run the build script (which just runs aclocal, automake, etc):
+    * In all Unix versions:
 
         ./build.sh
 
-  On Windows (inside an msys/MinGW shell):
+    * On Windows (inside a cmd shell with Microsoft Visual C++):
 
-        make -f Makefile.w32
+        msc_libs\make.bat
+
+    * On Windows (inside an msys/MinGW shell with gcc):
+
+        make -f Makefile.w32  
+
 3. Make install:
+    * In all Unix versions, and Windows with MinGW:
 
         sudo make install
+  
+    * On Windows (inside a cmd shell with Microsoft Visual C++):
+
+        The 32-bit and 64-bit version are in src\WIN32\ag.exe and src\WIN64\ag.exe respectively.
 
 
 ### Building a release tarball
