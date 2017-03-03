@@ -2,6 +2,25 @@
 #include "print.h"
 #include "scandir.h"
 
+/* Global search variables */
+size_t alpha_skip_lookup[256];
+size_t *find_skip_lookup;
+#ifdef _MSC_VER		/* MS Visual C++ */
+#define ALIGNAS(N) __declspec(align(N))
+#else			/* GNU C */
+#define ALIGNAS(N) __attribute__((aligned(N)))
+#endif
+uint8_t ALIGNAS(64) h_table[H_SIZE];
+
+work_queue_t *work_queue;
+work_queue_t *work_queue_tail;
+int done_adding_files;
+pthread_cond_t files_ready;
+pthread_mutex_t stats_mtx;
+pthread_mutex_t work_queue_mtx;
+
+symdir_t *symhash;
+
 void search_buf(const char *buf, const size_t buf_len,
                 const char *dir_full_path) {
     int binary = -1; /* 1 = yes, 0 = no, -1 = don't know */
@@ -388,7 +407,7 @@ void *search_file_worker(void *i) {
             }
             pthread_cond_wait(&files_ready, &work_queue_mtx);
         }
-        queue_item = work_queue;
+        queue_item = (work_queue_t *)work_queue;
         work_queue = work_queue->next;
         if (work_queue == NULL) {
             work_queue_tail = NULL;
@@ -402,7 +421,7 @@ void *search_file_worker(void *i) {
 }
 
 static int check_symloop_enter(const char *path, dirkey_t *outkey) {
-#ifdef _WIN32
+#if defined(_WIN32) // && !defined(HAS_MSVCLIBX)
     return SYMLOOP_OK;
 #else
     struct stat buf;
@@ -435,7 +454,7 @@ static int check_symloop_enter(const char *path, dirkey_t *outkey) {
 }
 
 static int check_symloop_leave(dirkey_t *dirkey) {
-#ifdef _WIN32
+#if defined(_WIN32) // && !defined(HAS_MSVCLIBX)
     return SYMLOOP_OK;
 #else
     symdir_t *item_found = NULL;
@@ -523,7 +542,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
         queue_item = NULL;
         dir = dir_list[i];
         ag_asprintf(&dir_full_path, "%s/%s", path, dir->d_name);
-#ifndef _WIN32
+#if !defined(_WIN32) || defined(MSVCLIBX)
         if (opts.one_dev) {
             struct stat s;
             if (lstat(dir_full_path, &s) != 0) {

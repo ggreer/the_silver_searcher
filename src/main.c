@@ -42,6 +42,10 @@ int main(int argc, char **argv) {
 #endif
 
     set_log_level(LOG_LEVEL_WARN);
+    /* The print mutex must be initialized before using any log_xxx functions */
+    if (pthread_mutex_init(&print_mtx, NULL)) {
+        die("pthread_mutex_init failed!");
+    }
 
     work_queue = NULL;
     work_queue_tail = NULL;
@@ -89,9 +93,6 @@ int main(int argc, char **argv) {
     workers = ag_calloc(workers_len, sizeof(worker_t));
     if (pthread_cond_init(&files_ready, NULL)) {
         die("pthread_cond_init failed!");
-    }
-    if (pthread_mutex_init(&print_mtx, NULL)) {
-        die("pthread_mutex_init failed!");
     }
     if (opts.stats && pthread_mutex_init(&stats_mtx, NULL)) {
         die("pthread_mutex_init failed!");
@@ -174,7 +175,7 @@ int main(int argc, char **argv) {
             symhash = NULL;
             ignores *ig = init_ignore(root_ignores, "", 0);
             struct stat s = {.st_dev = 0 };
-#ifndef _WIN32
+#if !defined(_WIN32) || defined(HAS_MSVCLIBX)
             /* The device is ignored if opts.one_dev is false, so it's fine
              * to leave it at the default 0
              */

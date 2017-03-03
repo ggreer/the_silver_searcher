@@ -6,6 +6,8 @@
 
 static enum log_level log_threshold = LOG_LEVEL_ERR;
 
+pthread_mutex_t print_mtx;
+
 void set_log_level(enum log_level threshold) {
     log_threshold = threshold;
 }

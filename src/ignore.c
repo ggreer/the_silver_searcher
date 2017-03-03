@@ -12,7 +12,7 @@
 #include "scandir.h"
 #include "util.h"
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(HAS_MSVCLIBX)
 #include <shlwapi.h>
 #define fnmatch(x, y, z) (!PathMatchSpec(y, x))
 #else

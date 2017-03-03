@@ -38,11 +38,28 @@ int ag_scandir(const char *dirname,
             }
         }
 
+
+#if defined HAS_MSVCLIBX
+        size_t s_len = (entry->d_name - (char*)entry) + strlen(entry->d_name) + 1;
+        d = (struct dirent *)malloc(s_len);
+        if (d == NULL) goto fail;
+        memcpy(d, entry, s_len);
+#elif defined _MSC_VER
+        size_t s_len = strlen(entry->d_name) + 1;
+        d = (struct dirent *)malloc(sizeof(struct dirent) + s_len);
+        char *s = (char*)d + sizeof(struct dirent);
+        d->d_name = s;
+#ifdef HAVE_DIRENT_DTYPE
+        d->d_type = entry->d_type;
+#endif /* HAVE_DIRENT_DTYPE */
+        memcpy(s, entry->d_name, s_len);
+#else
+
 #if defined(__MINGW32__) || defined(__CYGWIN__)
         d = malloc(sizeof(struct dirent));
 #else
         d = malloc(entry->d_reclen);
-#endif
+#endif /* defined(__MINGW32__) || defined(__CYGWIN__) */
 
         if (d == NULL) {
             goto fail;
@@ -51,7 +68,10 @@ int ag_scandir(const char *dirname,
         memcpy(d, entry, sizeof(struct dirent));
 #else
         memcpy(d, entry, entry->d_reclen);
-#endif
+#endif /* defined(__MINGW32__) || defined(__CYGWIN__) */
+
+
+#endif /* _MSC_VER */
 
         names[results_len] = d;
         results_len++;

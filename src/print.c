@@ -10,7 +10,7 @@
 #include "print.h"
 #include "search.h"
 #include "util.h"
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(HAS_MSVCLIBX)
 #define fprintf(...) fprintf_w32(__VA_ARGS__)
 #endif
 
@@ -19,6 +19,64 @@ int first_file_match = 1;
 const char *color_reset = "\033[0m\033[K";
 
 const char *truncate_marker = " [...]";
+
+/* Routines hiding the different ways to change output colors in Unix and Windows */
+void color_highlight_path(FILE *f);
+void color_highlight_match(FILE *f);
+void color_highlight_line_no(FILE *f);
+void color_normal(FILE *f);
+
+#ifdef _WIN32
+#include <windows.h>
+static HANDLE console_handle = NULL;
+static WORD default_attr = FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN;
+
+static int get_console_handle(void) {
+    CONSOLE_SCREEN_BUFFER_INFO buf;
+    BOOL ok;
+    if (console_handle != NULL)
+        return 1;
+    console_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (!console_handle)
+        return 0;
+    ok = GetConsoleScreenBufferInfo(console_handle, &buf);
+    if (ok) {
+        default_attr = buf.wAttributes;
+    }
+    return 1;
+}
+
+void set_output_color(WORD c) {
+    if (!get_console_handle())
+        return;
+    SetConsoleTextAttribute(console_handle, c);
+}
+
+#pragma warning(disable:4100) /* Avoid warnings "unreferenced formal parameter" */
+void color_highlight_path(FILE *f) { set_output_color(FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY); }
+void color_highlight_match(FILE *f) { set_output_color(FOREGROUND_BLUE |                  FOREGROUND_GREEN | FOREGROUND_INTENSITY ); }
+void color_highlight_line_no(FILE *f) { set_output_color(                  FOREGROUND_RED |                    FOREGROUND_INTENSITY ); }
+void color_normal(FILE *f) {
+    get_console_handle();
+    set_output_color(default_attr);
+}
+#pragma warning(default:4100) /* Restore warning "unreferenced formal parameter" */
+#else /* Write ANSI escape sequences for Unix */
+void color_highlight_path(FILE *f) { fprintf(f, "%s", opts.color_path); }
+void color_highlight_match(FILE *f) { fprintf(f, "%s", opts.color_match); }
+void color_highlight_line_no(FILE *f) { fprintf(f, "%s", opts.color_line_number); }
+void color_normal(FILE *f) { fprintf(f, "%s", color_reset); }
+#endif
+
+#ifdef _WIN32	/* For Windows, we must convert / to \ in the paths displayed */
+const char* normalize_slashes(const char* path);
+#else		/* For Unix, use the paths as they are */
+#define normalize_slashes(path) path
+#endif
+
+#ifdef _WIN32
+#define __thread __declspec( thread )
+#endif
 
 __thread struct print_context {
     size_t line;
@@ -103,18 +161,25 @@ void print_path(const char *path, const char sep) {
         return;
     }
     path = normalize_path(path);
+    const char *buf = normalize_slashes(path); /* NOOP for Unix; Change / to \ for Windows */
 
     if (opts.ackmate) {
-        fprintf(out_fd, ":%s%c", path, sep);
+        fprintf(out_fd, ":%s%c", buf, sep);
     } else if (opts.vimgrep) {
-        fprintf(out_fd, "%s%c", path, sep);
+        fprintf(out_fd, "%s%c", buf, sep);
     } else {
         if (opts.color) {
-            fprintf(out_fd, "%s%s%s%c", opts.color_path, path, color_reset, sep);
+            color_highlight_path(out_fd);
+            fprintf(out_fd, "%s", buf);
+            color_normal(out_fd);
+            fprintf(out_fd, "%c", sep);
         } else {
-            fprintf(out_fd, "%s%c", path, sep);
+            fprintf(out_fd, "%s%c", buf, sep);
         }
     }
+#ifdef _WIN32
+    free((void*)buf); /* Under Unix, buf is not a local buffer */
+#endif
 }
 
 void print_path_count(const char *path, const char sep, const size_t count) {
@@ -122,7 +187,10 @@ void print_path_count(const char *path, const char sep, const size_t count) {
         print_path(path, ':');
     }
     if (opts.color) {
-        fprintf(out_fd, "%s%lu%s%c", opts.color_line_number, (unsigned long)count, color_reset, sep);
+        color_highlight_line_no(out_fd);
+        fprintf(out_fd, "%lu", (unsigned long)count);
+        color_normal(out_fd);
+        fprintf(out_fd, "%c", sep);
     } else {
         fprintf(out_fd, "%lu%c", (unsigned long)count, sep);
     }
@@ -139,8 +207,12 @@ void print_line(const char *buf, size_t buf_pos, size_t prev_line_offset) {
 
 void print_binary_file_matches(const char *path) {
     path = normalize_path(path);
+    const char *buf = normalize_slashes(path); /* NOOP for Unix; Change / to \ for Windows */
     print_file_separator();
-    fprintf(out_fd, "Binary file %s matches.\n", path);
+    fprintf(out_fd, "Binary file %s matches.\n", buf);
+#ifdef _WIN32
+    free((void*)buf); /* Under Unix, buf is not a local buffer */
+#endif
 }
 
 void print_file_matches(const char *path, const char *buf, const size_t buf_len, const match_t matches[], const size_t matches_len) {
@@ -248,13 +320,13 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                     }
 
                     if (print_context.printing_a_match && opts.color) {
-                        fprintf(out_fd, "%s", opts.color_match);
+                        color_highlight_match(out_fd);
                     }
                     for (j = print_context.prev_line_offset; j <= i; j++) {
                         /* close highlight of match term */
                         if (print_context.last_printed_match < matches_len && j == matches[print_context.last_printed_match].end) {
                             if (opts.color) {
-                                fprintf(out_fd, "%s", color_reset);
+                                color_normal(out_fd);
                             }
                             print_context.printing_a_match = FALSE;
                             print_context.last_printed_match++;
@@ -287,7 +359,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                                 }
                             }
                             if (opts.color) {
-                                fprintf(out_fd, "%s", opts.color_match);
+                                color_highlight_match(out_fd);
                             }
                             print_context.printing_a_match = TRUE;
                         }
@@ -302,7 +374,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                         }
                     }
                     if (print_context.printing_a_match && opts.color) {
-                        fprintf(out_fd, "%s", color_reset);
+                        color_normal(out_fd);
                     }
                 }
             }
@@ -334,7 +406,10 @@ void print_line_number(size_t line, const char sep) {
         return;
     }
     if (opts.color) {
-        fprintf(out_fd, "%s%lu%s%c", opts.color_line_number, (unsigned long)line, color_reset, sep);
+        color_highlight_line_no(out_fd);
+        fprintf(out_fd, "%lu", (unsigned long)line);
+        color_normal(out_fd);
+        fprintf(out_fd, "%c", sep);
     } else {
         fprintf(out_fd, "%lu%c", (unsigned long)line, sep);
     }
@@ -368,3 +443,18 @@ const char *normalize_path(const char *path) {
     }
     return path;
 }
+
+#ifdef _WIN32
+/* Change / to \ for displaying standard Windows paths */
+const char* normalize_slashes(const char* path) {
+    char *i;
+    char* buf = strdup(path);
+#ifdef _WIN32
+    for(i = buf; *i; ++i)
+    {
+        if(*i == '/') *i = '\\';
+    }
+#endif
+    return buf;
+}
+#endif
