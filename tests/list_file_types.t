@@ -65,6 +65,9 @@ Language types are output:
   
     --elixir
         .ex  .eex  .exs
+
+    --elm
+        .elm
   
     --erlang
         .erl  .hrl
