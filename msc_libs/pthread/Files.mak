@@ -4,19 +4,24 @@
 #									      #
 #   Description	    Define files included in pthread.lib.		      #
 #									      #
-#   Notes	    Shared between the DOS/Windows and Unix make files.	      #
-#		    Do not use any OS-specific make syntax, such as           #
-#		    conditional directives.				      #
+#   Notes	    Intended to be shared between Windows and Unix make files.#
+#		    Not applicable to pthread's version which is Windows only.#
+#		    => We can use nmake.exe conditional directives.           #
 #		    							      #
 #   History								      #
 #    2017-02-14 JFL Created this file.                                        #
+#    2017-03-03 JFL Automatically detect and use the new common.mk if present.#
 #									      #
 ###############################################################################
 
-# List of source files to compile and include in the pthread library
+# SOURCES=List of source files to compile and include in the pthread library
+
+# Using this all-features-included file allows for a simple and quick compilation,
+# at the cost of wasted space.
 ONE_SOURCE =	\
     pthread.c
 
+# The list of files to include in the static library, for pthread version 2.09
 ALL_SOURCES_209 =	\
     private.c		\
     attr.c		\
@@ -42,6 +47,8 @@ ALL_SOURCES_209 =	\
     sync.c		\
     tsd.c		\
 
+# The list of sources in pthread version 2.10 RC
+# Made obsolete by the common.mk mechanism, see below. To be removed eventually.
 ALL_SOURCES_210 =	\
     cleanup.c				\
     create.c				\
@@ -189,7 +196,15 @@ ALL_SOURCES_210 =	\
     sem_wait.c				\
     w32_CancelableWait.c		\
 
+# Pthread 2.10 RC introduces a new common.mk file, similar in purpose to SysToolLib's File.mak.
+# Since the pthread-win32 library is by design for Windows only, we can bend the usual SysToolLib rules,
+# and use nmake-specific conditional directives to detect common.mk, and use it if present.
+!IF EXIST(common.mk)
+!INCLUDE common.mk
+SOURCES = $(PTHREAD_SRCS)
+!ELSE
 SOURCES = $(ALL_SOURCES_209)
+!ENDIF
 
 # List of all targets that must be built
 ALL=pthread.lib # debug\pthread.lib
