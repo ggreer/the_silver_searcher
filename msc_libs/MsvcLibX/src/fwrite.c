@@ -96,7 +96,7 @@ size_t fwriteM(const void *buf, size_t itemSize, size_t nItems, FILE *f, UINT cp
     pwBuf[nToWrite] = 0;
     iRet = fputws(pwBuf, f);
     free(pwBuf);
-    if (iRet < 0) return EOF;
+    if (iRet < 0) return 0;
     nWritten = nToWrite;
     iCharSize = 2;
   } else if (outputCodePage != cp) {
