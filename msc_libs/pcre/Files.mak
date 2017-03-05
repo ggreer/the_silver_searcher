@@ -69,11 +69,13 @@ pcre_chartables.c:: pcre_chartables.c.utf8
 # Recreate the character tables for UTF-8
 # The process seems to work, but given the limitations listed here ...
 # https://msdn.microsoft.com/en-us/library/x99tb11d.aspx
+# https://msdn.microsoft.com/en-us/library/hzz3tw78.aspx
 # ... I'm afraid it does not yield the expected results.
+# (I tried with both en_US.UTF-8 and en_US.65001 with the same result.)
 # (MS C libs support LC_ALL=en_US.<code page number>, but not code page 65001 for UTF-8!)
 pcre_chartables.c.windows: dftables.c
     $(SUBMAKE) "OS=WIN32" "DEBUG=0" dftables.exe
-    set LC_ALL=en_US.UTF-8
+    set LC_ALL=en_US.65001
     $(MSG) Generating $@
     $(OUTDIR)\WIN32\dftables.exe -L $@
 
