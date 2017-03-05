@@ -8,6 +8,7 @@
 *		    							      *
 *   History:								      *
 *    2017-03-03 JFL Created this module.				      *
+*    2017-03-05 JFL Rewrote fwriteU() to write UTF16 to the console.	      *
 *                                                                             *
 *         © Copyright 2017 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -37,7 +38,7 @@
 |   Parameters      const void *buf	Input buffer address		      |
 |                   size_t itemSize	Size in bytes of each item to write   |
 |                   size_t nItems	Number if items to write	      |
-|                   FILE *stream	Output file handle		      |
+|                   FILE *f		Output file handle		      |
 |                   UINT cp		Input buffer encoding (Code page)     |
 |                   							      |
 |   Returns         File handle						      |
@@ -65,60 +66,73 @@
 *                                                                             *
 \*---------------------------------------------------------------------------*/
 
+/* Make sure we're calling Microsoft routines, not our aliases */
+#undef printf
+#undef fprintf
+#undef vfprintf
+#undef fputs
+#undef fputc
+#undef fwrite
+
 /* Write MBCS characters, converted to the console code page */
-size_t fwriteM(const void *buf, size_t itemSize, size_t nItems, FILE *stream, UINT cp) {
+size_t fwriteM(const void *buf, size_t itemSize, size_t nItems, FILE *f, UINT cp) {
   size_t nToWrite = itemSize * nItems;
-  char *pBuf;
+  int iCharSize = 1;
   size_t nWritten;
+  UINT outputCodePage = consoleCodePage;
 
-  if (!codePage) codePage = GetConsoleOutputCP();
+  if (codePage) { /* The user is always right */
+    outputCodePage = codePage;
+  }
 
-  if (codePage != cp) {
+  if (isWideConsole(fileno(f))) {
+    /* Output a wide string to guaranty every Unicode character is displayed correctly */
+    wchar_t *pwBuf = (wchar_t *)malloc(nToWrite * 4);
+    int iRet;
+    if (!pwBuf) return 0;
+    nToWrite = MultiByteToWideChar(cp, 0, buf, (int)nToWrite, pwBuf, (int)(nToWrite*2));
+    /* nWritten = fwrite(pwBuf, 2, nToWrite, f); // Crashes! */
+    /* Workaround: Make is a string, and use putws() */
+    pwBuf[nToWrite] = 0;
+    iRet = fputws(pwBuf, f);
+    free(pwBuf);
+    if (iRet < 0) return EOF;
+    nWritten = nToWrite;
+    iCharSize = 2;
+  } else if (outputCodePage != cp) {
     size_t nBufSize = 4 * nToWrite; /* Worst case for the size needed */
+    char *pBuf;
     int n;
     pBuf = (char *)malloc(nBufSize);
-    if (!pBuf) {
-      return 0; /* malloc sets errno = ENOMEM */
-    }
-    n = ConvertBuf(buf, nToWrite, cp, pBuf, nBufSize, codePage, NULL);
+    if (!pBuf) return 0; /* malloc sets errno = ENOMEM */
+    n = ConvertBuf(buf, nToWrite, cp, pBuf, nBufSize, outputCodePage, NULL);
     if (n < 0) {
       free(pBuf);
       return 0;
     }
     nToWrite = n;
+    nWritten = fwrite(pBuf, 1, nToWrite, f);
+    free(pBuf);
   } else {
-    pBuf = (char *)buf;
+    nWritten = fwrite(buf, 1, nToWrite, f);
   }
-
-  nWritten = fwrite(pBuf, 1, nToWrite, stream);
-
-  if (pBuf != buf) free(pBuf);
 
   /* Now the problem is that the size written may not be what the user expected, due to the encoding conversion */
   if (nWritten == nToWrite) return nItems; /* Everything was written successfully */
   /* Not everything could be written. Find a reasonable equivalent. */
-  nWritten /= itemSize;
+  nWritten = (nWritten * iCharSize) / itemSize;
   if (nWritten >= nItems) nWritten = nItems - 1;
   return nWritten;
 }
 
 /* Write ANSI characters, converted to the console code page */
-size_t fwriteA(const void *buf, size_t itemSize, size_t nItems, FILE *stream) {
-  return fwriteM(buf, itemSize, nItems, stream, CP_ACP);
+size_t fwriteA(const void *buf, size_t itemSize, size_t nItems, FILE *f) {
+  return fwriteM(buf, itemSize, nItems, f, CP_ACP);
 }
 
 /* Write UTF-8 characters, converted to the console code page */
-size_t fwriteU(const void *buf, size_t itemSize, size_t nItems, FILE *stream) {
-  return fwriteM(buf, itemSize, nItems, stream, CP_UTF8);
-}
-
-/* Write UTF-8 characters, with a Heuristic to choose if the data is converted or not */
-size_t fwriteUH(const void *buf, size_t itemSize, size_t nItems, FILE *stream) {
-  if (isatty(fileno(stream))) { /* Writing to the console */
-    return fwriteM(buf, itemSize, nItems, stream, CP_UTF8);
-  } else { /* Assume this is a data file that should not be translated */
-    return fwrite(buf, itemSize, nItems, stream);
-  }
+size_t fwriteU(const void *buf, size_t itemSize, size_t nItems, FILE *f) {
+  return fwriteM(buf, itemSize, nItems, f, CP_UTF8);
 }
 
 #endif /* defined(_WIN32) */
