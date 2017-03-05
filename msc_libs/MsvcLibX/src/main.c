@@ -180,6 +180,7 @@ int _setargv(void) {
 |		    							      |
 |   History								      |
 |    2017-02-05 JFL Adapted from the abandonned _mainU0 routine.	      |
+|    2017-03-03 JFL Record both the console and system code pages.	      |
 *									      *
 \*---------------------------------------------------------------------------*/
 
@@ -215,8 +216,9 @@ int _initU(void) {
   realloc(_acmdln, n+1); /* Resize the memory block to fit the UTF-8 line */
   /* Should not fail since we make it smaller */
 
-  /* Record the console code page, to allow converting the output accordingly */
-  codePage = GetConsoleOutputCP();
+  /* Record the console and system code pages, to allow converting the output accordingly */
+  consoleCodePage = GetConsoleOutputCP();
+  systemCodePage = GetACP();
 
   return 0;
 }
