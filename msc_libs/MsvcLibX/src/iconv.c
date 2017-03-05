@@ -12,6 +12,7 @@
 *    2015-12-09 JFL Added routines fputsU and vfprintfU.		      *
 *    2016-09-13 JFL Fixed warnings in fputsU. Do not change the input buffer. *
 *    2017-03-03 JFL Added routine ConvertBuf(), and the fputc() series.	      *
+*    2017-03-05 JFL Rewrote fputcU() & fputsU() to write UTF16 to the console.*
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -23,6 +24,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdio.h>
 /* MsvcLibX library extensions */
 #include "iconv.h"
 #include "debugm.h"
@@ -37,6 +39,9 @@
 #ifdef _WIN32
 
 #include <windows.h>
+#include <io.h>         /* For _setmode() */
+#include <fcntl.h>      /* For _setmode() */
+#include "unistd.h"	/* For isatty() */
 
 /*---------------------------------------------------------------------------*\
 *                                                                             *
@@ -170,8 +175,15 @@ int CountCharacters(const char *string, UINT cp) {
 *									      *
 \*---------------------------------------------------------------------------*/
 
-/* The codePage global variable is initialized in the main.c _initU() routine */
-UINT codePage = 0;
+/* The codePage global variables are initialized in the main.c _initU() routine */
+UINT consoleCodePage = 0;	/* The current console code page (may change) */
+UINT systemCodePage = 0;	/* The system code page (unchangeable) */
+UINT codePage = 0;		/* The user-specified code page */
+/* Heuristic:
+   - If codePage is set, use it for encoding all writes.
+   - If writing to the console, write in 16-bits mode to make all all Unicode characters get displayed correctly.
+   - Else convert the output to the system code page.
+*/
 
 /* Make sure we're calling Microsoft routines, not our aliases */
 #undef printf
@@ -184,41 +196,73 @@ UINT codePage = 0;
 #define IS_ASCII(c) ((c&0x80) == 0)
 #define IS_LEAD_BYTE(c) ((c&0xC0) == 0xC0)
 
+/* Test if the output goes to the console, and if it's eligible to Unicode output, initialize it */
+static char iWideConsoleInitialized[20] = {0};
+int isWideConsole(int iFile) {
+  if (codePage) return 0; /* The user wants otherwise, and he's always right */
+  if (!isConsole(iFile)) return 0; /* It's not the console anyway */
+  if ((iFile < sizeof(iWideConsoleInitialized)) && !iWideConsoleInitialized[iFile]) {
+    _setmode(iFile, _O_U16TEXT);
+    iWideConsoleInitialized[iFile]++;
+  }
+  return 1;
+}
+
 /* Write a UTF-8 byte, converting full UTF-8 characters to the console code page */
 int fputcM(int c, FILE *f, UINT cp) {
-  static char inBuf[4];
+  static char buf[5];
   static int nInBuf = 0;
   static int nExpected = 0;
-  char outBuf[4];
+  UINT outputCodePage = consoleCodePage;
+  wchar_t wBuf[3];
+  int n;
+  int iRet;
 
-  /* printf(" fputc('\\x%02.2X') ", c & 0xFF); */
+  if (codePage) { /* The user is always right */
+    outputCodePage = codePage;
+  }
 
-  if (!codePage) codePage = GetConsoleOutputCP();
-  if (   (codePage == cp)			/* Fast path if no conversion needed */
-      || (IS_ASCII(c))) return fputc(c, f);	/* Fast path for ASCII characters */
-  if (IS_LEAD_BYTE(c)) {
-    inBuf[0] = (char)c;
-    nInBuf = 1;
-    if ((c&0x20) == 0) {
-      nExpected = 2;
-    } else if ((c&0x10) == 0) {
-      nExpected = 3;
-    } else if ((c&0x08) == 0) {
-      nExpected = 4;
-    } else {
-      return EOF;	/* Invalid UTF-8 byte */
+  if ((cp == CP_UTF8) && (!IS_ASCII(c))) { /* Make sure we got a complete character */
+    if (IS_LEAD_BYTE(c)) {
+      buf[0] = (char)c;
+      nInBuf = 1;
+      if ((c&0x20) == 0) {
+	nExpected = 2;
+      } else if ((c&0x10) == 0) {
+	nExpected = 3;
+      } else if ((c&0x08) == 0) {
+	nExpected = 4;
+      } else {
+	return EOF;	/* Invalid UTF-8 byte */
+      }
+      return c;
     }
-    return c;
+    /* Else this is a trail byte */
+    buf[nInBuf++] = (char)c;
+    if (nInBuf < nExpected) return c; /* The UTF-8 character is incomplete */
+    /* The UTF-8 character is complete */
+    buf[nInBuf++] = '\0';
+  } else { /* ANSI or ASCII */
+    buf[0] = (char)c;
+    buf[1] = '\0';
+    nInBuf = 2;
   }
-  /* Else this is a trail byte */
-  inBuf[nInBuf++] = (char)c;
-  if (nInBuf == nExpected) { /* The UTF-8 character is complete */
-    int n = ConvertBuf(inBuf, nInBuf, CP_UTF8, outBuf, sizeof(outBuf), codePage, NULL);
-    nInBuf = nExpected = 0;
-    if (n < 0) return EOF;
-    n = (int)fwrite(outBuf, n, 1, f);
-    if (!n) return EOF;
+
+  if (isWideConsole(fileno(f))) {
+    /* Output a wide character to guaranty every Unicode character is displayed */
+    n = MultiByteToWideChar(cp, 0, buf, (int)nInBuf, wBuf, sizeof(wBuf)/sizeof(wchar_t));
+    iRet = fputws(wBuf, f);
+  } else {
+    if (outputCodePage != cp) { /* Convert the string encoding */
+      /* Do not call DupAndConvert(), to avoid the overhead of buffer allocations, etc */
+      n = MultiByteToWideChar(cp, 0, buf, (int)nInBuf, wBuf, sizeof(wBuf)/sizeof(wchar_t));
+      n = WideCharToMultiByte(outputCodePage, 0, wBuf, n, buf, sizeof(buf), NULL, NULL);
+    }
+    iRet = fputs(buf, f);
   }
+  if ((iRet >= 0) && DEBUG_IS_ON()) fflush(f); /* Slower, but ensures we get everything before crashes! */
+  /* printf(" fputc('\\x%02.2X') ", c & 0xFF); */
+  if (iRet < 0) return EOF;
   return c;
 }
 
@@ -230,24 +274,43 @@ int fputcU(int c, FILE *f) {
   return fputcM(c, f, CP_UTF8);
 }
 
-int fputsU(const char *buf, FILE *f) { /* fputs a UTF-8 string, converted to the console code page */
+/* fputs an MBCS string, converted to the output code page */
+int fputsM(const char *buf, FILE *f, UINT cp) {
   int iRet;
   char *pBuf = NULL;
+  UINT outputCodePage = consoleCodePage;
 
-  if (!codePage) codePage = GetConsoleOutputCP();
-  if (codePage != CP_UTF8) {
-    pBuf = DupAndConvert(buf, CP_UTF8, codePage, NULL);
-  } else {
-    pBuf = (char *)buf;
+  if (codePage) { /* The user is always right */
+    outputCodePage = codePage;
   }
-  if (pBuf) { /* If no error, and something to output */
+
+  if (isWideConsole(fileno(f))) {
+    /* Output a wide string to guaranty every Unicode character is displayed */
+    size_t l = strlen(buf);
+    int n;
+    wchar_t *pwBuf = (wchar_t *)malloc(l * 4);
+    if (!pwBuf) return -1;
+    n = MultiByteToWideChar(cp, 0, buf, (int)(l+1), pwBuf, (int)(l*2));
+    iRet = fputws(pwBuf, f);
+    free(pwBuf);
+  } else if (outputCodePage != cp) { /* Convert the string encoding and output it */
+    pBuf = DupAndConvert(buf, cp, outputCodePage, NULL);
+    if (!pBuf) return -1;
     iRet = fputs(pBuf, f);
-    if ((iRet >= 0) && DEBUG_IS_ON()) fflush(f); /* Slower, but ensures we get everything before crashes! */
-    if (pBuf != buf) free(pBuf);
-  } else {
-    iRet = -1; /* Could not convert the string to output */
+    free(pBuf);
+  } else { /* Output the string as it is */
+    iRet = fputs(buf, f);
   }
+  if ((iRet >= 0) && DEBUG_IS_ON()) fflush(f); /* Slower, but ensures we get everything before crashes! */
   return iRet; /* Return the error (n<0) or success (n>=0) */
+}
+
+int fputsA(const char *buf, FILE *f) {
+  return fputsM(buf, f, CP_ACP);
+}
+
+int fputsU(const char *buf, FILE *f) {
+  return fputsM(buf, f, CP_UTF8);
 }
 
 int vfprintfU(FILE *f, const char *pszFormat, va_list vl) { /* vfprintf UTF-8 strings */
