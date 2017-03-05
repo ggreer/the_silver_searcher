@@ -266,7 +266,7 @@ size_t invert_matches(const char *buf, const size_t buf_len, match_t matches[], 
     size_t inverted_match_start = 0;
     size_t last_line_end = 0;
     int in_inverted_match = TRUE;
-    match_t next_match = {0};
+    match_t next_match;
 
     log_debug("Inverting %u matches.", matches_len);
 
