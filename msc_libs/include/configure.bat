@@ -166,14 +166,16 @@
 :#   2017-02-24 JFL Added option -E to delete environment variable STINCLUDE. *
 :#                  Add %SPATH% to the STINCLUDE search paths.                *
 :#   2017-02-28 JFL Bug fix: Recursion did not work if the path had spaces.   *
-:#   2017-03-01 JFL Added variable IGNORE_NMAKEFILE.                          *
+:#   2017-03-01 JFL Added variable IGNORE_NMAKEFILE for dealing with unwanted *
+:#                  NMakefile homonyms.                                       *
+:#   2017-03-05 JFL Added variable LOGDIR to control where to store the log.  *
 :#                                                                            *
-:#        © Copyright 2016 Hewlett Packard Enterprise Development LP          *
+:#      © Copyright 2016-2017 Hewlett Packard Enterprise Development LP       *
 :# Licensed under the Apache 2.0 license  www.apache.org/licenses/LICENSE-2.0 *
 :#*****************************************************************************
 
 setlocal EnableExtensions EnableDelayedExpansion
-set "VERSION=2017-03-01"
+set "VERSION=2017-03-05"
 set "SCRIPT=%~nx0"				&:# Script name
 set "SPATH=%~dp0" & set "SPATH=!SPATH:~0,-1!"	&:# Script path, without the trailing \
 set  "ARG0=%~f0"				&:# Script full pathname
@@ -2334,11 +2336,14 @@ for %%s in (
   %CONFIG% SET "%%k_WINSDKINC=!%%l.WINSDKINC!" ^&:# Microsoft Windows %%m SDK Include directory
 )
 
-:# A few special variables
-for %%v in (OUTDIR IGNORE_NMAKEFILE) do (
+:# A few global configuration variables
+set "COMMENT[OUTDIR]=Output base directory"
+set "COMMENT[LOGDIR]=Log file directory"
+set "COMMENT[IGNORE_NMAKEFILE]=Do not use the NMakefile here"
+for %%v in (OUTDIR LOGDIR IGNORE_NMAKEFILE) do (
   if defined %%v (
     %CONFIG%.
-    %CONFIG% SET "%%v=!%%v!" ^&:# Output base directory
+    %CONFIG% SET "%%v=!%%v!" ^&:# !COMMENT[%%v]!
   )
 )
 

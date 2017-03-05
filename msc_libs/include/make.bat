@@ -101,14 +101,16 @@
 :#   2017-02-24 JFL Renamed the special "goal_name" as "module_name".         *
 :#                  Use this module_name earlier when making the log file name.
 :#                  Default to the current directory name as the last resort. *
-:#   2017-03-01 JFL Added variable IGNORE_NMAKEFILE.                          *
+:#   2017-03-01 JFL Added variable IGNORE_NMAKEFILE for dealing with unwanted *
+:#                  NMakefile homonyms.                                       *
+:#   2017-03-05 JFL Added variable LOGDIR to control where to store the log.  *
 :#                                                                            *
-:#         © Copyright 2016 Hewlett Packard Enterprise Development LP         *
+:#      © Copyright 2016-2017 Hewlett Packard Enterprise Development LP       *
 :# Licensed under the Apache 2.0 license  www.apache.org/licenses/LICENSE-2.0 *
 :#*****************************************************************************
 
 setlocal EnableExtensions EnableDelayedExpansion
-set "VERSION=2017-03-01"
+set "VERSION=2017-03-05"
 set "SCRIPT=%~nx0"				&:# Script name
 set "SPATH=%~dp0" & set "SPATH=!SPATH:~0,-1!"	&:# Script path, without the trailing \
 set  "ARG0=%~f0"				&:# Script full pathname
@@ -1685,7 +1687,8 @@ if %MAKEDEPTH%==0 if defined LOGFILE ( :# If this is the top-level instance of m
   %ECHOVARS.D% GOAL
   :# Rename %LOGFILE% after the %GOAL%, and display the build log.
   set LOGFILE2=!GOAL!.log
-  if defined OUTDIR set "LOGFILE2=%OUTDIR%\!LOGFILE2!"
+  if not defined LOGDIR if defined OUTDIR set "LOGDIR=%OUTDIR%"
+  if defined LOGDIR set "LOGFILE2=%LOGDIR%\!LOGFILE2!"
   if not "!LOGFILE2!"=="!LOGFILE!" (
     if exist "!LOGFILE2!" del "!LOGFILE2!"
     move "!LOGFILE!" "!LOGFILE2!" >nul
