@@ -54,10 +54,26 @@ CLEAN_FILES = \
 config.h: config.h.MsvcLibX
     copy /y config.h.MsvcLibX config.h
 
-# Rules for recreating missing source files from generic versions 
+# Use the generic version of pcre.h
 pcre.h: pcre.h.generic
     copy /y pcre.h.generic pcre.h
 
-pcre_chartables.c:: pcre_chartables.c.dist
-    copy /y pcre_chartables.c.dist pcre_chartables.c
+# Use the default character tables for ASCII
+# pcre_chartables.c:: pcre_chartables.c.dist
+#     copy /y pcre_chartables.c.dist pcre_chartables.c
+
+# Use the character tables built in Linux for LC_ALL=en_US.UTF-8
+pcre_chartables.c:: pcre_chartables.c.utf8
+    copy /y pcre_chartables.c.utf8 pcre_chartables.c
+
+# Recreate the character tables for UTF-8
+# The process seems to work, but given the limitations listed here ...
+# https://msdn.microsoft.com/en-us/library/x99tb11d.aspx
+# ... I'm afraid it does not yield the expected results.
+# (MS C libs support LC_ALL=en_US.<code page number>, but not code page 65001 for UTF-8!)
+pcre_chartables.c.windows: dftables.c
+    $(SUBMAKE) "OS=WIN32" "DEBUG=0" dftables.exe
+    set LC_ALL=en_US.UTF-8
+    $(MSG) Generating $@
+    $(OUTDIR)\WIN32\dftables.exe -L $@
 

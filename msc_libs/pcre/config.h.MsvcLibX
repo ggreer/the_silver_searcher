@@ -157,7 +157,9 @@ sure both macros are undefined; an emulation function will then be used. */
 
 /* Define to 1 if the system has the type `unsigned long long'. */
 /* #undef HAVE_UNSIGNED_LONG_LONG */
+#if _MSC_VER > 1200
 #define   HAVE_UNSIGNED_LONG_LONG 1
+#endif
 
 /* Define to 1 if the compiler supports simple visibility declarations. */
 /* #undef HAVE_VISIBILITY */
@@ -295,7 +297,7 @@ sure both macros are undefined; an emulation function will then be used. */
 /* #undef PCRE_EXP_DEFN */
 
 /* Define to any value if linking statically (TODO: make nice with Libtool) */
-/* #undef PCRE_STATIC */
+#define PCRE_STATIC 1
 
 /* When calling PCRE via the POSIX interface, additional working storage is
    required for holding the pointers to capturing substrings because PCRE
@@ -313,7 +315,7 @@ sure both macros are undefined; an emulation function will then be used. */
 /* #undef PTHREAD_CREATE_JOINABLE */
 
 /* Define to 1 if you have the ANSI C header files. */
-/* #undef STDC_HEADERS */
+#define STDC_HEADERS 1
 
 /* Define to any value to enable support for Just-In-Time compiling. */
 /* #undef SUPPORT_JIT */
@@ -345,13 +347,13 @@ sure both macros are undefined; an emulation function will then be used. */
 /* #undef SUPPORT_PCREGREP_JIT */
 
 /* Define to any value to enable support for Unicode properties. */
-/* #undef SUPPORT_UCP */
+#define SUPPORT_UCP 1
 
 /* Define to any value to enable support for the UTF-8/16/32 Unicode encoding.
    This will work even in an EBCDIC environment, but it is incompatible with
    the EBCDIC macro. That is, PCRE can support *either* EBCDIC code *or*
    ASCII/UTF-8/16/32, but not both at once. */
-/* #undef SUPPORT_UTF */
+#define SUPPORT_UTF 1
 
 /* Define to any value for valgrind support to find invalid memory reads. */
 /* #undef SUPPORT_VALGRIND */

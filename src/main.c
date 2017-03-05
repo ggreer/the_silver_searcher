@@ -59,6 +59,10 @@ int main(int argc, char **argv) {
         gettimeofday(&(stats.time_start), NULL);
     }
 
+#ifdef USE_PCRE_UTF8
+    pcre_opts |= PCRE_UTF8;
+#endif
+
 #ifdef USE_PCRE_JIT
     int has_jit = 0;
     pcre_config(PCRE_CONFIG_JIT, &has_jit);
