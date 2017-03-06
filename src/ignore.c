@@ -28,13 +28,14 @@ const char *evil_hardcoded_ignore_files[] = {
     NULL
 };
 
-/* Warning: changing the first string will break skip_vcs_ignores. */
+/* Warning: changing the first two strings will break skip_vcs_ignores. */
 const char *ignore_pattern_files[] = {
+    /* Warning: .agignore will one day be removed in favor of .ignore */
     ".agignore",
+    ".ignore",
     ".gitignore",
     ".git/info/exclude",
     ".hgignore",
-    ".svn",
     NULL
 };
 
@@ -116,10 +117,11 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
     char ***patterns_p;
     size_t *patterns_len;
     if (is_fnmatch(pattern)) {
-        if (pattern[0] == '*' && pattern[1] == '.' && !(is_fnmatch(pattern + 2))) {
+        if (pattern[0] == '*' && pattern[1] == '.' && strchr(pattern + 2, '.') && !is_fnmatch(pattern + 2)) {
             patterns_p = &(ig->extensions);
             patterns_len = &(ig->extensions_len);
             pattern += 2;
+            pattern_len -= 2;
         } else if (pattern[0] == '/') {
             patterns_p = &(ig->slash_regexes);
             patterns_len = &(ig->slash_regexes_len);
@@ -184,84 +186,6 @@ void load_ignore_patterns(ignores *ig, const char *path) {
     }
 
     free(line);
-    fclose(fp);
-}
-
-void load_svn_ignore_patterns(ignores *ig, const char *path) {
-    FILE *fp = NULL;
-    char *dir_prop_base;
-    ag_asprintf(&dir_prop_base, "%s/%s", path, SVN_DIR_PROP_BASE);
-
-    fp = fopen(dir_prop_base, "r");
-    if (fp == NULL) {
-        log_debug("Skipping svn ignore file %s", dir_prop_base);
-        free(dir_prop_base);
-        return;
-    }
-
-    char *entry = NULL;
-    size_t entry_len = 0;
-    char *key = ag_malloc(32); /* Sane start for max key length. */
-    size_t key_len = 0;
-    size_t bytes_read = 0;
-    char *entry_line;
-    size_t line_len;
-    int matches;
-
-    while (fscanf(fp, "K %zu\n", &key_len) == 1) {
-        if (key_len >= INT_MAX) {
-            log_debug("Unable to parse svnignore file %s: key is absurdly long.", dir_prop_base);
-            goto cleanup;
-        }
-        key = ag_realloc(key, key_len + 1);
-        bytes_read = fread(key, 1, key_len, fp);
-        key[key_len] = '\0';
-        matches = fscanf(fp, "\nV %zu\n", &entry_len);
-        if (matches != 1) {
-            log_debug("Unable to parse svnignore file %s: fscanf() got %i matches, expected 1.", dir_prop_base, matches);
-            goto cleanup;
-        }
-
-        if (strncmp(SVN_PROP_IGNORE, key, bytes_read) != 0) {
-            log_debug("key is %s, not %s. skipping %u bytes", key, SVN_PROP_IGNORE, entry_len);
-            /* Not the key we care about. fseek and repeat */
-            int rv = fseek(fp, entry_len + 1, SEEK_CUR); /* +1 to account for newline. yes I know this is hacky */
-            if (rv == -1) {
-                log_debug("Skipping svnignore file %s: fseek() error.", dir_prop_base);
-                goto cleanup;
-            }
-            continue;
-        }
-        /* Aww yeah. Time to ignore stuff */
-        entry = ag_malloc(entry_len + 1);
-        bytes_read = fread(entry, 1, entry_len, fp);
-        entry[bytes_read] = '\0';
-        log_debug("entry: %s", entry);
-        break;
-    }
-    if (entry == NULL) {
-        goto cleanup;
-    }
-    char *patterns = entry;
-    size_t patterns_len = strlen(patterns);
-    while (*patterns != '\0' && patterns < (entry + bytes_read)) {
-        for (line_len = 0; line_len < patterns_len; line_len++) {
-            if (patterns[line_len] == '\n') {
-                break;
-            }
-        }
-        if (line_len > 0) {
-            entry_line = ag_strndup(patterns, line_len);
-            add_ignore_pattern(ig, entry_line);
-            free(entry_line);
-        }
-        patterns += line_len + 1;
-        patterns_len -= line_len + 1;
-    }
-    free(entry);
-cleanup:
-    free(dir_prop_base);
-    free(key);
     fclose(fp);
 }
 
@@ -363,11 +287,11 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     }
 
     if (is_named_pipe(path, dir)) {
-        log_debug("%s ignored because it's a named pipe", path);
+        log_debug("%s ignored because it's a named pipe or socket", path);
         return 0;
     }
 
-    if (opts.search_all_files && !opts.path_to_agignore) {
+    if (opts.search_all_files && !opts.path_to_ignore) {
         return 1;
     }
 
@@ -393,20 +317,23 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
         }
     }
 
-/* TODO: don't call strlen on filename every time we call filename_filter() */
 #ifdef HAVE_DIRENT_DNAMLEN
     size_t filename_len = dir->d_namlen;
 #else
-    size_t filename_len = strlen(filename);
+    size_t filename_len = 0;
 #endif
+
+    if (strncmp(filename, "./", 2) == 0) {
+#ifndef HAVE_DIRENT_DNAMLEN
+        filename_len = strlen(filename);
+#endif
+        filename++;
+        filename_len--;
+    }
+
     const ignores *ig = scandir_baton->ig;
 
     while (ig != NULL) {
-        if (strncmp(filename, "./", 2) == 0) {
-            filename++;
-            filename_len--;
-        }
-
         if (extension) {
             int match_pos = binary_search(extension, ig->extensions, 0, ig->extensions_len);
             if (match_pos >= 0) {
@@ -419,13 +346,20 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
             return 0;
         }
 
-        if (is_directory(path, dir) && filename[filename_len - 1] != '/') {
-            char *temp;
-            ag_asprintf(&temp, "%s/", filename);
-            int rv = path_ignore_search(ig, path_start, temp);
-            free(temp);
-            if (rv) {
-                return 0;
+        if (is_directory(path, dir)) {
+#ifndef HAVE_DIRENT_DNAMLEN
+            if (!filename_len) {
+                filename_len = strlen(filename);
+            }
+#endif
+            if (filename[filename_len - 1] != '/') {
+                char *temp;
+                ag_asprintf(&temp, "%s/", filename);
+                int rv = path_ignore_search(ig, path_start, temp);
+                free(temp);
+                if (rv) {
+                    return 0;
+                }
             }
         }
         ig = ig->parent;

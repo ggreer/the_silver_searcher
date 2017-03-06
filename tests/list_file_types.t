@@ -40,7 +40,7 @@ Language types are output:
         .coffee  .cjsx
   
     --cpp
-        .cpp  .cc  .C  .cxx  .m  .hpp  .hh  .h  .H  .hxx
+        .cpp  .cc  .C  .cxx  .m  .hpp  .hh  .h  .H  .hxx  .tpp
   
     --crystal
         .cr  .ecr
@@ -55,7 +55,7 @@ Language types are output:
         .pyx  .pxd  .pxi
   
     --delphi
-        .pas  .int  .dfm  .nfm  .dof  .dpk  .dproj  .groupproj  .bdsgroup  .bdsproj
+        .pas  .int  .dfm  .nfm  .dof  .dpk  .dpr  .dproj  .groupproj  .bdsgroup  .bdsproj
   
     --ebuild
         .ebuild  .eclass
@@ -81,11 +81,14 @@ Language types are output:
     --gettext
         .po  .pot  .mo
   
+    --glsl
+        .vert  .tesc  .tese  .geom  .frag  .comp
+  
     --go
         .go
   
     --groovy
-        .groovy  .gtmpl  .gpp  .grunit
+        .groovy  .gtmpl  .gpp  .grunit  .gradle
   
     --haml
         .haml
@@ -131,6 +134,9 @@ Language types are output:
   
     --lisp
         .lisp  .lsp
+  
+    --log
+        .log
   
     --lua
         .lua
@@ -189,6 +195,9 @@ Language types are output:
     --plone
         .pt  .cpt  .metadata  .cpy  .py  .xml  .zcml
   
+    --proto
+        .proto
+  
     --puppet
         .pp
   
@@ -202,7 +211,7 @@ Language types are output:
         .rkt  .ss  .scm
   
     --rake
-        .Rakefiles
+        .Rakefile
   
     --restructuredtext
         .rst
@@ -295,7 +304,7 @@ Language types are output:
         .wadl
   
     --xml
-        .xml  .dtd  .xsl  .xslt  .ent
+        .xml  .dtd  .xsl  .xslt  .ent  .tld
   
     --yaml
         .yaml  .yml

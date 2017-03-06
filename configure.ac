@@ -1,6 +1,6 @@
 AC_INIT(
     [the_silver_searcher],
-    [0.32.0],
+    [1.0.2],
     [https://github.com/ggreer/the_silver_searcher/issues],
     [the_silver_searcher],
     [https://github.com/ggreer/the_silver_searcher])
@@ -64,7 +64,7 @@ AC_CONFIG_HEADERS([src/config.h])
 
 AC_CHECK_PROGS(
     [CLANG_FORMAT],
-    [clang-format-3.7 clang-format-3.6 clang-format],
+    [clang-format-3.8 clang-format-3.7 clang-format-3.6 clang-format],
     [no]
 )
 AM_CONDITIONAL([HAS_CLANG_FORMAT], [test x$CLANG_FORMAT != xno])

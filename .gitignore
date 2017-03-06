@@ -1,4 +1,5 @@
 *.dSYM
+*.gcda
 *.o
 *.plist
 .deps

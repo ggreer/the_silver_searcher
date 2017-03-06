@@ -3,7 +3,7 @@ Setup:
   $ . $TESTDIR/setup.sh
   $ mkdir -p parent/multi-part
   $ printf 'match1\n' > parent/multi-part/file1.txt
-  $ printf 'parent/multi-*\n' > .gitignore
+  $ printf 'parent/multi-*\n' > .ignore
 
 # Ignore directory specified by glob:
 

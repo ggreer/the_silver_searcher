@@ -3,6 +3,10 @@
 
 #include "util.h"
 
+void print_init_context(void);
+void print_cleanup_context(void);
+void print_context_append(const char *line, size_t len);
+void print_trailing_context(const char *path, const char *buf, size_t n);
 void print_path(const char *path, const char sep);
 void print_path_count(const char *path, const char sep, const size_t count);
 void print_line(const char *buf, size_t buf_pos, size_t prev_line_offset);

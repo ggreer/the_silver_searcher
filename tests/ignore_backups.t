@@ -18,8 +18,8 @@ Setup:
   $ printf 'whatever14\n' > ./foo.yml~
   $ printf 'whatever15\n' > ./.foo.yml.swp
   $ printf 'whatever16\n' > ./.foo.yml.swo
-  $ printf '*~\n'         > ./.gitignore
-  $ printf '*.sw[po]\n'   >> ./.gitignore
+  $ printf '*~\n'         > ./.ignore
+  $ printf '*.sw[po]\n'   >> ./.ignore
 
 Ignore all files except foo.yml
 
