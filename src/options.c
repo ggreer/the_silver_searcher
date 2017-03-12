@@ -784,6 +784,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         *base_paths = ag_calloc(sizeof(char *), argc + 1);
         for (i = 0; i < (size_t)argc; i++) {
             path = ag_strdup(argv[i]);
+#ifdef _WIN32 /* Convert Windows path separators to Unix path separators */
+            { char *pc; for (pc = path; *pc; pc++) if (*pc == '\\') *pc = '/'; }
+#endif
             path_len = strlen(path);
             /* kill trailing slash */
             if (path_len > 1 && path[path_len - 1] == '/') {
