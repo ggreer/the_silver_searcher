@@ -4,7 +4,8 @@
 *                                                                             *
 *   Description:    MsvcLibX extensions to stdio.h.			      *
 *                                                                             *
-*   Notes:	    							      *
+*   Notes:	    For a description of C standard I/O, and stdio.h, see:    *
+*                   https://en.wikipedia.org/wiki/C_file_input/output         *
 *                                                                             *
 *   History:								      *
 *    2014-06-03 JFL Created this file.					      *
