@@ -24,7 +24,10 @@
 #		    DEBUG=1	 Build the debug ver. (<=> target WIN32\DEBUG)#
 #		    OUTDIR=path  Output to path\WIN32\. Default: To .\WIN32\  #
 #		    PROGRAM=name Set the output file base name		      #
-#									      #
+#		    WINVER=M.m   4.0=Win95/NT4 5.1=XP 6.0=Vista 6.1=7 6.2=8   #
+#		    		 Converted to WINVER=0xM0n for windows.h      #
+#		    		 Converted to SUBSYSVER=M.0n for link.exe     #
+#		    							      #
 #		    If a specific target [path\]{prog}.exe is specified,      #
 #		    includes the corresponding {prog}.mak if it exists.       #
 #		    This make file, defines the files to use beyond the       #
@@ -108,6 +111,7 @@
 #    2017-03-02 JFL Added the actual commands for building $(B)\$(EXENAME).   #
 #		    Fixed issues when the current directory contains spaces.  #
 #		    Fixed src2objs.bat and use it indirectly via src2objs.mak.#
+#    2017-03-10 JFL If WINVER is defined but empty, use SDK & linker defaults.#
 #		    							      #
 #         © Copyright 2016 Hewlett Packard Enterprise Development LP          #
 # Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 #
@@ -132,7 +136,7 @@ T=WIN32				# Target OS
 # Command-line definitions that need carrying through to sub-make instances
 # Note: Cannot redefine MAKEFLAGS, so defining an alternate variable instead.
 MAKEDEFS=
-!IF DEFINED(WINVER)	# Windows target version. 4.0=Win95/NT4 5.1=XP 6.0=Vista ...
+!IF DEFINED(WINVER) # Windows target version. 4.0=Win95/NT4 5.1=XP 6.0=Vista ...
 MAKEDEFS=$(MAKEDEFS) "WINVER=$(WINVER)"
 !ENDIF
 
@@ -247,7 +251,9 @@ WINVER=5.1
 !ENDIF
 
 # Define the Windows SDK target version. Used by Windows.h to only define functions available in that OS.
+!IF DEFINED(WINVER) && ("$(WINVER)" != "")
 CFLAGS=$(CFLAGS) "/DWINVER=0x$(WINVER:.=0)" # Windows.h WINVER format is 0xMMnn, with MM the major version, and mm the minor version
+!ENDIF
 
 # Special definitions for WIN95 builds
 !IF "$(T)"=="WIN95"
@@ -266,7 +272,11 @@ CFLAGS=$(CFLAGS) "/D_USING_V110_SDK71_=1" # Workaround for VisualStudio2012/WinS
 !ENDIF
 
 !IF !DEFINED(SUBSYSTEM)
+!IF DEFINED(WINVER) && ("$(WINVER)" != "")
 SUBSYSTEM=CONSOLE,$(WINVER:.=.0) # Link.exe SUBSYSTEM version format is M.mm, with M the major version, and mm the minor version
+!ELSE
+SUBSYSTEM=CONSOLE
+!ENDIF
 !ENDIF
 
 INCLUDE=$(S);$(STINCLUDE);$(INCPATH);$(USER_INCLUDE)
