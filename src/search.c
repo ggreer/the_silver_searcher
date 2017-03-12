@@ -257,7 +257,8 @@ void search_file(const char *file_full_path) {
         goto cleanup;
     }
 
-    if ((statbuf.st_mode & S_IFMT) == 0) {
+    // handling only regular files and FIFOs
+    if (!S_ISREG(statbuf.st_mode) && !S_ISFIFO(statbuf.st_mode)) {
         log_err("Skipping %s: Mode %u is not a file.", file_full_path, statbuf.st_mode);
         goto cleanup;
     }
@@ -266,6 +267,24 @@ void search_file(const char *file_full_path) {
     if (fd < 0) {
         /* XXXX: strerror is not thread-safe */
         log_err("Skipping %s: Error opening file: %s", file_full_path, strerror(errno));
+        goto cleanup;
+    }
+
+    // repeating stat check with file handle to prevent TOCTOU issue
+    rv = fstat(fd, &statbuf);
+    if (rv != 0) {
+        log_err("Skipping %s: Error fstat()ing file.", file_full_path);
+        goto cleanup;
+    }
+
+    if (opts.stdout_inode != 0 && opts.stdout_inode == statbuf.st_ino) {
+        log_debug("Skipping %s: stdout is redirected to it", file_full_path);
+        goto cleanup;
+    }
+
+    // handling only regular files and FIFOs
+    if (!S_ISREG(statbuf.st_mode) && !S_ISFIFO(statbuf.st_mode)) {
+        log_err("Skipping %s: Mode %u is not a file.", file_full_path, statbuf.st_mode);
         goto cleanup;
     }
 
