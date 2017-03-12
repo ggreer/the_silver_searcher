@@ -15,6 +15,7 @@
 :#                  Immediately set the system environment.		      *
 :#   2016-11-16 JFL Allow using a predefined alias for this lib base path.    *
 :#   2016-12-16 JFL Only use setx if requested by user, with PERSISTENT_VARS. *
+:#   2017-03-12 JFL Don't automatically set the MSVCLIBX variable.            *
 :#                                                                            *
 :#         © Copyright 2016 Hewlett Packard Enterprise Development LP         *
 :# Licensed under the Apache 2.0 license  www.apache.org/licenses/LICENSE-2.0 *
@@ -30,7 +31,7 @@ if not defined MSVCLIBX for /f "delims=" %%d in ('"pushd .. & cd & popd"') do SE
 %END_SDK_DEFS%
 
 :# Set the local environment variable just before make exits, so that future commands in this CMD window have it.
-%ADD_POST_MAKE_ACTION% set "MSVCLIBX=%MSVCLIBX%"
+if defined PERSISTENT_VARS %ADD_POST_MAKE_ACTION% set "MSVCLIBX=%MSVCLIBX%"
 
 :# Set the system environment variable, so that other CMD windows opened later on inherit it
 if defined PERSISTENT_VARS setx MSVCLIBX "%MSVCLIBX%" >NUL
