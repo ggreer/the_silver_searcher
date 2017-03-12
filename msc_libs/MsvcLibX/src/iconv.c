@@ -197,13 +197,13 @@ UINT codePage = 0;		/* The user-specified code page */
 #define IS_LEAD_BYTE(c) ((c&0xC0) == 0xC0)
 
 /* Test if the output goes to the console, and if it's eligible to Unicode output, initialize it */
-static char iWideConsoleInitialized[20] = {0};
+static int iWideConsoleInitialized[FOPEN_MAX] = {0};
 int isWideConsole(int iFile) {
   if (codePage) return 0; /* The user wants otherwise, and he's always right */
   if (!isConsole(iFile)) return 0; /* It's not the console anyway */
-  if ((iFile < sizeof(iWideConsoleInitialized)) && !iWideConsoleInitialized[iFile]) {
+  if (((unsigned)iFile < (unsigned)FOPEN_MAX) && !iWideConsoleInitialized[iFile]) {
     _setmode(iFile, _O_U16TEXT);
-    iWideConsoleInitialized[iFile]++;
+    iWideConsoleInitialized[iFile] = 1;
   }
   return 1;
 }
