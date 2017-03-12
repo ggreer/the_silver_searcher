@@ -104,13 +104,14 @@
 :#   2017-03-01 JFL Added variable IGNORE_NMAKEFILE for dealing with unwanted *
 :#                  NMakefile homonyms.                                       *
 :#   2017-03-05 JFL Added variable LOGDIR to control where to store the log.  *
+:#   2017-03-10 JFL Get nmake.exe path from WIN32_PATH or WIN64_PATH.	      *
 :#                                                                            *
 :#      © Copyright 2016-2017 Hewlett Packard Enterprise Development LP       *
 :# Licensed under the Apache 2.0 license  www.apache.org/licenses/LICENSE-2.0 *
 :#*****************************************************************************
 
 setlocal EnableExtensions EnableDelayedExpansion
-set "VERSION=2017-03-05"
+set "VERSION=2017-03-10"
 set "SCRIPT=%~nx0"				&:# Script name
 set "SPATH=%~dp0" & set "SPATH=!SPATH:~0,-1!"	&:# Script path, without the trailing \
 set  "ARG0=%~f0"				&:# Script full pathname
@@ -1337,7 +1338,7 @@ call :GetConfig >NUL 2>NUL :# Get Development tools location. Also defines OUTDI
 if errorlevel 1 %RETURN%
 :# Update the PATH for running Visual Studio tools, from definitions set in %CONFIG.BAT%
 set PATH=!%MAKEORIGIN%_PATH!
-if not defined MAKE set "MAKE=!%MAKEORIGIN%_CC:CL.EXE=nmake.exe!" &:# Includes enclosing quotes
+if not defined MAKE for %%m in (nmake.exe) do set "MAKE="%%~$PATH:m"" &:# Includes enclosing quotes
 %ECHOVARS.D% CD MESSAGES OUTDIR MAKEORIGIN PATH INCLUDE %MAKEORIGIN%_CC
 set "NMAKEFLAGS=/NOLOGO /c /s"
 %IF_VERBOSE% set "NMAKEFLAGS=/NOLOGO"
@@ -1631,7 +1632,9 @@ if defined NEEDMAKEFILE set MAKEARGS=/f !MAKEFILE! !MAKEARGS!
 
 :# Now run nmake
 set RESULT=Success
-if not defined MAKE set "MAKE=!%MAKEORIGIN%_CC:CL.EXE=nmake.exe!" &:# Includes enclosing quotes
+set "MOPATH=!%MAKEORIGIN%_PATH!"
+if not defined MAKE for %%m in (nmake.exe) do set "MAKE="%%~$MOPATH:m"" &:# Includes enclosing quotes
+set "MOPATH="
 :# set CMD=%MAKE% /f %MAKEFILE% /x - %NMAKEFLAGS% %MAKEDEFS% %MAKEGOALS%
 set CMD=%MAKE% %NMAKEFLAGS% MESSAGES=1 %MAKEARGS%
 setlocal &:# Clear a few multi-line variables that pollute the (nmake /P) logs
@@ -1684,11 +1687,11 @@ if %MAKEDEPTH%==0 if defined LOGFILE ( :# If this is the top-level instance of m
   %ECHOVARS.D% GOAL
   :# If there's still no goal, use the current directory name.
   if not defined GOAL set "GOAL=!CD0!"
-  %ECHOVARS.D% GOAL
+  %ECHOVARS.D% GOAL LOGDIR
   :# Rename %LOGFILE% after the %GOAL%, and display the build log.
   set LOGFILE2=!GOAL!.log
   if not defined LOGDIR if defined OUTDIR set "LOGDIR=%OUTDIR%"
-  if defined LOGDIR set "LOGFILE2=%LOGDIR%\!LOGFILE2!"
+  if defined LOGDIR set "LOGFILE2=!LOGDIR!\!LOGFILE2!"
   if not "!LOGFILE2!"=="!LOGFILE!" (
     if exist "!LOGFILE2!" del "!LOGFILE2!"
     move "!LOGFILE!" "!LOGFILE2!" >nul
