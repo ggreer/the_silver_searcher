@@ -199,7 +199,7 @@ const char *boyer_moore_strncasestr(const char *s, const char *find, const size_
     size_t pos = f_len - 1;
 
     while (pos < s_len) {
-        for (i = f_len - 1; i >= 0 && tolower(s[pos]) == find[i]; pos--, i--) {
+        for (i = f_len - 1; i >= 0 && (char)tolower(s[pos]) == find[i]; pos--, i--) {
         }
         if (i < 0) {
             return s + pos + 1;
@@ -249,6 +249,7 @@ const char *hash_strnstr(const char *s, const char *find, const size_t s_len, co
 
 strncmp_fp get_strstr(enum case_behavior casing) {
     strncmp_fp ag_strncmp_fp = &boyer_moore_strnstr;
+
 
     if (casing == CASE_INSENSITIVE) {
         ag_strncmp_fp = &boyer_moore_strncasestr;
