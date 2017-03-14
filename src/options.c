@@ -58,6 +58,7 @@ Output Options:\n\
   -C --context [LINES]    Print lines before and after matches (Default: 2)\n\
      --[no]group          Same as --[no]break --[no]heading\n\
   -g PATTERN              Print filenames matching PATTERN\n\
+  --print-dirs            With -g, also print directories\n\
   -l --files-with-matches Only print filenames that contain matches\n\
                           (don't print the matching lines)\n\
   -L --files-without-matches\n\
@@ -158,6 +159,7 @@ void init_options(void) {
     opts.print_break = TRUE;
     opts.print_path = PATH_PRINT_DEFAULT;
     opts.print_line_numbers = TRUE;
+    opts.print_dirnames = 0;
     opts.recurse_dirs = TRUE;
     opts.color_path = ag_strdup(color_path);
     opts.color_match = ag_strdup(color_match);
@@ -303,6 +305,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "path-to-ignore", required_argument, NULL, 'p' },
         { "print0", no_argument, NULL, '0' },
         { "print-long-lines", no_argument, &opts.print_long_lines, 1 },
+        { "print-dirs", no_argument, &opts.print_dirnames, 1 },
         { "recurse", no_argument, NULL, 'r' },
         { "search-binary", no_argument, &opts.search_binary_files, 1 },
         { "search-files", no_argument, &opts.search_stream, 0 },

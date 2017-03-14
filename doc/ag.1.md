@@ -76,6 +76,9 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `-g PATTERN`:
     Print filenames matching PATTERN.
 
+  * `--print-dirs`:
+    With `-g`, also print directories.
+
   * `-G --file-search-regex PATTERN`:
     Only search files whose names match PATTERN.
 
