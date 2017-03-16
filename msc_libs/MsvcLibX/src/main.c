@@ -11,6 +11,7 @@
 *    2016-09-20 JFL Bug fix: Empty arguments "" did not get recorded.	      *
 *    2017-02-05 JFL Redesigned to override libc's _setargv(). This avoids     *
 *                   having to encapsulate the main() routine with one here.   *
+*    2017-03-12 JFL Restructured the UTF16 writing mechanism.		      *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -216,9 +217,8 @@ int _initU(void) {
   realloc(_acmdln, n+1); /* Resize the memory block to fit the UTF-8 line */
   /* Should not fail since we make it smaller */
 
-  /* Record the console and system code pages, to allow converting the output accordingly */
-  consoleCodePage = GetConsoleOutputCP();
-  systemCodePage = GetACP();
+  /* Initialize the UTF8/UTF16 output mechanism */
+  initWideFiles();
 
   return 0;
 }

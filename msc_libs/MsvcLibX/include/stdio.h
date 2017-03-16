@@ -14,6 +14,7 @@
 *    2017-03-01 JFL Added more standard routines MS thinks are proprietary.   *
 *    2017-03-03 JFL Added fputc() and fwrite() series of functions.	      *
 *    2017-03-05 JFL Added fputs() series like for fputc.		      *
+*    2017-03-12 JFL Restructured the UTF16 writing mechanism.		      *
 *									      *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -33,7 +34,6 @@ extern "C" {
 #endif
 
 /* These are standard routines, but Microsoft thinks not */
-#define fdopen _fdopen
 #define fileno	_fileno
 #define pclose _pclose
 #define popen _popen
@@ -67,20 +67,40 @@ extern "C" {
 
 #ifdef _WIN32	/* Automatically defined when targeting a Win32 application */
 
-/* The UTF-8 output routines are defined in iconv.c */
+/* UTF-8 output routines defined in iconv.c */
 extern int vfprintfU(FILE *f, const char *pszFormat, va_list vl);
 extern int fprintfU(FILE *f, const char *pszFormat, ...);
 extern int printfU(const char *pszFormat, ...);
-extern UINT consoleCodePage;	/* The current console code page (may change) */
-extern UINT systemCodePage;	/* The system code page (unchangeable) */
-extern UINT codePage;		/* The user-specified code page */
-#define isConsole(iFile) isatty(iFile)
-int isWideConsole(int iFile);   /* Test if file is the console, and can be init. in wide mode */
+extern int vfprintfA(FILE *f, const char *pszFormat, va_list vl);
+extern int fprintfA(FILE *f, const char *pszFormat, ...);
+extern int printfA(const char *pszFormat, ...);
 #if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
 #define vfprintf vfprintfU	/* For outputing UTF-8 strings */
 #define fprintf fprintfU	/* For outputing UTF-8 strings */
 #define printf printfU		/* For outputing UTF-8 strings */
+#else
+#define vfprintf vfprintfA	/* For outputing ANSI strings */
+#define fprintf fprintfA	/* For outputing ANSI strings */
+#define printf printfA		/* For outputing ANSI strings */
 #endif
+#if _MSC_VER < 1500 /* Up to VS 8/2005, fputws() is broken. It outputs just the 1st character. */
+extern int fputwsW(const wchar_t *pws, FILE *f);
+#define fputws fputwsW		/* Use our workaround routine instead */
+#endif
+
+/* fopen() alternatives */
+FILE *fopenM(const char *pszName, const char *pszMode, UINT cp);
+FILE *fopenA(const char *pszName, const char *pszMode);
+FILE *fopenU(const char *pszName, const char *pszMode);
+#if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
+#define fopen fopenU		/* For opening in UTF-8 mode */
+#else
+#define fopen fopenA		/* For opening in ANSI mode */
+#endif
+
+/* Intercept fdopen() */
+FILE *fdopenX(int iFile, const char *pszMode);
+#define fdopen fdopenX
 
 /* fputc() alternatives */
 extern int fputcM(int c, FILE *f, UINT cp);

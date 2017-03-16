@@ -15,8 +15,8 @@
 #define _CRT_SECURE_NO_WARNINGS 1 /* Avoid Visual C++ security warnings */
 
 #include <stdio.h>
-#include <io.h>
-#include <fcntl.h>
+#include <io.h>         /* For _setmode() */
+#include <fcntl.h>      /* For I/O modes */
 #include <string.h>
 #include "xfreopen.h"
 

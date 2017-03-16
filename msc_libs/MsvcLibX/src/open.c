@@ -8,6 +8,7 @@
 *		    							      *
 *   History:								      *
 *    2017-02-16 JFL Created this module.				      *
+*    2017-03-12 JFL Restructured the UTF16 writing mechanism.		      *
 *                                                                             *
 *         © Copyright 2017 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -19,12 +20,13 @@
 
 #include <errno.h>
 #include "msvclibx.h"
-#include "fcntl.h"
 #include "debugm.h"
 
 #ifdef _WIN32
 
 #include <windows.h>
+#include <io.h>         /* For _setmode() */
+#include <fcntl.h>      /* For I/O modes */
 
 /*---------------------------------------------------------------------------*\
 *                                                                             *
@@ -49,6 +51,7 @@ int openM(UINT cp, const char *pszName, int iFlags, int iPerm) {
   WCHAR wszName[UNICODE_PATH_MAX];
   int n;
   int iFile;
+  int iMode;
 
   /* Convert the pathname to a unicode string, with the proper extension prefixes if it's longer than 260 bytes */
   n = MultiByteToWidePath(cp,			/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
@@ -61,9 +64,17 @@ int openM(UINT cp, const char *pszName, int iFlags, int iPerm) {
     return -1;
   }
 
-/*  return _wopen(wszName, iFlags, iPerm); */
+  /* return _wopen(wszName, iFlags, iPerm); */
   DEBUG_PRINTF(("_wopen(\"%s\", 0x%X, 0x%X);\n", pszName, iFlags, iPerm));
   iFile = _wopen(wszName, iFlags, iPerm);
+
+  /* Find out the initial translation mode, and change it if appropriate */
+  iMode = _setmodeX(iFile, _O_TEXT);	/* Get the initial mode. Any mode can switch to _O_TEXT. */
+  if ((iMode & _O_TEXT) && _isatty(iFile)) { /* If writing text to the console */
+    iMode = _O_WTEXT;				/* Then write Unicode instead */
+  }
+  _setmodeX(iFile, iMode);		/* Restore the initial mode */
+
   DEBUG_PRINTF(("  return %d;\n", iFile));
   return iFile;
 }

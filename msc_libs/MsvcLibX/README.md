@@ -1,4 +1,4 @@
-﻿MsvcLibX - A set of MSVC Library eXtensions
+MsvcLibX - A set of MSVC Library eXtensions
 ===========================================
 
 
@@ -85,8 +85,8 @@ Requirements:
 - Microsoft Visual C++ compiler and linker for Windows 32 and 64 bits targets.
 - Microsoft Windows SDK. (May be installed along with Visual C++)
 
-As of 2015-12-10, I've tested the make.bat script and make files with Visual C++
-2005, 2008, 2012, and 2015, and Windows SDK 5.2, 8.1, and 10.  
+As of 2017-03-10, I've tested the make.bat script and make files with Visual C++
+2005, 2008, 2012, 2015, and 2017, and Windows SDK 5.2, 8.1, and 10.  
 Support for older versions is still built-in, but I've not tested it for long.  
 Support for newer versions will require minor tweaks in configure.bat.
 Note that configure.bat does not depend on MSVC's vcvars.bat. It will attempt
@@ -395,21 +395,9 @@ Support for UTF-8 sources
 -------------------------
 
 The MsvcLibX library supports writing C programs using 8-bit characters,
-with strings encoded as UTF-8, and that will work for any cmd.exe code page.
+with strings encoded as UTF-8.
 This makes the sources much more simple and readable that using full-fledged
 Unicode, with 16-bits wchar_t or WCHAR and L"strings" or _T("strings").
-
-Note: The cmd.exe code page can be read and changed with the CHCP command.
-The most common code pages are:
-
-CP    | Description
------ | ----------------------------------------------------------------------------
-437   | MS-DOS OEM code page, still used by cmd.exe in US and west-European systems.
-1252  | Windows "ANSI" code page, used by most GUI programs, like notepad.exe.
-65001 | UTF-8 code page. Allows display any Unicode character.
-
-Important: Changing the code page will only work correctly if cmd.exe is using
-a TrueType font. The default "Raster" font supports code page 437 only.
 
 To enable that UTF-8 support:
 
@@ -447,29 +435,45 @@ Gotcha: As of 2014-03-25, most file I/O and enumeration routines have been
 restructured this way, but a few have not yet been:  
 scandir() and lstat() only support UTF-8 file names, not ANSI names.
 
-Gotcha: As of 2014-03-25, there's a potential issue with the C main() routine:  
-Supporting UTF-8 file names is not just supporting UTF-8 strings in library
-functions. It's also necessary to process the command line, so that command line
-arguments are passed in to the main() routine as UTF-8 strings.  
-Currently this is implemented as a macro that redefines the main token, so
-that it generates a main() routine just calling a _mainU0() routine from
-MsvcLibX.lib, followed by another local _mainU() routine with the body intended
-for your main routine. Ex:
 
-    int main(int argc, char *argv[]) { /* your main body */ }
+Support for Unicode output to the console
+---------------------------------------------
 
-Becomes:
+Independently of the source ANSI or UTF-8 encoding, all text output to the console
+through stdout and stderr is converted to Unicode.
+This allows seeing the requested characters whatever the current code page is.
 
-    int main(int argc, char *argv[]) {return _mainU0()}
-    int _mainU(int argc, char *argv[]) { /* your main body */ }
+If stdout or stderr are redirected to a pipe or a file, then the text output is converted
+to the current code page.  
+This behaviour is identical to that of cmd.exe itself. For example:
 
-The _mainU0() routine from MsvcLibX.lib reprocesses the Win32 command line as
-UTF-8 argv[] arguments, then calls _mainU(argc, argv[]).  
-This works well and transparently, except in one case:  
-If one of your sources or include files contain a prototype for the main() 
-routine, then MsvcLibX' main macro will break that prototype, and cause
-compilation and/or link errors.  
-If this happens, simply remove the main() prototype, which is useless anyway.
+        dir World_languages\
+
+displays Unicode file names, even with characters not in the current code page.
+
+        dir World_languages\ | more
+
+converts Unicode file names into the current code page, changing missing characters to '?'.
+
+The stdout and stderr encoding can be overridden by setting the global variable codePage,
+defined in iconv.h.
+
+Note: The console code page can be read and changed with the CHCP command.  
+The most common code pages on US and west-European systems are:
+
+CP    | Description
+----- | ----------------------------------------------------------------------------
+437   | MS-DOS OEM code page, still used by cmd.exe in US and west-European systems.
+1252  | Windows "ANSI" code page, used by most GUI programs, like notepad.exe.
+65001 | UTF-8 code page. Allows display any Unicode character.
+
+Important: Changing the code page will only display characters correctly if the console
+is using a TrueType font containing these new characters.  
+The default "Raster" font supports characters in code page 437 only.  
+Unfortunately, none of the available console fonts supports all Unicode characters.  
+The default font is usually selected to work well with your language.
+If you want to display character from widely different languages, you'll have to try
+every font, until you find one that contains all to characters you want.
 
 
 Support for NTFS symlinks and junctions
@@ -762,6 +766,7 @@ Later in the year, I made significant other changes:
 All tools like dirc, dirsize, which, backnum, update, truename, redo
 benefit from that last change.
 
+
 **2015**
 
 A major improvement was the addition of support for new operating systems
@@ -818,3 +823,26 @@ Many significant changes and improvements this year:
   host, but the output locally in the VM, avoiding to overwrite the main
   version on the host. IF %OUTDIR% is not defined, the default output 
   still goes below the source directory as before.
+- Added the ability to build projects recursively.  
+  Applied that to MsvcLibX, which can now be built from its main directory.  
+  And MsvcLibX itself can be built as a component of the SysToolsLib library.
+
+
+**2017**
+
+- Added support for Visual Studio 2017.  
+  This one has a very different directory structure from its predecessors.
+  This required a redesign of the detection routine in configure.bat.
+- One major change: All text written to stdout and stderr and that goes
+  to the console is written in UTF-16. This ensures that all characters are
+  displayed correctly, whatever the current code page.  
+  When stdout and stderr are redirected to a pipe or a file, the text is
+  converted to the console code page as before. This is the same behavior
+  as that of cmd.exe itself.  
+  That should be transparent to all apps, with just a rebuild necessary.
+- One simplification: I've fixed the long-broken src2objs.bat. It's thus
+  possible to define lists of C sources instead of lists of objects.
+  Sources are better, because they're OS-independant, whereas object
+  names differ in Windows and Linux.
+- Another simplification: It's possible to make recursive builds by just
+  defining a DIRS variable in a Files.mak file.

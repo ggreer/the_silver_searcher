@@ -9,6 +9,7 @@
 *   History:								      *
 *    2017-03-03 JFL Created this module.				      *
 *    2017-03-05 JFL Rewrote fwriteU() to write UTF16 to the console.	      *
+*    2017-03-12 JFL Restructured the UTF16 writing mechanism.		      *
 *                                                                             *
 *         © Copyright 2017 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -79,13 +80,10 @@ size_t fwriteM(const void *buf, size_t itemSize, size_t nItems, FILE *f, UINT cp
   size_t nToWrite = itemSize * nItems;
   int iCharSize = 1;
   size_t nWritten;
-  UINT outputCodePage = consoleCodePage;
+  UINT cpOut;
+  int iFile = fileno(f);
 
-  if (codePage) { /* The user is always right */
-    outputCodePage = codePage;
-  }
-
-  if (isWideConsole(fileno(f))) {
+  if (isWideFile(iFile)) {
     /* Output a wide string to guaranty every Unicode character is displayed correctly */
     wchar_t *pwBuf = (wchar_t *)malloc(nToWrite * 4);
     int iRet;
@@ -99,13 +97,13 @@ size_t fwriteM(const void *buf, size_t itemSize, size_t nItems, FILE *f, UINT cp
     if (iRet < 0) return 0;
     nWritten = nToWrite;
     iCharSize = 2;
-  } else if (outputCodePage != cp) {
+  } else if (isTranslatedFile(iFile, cp, &cpOut)) {
     size_t nBufSize = 4 * nToWrite; /* Worst case for the size needed */
     char *pBuf;
     int n;
     pBuf = (char *)malloc(nBufSize);
     if (!pBuf) return 0; /* malloc sets errno = ENOMEM */
-    n = ConvertBuf(buf, nToWrite, cp, pBuf, nBufSize, outputCodePage, NULL);
+    n = ConvertBuf(buf, nToWrite, cp, pBuf, nBufSize, cpOut, NULL);
     if (n < 0) {
       free(pBuf);
       return 0;
