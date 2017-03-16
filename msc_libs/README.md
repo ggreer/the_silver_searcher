@@ -54,8 +54,6 @@ It also includes support for UTF-8 command-lines, file names, input and output.
 This ensures that Unix programs designed for use in an UTF-8 environment behave correctly in Windows' UTF16 environment, in any console code page.
 
 MsvcLibX is one component of the System Tools Library, as are the configure and make scripts described above.  
-Note that I've removed several make files from ag's msc_libs\include, targeting OS/processor combinations not supported by ag now. Ex: MS-DOS, which does not support mmap() nor pthreads.  
-If you want to try building ag.exe for one of the cases that might make sense (Ex: IA64 or ARM versions of Windows), you may copy the corresponding make files from https://github.com/JFLarvoire/SysToolsLib/tree/master/C/include.
 
 #### Files added
 None
