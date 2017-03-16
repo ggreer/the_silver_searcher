@@ -132,6 +132,7 @@
 #                   Allow building a makefile-defined executable.	      #
 #    2017-02-28 JFL Bug fix: Enclose all $(MAKEPATH) references in "quotes".  #
 #    2017-03-02 JFL Added the CLEAN_DIRS and CLEAN_FILES variables.           #
+#    2017-03-13 JFL Fix build if environment variable OS is not defined.      #
 #		    							      #
 #       © Copyright 2016-2017 Hewlett Packard Enterprise Development LP       #
 # Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 #
@@ -177,7 +178,7 @@ MAKEPATH=$(STINCLUDE)
 
 # $(OS) = List of target operating systems to build for, separated by spaces
 # Note: The OS variable here conflicts with Windows' %OS%, defaulting to Windows_NT
-!IF "$(OS)"=="Windows_NT" # ie. if OS is not specified on the command line
+!IF !DEFINED(OS) || "$(OS)"=="Windows_NT" # ie. if OS is not specified on the command line
 OS=/		# Initialize with a recognizable string that we'll remove later
 !IF DEFINED(DOS_CC) && EXIST("$(MAKEPATH)\DOS.mak")
 OS=$(OS) DOS
