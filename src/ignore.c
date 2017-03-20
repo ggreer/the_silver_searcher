@@ -213,11 +213,11 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
 
     if (strncmp(temp, ig->abs_path, ig->abs_path_len) == 0) {
         char *slash_filename = temp + ig->abs_path_len;
-        if (  (slash_filename[0] == '/')
+        if ((slash_filename[0] == '/')
 #ifdef _WIN32
             || (slash_filename[0] == '\\')
 #endif
-           ) {
+                ) {
             slash_filename++;
         }
         match_pos = binary_search(slash_filename, ig->names, 0, ig->names_len);
@@ -236,17 +236,17 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
 
         for (i = 0; i < ig->names_len; i++) {
             char *pos = strstr(slash_filename, ig->names[i]);
-            if (pos == slash_filename || (pos && (   (*(pos - 1) == '/')
+            if (pos == slash_filename || (pos && ((*(pos - 1) == '/')
 #ifdef _WIN32
                                                   || (*(pos - 1) == '\\')
 #endif
-               ))) {
+                                                      ))) {
                 pos += strlen(ig->names[i]);
                 if (*pos == '\0' || *pos == '/'
 #ifdef _WIN32
-                                 || *pos == '\\'
+                    || *pos == '\\'
 #endif
-                   ) {
+                    ) {
                     log_debug("file %s ignored because path somewhere matches name %s", slash_filename, ig->names[i]);
                     free(temp);
                     return 1;
@@ -335,11 +335,11 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     size_t filename_len = 0;
 #endif
 
-    if (filename[0] == '.' && (   (filename[1] == '/')
+    if (filename[0] == '.' && ((filename[1] == '/')
 #ifdef _WIN32
                                || (filename[1] == '\\')
 #endif
-       )) {
+                                   )) {
 #ifndef HAVE_DIRENT_DNAMLEN
         filename_len = strlen(filename);
 #endif
@@ -368,11 +368,11 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
                 filename_len = strlen(filename);
             }
 #endif
-            if (   filename[filename_len - 1] != '/'
+            if (filename[filename_len - 1] != '/'
 #ifdef _WIN32
                 && filename[filename_len - 1] != '\\'
 #endif
-               ) {
+                ) {
                 char *temp;
                 ag_asprintf(&temp, "%s/", filename);
                 int rv = path_ignore_search(ig, path_start, temp);
