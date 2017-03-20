@@ -413,6 +413,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'D':
                 set_log_level(LOG_LEVEL_DEBUG);
+#ifdef HAS_MSVCLIBX
+                DEBUG_ON(); /* Enable MsvcLibX debug output in the DEBUG version of the program */
+#endif
                 break;
             case 'f':
                 opts.follow_symlinks = 1;
