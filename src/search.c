@@ -5,9 +5,9 @@
 /* Global search variables */
 size_t alpha_skip_lookup[256];
 size_t *find_skip_lookup;
-#ifdef _MSC_VER		/* MS Visual C++ */
+#ifdef _MSC_VER /* MS Visual C++ */
 #define ALIGNAS(N) __declspec(align(N))
-#else			/* GNU C */
+#else /* GNU C */
 #define ALIGNAS(N) __attribute__((aligned(N)))
 #endif
 uint8_t ALIGNAS(64) h_table[H_SIZE];

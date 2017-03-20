@@ -52,30 +52,44 @@ void set_output_color(WORD c) {
     SetConsoleTextAttribute(console_handle, c);
 }
 
-#pragma warning(disable:4100) /* Avoid warnings "unreferenced formal parameter" */
-void color_highlight_path(FILE *f) { set_output_color(FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY); }
-void color_highlight_match(FILE *f) { set_output_color(FOREGROUND_BLUE |                  FOREGROUND_GREEN | FOREGROUND_INTENSITY ); }
-void color_highlight_line_no(FILE *f) { set_output_color(                  FOREGROUND_RED |                    FOREGROUND_INTENSITY ); }
+#pragma warning(disable : 4100) /* Avoid warnings "unreferenced formal parameter" */
+void color_highlight_path(FILE *f) {
+    set_output_color(FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+}
+void color_highlight_match(FILE *f) {
+    set_output_color(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+}
+void color_highlight_line_no(FILE *f) {
+    set_output_color(FOREGROUND_RED | FOREGROUND_INTENSITY);
+}
 void color_normal(FILE *f) {
     get_console_handle();
     set_output_color(default_attr);
 }
-#pragma warning(default:4100) /* Restore warning "unreferenced formal parameter" */
-#else /* Write ANSI escape sequences for Unix */
-void color_highlight_path(FILE *f) { fprintf(f, "%s", opts.color_path); }
-void color_highlight_match(FILE *f) { fprintf(f, "%s", opts.color_match); }
-void color_highlight_line_no(FILE *f) { fprintf(f, "%s", opts.color_line_number); }
-void color_normal(FILE *f) { fprintf(f, "%s", color_reset); }
+#pragma warning(default : 4100) /* Restore warning "unreferenced formal parameter" */
+#else                           /* Write ANSI escape sequences for Unix */
+void color_highlight_path(FILE *f) {
+    fprintf(f, "%s", opts.color_path);
+}
+void color_highlight_match(FILE *f) {
+    fprintf(f, "%s", opts.color_match);
+}
+void color_highlight_line_no(FILE *f) {
+    fprintf(f, "%s", opts.color_line_number);
+}
+void color_normal(FILE *f) {
+    fprintf(f, "%s", color_reset);
+}
 #endif
 
-#ifdef _WIN32	/* For Windows, we must convert / to \ in the paths displayed */
-const char* normalize_slashes(const char* path);
-#else		/* For Unix, use the paths as they are */
+#ifdef _WIN32 /* For Windows, we must convert / to \ in the paths displayed */
+const char *normalize_slashes(const char *path);
+#else /* For Unix, use the paths as they are */
 #define normalize_slashes(path) path
 #endif
 
 #ifdef _WIN32
-#define __thread __declspec( thread )
+#define __thread __declspec(thread)
 #endif
 
 __thread struct print_context {
@@ -178,7 +192,7 @@ void print_path(const char *path, const char sep) {
         }
     }
 #ifdef _WIN32
-    free((void*)buf); /* Under Unix, buf is not a local buffer */
+    free((void *)buf); /* Under Unix, buf is not a local buffer */
 #endif
 }
 
@@ -211,7 +225,7 @@ void print_binary_file_matches(const char *path) {
     print_file_separator();
     fprintf(out_fd, "Binary file %s matches.\n", buf);
 #ifdef _WIN32
-    free((void*)buf); /* Under Unix, buf is not a local buffer */
+    free((void *)buf); /* Under Unix, buf is not a local buffer */
 #endif
 }
 
@@ -446,13 +460,13 @@ const char *normalize_path(const char *path) {
 
 #ifdef _WIN32
 /* Change / to \ for displaying standard Windows paths */
-const char* normalize_slashes(const char* path) {
+const char *normalize_slashes(const char *path) {
     char *i;
-    char* buf = strdup(path);
+    char *buf = strdup(path);
 #ifdef _WIN32
-    for(i = buf; *i; ++i)
-    {
-        if(*i == '/') *i = '\\';
+    for (i = buf; *i; ++i) {
+        if (*i == '/')
+            *i = '\\';
     }
 #endif
     return buf;
