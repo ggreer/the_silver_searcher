@@ -35,10 +35,15 @@
 |                                                                             |
 |   Return value:   Pointer to the full pathname, or NULL if error	      |
 |                                                                             |
-|   Notes:	    Warning: Windows' GetFullPathname and MSVC's _fullpath    |
+|   Notes:	    Warning: Windows' GetFullPathName and MSVC's _fullpath    |
 |		    trim trailing dots and spaces from the path.	      |
 |		    This derived function reproduces the bug.		      |
 |                   The caller MUST add trailing dots & spaces back if needed.|
+|                                                                             |
+|                   Warning: Windows' GetFullPathName returns unpredictable   |
+|                   results when invoked in a multithreaded application.      |
+|                   Windows' own doc recommends not using GetFullPathName in  |
+|                   this case.                                                |
 |                                                                             |
 |   History:								      |
 |    2014-03-25 JFL Created this routine.				      |
