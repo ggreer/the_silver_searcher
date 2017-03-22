@@ -8,6 +8,7 @@
 *                                                                             *
 *   History:								      *
 *    2016-09-12 JFL Created this file, from the routine in truename.c.	      *
+*    2017-03-20 JFL Include stdio.h, to get the UTF-8 version of printf.      *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -15,8 +16,11 @@
 
 #ifdef _WIN32	/* Automatically defined when targeting a Win32 application */
 
+#define _UTF8_SOURCE
+
 #include <windows.h>	/* Also includes MsvcLibX' WIN32 UTF-8 extensions */
 #include <limits.h>
+#include <stdio.h>
 #include "debugm.h"	/* MsvcLibX debugging macros */
 
 /*---------------------------------------------------------------------------*\
