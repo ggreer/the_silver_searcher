@@ -33,6 +33,7 @@
 #    2017-02-27 JFL Added getpagesize.obj. 		                      #
 #    2017-03-02 JFL Removed references to files removed earlier.              #
 #    2017-03-03 JFL Added fwrite.obj.   		                      #
+#    2017-03-22 JFL Added missing dependencies.			              #
 #                   							      #
 #         © Copyright 2016 Hewlett Packard Enterprise Development LP          #
 # Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 #
@@ -164,7 +165,7 @@ $(I)\sys\types.h: $(I)\msvclibx.h
 #			Source files dependancies			      #
 ###############################################################################
 
-access.c: $(I)\MsvcLibX.h $(CI)\debugm.h
+access.c: $(CI)\debugm.h $(I)\MsvcLibX.h
 
 basename.c: $(I)\libgen.h
 
@@ -178,13 +179,13 @@ dirent.c: $(CI)\debugm.h $(I)\dirent.h $(I)\sys\stat.h $(I)\unistd.h
 
 dirname.c: $(I)\libgen.h
 
-err2errno.c: $(I)\MsvcLibX.h $(CI)\debugm.h
+err2errno.c: $(CI)\debugm.h $(I)\MsvcLibX.h
 
 filetime.c: $(I)\sys\stat.h
 
 fnmatch.c: $(CI)\debugm.h $(I)\fnmatch.h
 
-fopen.c: $(I)\MsvcLibX.h
+fopen.c: $(CI)\debugm.h $(I)\MsvcLibX.h
 
 fstat64.c: fstat.c $(CI)\debugm.h $(I)\dirent.h $(I)\MsvcLibX.h $(I)\sys\stat.h $(I)\stdint.h
 
@@ -192,17 +193,17 @@ fstat64i32.c: fstat.c $(CI)\debugm.h $(I)\dirent.h $(I)\MsvcLibX.h $(I)\sys\stat
 
 fullpath.c: $(I)\stdlib.h $(I)\limits.h
 
-fwrite.c: $(I)\MsvcLibX.h  $(I)\stdio.h $(I)\iconv.h $(I)\unistd.h
+fwrite.c: $(CI)\debugm.h $(I)\MsvcLibX.h  $(I)\stdio.h $(I)\iconv.h $(I)\unistd.h
 
 getcwd.c: $(CI)\debugm.h $(I)\unistd.h
 
-GetFileAttributesU.c: $(I)\windowsU.h $(I)\limits.h
+GetFileAttributes.c: $(I)\windowsU.h $(I)\limits.h
 
-GetFileAttributesExU.c: $(I)\windowsU.h $(I)\limits.h
+GetFileAttributesEx.c: $(I)\windowsU.h $(I)\limits.h
 
-GetFullPathNameU.c: $(I)\windowsU.h $(I)\limits.h $(CI)\debugm.h
+GetFullPathName.c: $(CI)\debugm.h $(I)\windowsU.h $(I)\limits.h
 
-GetLongPathNameU.c: $(I)\windowsU.h $(I)\limits.h $(CI)\debugm.h
+GetLongPathName.c: $(CI)\debugm.h $(I)\windowsU.h $(I)\limits.h
 
 getopt.c: $(I)\getopt.h
 
@@ -214,7 +215,7 @@ gettimeofday.c: $(I)\MsvcLibX.h $(I)\time.h $(I)\sys\time.h
 
 grp.c: $(I)\grp.h 
 
-iconv.c: $(I)\iconv.h
+iconv.c: $(CI)\debugm.h $(I)\iconv.h
 
 lstat32.c: lstat.c $(CI)\debugm.h $(I)\dirent.h $(I)\MsvcLibX.h $(I)\sys\stat.h $(I)\stdint.h $(I)\unistd.h
 
@@ -226,7 +227,7 @@ lstat64i32.c: lstat.c $(CI)\debugm.h $(I)\dirent.h $(I)\MsvcLibX.h $(I)\sys\stat
 
 main.c: $(I)\MsvcLibX.h
 
-mb2wpath.c: $(I)\MsvcLibX.h $(CI)\debugm.h
+mb2wpath.c: $(CI)\debugm.h $(I)\MsvcLibX.h
 
 mkdir.c: $(I)\MsvcLibX.h $(I)\sys\stat.h
 
@@ -234,7 +235,7 @@ mkdtemp.c: $(I)\unistd.h
 
 mkstemp.c: $(I)\unistd.h
 
-open.c: $(I)\MsvcLibX.h $(I)\fcntl.h $(CI)\debugm.h
+open.c: $(CI)\debugm.h $(I)\MsvcLibX.h $(I)\fcntl.h
 
 pwd.c: $(I)\pwd.h 
 
@@ -244,7 +245,7 @@ realpath.c: $(CI)\debugm.h $(I)\unistd.h
 
 rmdir.c: $(CI)\debugm.h $(I)\MsvcLibX.h $(I)\sys\stat.h
 
-spawm.c: $(CI)\debugm.h $(I)\MsvcLibX.h $(I)\process.h
+spawn.c: $(CI)\debugm.h $(I)\MsvcLibX.h $(I)\process.h
 
 strerror.c: $(I)\MsvcLibX.h
 
@@ -259,6 +260,8 @@ uname.c: $(I)\MsvcLibX.h $(I)\sys\utsname.h
 unlink.c: $(CI)\debugm.h $(I)\MsvcLibX.h $(I)\sys\stat.h
 
 utime.c: $(CI)\debugm.h $(I)\unistd.h $(I)\utime.h $(I)\sys\time.h
+
+utimes.c: $(CI)\debugm.h $(I)\unistd.h $(I)\sys\time.h
 
 xfreopen.c: $(I)\xfreopen.h
 
