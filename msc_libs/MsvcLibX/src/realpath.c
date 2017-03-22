@@ -76,6 +76,8 @@ int CompactPath(const char *path, char *outbuf, size_t bufsize) {
   int isAbsolute = FALSE;
   int nDotDotParts = 0;
 
+  DEBUG_ENTER(("CompactPath(\"%s\", %p, %lu);\n", path, outbuf, (unsigned long)bufsize));
+
   pcIn = path;
   inSize = (int)strlen(path) + 1;
   pcOut = outbuf;
@@ -101,7 +103,7 @@ int CompactPath(const char *path, char *outbuf, size_t bufsize) {
     if ((c != '\\') && ((lastc == '\\') || (lastc == '\0'))) { /* Beginning of a new node */
       if (nParts == MAX_SUBDIRS) {
 	errno = ENAMETOOLONG;
-	return -1;
+	RETURN_INT_COMMENT(-1, ("Name too long\n"));-1;
       }
       pParts[nParts] = pcIn + i;
       lPart = 0;
@@ -152,7 +154,7 @@ its_a_dot_part:
   if (!outSize) {
 not_compact_enough:
     errno = ENAMETOOLONG;
-    return -1;
+    RETURN_INT_COMMENT(-1, ("Name too long\n"));
   }
   outSize -= 1;	/* Leave room for the final NUL */
   if (isAbsolute) {
@@ -184,7 +186,7 @@ not_compact_enough:
   }
   *pcOut = '\0';
 
-  return (int)(pcOut - outbuf);
+  RETURN_INT_COMMENT((int)(pcOut - outbuf), ("\"%s\"\n", outbuf));
 }
 
 
@@ -273,6 +275,7 @@ realpath_failed:
 |   History								      |
 |    2014-02-07 JFL Created this routine                                      |
 |    2014-07-02 JFL Added support for pathnames >= 260 characters. 	      |
+|    2017-03-20 JFL Bug fix: First convert relative paths to absolute paths.  |
 *									      *
 \*---------------------------------------------------------------------------*/
 
@@ -295,9 +298,26 @@ int ResolveLinksU1(const char *path, char *buf, size_t bufsize, NAMELIST *prev, 
   int iBuf = 0;
   NAMELIST list;
   NAMELIST *pList;
+  char *path0 = NULL;
 
   DEBUG_ENTER(("ResolveLinks1(\"%s\", 0x%p, %ld, 0x%p, %d);\n", path, buf, bufsize, prev, iDepth));
 
+  /* Convert relative paths to absolute paths */
+  if (!(   ((path[0] == '\\') || (path[0] == '/'))
+        || (    path[0]
+            && (path[1] == ':')
+            && ((path[2] == '\\') || (path[2] == '/')))
+      )) { /* If this is a relative pathname */
+    path0 = malloc(UTF8_PATH_MAX);
+    if (!path0) RETURN_INT(-1); /* errno = ENOMEM */
+    if (!GetFullPathNameU(path, UTF8_PATH_MAX, path0, NULL)) {
+      free(path0);
+      errno = EINVAL;
+      RETURN_INT(-1);
+    }
+    path = path0;
+  }
+  /* Scan every part of the pathname for links */
   while (path[iPath]) {
     /* int iPath0 = iPath; */
     /* int iBuf0 = iBuf; */
@@ -309,6 +329,7 @@ int ResolveLinksU1(const char *path, char *buf, size_t bufsize, NAMELIST *prev, 
       if (path[0] == '\\') {
 	if ((iBuf+1U) >= bufsize) {
 resolves_too_long:
+	  free(path0);
 	  errno = ENAMETOOLONG;
 	  RETURN_INT_COMMENT(-1, ("Name too long\n"));
 	}
@@ -358,6 +379,7 @@ resolves_too_long:
 	  lstrcpy(buf+iBuf, path+iPath);
 	}
       }
+      free(path0);
       RETURN_INT_COMMENT(-1, ("No such file: \"%s\"\n", buf));
     }
     if (dwAttr & FILE_ATTRIBUTE_REPARSE_POINT) {
@@ -373,6 +395,7 @@ resolves_too_long:
 	    lstrcpy(buf+iBuf, path+iPath);
 	  }
 	}
+	free(path0);
         RETURN_INT_COMMENT(-1, ("Dangling link: \"%s\"\n", buf));
       }
       if ((dwAttr & FILE_ATTRIBUTE_DIRECTORY) && !lstrcmp(buf, target)) {
@@ -410,12 +433,14 @@ resolves_too_long:
       /* Check for max depth */
       if (iDepth == SYMLOOP_MAX) {
 	errno = ELOOP;
+	free(path0);
 	RETURN_INT_COMMENT(-1, ("Max symlink depth reached: \"%s\"\n", buf));
       }
       /* Check for loops */
       for (pList = prev ; pList; pList = pList->prev) {
       	if (!lstrcmpi(buf, pList->path)) {
       	  errno = ELOOP;
+	  free(path0);
 	  RETURN_INT_COMMENT(-1, ("Loop found: \"%s\"\n", buf));
 	}
       }
@@ -424,6 +449,7 @@ resolves_too_long:
       list.prev = prev;
       list.path = target;
       iErr = ResolveLinksU1(target, buf, bufsize, &list, iDepth+1);
+      free(path0);
       RETURN_INT_COMMENT(iErr, ("\"%s\"\n", buf));
     } else { /* It's a normal file or directory */
 file_or_directory:
@@ -433,11 +459,13 @@ file_or_directory:
 	  buf[iBuf++] = '\\';
 	  lstrcpy(buf+iBuf, path+iPath);
 	}
+	free(path0);
 	RETURN_INT_COMMENT(-1, ("File where dir expected: \"%s\"\n", buf));
       }
     }
   }
 
+  free(path0);
   RETURN_INT_COMMENT(0, ("Success: \"%s\"\n", buf));
 }
 
