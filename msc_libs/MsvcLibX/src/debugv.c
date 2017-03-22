@@ -13,6 +13,8 @@
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
 \*****************************************************************************/
 
+#define _CRT_SECURE_NO_WARNINGS 1 /* Avoid Visual C++ 2005 security warnings */
+
 #include "debugm.h"
 
 #if defined(_DEBUG)
