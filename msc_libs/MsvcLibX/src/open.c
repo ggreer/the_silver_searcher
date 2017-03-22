@@ -9,6 +9,7 @@
 *   History:								      *
 *    2017-02-16 JFL Created this module.				      *
 *    2017-03-12 JFL Restructured the UTF16 writing mechanism.		      *
+*    2017-03-18 JFL Bug fix: Only change Xlation when writing to a valid file.*
 *                                                                             *
 *         © Copyright 2017 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -47,6 +48,8 @@
 *                                                                             *
 \*---------------------------------------------------------------------------*/
 
+#define WRITE_MODE_MASK (_O_WRONLY | _O_RDWR | _O_APPEND)
+
 int openM(UINT cp, const char *pszName, int iFlags, int iPerm) {
   WCHAR wszName[UNICODE_PATH_MAX];
   int n;
@@ -69,11 +72,22 @@ int openM(UINT cp, const char *pszName, int iFlags, int iPerm) {
   iFile = _wopen(wszName, iFlags, iPerm);
 
   /* Find out the initial translation mode, and change it if appropriate */
-  iMode = _setmodeX(iFile, _O_TEXT);	/* Get the initial mode. Any mode can switch to _O_TEXT. */
-  if ((iMode & _O_TEXT) && _isatty(iFile)) { /* If writing text to the console */
-    iMode = _O_WTEXT;				/* Then write Unicode instead */
+  if (iFile >= 0) {
+    int iWrite = 0;
+    switch (iFlags & WRITE_MODE_MASK) {
+    case _O_RDWR:
+    case _O_WRONLY:
+    case _O_APPEND:
+      iWrite = 1;
+    }
+    if (iWrite) {
+      iMode = _setmodeX(iFile, _O_TEXT);	/* Get the initial mode. Any mode can switch to _O_TEXT. */
+      if ((iMode & _O_TEXT) && _isatty(iFile)) { /* If writing text to the console */
+        iMode = _O_WTEXT;				/* Then write Unicode instead */
+      }
+      _setmodeX(iFile, iMode);		/* Restore the initial mode */
+    }
   }
-  _setmodeX(iFile, iMode);		/* Restore the initial mode */
 
   DEBUG_PRINTF(("  return %d;\n", iFile));
   return iFile;
