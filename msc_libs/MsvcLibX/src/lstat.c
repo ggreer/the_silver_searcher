@@ -2,12 +2,11 @@
 *                                                                             *
 *   Filename	    lstat.c						      *
 *									      *
-*   Description:    WIN32 port of standard C library's lstat()		      *
-*                   Also contains unlink() and rmdir(), which do use lstat.   *
+*   Description     WIN32 port of standard C library's lstat()		      *
 *                                                                             *
-*   Notes:	    TO DO: Make 3 versions for Windows: ANSI, WSTR, UTF8      *
+*   Notes 	    TO DO: Make 3 versions for Windows: ANSI, WSTR, UTF8      *
 *		    							      *
-*   History:								      *
+*   History								      *
 *    2014-02-06 JFL Created this module.				      *
 *    2014-02-12 JFL Added code to filter reparse points, and keep only        *
 *		    real junctions and symlinks.                              *
@@ -16,6 +15,7 @@
 *    2014-02-28 JFL Added support for UTF-8 pathnames.                 	      *
 *    2014-03-24 JFL Renamed "statx.h" as the standard <sys/stat.h>.	      *
 *    2014-06-30 JFL Added support for 32K Unicode paths.           	      *
+*    2017-03-18 JFL Moved unlink() and rmdir() to their own source files.     *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -101,19 +101,19 @@ int dirent2stat(_dirent *pDirent, struct _stat *pStat) {
 
 /*---------------------------------------------------------------------------*\
 *                                                                             *
-|   Function:	    lstat						      |
+|   Function	    lstat						      |
 |									      |
-|   Description:    Common definition of all _lstatXY() functions             |
+|   Description	    Common definition of all _lstatXY() functions             |
 |									      |
-|   Parameters:     const char *path		The symlink name	      |
+|   Parameters      const char *path		The symlink name	      |
 |		    struct stat *buf		Output buffer		      |
 |									      |
-|   Returns:	    0 = Success, -1 = Failure				      |
+|   Returns	    0 = Success, -1 = Failure				      |
 |									      |
-|   Notes:	    See statx.h for a description of how the stat and lstat   |
-|		    macros work.					      |
+|   Notes	    See sys\stat.h for a description of how the stat and      |
+|		    lstat macros work.					      |
 |									      |
-|   History:								      |
+|   History								      |
 |    2014-02-06 JFL Created this routine                               	      |
 |    2014-02-28 JFL Added support for UTF-8 pathnames.                 	      |
 *									      *
@@ -250,6 +250,26 @@ this_is_not_a_symlink:
   RETURN_INT_COMMENT(0, ("%s  mode = 0x%04X  size = %I64d bytes\n", szTime, pStat->st_mode, qwSize));
 }
 
+/*---------------------------------------------------------------------------*\
+*                                                                             *
+|   Function	    stat						      |
+|									      |
+|   Description	    Common definition of all _statXY() functions              |
+|									      |
+|   Parameters      const char *path		The symlink name	      |
+|		    struct stat *buf		Output buffer		      |
+|									      |
+|   Returns	    0 = Success, -1 = Failure				      |
+|									      |
+|   Notes	    See sys\stat.h for a description of how the stat and      |
+|		    lstat macros work.					      |
+|									      |
+|   History								      |
+|    2014-02-06 JFL Created this routine                               	      |
+|    2014-02-28 JFL Added support for UTF-8 pathnames.                 	      |
+*									      *
+\*---------------------------------------------------------------------------*/
+
 #if !USE_MSVC_STAT
 int stat(const char *path, struct stat *pStat) {
   char buf[UTF8_PATH_MAX];
@@ -308,123 +328,6 @@ int dirent2stat(_dirent *pDirent, struct stat *pStat) {
 #endif
 
   return 0;
-}
-
-/*---------------------------------------------------------------------------*\
-*                                                                             *
-|   Function:	    unlink						      |
-|									      |
-|   Description:    Remove a file or a symbolic link		              |
-|									      |
-|   Parameters:     const char *path		The file or symlink name      |
-|									      |
-|   Returns:	    0 = Success, -1 = Failure				      |
-|									      |
-|   Notes:	    							      |
-|									      |
-|   History:								      |
-|    2014-02-17 JFL Created this routine                               	      |
-|    2014-02-28 JFL Added support for UTF-8 pathnames.                 	      |
-*									      *
-\*---------------------------------------------------------------------------*/
-
-int unlink(const char *path) {
-  int iErr;
-  BOOL bDone;
-  struct stat st;
-  WCHAR wszName[UNICODE_PATH_MAX];
-  int n;
-
-  DEBUG_ENTER(("unlink(\"%s\");\n", path));
-
-  iErr = lstat(path, &st);
-  if (iErr) RETURN_INT(iErr);
-
-  if ((!S_ISREG(st.st_mode)) && (!S_ISLNK(st.st_mode))) {
-    errno = ENOENT;
-    RETURN_INT_COMMENT(-1, ("Pathname exists, but is not a file or a link\n"));
-  }
-
-  /* Convert the pathname to a unicode string, with the proper extension prefixes if it's longer than 260 bytes */
-  n = MultiByteToWidePath(CP_UTF8,		/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
-    			  path,			/* lpMultiByteStr, */
-			  wszName,		/* lpWideCharStr, */
-			  UNICODE_PATH_MAX	/* cchWideChar, */
-			  );
-  if (!n) {
-    errno = Win32ErrorToErrno();
-    RETURN_INT_COMMENT(-1, ("errno=%d - %s\n", errno, strerror(errno)));
-  }
-
-#if _MSVCLIBX_STAT_DEFINED
-  if (S_ISLNK(st.st_mode) && (st.st_Win32Attrs & FILE_ATTRIBUTE_DIRECTORY)) {
-    /* This link is a junction or a symlinkd */
-    bDone = RemoveDirectoryW(wszName);
-  } else
-#endif
-  bDone = DeleteFileW(wszName);
-
-  if (bDone) {
-    RETURN_INT_COMMENT(0, ("Success\n"));
-  } else {
-    errno = Win32ErrorToErrno();
-    RETURN_INT_COMMENT(-1, ("Failed\n"));
-  }
-}
-
-/*---------------------------------------------------------------------------*\
-*                                                                             *
-|   Function:	    rmdir						      |
-|									      |
-|   Description:    Remove a directory				              |
-|									      |
-|   Parameters:     const char *path		The directory name	      |
-|									      |
-|   Returns:	    0 = Success, -1 = Failure				      |
-|									      |
-|   Notes:	    							      |
-|									      |
-|   History:								      |
-|    2014-03-05 JFL Created this routine with support for UTF-8 pathnames.    |
-*									      *
-\*---------------------------------------------------------------------------*/
-
-int rmdir(const char *path) {
-  int iErr;
-  BOOL bDone;
-  struct stat st;
-  WCHAR wszName[UNICODE_PATH_MAX];
-  int n;
-
-  DEBUG_ENTER(("rmdir(\"%s\");\n", path));
-
-  iErr = lstat(path, &st);
-  if (iErr) RETURN_INT(iErr);
-
-  if (!S_ISDIR(st.st_mode)) {
-    errno = ENOTDIR;
-    RETURN_INT_COMMENT(-1, ("Pathname exists, but is not a directory\n"));
-  }
-
-  /* Convert the pathname to a unicode string, with the proper extension prefixes if it's longer than 260 bytes */
-  n = MultiByteToWidePath(CP_UTF8,		/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
-    			  path,			/* lpMultiByteStr, */
-			  wszName,		/* lpWideCharStr, */
-			  UNICODE_PATH_MAX	/* cchWideChar, */
-			  );
-  if (!n) {
-    errno = Win32ErrorToErrno();
-    RETURN_INT_COMMENT(-1, ("errno=%d - %s\n", errno, strerror(errno)));
-  }
-
-  bDone = RemoveDirectoryW(wszName);
-
-  if (bDone) {
-    RETURN_INT_COMMENT(0, ("Success\n"));
-  } else {
-    errno = Win32ErrorToErrno();
-    RETURN_INT_COMMENT(-1, ("Failed\n"));
-  }
 }
 
 #endif /* _WIN32 */
