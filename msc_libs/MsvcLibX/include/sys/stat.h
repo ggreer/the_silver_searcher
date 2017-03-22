@@ -18,6 +18,7 @@
 *    2014-06-24 JFL Added fstat and fstat64 external references.	      *
 *    2015-11-15 JFL Visual Studio 2015 moved this file to the Windows Kit UCRT.
 *    2016-09-15 JFL Fixed a warning in Visual Studio 2015.		      *
+*    2017-03-20 JFL Moved unlink & rmdir definitions for unistd.h.	      *
 *									      *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -246,11 +247,6 @@ extern int _CONCAT(_dirent2_stat64,_NS_SUFFIX)(struct dirent *pDE, struct _CONCA
 #endif
 #define dirent2stat _CONCAT(_dirent2,stat)
 #define _DIRENT2STAT_DEFINED 1
-
-#define unlink _CONCAT(_unlink_, stat)
-#define rmdir _CONCAT(_rmdir_, stat)
-extern int unlink(const char *path);
-extern int rmdir(const char *path);
 
 /* Proprietary function for generating a printable local file time,
    using Windows' specific algorithm, to match cmd.exe dir output. */

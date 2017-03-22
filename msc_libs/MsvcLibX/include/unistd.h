@@ -19,6 +19,7 @@
 *    2016-08-25 JFL Implemented ResolveLinksA().			      *
 *    2017-03-01 JFL Added more standard routines MS thinks are proprietary.   *
 *		    Added routine getpagesize().			      *
+*    2017-03-18 JFL Added rmdir() & unlink().                                 *
 *									      *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -56,16 +57,24 @@
 #define getcwd getcwdU
 #define _getdcwd _getdcwdU
 #define chdir chdirU
+#define rmdir rmdirU
+#define unlink unlinkU
 #else /* _ANSI_SOURCE */
 #define getcwd getcwdA
 #define _getdcwd _getdcwdA
 #define chdir chdirA
+#define rmdir rmdirA
+#define unlink unlinkA
 #endif
 char *getcwdA(char *buf, size_t bufSize); /* Can't use the getcwd name, as MSVC has an incompatible prototype for it */
 char *_getdcwdA(int iDrive, char *buf, int iBuflen);
 char *getcwdU(char *buf, size_t bufSize); /* Can't use the getcwd name, as MSVC has an incompatible prototype for it */
 char *_getdcwdU(int iDrive, char *buf, int iBuflen);
-#endif /* defined(_MSDOS) */
+int rmdirA(const char *path);
+int rmdirU(const char *path);
+int unlinkA(const char *path);
+int unlinkU(const char *path);
+#endif /* defined(_WIN32) */
 int chdir(const char *path);
 
 /* These are non standard indeed, but the leading _ is annoying */ 
