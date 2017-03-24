@@ -267,6 +267,9 @@ this_is_not_a_symlink:
 |   History								      |
 |    2014-02-06 JFL Created this routine                               	      |
 |    2014-02-28 JFL Added support for UTF-8 pathnames.                 	      |
+|    2017-03-22 JFL No need to fully resolve all links in the pathname.       |
+|		    Resolving the tail links is sufficient, and much faster.  |
+|    2017-03-24 JFL Only resolve links if it's a link.                        |
 *									      *
 \*---------------------------------------------------------------------------*/
 
@@ -274,11 +277,24 @@ this_is_not_a_symlink:
 int stat(const char *path, struct stat *pStat) {
   char buf[UTF8_PATH_MAX];
   int iErr;
+  DWORD dwAttr;
 
   DEBUG_ENTER((STRINGIZE(stat) "(\"%s\", 0x%p);\n", path, pStat));
 
-  iErr = ResolveLinksU(path, buf, sizeof(buf));
-  if (!iErr) lstat(buf, pStat);
+  dwAttr = GetFileAttributes(path);
+  if (dwAttr == INVALID_FILE_ATTRIBUTES) {
+    errno = ENOENT;
+    RETURN_INT_COMMENT(-1, ("File does not exist\n"));
+  }
+
+  if (dwAttr & FILE_ATTRIBUTE_REPARSE_POINT) {
+    iErr = ResolveTailLinks(path, buf, sizeof(buf));
+    path = buf;
+  } else {
+    iErr = 0;
+  }
+
+  if (!iErr) iErr = lstat(path, pStat);
 
   RETURN_INT(iErr);
 }
