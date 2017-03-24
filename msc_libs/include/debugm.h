@@ -12,6 +12,9 @@
 *    DEBUG_GLOBALS              Define global variables used by macros below: *
 *    int iDebug = FALSE;        Global variable enabling debug output if TRUE.*
 *    int iIndent = 0;           Global variable controlling debug indentation.*
+*    int (*pdputs)(const char *)Pointer to the debug puts() routine.          *
+*                               Replace it with a thread-safe routine in      *
+*                               multi-threaded programs.                      *
 *                                                                             *
 *    DEBUG_PRINTF((format, ...))	Print a debug string if debug is on.  *
 *                                       The double parenthesis are necessary  *
@@ -43,6 +46,12 @@
 *    2016-09-13 JFL Added macros DEBUG_WSTR2NEWUTF8() and DEBUG_FREEUTF8().   *
 *    2016-10-04 JFL Added macros DEBUG_OFF(), DEBUG_MORE(), DEBUG_LESS().     *
 *		    Allow using DEBUG_ON()/MORE()/LESS()/OFF() in release mode.
+*    2017-03-22 JFL Rewrote DEBUG_PRINTF() and similar macros to generate a   *
+*		    string, and output it in a single call to puts().         *
+*		    This is useful for multi-threaded programs, that need     *
+*		    to use a semaphore for synchronizing debug output from    *
+*		    multiple threads.					      *
+*    2017-03-24 JFL Added macro SET_DEBUG_PUTS().                             *
 *		    							      *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -52,6 +61,9 @@
 #define	_DEBUGM_H	1
 
 #include <stdio.h>	/* Macros use printf */
+#include <stdarg.h>
+#include <string.h>
+#include <malloc.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4127) /* Avoid warnings on while(0) below */
@@ -60,16 +72,72 @@
 #define DEBUG_DO(code) do {code} while (0)
 #define DEBUG_DO_NOTHING() do {} while (0)
 
+#if defined(_WIN32)
+#define DEBUG_TLS __declspec(thread)
+#else
+#define DEBUG_TLS
+#endif
+
+#ifndef _MSC_VER /* Emulate Microsoft's _vsnprintf() using the standard vsnprintf() */
+#define _VSNPRINTF_EMULATION \
+int _vsnprintf(const char *pBuf, int iBufSize, char *pszFormat, va_list vl) {  \
+  int iRet = vsnprintf(buf, iBufSize, pszFormat, vl);                          \
+  if (iRet > iBufSize) iRet = -1;                                              \
+  return iRet;			                                               \
+}
+#else /* Use Microsoft's own */
+#define _VSNPRINTF_EMULATION
+#endif
+
 /* Conditional compilation based on Microsoft's standard _DEBUG definition */
 #if defined(_DEBUG)
 
 #define DEBUG_VERSION " Debug"
 
 #define DEBUG_GLOBALS \
-int iDebug = 0;		/* Global variable enabling debug output if TRUE. */ \
-int iIndent = 0;	/* Global variable controlling debug indentation. */
+int iDebug = 0;		/* Global variable enabling debug output if TRUE. */   \
+int DEBUG_TLS iIndent = 0; /* Global variable controlling debug indentation. */\
+int (*pdputs)(const char *) = puts; /* Debug output routine. Default: puts */  \
+_VSNPRINTF_EMULATION							       \
+char *debug_vsprintf(char *pszFormat, va_list vl) {                            \
+  char *pszBuf = NULL;		                                               \
+  int n = 0, nBufSize = 64;				                       \
+  do {pszBuf = realloc(pszBuf, nBufSize *= 2);} while (			       \
+    pszBuf && ((n = _vsnprintf(pszBuf, nBufSize, pszFormat, vl)) == -1)        \
+  );		                                                               \
+  if (!pszBuf) return NULL;						       \
+  if (n && (pszBuf[n-1] == '\n')) pszBuf[--n] = '\0';                          \
+  return realloc(pszBuf, n+1);	                                               \
+}									       \
+char *debug_sprintf(char *pszFormat, ...) {                                    \
+  char *pszBuf;			                                               \
+  va_list vl;                                                                  \
+  va_start(vl, pszFormat);                                                     \
+  pszBuf = debug_vsprintf(pszFormat, vl);				       \
+  va_end(vl);                                                                  \
+  return pszBuf;		                                               \
+}									       \
+int debug_printf(char *pszFormat, ...) {                                       \
+  char *pszBuf1 = NULL, *pszBuf2 = NULL;		                       \
+  int n = 0;	                                                               \
+  va_list vl;                                                                  \
+  va_start(vl, pszFormat);                                                     \
+  pszBuf1 = debug_vsprintf(pszFormat, vl);				       \
+  va_end(vl);                                                                  \
+  if (!pszBuf1) return 0;		                                       \
+  pszBuf2 = debug_sprintf("%*s%s", iIndent, "", pszBuf1);                      \
+  if (pszBuf2) n = strlen(pszBuf2);                                            \
+  pdputs(pszBuf2);	                                                       \
+  fflush(stdout);	                                                       \
+  free(pszBuf1); free(pszBuf2);                                                \
+  return n;                                                                    \
+}									       \
 
 extern int iDebug;	/* Global variable enabling of disabling debug messages */
+extern int (*pdputs)(const char *);	/* Pointer to the debug puts routine */
+extern int debug_printf(char *fmt,...);	/* Print debug messages */
+extern char *debug_sprintf(char *fmt,...); /* Print debug messages to a new buffer */
+extern char *debug_vsprintf(char *fmt, va_list vl); /* Common subroutine of the previous two */
 #define DEBUG_ON() iDebug = 1		/* Turn debug mode on */
 #define DEBUG_MORE() iDebug += 1	/* Increase the debug level */
 #define DEBUG_LESS() iDebug -= 1	/* Decrease the debug level */
@@ -83,8 +151,8 @@ extern int iDebug;	/* Global variable enabling of disabling debug messages */
 				   Debug code executed if debug mode is on */
 #define XDEBUG_CODE_IF_ON(code) DEBUG_CODE(if (XDEBUG_IS_ON()) {code}) /*
 				   Debug code executed if extra debug mode is on */
-
-extern int iIndent;		/* Debug messages indentation */
+				   
+extern DEBUG_TLS int iIndent;	/* Debug messages indentation */
 #define DEBUG_INDENT_STEP 2	/* How many spaces to add for each indentation level */
 #define DEBUG_PRINT_INDENT() printf("%*s", iIndent, "")
 
@@ -92,8 +160,12 @@ extern int iIndent;		/* Debug messages indentation */
 /* The enter and leave variants print, then respectively increase or decrease indentation,
    to make recursive calls easier to review. */
 #define DEBUG_FPRINTF(args) DEBUG_DO(if (DEBUG_IS_ON()) {DEBUG_PRINT_INDENT(); fprintf args;})
+/*
 #define DEBUG_PRINTF(args) DEBUG_DO(if (DEBUG_IS_ON()) {DEBUG_PRINT_INDENT(); printf args; fflush(stdout);})
 #define XDEBUG_PRINTF(args) DEBUG_DO(if (XDEBUG_IS_ON()) {DEBUG_PRINT_INDENT(); printf args; fflush(stdout);})
+*/
+#define DEBUG_PRINTF(args) DEBUG_DO(if (DEBUG_IS_ON()) {debug_printf args;})
+#define XDEBUG_PRINTF(args) DEBUG_DO(if (XDEBUG_IS_ON()) {debug_printf args;})
 #define DEBUG_ENTER(args)  DEBUG_DO(DEBUG_PRINTF(args); iIndent += DEBUG_INDENT_STEP;)
 #define DEBUG_LEAVE(args)  DEBUG_DO(DEBUG_PRINTF(args); iIndent -= DEBUG_INDENT_STEP;)
 
@@ -112,6 +184,7 @@ extern int iIndent;		/* Debug messages indentation */
 #define RETURN_BOOL(b) DEBUG_DO(int DEBUG_b = (b); \
   DEBUG_LEAVE(("return %s;\n", DEBUG_b ? "TRUE" : "FALSE")); return DEBUG_b;)
 
+/*
 #define RETURN_COMMENT(args) DEBUG_DO(DEBUG_LEAVE(("return; // ")); \
   if (DEBUG_IS_ON()) printf args; return;)
 #define RETURN_CONST_COMMENT(value, args) DEBUG_DO(DEBUG_LEAVE(("return %s; // ", #value)); \
@@ -120,6 +193,17 @@ extern int iIndent;		/* Debug messages indentation */
   DEBUG_LEAVE(("return %d; // ", DEBUG_i)); if (DEBUG_IS_ON()) printf args; return DEBUG_i;)
 #define RETURN_BOOL_COMMENT(b, args) DEBUG_DO(int DEBUG_b = (b); \
   DEBUG_LEAVE(("return %s; // ", DEBUG_b ? "TRUE" : "FALSE")); if (DEBUG_IS_ON()) printf args; return DEBUG_b;)
+*/
+#define RETURN_COMMENT(args) DEBUG_DO(char *DEBUG_buf = NULL; \
+  if (DEBUG_IS_ON()) DEBUG_buf = debug_sprintf args; DEBUG_LEAVE(("return; // %s", DEBUG_buf)); return;)
+#define RETURN_CONST_COMMENT(value, args) DEBUG_DO(char *DEBUG_buf = NULL; \
+  if (DEBUG_IS_ON()) DEBUG_buf = debug_sprintf args; DEBUG_LEAVE(("return %s; // %s", #value, DEBUG_buf)); free(DEBUG_buf); return value;)
+#define RETURN_INT_COMMENT(i, args) DEBUG_DO(int DEBUG_i = (i); char *DEBUG_buf = NULL; \
+  if (DEBUG_IS_ON()) DEBUG_buf = debug_sprintf args; DEBUG_LEAVE(("return %d; // %s", DEBUG_i, DEBUG_buf)); free(DEBUG_buf); return DEBUG_i;)
+#define RETURN_BOOL_COMMENT(b, args) DEBUG_DO(int DEBUG_b = (b); char *DEBUG_buf = NULL; \
+  if (DEBUG_IS_ON()) DEBUG_buf = debug_sprintf args; DEBUG_LEAVE(("return %s; // %s", DEBUG_b ? "TRUE" : "FALSE", DEBUG_buf)); free(DEBUG_buf); return DEBUG_b;)
+
+#define SET_DEBUG_PUTS(pFunc) pdputs = pFunc /* Set the debug puts routine */
 
 #else /* !defined(_DEBUG) */
 
@@ -159,6 +243,8 @@ extern int iIndent;		/* Debug messages indentation */
 #define RETURN_CONST_COMMENT(value, args) return(value)
 #define RETURN_INT_COMMENT(i, args) return(i)
 #define RETURN_BOOL_COMMENT(b, args) return(b)
+
+#define SET_DEBUG_PUTS(pFunc) DEBUG_DO_NOTHING() /* Set the debug puts routine */
 
 #endif /* defined(_DEBUG) */
 
