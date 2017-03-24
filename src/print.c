@@ -88,10 +88,6 @@ const char *normalize_slashes(const char *path);
 #define normalize_slashes(path) path
 #endif
 
-#ifdef _WIN32
-#define __thread __declspec(thread)
-#endif
-
 __thread struct print_context {
     size_t line;
     char **context_prev_lines;
