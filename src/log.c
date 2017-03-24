@@ -40,6 +40,8 @@ void log_err(const char *fmt, ...) {
     va_end(args);
 }
 
+extern __thread int worker_id; /* -1 = Main thread; [0 to N-1] = worker thread ID */
+
 void vplog(const unsigned int level, const char *fmt, va_list args) {
     if (level < log_threshold) {
         return;
@@ -51,6 +53,9 @@ void vplog(const unsigned int level, const char *fmt, va_list args) {
     switch (level) {
         case LOG_LEVEL_DEBUG:
             fprintf(stream, "DEBUG: ");
+            /* Display the worker threads ID. This allows filtering the debug output by thread */
+            if (worker_id >= 0)
+                 fprintf(stream, "#%d: ", worker_id);
             break;
         case LOG_LEVEL_MSG:
             fprintf(stream, "MSG: ");
