@@ -18,6 +18,7 @@
 *		    versions to macros.					      *
 *    2014-07-03 JFL Added support for pathnames >= 260 characters. 	      *
 *    2016-09-09 JFL Fixed a crash in debug mode, due to stack overflows.      *
+*    2017-03-22 JFL Added routines TrimTailSlashesW() and ResolveTailLinks*().*
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -35,6 +36,10 @@
 
 #include <windows.h>
 #include "reparsept.h"
+
+#pragma warning(disable:4201) /* Ignore the "nonstandard extension used : nameless struct/union" warning */
+#include <Shlwapi.h> /* For PathFindFileName() */
+#pragma comment(lib, "Shlwapi.lib")
 
 /* Get the Reparse Point Tag for a mount point - Wide char version */
 /* See http://msdn.microsoft.com/en-us/library/windows/desktop/aa365511(v=vs.85).aspx */
@@ -68,6 +73,22 @@ DWORD GetReparseTagM(const char *path, UINT cp) {
     return 0;
   }
   return GetReparseTagW(wszPath);
+}
+
+/* Trim trailing slashes or backslashes in pathname, except for the root directory */
+int TrimTailSlashesW(WCHAR *pwszPath) {
+  int l;
+  int lDrive = 0;
+  if (pwszPath[0] && (pwszPath[1] == L':')) {
+    lDrive = 2;
+    pwszPath += 2; /* Skip the drive name */
+  }
+  l = lstrlenW(pwszPath);
+  /* Testing (l > 1) avoids trimming the root directory "\" */
+  while ((l > 1) && ((pwszPath[l-1] == L'\\') || (pwszPath[l-1] == L'/'))) {
+    pwszPath[--l] = L'\0'; /* Trim the trailing \ or / */
+  }
+  return lDrive + l; /* Length of the corrected pathname */
 }
 
 /*---------------------------------------------------------------------------*\
@@ -213,8 +234,7 @@ DWORD ReadReparsePointW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
     case IO_REPARSE_TAG_NFS:			pType = "NFS share"; break;
     default:					pType = "Unknown type! Please report its value and update readlink.c."; break;
     }
-    DEBUG_PRINT_INDENT();
-    printf("ReparseTag = 0x%04X; // %s\n", (unsigned)(dwTag), pType);
+    DEBUG_PRINTF(("ReparseTag = 0x%04X; // %s\n", (unsigned)(dwTag), pType));
   )
   XDEBUG_PRINTF(("ReparseDataLength = 0x%04X\n", (unsigned)(pIoctlBuf->ReparseDataLength)));
 
@@ -277,6 +297,8 @@ ssize_t readlinkW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
   DEBUG_ENTER(("readlink(\"%s\", 0x%p, %d);\n", pszUtf8, buf, bufsize));
   DEBUG_FREEUTF8(pszUtf8);
 
+  /* TO DO: Fix readlinkW (And thus ReadReparsePointW) to return truncated links if the buffer is too small.
+            Returning an ENAMETOOLONG or ENOMEM error as we do now is sane, but NOT standard */
   dwTag = ReadReparsePointW(path, buf, bufsize);
   if (!dwTag) {
     RETURN_INT_COMMENT(-1, ("ReadReparsePointW() failed.\n"));
@@ -418,6 +440,7 @@ ssize_t readlinkW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
           This is useful because junctions are often used as substitutes
           for symlinkds. But Windows always records absolute target paths,
           even when relative paths were used for creating them. */
+    TrimTailSlashesW(wszAbsPath);
     GetFullPathNameW(buf, PATH_MAX, wszAbsPath2, NULL);
     DEBUG_WSTR2NEWUTF8(wszAbsPath, pszUtf8);
     XDEBUG_PRINTF(("szAbsPath = \"%s\"\n", pszUtf8));
@@ -499,6 +522,135 @@ ssize_t readlinkM(const char *path, char *buf, size_t bufsize, UINT cp) {
   }
 
   return n;
+}
+
+/*---------------------------------------------------------------------------*\
+*                                                                             *
+|   Function	    ResolveTailLinks					      |
+|									      |
+|   Description	    Resolve links in node names	(Ignore those in dir names)   |
+|									      |
+|   Parameters      const char *path	    The symlink name		      |
+|		    char *buf		    Output buffer		      |
+|		    size_t bufsize	    Output buffer size in characters  |
+|									      |
+|   Returns	    0 = Success, -1 = Failure and set errno		      |
+|		    							      |
+|   Notes	    TO DO: Detect circular loops?			      |
+|									      |
+|   History								      |
+|    2017-03-22 JFL Created this routine                               	      |
+*									      *
+\*---------------------------------------------------------------------------*/
+
+int ResolveTailLinksW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
+  DWORD dwAttr;
+  DEBUG_CODE( /* TO DO: Use DEBUG_WSTR2NEWUTF8() / DEBUG_FREEUTF8() to avoid wasting stack space */
+  char szUtf8[UTF8_PATH_MAX];
+  )
+  size_t l;
+
+  DEBUG_WSTR2UTF8(path, szUtf8, sizeof(szUtf8));
+  DEBUG_ENTER(("ResolveTailLinks(\"%s\", %p, %ul);\n", szUtf8, buf, (unsigned long)bufsize));
+
+  dwAttr = GetFileAttributesW(path);
+  XDEBUG_PRINTF(("GetFileAttributes() = 0x%lX\n", dwAttr));
+  if (dwAttr == INVALID_FILE_ATTRIBUTES) {
+    errno = ENOENT;
+    RETURN_INT_COMMENT(-1, ("File does not exist\n"));
+  }
+
+  if (dwAttr & FILE_ATTRIBUTE_REPARSE_POINT) {
+    WCHAR wszBuf2[PATH_MAX];
+    WCHAR wszBuf3[PATH_MAX];
+    WCHAR *pwsz = wszBuf2;
+    int iCDSize;
+    int iRet;
+    ssize_t nLinkSize = readlinkW(path, wszBuf2, PATH_MAX); /* Corrects junction drive letters, etc */
+    if (nLinkSize < 0) RETURN_INT(-1);
+    if (!(   (wszBuf2[0] == L'\\')
+          || (wszBuf2[0] && (wszBuf2[1] == L':')))) { /* This is a relative path. We must compose it with the link dirname */
+      lstrcpynW(wszBuf3, path, PATH_MAX); /* May truncate the output string */
+      wszBuf3[PATH_MAX-1] = L'\0'; /* Make sure the string is NUL-terminated */
+      TrimTailSlashesW(wszBuf3);
+      pwsz = PathFindFileNameW(wszBuf3);
+      if (!lstrcmpW(pwsz, L"..")) { /* The link dirname is actually one level above */
+      	lstrcatW(pwsz, L"\\..\\");
+      } else if (!lstrcmpW(pwsz, L".")) { /* It's also one level above */
+      	lstrcatW(pwsz, L".\\");			/* Change the . into a ..\ */
+      } else if (lstrcmpW(pwsz, L"/")) { /* The value replaces the link node name */
+      	*pwsz = L'\0';
+      }
+      iCDSize = lstrlenW(wszBuf3);
+      lstrcpynW(wszBuf3+iCDSize, wszBuf2, PATH_MAX-iCDSize); /* May truncate the output string */
+      wszBuf3[PATH_MAX-1] = L'\0'; /* Make sure the string is NUL-terminated */
+      /* CompactpathW(wszBuf3, wszBuf2, PATH_MAX); // We don't care as we're only interested in the tail */
+      pwsz = wszBuf3;
+    }
+    iRet = ResolveTailLinksW(pwsz, buf, bufsize);
+    DEBUG_CODE(
+      szUtf8[0] = '\0';
+      if (iRet >= 0) DEBUG_WSTR2UTF8(buf, szUtf8, sizeof(szUtf8));
+    )
+    RETURN_INT_COMMENT(iRet, ("\"%s\"\n", szUtf8));
+  }
+
+  l = lstrlenW(path);
+  if (l >= bufsize) {
+    errno = ENAMETOOLONG;
+    RETURN_INT_COMMENT(-1, ("Buffer too small\n"));
+  }
+  lstrcpyW(buf, path);
+  RETURN_CONST_COMMENT(0, ("\"%s\"\n", szUtf8));
+}
+
+int ResolveTailLinksM(const char *path, char *buf, size_t bufsize, UINT cp) {
+  WCHAR wszPath[PATH_MAX];
+  WCHAR wszTarget[PATH_MAX];
+  int n;
+  int iErr;
+  char *pszDefaultChar;
+
+  /* Convert the pathname to a unicode string, with the proper extension prefixes if it's longer than 260 bytes */
+  n = MultiByteToWidePath(cp,			/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
+    			  path,			/* lpMultiByteStr, */
+			  wszPath,		/* lpWideCharStr, */
+			  COUNTOF(wszPath)	/* cchWideChar, */
+			  );
+  if (!n) {
+    errno = Win32ErrorToErrno();
+    DEBUG_PRINTF(("ResolveTailLinksM(\"%s\", ...); // Conversion to Unicode failed. errno=%d - %s\n", path, errno, strerror(errno)));
+    return -1;
+  }
+
+  iErr = ResolveTailLinksW(wszPath, wszTarget, PATH_MAX);
+  if (iErr < 0) return iErr;
+
+  pszDefaultChar = (cp == CP_UTF8) ? NULL : "?";
+  n = WideCharToMultiByte(cp,			/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
+			  0,			/* dwFlags, */
+			  wszTarget,		/* lpWideCharStr, */
+			  -1,			/* cchWideChar, */
+			  buf,			/* lpMultiByteStr, */
+			  (int)bufsize,		/* cbMultiByte, */
+			  pszDefaultChar,	/* lpDefaultChar, */
+			  NULL			/* lpUsedDefaultChar */
+			  );
+  if (!n) {
+    errno = Win32ErrorToErrno();
+    DEBUG_PRINTF(("ResolveTailLinksM(\"%s\", ...); // Conversion back from Unicode failed. errno=%d - %s\n", path, errno, strerror(errno)));
+    return -1;
+  }
+
+  return iErr;
+}
+
+int ResolveTailLinksA(const char *path, char *buf, size_t bufsize) {
+  return ResolveTailLinksM(path, buf, bufsize, CP_ACP);
+}
+
+int ResolveTailLinksU(const char *path, char *buf, size_t bufsize) {
+  return ResolveTailLinksM(path, buf, bufsize, CP_UTF8);
 }
 
 #endif
