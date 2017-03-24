@@ -103,7 +103,7 @@ int CompactPath(const char *path, char *outbuf, size_t bufsize) {
     if ((c != '\\') && ((lastc == '\\') || (lastc == '\0'))) { /* Beginning of a new node */
       if (nParts == MAX_SUBDIRS) {
 	errno = ENAMETOOLONG;
-	RETURN_INT_COMMENT(-1, ("Name too long\n"));-1;
+	RETURN_INT_COMMENT(-1, ("Name too long\n"));
       }
       pParts[nParts] = pcIn + i;
       lPart = 0;
