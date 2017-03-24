@@ -392,9 +392,12 @@ cleanup:
     }
 }
 
+__thread int worker_id = -1; /* Also used by log_debug() */
+
 void *search_file_worker(void *i) {
     work_queue_t *queue_item;
-    int worker_id = *(int *)i;
+
+    worker_id = *(int *)i;
 
     log_debug("Worker %i started", worker_id);
     while (TRUE) {
