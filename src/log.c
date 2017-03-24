@@ -55,7 +55,7 @@ void vplog(const unsigned int level, const char *fmt, va_list args) {
             fprintf(stream, "DEBUG: ");
             /* Display the worker threads ID. This allows filtering the debug output by thread */
             if (worker_id >= 0)
-                 fprintf(stream, "#%d: ", worker_id);
+                fprintf(stream, "#%d: ", worker_id);
             break;
         case LOG_LEVEL_MSG:
             fprintf(stream, "MSG: ");

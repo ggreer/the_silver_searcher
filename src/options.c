@@ -422,7 +422,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 set_log_level(LOG_LEVEL_DEBUG);
 #ifdef HAS_MSVCLIBX
                 SET_DEBUG_PUTS(ag_debug_puts); /* MsvcLibX debug output now goes though ag_debug_puts -> log_debug */
-                DEBUG_ON(); /* Enable MsvcLibX debug output in the DEBUG version of the program */
+                DEBUG_ON();                    /* Enable MsvcLibX debug output in the DEBUG version of the program */
 #endif
                 break;
             case 'f':
