@@ -24,6 +24,10 @@ FILE *out_fd;
 
 #define H_SIZE (64 * 1024)
 
+#ifdef _MSC_VER /* Microsoft C compilers do not have a __thread keyword */
+#define __thread __declspec(thread)
+#endif
+
 void *ag_malloc(size_t size);
 void *ag_realloc(void *ptr, size_t size);
 void *ag_calloc(size_t nelem, size_t elsize);
