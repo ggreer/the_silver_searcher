@@ -16,6 +16,7 @@
 *                                                                             *
 *   History:								      *
 *    2014-05-30 JFL Created this file.                    		      *
+*    2017-03-22 JFL Avoid getting Windows version twice to be thread safe.    *
 *									      *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -62,10 +63,11 @@ int uname(struct utsname *pun) {
 #pragma warning(disable:4996) /* Ignore the "This function or variable may be unsafe" warning for itoa() and getenv() */
 
 int uname(struct utsname *pun) {
-  DWORD dwVersion = GetVersion();
-
-  _itoa((int)(dwVersion & 0x0F), major, 10);
-  _itoa((int)((dwVersion >> 8) & 0x0F), minor, 10);
+  if (!major[0]) {
+    DWORD dwVersion = GetVersion();
+    _itoa((int)(dwVersion & 0x0F), major, 10);
+    _itoa((int)((dwVersion >> 8) & 0x0F), minor, 10);
+  }
 
   pun->sysname = getenv("OS"); /* Name of this operating system */
   pun->nodename = getenv("COMPUTERNAME"); /* Name of this node on the network */
