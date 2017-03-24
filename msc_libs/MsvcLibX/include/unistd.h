@@ -20,6 +20,7 @@
 *    2017-03-01 JFL Added more standard routines MS thinks are proprietary.   *
 *		    Added routine getpagesize().			      *
 *    2017-03-18 JFL Added rmdir() & unlink().                                 *
+*    2017-03-24 JFL Added ResolveTailLinks*() prototypes.                     *
 *									      *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -140,6 +141,7 @@ typedef _W64 int ssize_t;
 #define junction junctionU
 #define GetReparseTag GetReparseTagU
 #define ResolveLinks ResolveLinksU
+#define ResolveTailLinks ResolveTailLinksU
 #else /* _ANSI_SOURCE */
 #define readlink readlinkA
 #define symlink symlinkA
@@ -147,6 +149,7 @@ typedef _W64 int ssize_t;
 #define junction junctionA
 #define GetReparseTag GetReparseTagA
 #define ResolveLinks ResolveLinksA
+#define ResolveTailLinks ResolveTailLinksA
 #endif
 ssize_t readlinkW(const WCHAR *path, WCHAR *buf, size_t bufsiz);	    /* Posix routine readlink - Wide char version */
 ssize_t readlinkM(const char *path, char *buf, size_t bufsiz, UINT cp);     /* Posix routine readlink - Multibyte char version */
@@ -168,8 +171,12 @@ DWORD GetReparseTagW(const WCHAR *path);				    /* MsvcLibX Get a Repase Point t
 DWORD GetReparseTagM(const char *path, UINT cp);			    /* MsvcLibX Get a Repase Point tag - MultiByte char version */
 #define GetReparseTagA(path) GetReparseTagM(path, CP_ACP)		    /* MsvcLibX Get a Repase Point tag - ANSI version */
 #define GetReparseTagU(path) GetReparseTagM(path, CP_UTF8)		    /* MsvcLibX Get a Repase Point tag - ANSI version */
-int ResolveLinksA(const char *path, char *buf, size_t bufsize);	/* Resolve pathnames with symlinks, symlinkds, and junctions */
-int ResolveLinksU(const char *path, char *buf, size_t bufsize);	/* Resolve pathnames with symlinks, symlinkds, and junctions */
+int ResolveLinksA(const char *path, char *buf, size_t bufsize);		    /* Resolve pathnames with symlinks, symlinkds, and junctions */
+int ResolveLinksU(const char *path, char *buf, size_t bufsize);		    /* Resolve pathnames with symlinks, symlinkds, and junctions */
+int ResolveTailLinksW(const WCHAR *path, WCHAR *buf, size_t bufsize);	    /* Resolve node names with symlinks, symlinkds, and junctions */
+int ResolveTailLinksM(const char *path, char *buf, size_t bufsize, UINT cp);/* Resolve node names with symlinks, symlinkds, and junctions */
+int ResolveTailLinksA(const char *path, char *buf, size_t bufsize);	    /* Resolve node names with symlinks, symlinkds, and junctions */
+int ResolveTailLinksU(const char *path, char *buf, size_t bufsize);	    /* Resolve node names with symlinks, symlinkds, and junctions */
 #ifndef ELOOP
 /*
 // Unix defines ELOOP as errno 40.
