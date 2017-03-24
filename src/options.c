@@ -195,6 +195,13 @@ void cleanup_options(void) {
     }
 }
 
+#ifdef HAS_MSVCLIBX
+int ag_debug_puts(const char *msg) {
+    log_debug("%s", msg);
+    return 0;
+}
+#endif
+
 void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     int ch;
     size_t i;
@@ -414,6 +421,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             case 'D':
                 set_log_level(LOG_LEVEL_DEBUG);
 #ifdef HAS_MSVCLIBX
+                SET_DEBUG_PUTS(ag_debug_puts); /* MsvcLibX debug output now goes though ag_debug_puts -> log_debug */
                 DEBUG_ON(); /* Enable MsvcLibX debug output in the DEBUG version of the program */
 #endif
                 break;
