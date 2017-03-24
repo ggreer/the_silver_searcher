@@ -21,8 +21,7 @@ https://www.visualstudio.com/vs/cplusplus/
 When installing it, select the workload "Desktop Development with C++",
 and the options "C++/CLI support" and "Standard Library modules".
 
-The ag build has been tested successfully with Visual Studio versions  2013 and 2015.  
-The pre-release versions of visual Studio 2017 are not detected by configure.bat. It's likely to work once configure.bat is updated.  
+The ag build has been tested successfully with Visual Studio versions  2013, 2015, and 2017.  
 Older versions of Visual Studio will NOT to work, due to lack of C99 support.  
 Note that all libraries build successfully with Visual Studio 2005. So converting ag/src/*.c to be C89-compliant would be really useful.
 
