@@ -22,7 +22,8 @@ then
     exit 1
 fi
 
-SOURCE_FILES=$(git ls-files src/)
+# Do not attempt reformating src/*.bat nor src/*.mak, as these are not C source files
+SOURCE_FILES=$(git ls-files src/*.c src/*.h)
 
 if [ "$1" == "reformat" ]
 then
