@@ -177,6 +177,9 @@ Language types are output:
     --nim
         .nim
   
+    --nix
+        .nix
+  
     --objc
         .m  .h
   
