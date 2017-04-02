@@ -14,3 +14,13 @@ The test suite uses [Cram](https://bitheap.org/cram/). You'll need to build ag
 first, and then you can run the suite from the root of the repository :
 
     make test
+
+### Adding filetypes
+
+Ag can search files which belong to a certain class for example `ag --html test` 
+searches all files with the extension defined in [lang.c](src/lang.c).
+
+If you want to add a new file 'class' to ag please modify [lang.c](src/lang.c) and [list_file_types.t](tests/list_file_types.t).
+
+`lang.c` adds the functionality and `list_file_types.t` adds the test case. 
+Without adding a test case the test __will__ fail.
