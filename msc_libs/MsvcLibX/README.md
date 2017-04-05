@@ -471,6 +471,8 @@ Important: Changing the code page will only display characters correctly if the 
 is using a TrueType font containing these new characters.  
 The default "Raster" font supports characters in code page 437 only.  
 Unfortunately, none of the available console fonts supports all Unicode characters.  
+Many fonts only contains characters for a limited set of European languages, called the
+[Windows Glyph List 4](https://en.wikipedia.org/wiki/Windows_Glyph_List_4).  
 The default font is usually selected to work well with your language.
 If you want to display character from widely different languages, you'll have to try
 every font, until you find one that contains all to characters you want.
