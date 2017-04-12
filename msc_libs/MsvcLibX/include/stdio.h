@@ -15,6 +15,7 @@
 *    2017-03-03 JFL Added fputc() and fwrite() series of functions.	      *
 *    2017-03-05 JFL Added fputs() series like for fputc.		      *
 *    2017-03-12 JFL Restructured the UTF16 writing mechanism.		      *
+*    2017-04-12 JFL Added puts(), and ANSI versions of fputc, fputs, fwrite.  *
 *									      *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -108,6 +109,8 @@ extern int fputcA(int c, FILE *f);
 extern int fputcU(int c, FILE *f);
 #if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
 #define fputc fputcU		/* For outputing UTF-8 bytes */
+#else
+#define fputc fputcA		/* For outputing ANSI bytes */
 #endif
 
 /* fputs() alternatives */
@@ -116,6 +119,17 @@ extern int fputsA(const char *buf, FILE *f);
 extern int fputsU(const char *buf, FILE *f);
 #if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
 #define fputs fputsU		/* For outputing UTF-8 strings */
+#else
+#define fputs fputsA		/* For outputing ANSI strings */
+#endif
+
+/* puts() alternatives */
+extern int putsA(const char *buf);
+extern int putsU(const char *buf);
+#if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
+#define puts putsU		/* For outputing UTF-8 strings */
+#else
+#define puts putsA		/* For outputing ANSI strings */
 #endif
 
 /* fwrite() alternatives */
@@ -124,6 +138,8 @@ extern size_t fwriteA(const void *buf, size_t itemSize, size_t nItems, FILE *str
 extern size_t fwriteU(const void *buf, size_t itemSize, size_t nItems, FILE *stream);
 #if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
 #define fwrite fwriteU
+#else
+#define fwrite fwriteA
 #endif
 
 /* Define functions fseeko and ftello */
