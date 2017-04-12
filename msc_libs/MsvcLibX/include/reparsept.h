@@ -8,6 +8,7 @@
 *                                                                             *
 *   History:								      *
 *    2014-02-28 JFL Created this file.                                        *
+*    2017-04-10 JFL Added the new IO_REPARSE_TAG_LXSS_SYMLINK tag.            *
 *									      *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -69,6 +70,9 @@
 #endif
 #ifndef IO_REPARSE_TAG_NFS
 #define IO_REPARSE_TAG_NFS		0x80000014	/* Mounted NFS share? */
+#endif
+#ifndef IO_REPARSE_TAG_LXSS_SYMLINK
+#define IO_REPARSE_TAG_LXSS_SYMLINK	0xA000001D	/* Linux Sub-System Symbolic Link */
 #endif
 
 #if 0
