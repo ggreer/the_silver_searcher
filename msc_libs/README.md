@@ -10,7 +10,7 @@ Open a command window; Go to the_silver_searcher root directory; Then run:
     msc_libs\make.bat
 
 This builds the necessary libraries in msc_libs, then ag.exe.  
-The 32 and 64 bits versions of ag.exe will be stored in src\bin\WIN32 and src\bin\WIN64 respectively.
+The 32 and 64 bits versions of ag.exe will be stored in bin\WIN32 and bin\WIN64 respectively.
 
 
 ## Visual C++
@@ -120,4 +120,3 @@ zlib.mak           | Zlib-specific make rules.
 
 #### Files modified
 None
-

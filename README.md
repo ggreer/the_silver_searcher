@@ -130,7 +130,7 @@ Run the relevant [`setup-*.exe`](https://cygwin.com/install.html), and select "t
             Nothing to do. All necessary libraries are provided in the [msc_libs](msc_libs/README.md) subdirectory.
 
     * Windows with MinGW:  
-  
+
             It's complicated. See [this wiki page](https://github.com/ggreer/the_silver_searcher/wiki/Windows).
 
 2. Run the build script (which just runs aclocal, automake, etc):
@@ -150,10 +150,10 @@ Run the relevant [`setup-*.exe`](https://cygwin.com/install.html), and select "t
     * In all Unix versions, and Windows with MinGW:
 
         sudo make install
-  
+
     * On Windows (inside a cmd shell with Microsoft Visual C++):
 
-        The 32-bit and 64-bit version are in src\WIN32\ag.exe and src\WIN64\ag.exe respectively.
+        The 32-bit and 64-bit version are in bin\WIN32\ag.exe and bin\WIN64\ag.exe respectively.
 
 
 ### Building a release tarball
