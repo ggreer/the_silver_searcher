@@ -16,6 +16,7 @@
 *    2017-03-12 JFL Restructured the UTF16 writing mechanism.		      *
 *    2017-03-20 JFL Bug fix: _setmodeX() now checks its input values validity.*
 *    2017-03-22 JFL Bug fix: Static variables in fputcM must be thread-local. *
+*    2017-04-12 JFL Added puts().                                             *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -435,6 +436,18 @@ int fputsA(const char *buf, FILE *f) {
 
 int fputsU(const char *buf, FILE *f) {
   return fputsM(buf, f, CP_UTF8);
+}
+
+int putsA(const char *buf) {
+  int iRet = fputsM(buf, stdout, CP_ACP);
+  if (iRet >= 0) iRet = fputsM("\n", stdout, CP_ACP);
+  return iRet;
+}
+
+int putsU(const char *buf) {
+  int iRet = fputsM(buf, stdout, CP_UTF8);
+  if (iRet >= 0) iRet = fputsM("\n", stdout, CP_UTF8);
+  return iRet;
 }
 
 int vfprintfM(FILE *f, const char *pszFormat, va_list vl, UINT cp) { /* vfprintf MCBS strings */
