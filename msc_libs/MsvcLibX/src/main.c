@@ -182,6 +182,7 @@ int _setargv(void) {
 |   History								      |
 |    2017-02-05 JFL Adapted from the abandonned _mainU0 routine.	      |
 |    2017-03-03 JFL Record both the console and system code pages.	      |
+|    2017-04-12 JFL Bug fix: realloc() sometimes moves the _acmdln buffer.    |
 *									      *
 \*---------------------------------------------------------------------------*/
 
@@ -189,6 +190,7 @@ int _initU(void) {
   LPWSTR lpwCommandLine;
   int n;
   WCHAR wc;
+  char *pNewBuf;
 
   /* Get the Unicode command line */  
   lpwCommandLine = GetCommandLineW();
@@ -214,11 +216,12 @@ int _initU(void) {
     fprintf(stderr, "Warning: Can't convert the argument line to UTF-8\n");
     _acmdln[0] = '\0';
   }
-  realloc(_acmdln, n+1); /* Resize the memory block to fit the UTF-8 line */
-  /* Should not fail since we make it smaller */
+  pNewBuf = realloc(_acmdln, n+1); /* Resize the memory block to fit the UTF-8 line */
+  if (pNewBuf) _acmdln = pNewBuf; /* Should not fail since we make it smaller, but may move */
 
   /* Initialize the UTF8/UTF16 output mechanism */
   initWideFiles();
+  /* NOTE: Can't use fprintf anymore after this. Use fprintfA or fprintfU instead. */
 
   return 0;
 }
