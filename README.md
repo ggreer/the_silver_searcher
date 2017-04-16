@@ -133,6 +133,13 @@ Run the relevant [`setup-*.exe`](https://cygwin.com/install.html), and select "t
 
         sudo make install
 
+## Usage
+
+        Ag searchterm
+
+### Escape sequences and list only filenames
+
+        Ag 'foo\(' -l
 
 ### Building a release tarball
 
