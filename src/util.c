@@ -181,7 +181,7 @@ const char *boyer_moore_strnstr(const char *s, const char *find, const size_t s_
     size_t pos = f_len - 1;
 
     while (pos < s_len) {
-        for (i = f_len - 1; i >= 0 && s[pos] == find[i]; pos--, i--) {
+        for (i = f_len - 1; s[pos] == find[i] && i >= 0; pos--, i--) {
         }
         if (i < 0) {
             return s + pos + 1;
@@ -199,7 +199,7 @@ const char *boyer_moore_strncasestr(const char *s, const char *find, const size_
     size_t pos = f_len - 1;
 
     while (pos < s_len) {
-        for (i = f_len - 1; i >= 0 && tolower(s[pos]) == find[i]; pos--, i--) {
+        for (i = f_len - 1; tolower(s[pos]) == find[i] && i >= 0; pos--, i--) {
         }
         if (i < 0) {
             return s + pos + 1;
