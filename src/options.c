@@ -57,7 +57,8 @@ Output Options:\n\
                           (Enabled by default)\n\
   -C --context [LINES]    Print lines before and after matches (Default: 2)\n\
      --[no]group          Same as --[no]break --[no]heading\n\
-  -g PATTERN              Print filenames matching PATTERN\n\
+  -g --filename-pattern PATTERN\n\
+                          Print filenames matching PATTERN\n\
   -l --files-with-matches Only print filenames that contain matches\n\
                           (don't print the matching lines)\n\
   -L --files-without-matches\n\
@@ -246,6 +247,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "debug", no_argument, NULL, 'D' },
         { "depth", required_argument, NULL, 0 },
         { "filename", no_argument, NULL, 0 },
+        { "filename-pattern", required_argument, NULL, 'g' },
         { "file-search-regex", required_argument, NULL, 'G' },
         { "files-with-matches", no_argument, NULL, 'l' },
         { "files-without-matches", no_argument, NULL, 'L' },
