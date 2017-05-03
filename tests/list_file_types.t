@@ -99,6 +99,9 @@ Language types are output:
     --haskell
         .hs  .lhs
   
+    --haxe
+        .hx
+  
     --hh
         .h
   
