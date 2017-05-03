@@ -279,6 +279,9 @@ Language types are output:
     --ts
         .ts  .tsx
   
+    --twig
+        .twig
+  
     --vala
         .vala  .vapi
   
