@@ -7,7 +7,7 @@ ag(1) -- The Silver Searcher. Like ack, but faster.
 
 ## DESCRIPTION
 
-Recursively search for PATTERN in PATH. Like grep or ack, but faster.
+Recursively search for PATTERN in PATH. Like grep or ack, but faster. PATTERN is any Perl-compatible regular expression.
 
 ## OPTIONS
 
