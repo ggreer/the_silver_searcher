@@ -755,8 +755,13 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     if (accepts_query && argc > 0) {
-        // use the provided query
-        opts.query = ag_strdup(argv[0]);
+        if (!needs_query && strlen(argv[0]) == 0) {
+            // use default query
+            opts.query = ag_strdup(".");
+        } else {
+            // use the provided query
+            opts.query = ag_strdup(argv[0]);
+        }
         argc--;
         argv++;
     } else if (!needs_query) {
