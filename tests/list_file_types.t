@@ -121,7 +121,7 @@ Language types are output:
         .json
   
     --jsp
-        .jsp  .jspx  .jhtm  .jhtml
+        .jsp  .jspx  .jhtm  .jhtml  .jspf  .tag  .tagf
   
     --julia
         .jl
