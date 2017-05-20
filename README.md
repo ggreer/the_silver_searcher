@@ -154,6 +154,7 @@ You may need to use `sudo` or run as root for the make install.
 You can use Ag with [ack.vim][] by adding the following line to your `.vimrc`:
 
     let g:ackprg = 'ag --nogroup --nocolor --column'
+    let g:ack_wildignore = 0
 
 or:
 
