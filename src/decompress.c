@@ -22,7 +22,7 @@ const uint8_t LZMA_HEADER_SOMETIMES[3] = { 0x5D, 0x00, 0x00 };
  *
  * zpipe.c: example of proper use of zlib's inflate() and deflate()
  *    Not copyrighted -- provided to the public domain
- *    Version 1.4  11 December 2005  Mark Adler 
+ *    Version 1.4  11 December 2005  Mark Adler
  */
 static void *decompress_zlib(const void *buf, const int buf_len,
                              const char *dir_full_path, int *new_buf_len) {
@@ -111,16 +111,6 @@ static void *decompress_lzw(const void *buf, const int buf_len,
 }
 
 
-static void *decompress_zip(const void *buf, const int buf_len,
-                            const char *dir_full_path, int *new_buf_len) {
-    (void)buf;
-    (void)buf_len;
-    log_err("Zip files not yet supported: %s", dir_full_path);
-    *new_buf_len = 0;
-    return NULL;
-}
-
-
 #ifdef HAVE_LZMA_H
 static void *decompress_lzma(const void *buf, const int buf_len,
                              const char *dir_full_path, int *new_buf_len) {
@@ -199,7 +189,8 @@ void *decompress(const ag_compression_type zip_type, const void *buf, const int 
         case AG_COMPRESS:
             return decompress_lzw(buf, buf_len, dir_full_path, new_buf_len);
         case AG_ZIP:
-            return decompress_zip(buf, buf_len, dir_full_path, new_buf_len);
+            log_err("Not implemented! decompress hould not be called with AG_ZIP");
+            break;
 #ifdef HAVE_LZMA_H
         case AG_XZ:
             return decompress_lzma(buf, buf_len, dir_full_path, new_buf_len);
@@ -221,7 +212,7 @@ ag_compression_type is_zipped(const void *buf, const int buf_len) {
     /* Zip magic numbers
      * compressed file: { 0x1F, 0x9B }
      * http://en.wikipedia.org/wiki/Compress
-     * 
+     *
      * gzip file:       { 0x1F, 0x8B }
      * http://www.gzip.org/zlib/rfc-gzip.html#file-format
      *

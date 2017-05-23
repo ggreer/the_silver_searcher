@@ -50,6 +50,17 @@ AS_IF([test "x$enable_lzma" != "xno"], [
     PKG_CHECK_MODULES([LZMA], [liblzma])
 ])
 
+AC_ARG_ENABLE([libzip],
+    AS_HELP_STRING([--enable-libzip], [Enable libzip compressed search support]))
+
+AM_CONDITIONAL([HAS_ZIP_SUPPORT], [test "x$enable_libzip" == "xyes"])
+
+AS_IF([test "x$enable_libzip" == "xyes"], [
+    PKG_CHECK_MODULES([LIBZIP], [libzip >= 1.0])
+    CFLAGS="$CFLAGS $LIBZIP_CFLAGS"
+    AC_CHECK_HEADERS([zip.h])
+])
+
 AC_CHECK_DECL([PCRE_CONFIG_JIT], [AC_DEFINE([USE_PCRE_JIT], [], [Use PCRE JIT])], [], [#include <pcre.h>])
 
 AC_CHECK_DECL([CPU_ZERO, CPU_SET], [AC_DEFINE([USE_CPU_SET], [], [Use CPU_SET macros])] , [], [#include <sched.h>])
