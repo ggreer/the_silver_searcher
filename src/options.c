@@ -63,6 +63,8 @@ Output Options:\n\
                           (don't print the matching lines)\n\
   -L --files-without-matches\n\
                           Only print filenames that don't contain matches\n\
+     --all-files          Print headings for all files searched, even those that\n\
+                          don't contain matches\n\
      --[no]numbers        Print line numbers. Default is to omit line numbers\n\
                           when searching streams\n\
   -o --only-matching      Prints only the matching part of the lines\n\
@@ -158,6 +160,7 @@ void init_options(void) {
     opts.path_sep = '\n';
     opts.print_break = TRUE;
     opts.print_path = PATH_PRINT_DEFAULT;
+    opts.print_all_paths = FALSE;
     opts.print_line_numbers = TRUE;
     opts.recurse_dirs = TRUE;
     opts.color_path = ag_strdup(color_path);
@@ -231,6 +234,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "ackmate-dir-filter", required_argument, NULL, 0 },
         { "affinity", no_argument, &opts.use_thread_affinity, 1 },
         { "after", optional_argument, NULL, 'A' },
+        { "all-files", no_argument, NULL, 0 },
         { "all-text", no_argument, NULL, 't' },
         { "all-types", no_argument, NULL, 'a' },
         { "before", optional_argument, NULL, 'B' },
@@ -510,7 +514,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.path_sep = '\0';
                 break;
             case 0: /* Long option */
-                if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0) {
+                if (strcmp(longopts[opt_index].name, "all-files") == 0) {
+                    opts.print_all_paths = TRUE;
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0) {
                     compile_study(&opts.ackmate_dir_filter, &opts.ackmate_dir_filter_extra, optarg, 0, 0);
                     break;
                 } else if (strcmp(longopts[opt_index].name, "depth") == 0) {
