@@ -7,10 +7,10 @@ Setup:
 
 All files:
 
-  $ ag --all-files --group foo
-  bar.txt
+  $ ag --all-files --group foo | sort
   
-  baz.txt
   
-  foo.txt
   1:foo
+  bar.txt
+  baz.txt
+  foo.txt
