@@ -34,6 +34,7 @@ Dont ignore anything (unrestricted search):
   $ ag -u whatever . | sort
   .foo.yml.swo:1:whatever16
   .foo.yml.swp:1:whatever15
+  WARN: Hidden directories searchable with current flag.
   a/.foo.yml.swo:1:whatever12
   a/.foo.yml.swp:1:whatever11
   a/b/.foo.yml.swo:1:whatever8
