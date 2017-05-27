@@ -2,6 +2,10 @@
 
 A code searching tool similar to `ack`, with a focus on speed.
 
+"don't make any change .i'm just trying to learn how to start contributing in open source "
+"don't make any change .i'm just trying to learn how to start contributing in open source "
+
+
 [![Build Status](https://travis-ci.org/ggreer/the_silver_searcher.svg?branch=master)](https://travis-ci.org/ggreer/the_silver_searcher)
 
 [![Floobits Status](https://floobits.com/ggreer/ag.svg)](https://floobits.com/ggreer/ag/redirect)
