@@ -27,4 +27,4 @@ test_big: ag
 test_fail: ag
 	cram -v tests/fail/*.t
 
-.PHONY : all test clean
+.PHONY : all clean test test_big test_fail
