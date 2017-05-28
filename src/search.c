@@ -499,7 +499,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
     }
 
     /* find .*ignore files to load ignore patterns from */
-    for (i = 0; opts.skip_vcs_ignores ? (i <= 1) : (ignore_pattern_files[i] != NULL); i++) {
+    for (i = 0; opts.skip_vcs_ignores ? (i == 0) : (ignore_pattern_files[i] != NULL); i++) {
         ignore_file = ignore_pattern_files[i];
         ag_asprintf(&dir_full_path, "%s/%s", path, ignore_file);
         load_ignore_patterns(ig, dir_full_path);
