@@ -519,7 +519,11 @@ int is_named_pipe(const char *path, const struct dirent *d) {
         return FALSE;
     }
     free(full_path);
-    return S_ISFIFO(s.st_mode) || S_ISSOCK(s.st_mode);
+    return S_ISFIFO(s.st_mode)
+#ifdef S_ISSOCK
+           || S_ISSOCK(s.st_mode)
+#endif
+        ;
 }
 
 void ag_asprintf(char **ret, const char *fmt, ...) {
