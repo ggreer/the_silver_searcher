@@ -80,6 +80,10 @@ or
 
         zypper install the_silver_searcher
 
+* CentOS:
+        
+        yum install the_silver_searcher
+
 * SUSE Linux Enterprise: Follow [these simple instructions](https://software.opensuse.org/download.html?project=utilities&package=the_silver_searcher).
 
 
