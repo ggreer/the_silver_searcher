@@ -1,7 +1,7 @@
 #ifdef _WIN32
 
-#include "iscygpty.h"
 #include "print.h"
+#include "iscygpty.h"
 #include <io.h>
 #include <stdarg.h>
 #include <stdio.h>
