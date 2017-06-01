@@ -36,6 +36,7 @@ LDFLAGS="$LDFLAGS"
 case $host in
 *mingw*)
     AC_CHECK_LIB(shlwapi, main,, AC_MSG_ERROR(libshlwapi missing))
+    CFLAGS="$CFLAGS -D_WIN32_WINNT=0x0600"
 esac
 
 LIBS="$PTHREAD_LIBS $LIBS"

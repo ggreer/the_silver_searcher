@@ -1,5 +1,6 @@
 #ifdef _WIN32
 
+#include "iscygpty.h"
 #include "print.h"
 #include <io.h>
 #include <stdarg.h>
@@ -47,6 +48,7 @@ int fprintf_w32(FILE *fp, const char *format, ...) {
     // the user just prefers ansi, do plain passthrough.
     BOOL passthrough =
         g_use_ansi ||
+        is_cygpty(fileno(fp)) ||
         !isatty(fileno(fp)) ||
         INVALID_HANDLE_VALUE == (stdo = (HANDLE)_get_osfhandle(fileno(fp))) ||
         !GetConsoleScreenBufferInfo(stdo, &csbi);
