@@ -71,10 +71,9 @@ goto :eof
 :: ----------------------------------------------------------------------
 :: Using Cygwin, iconv enabled
 @echo on
-c:\cygwin\setup-x86.exe -qnNdO -R C:/cygwin -s http://cygwin.mirror.constant.com -l C:/cygwin/var/cache/setup -P liblzma-devel,libpcre-devel
+c:\cygwin\setup-x86.exe -qnNdO -R C:/cygwin -s http://cygwin.mirror.constant.com -l C:/cygwin/var/cache/setup -P liblzma-devel,libpcre-devel,python3,python3-setuptools
 PATH c:\cygwin\bin;%PATH%
 set CHERE_INVOKING=yes
-bash -lc ""
 bash -lc "./autogen.sh"
 :: Patching configure.
 :: Workaround for "./configure: line XXX: 0: Bad file descriptor"
@@ -92,7 +91,8 @@ c:\cygwin\bin\file ag.exe
 .\ag --version || exit 1
 
 :: Run tests
-rem bash -lc "make test"
+bash -lc "python3 -m easy_install pip && pip install cram"
+bash -lc "make test"
 
 @echo off
 goto :eof
