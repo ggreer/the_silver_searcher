@@ -63,7 +63,7 @@ Output Options:\n\
                           (don't print the matching lines)\n\
   -L --files-without-matches\n\
                           Only print filenames that don't contain matches\n\
-     --all-files          Print headings for all files searched, even those that\n\
+     --print-all-files    Print headings for all files searched, even those that\n\
                           don't contain matches\n\
      --[no]numbers        Print line numbers. Default is to omit line numbers\n\
                           when searching streams\n\
@@ -234,7 +234,6 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "ackmate-dir-filter", required_argument, NULL, 0 },
         { "affinity", no_argument, &opts.use_thread_affinity, 1 },
         { "after", optional_argument, NULL, 'A' },
-        { "all-files", no_argument, NULL, 0 },
         { "all-text", no_argument, NULL, 't' },
         { "all-types", no_argument, NULL, 'a' },
         { "before", optional_argument, NULL, 'B' },
@@ -308,6 +307,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "passthru", no_argument, &opts.passthrough, 1 },
         { "path-to-ignore", required_argument, NULL, 'p' },
         { "print0", no_argument, NULL, '0' },
+        { "print-all-files", no_argument, NULL, 0 },
         { "print-long-lines", no_argument, &opts.print_long_lines, 1 },
         { "recurse", no_argument, NULL, 'r' },
         { "search-binary", no_argument, &opts.search_binary_files, 1 },
@@ -514,10 +514,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.path_sep = '\0';
                 break;
             case 0: /* Long option */
-                if (strcmp(longopts[opt_index].name, "all-files") == 0) {
-                    opts.print_all_paths = TRUE;
-                    break;
-                } else if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0) {
+                if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0) {
                     compile_study(&opts.ackmate_dir_filter, &opts.ackmate_dir_filter_extra, optarg, 0, 0);
                     break;
                 } else if (strcmp(longopts[opt_index].name, "depth") == 0) {
@@ -545,6 +542,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                     break;
                 } else if (strcmp(longopts[opt_index].name, "pager") == 0) {
                     opts.pager = optarg;
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "print-all-files") == 0) {
+                    opts.print_all_paths = TRUE;
                     break;
                 } else if (strcmp(longopts[opt_index].name, "workers") == 0) {
                     opts.workers = atoi(optarg);

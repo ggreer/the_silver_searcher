@@ -7,7 +7,7 @@ Setup:
 
 All files:
 
-  $ ag --all-files --group foo | sort
+  $ ag --print-all-files --group foo | sort
   
   
   1:foo
