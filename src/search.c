@@ -484,6 +484,8 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
     struct dirent *dir = NULL;
     scandir_baton_t scandir_baton;
     int results = 0;
+    size_t base_path_len = 0;
+    const char *path_start = path;
 
     char *dir_full_path = NULL;
     const char *ignore_file = NULL;
@@ -507,9 +509,20 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
         dir_full_path = NULL;
     }
 
+    /* path_start is the part of path that isn't in base_path
+     * base_path will have a trailing '/' because we put it there in parse_options
+     */
+    base_path_len = base_path ? strlen(base_path) : 0;
+    for (i = 0; ((size_t)i < base_path_len) && (path[i]) && (base_path[i] == path[i]); i++) {
+        path_start = path + i + 1;
+    }
+    log_debug("search_dir: path is '%s', base_path is '%s', path_start is '%s'", path, base_path, path_start);
+
     scandir_baton.ig = ig;
     scandir_baton.base_path = base_path;
-    scandir_baton.base_path_len = base_path ? strlen(base_path) : 0;
+    scandir_baton.base_path_len = base_path_len;
+    scandir_baton.path_start = path_start;
+
     results = ag_scandir(path, &dir_list, &filename_filter, &scandir_baton);
     if (results == 0) {
         log_debug("No results found in directory %s", path);

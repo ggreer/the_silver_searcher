@@ -311,15 +311,7 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     }
 
     scandir_baton_t *scandir_baton = (scandir_baton_t *)baton;
-    const char *base_path = scandir_baton->base_path;
-    const size_t base_path_len = scandir_baton->base_path_len;
-    const char *path_start = path;
-
-    for (i = 0; base_path[i] == path[i] && i < base_path_len; i++) {
-        /* base_path always ends with "/\0" while path doesn't, so this is safe */
-        path_start = path + i + 2;
-    }
-    log_debug("path_start %s filename %s", path_start, filename);
+    const char *path_start = scandir_baton->path_start;
 
     const char *extension = strchr(filename, '.');
     if (extension) {
