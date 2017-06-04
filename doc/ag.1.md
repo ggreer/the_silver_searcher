@@ -142,9 +142,6 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     `echo "foo\nbar\nbaz" | parallel "ag {} ."` will run 3 instances of ag,
     searching the current directory for "foo", "bar", and "baz".
 
-  * `--print-long-lines`:
-    Print matches on very long lines (> 2k characters by default).
-
   * `--passthrough --passthru`:
     When searching a stream, print all lines even if they don't match.
 
