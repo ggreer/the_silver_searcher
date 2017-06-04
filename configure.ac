@@ -29,7 +29,7 @@ if test "`$GREP -c '\b-O' >/dev/null ; echo $?`" = "0" ; then
     CFLAGS="$CFLAGS -O2"
 fi
 
-CFLAGS="$CFLAGS $PTHREAD_CFLAGS -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -Wshadow"
+CFLAGS="$CFLAGS $PTHREAD_CFLAGS $PCRE_CFLAGS -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -Wshadow"
 CFLAGS="$CFLAGS -Wpointer-arith -Wcast-qual -Wmissing-prototypes -Wno-missing-braces -std=gnu89 -D_GNU_SOURCE"
 LDFLAGS="$LDFLAGS"
 
