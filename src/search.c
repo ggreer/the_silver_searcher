@@ -338,6 +338,7 @@ void search_file(const char *file_full_path) {
         buf = mmap(0, f_len, PROT_READ, MAP_PRIVATE, fd, 0);
         if (buf == MAP_FAILED) {
             log_err("File %s failed to load: %s.", file_full_path, strerror(errno));
+            buf = NULL;
             goto cleanup;
         }
 #if HAVE_MADVISE
