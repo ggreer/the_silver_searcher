@@ -2,7 +2,6 @@
 #define UTIL_H
 
 #include <dirent.h>
-#include <pcre.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -70,7 +69,6 @@ const char *hash_strnstr(const char *s, const char *find, const size_t s_len, co
 
 size_t invert_matches(const char *buf, const size_t buf_len, match_t matches[], size_t matches_len);
 void realloc_matches(match_t **matches, size_t *matches_size, size_t matches_len);
-void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opts, const int study_opts);
 
 
 int is_binary(const void *buf, const size_t buf_len);

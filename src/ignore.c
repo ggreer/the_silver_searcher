@@ -9,6 +9,7 @@
 #include "ignore.h"
 #include "log.h"
 #include "options.h"
+#include "pcre_api.h"
 #include "scandir.h"
 #include "util.h"
 
@@ -200,7 +201,7 @@ static int ackmate_dir_match(const char *dir_name) {
         return 0;
     }
     /* we just care about the match, not where the matches are */
-    return pcre_exec(opts.ackmate_dir_filter, NULL, dir_name, strlen(dir_name), 0, 0, NULL, 0);
+    return ag_pcre_match(opts.ackmate_dir_filter, NULL, dir_name, strlen(dir_name), 0, 0, NULL, 0);
 }
 
 /* This is the hottest code in Ag. 10-15% of all execution time is spent here */
