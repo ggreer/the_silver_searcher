@@ -174,7 +174,7 @@ multiline_done:
         pthread_mutex_unlock(&stats_mtx);
     }
 
-    if (matches_len > 0) {
+    if (matches_len > 0 || opts.print_all_paths) {
         if (binary == -1 && !opts.print_filename_only) {
             binary = is_binary((const void *)buf, buf_len);
         }
