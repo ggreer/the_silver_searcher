@@ -165,6 +165,8 @@ or:
 
 Which has the same effect but will report every match on the line.
 
+[ack.vim]: https://github.com/mileszs/ack.vim
+
 ### Emacs
 
 You can use [ag.el][] as an Emacs front-end to Ag. See also: [helm-ag].
