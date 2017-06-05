@@ -93,6 +93,7 @@ lang_spec_t langs[] = {
     { "stylus", { "styl" } },
     { "swift", { "swift" } },
     { "tcl", { "tcl", "itcl", "itk" } },
+    { "templates", { "jinja", "tpl", "twig" } },
     { "tex", { "tex", "cls", "sty" } },
     { "tt", { "tt", "tt2", "ttml" } },
     { "toml", { "toml" } },
