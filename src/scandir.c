@@ -10,9 +10,14 @@ int ag_scandir(const char *dirname,
                void *baton) {
     DIR *dirp = NULL;
     struct dirent **names = NULL;
+    struct dirent *ents = NULL;
+
+    size_t names_len = 32;
+    size_t ents_bsz = 4000, ents_blen = 0;
+
     struct dirent *entry, *d;
-    int names_len = 32;
-    int results_len = 0;
+    size_t dsz;
+    size_t results_len = 0;
 
     dirp = opendir(dirname);
     if (dirp == NULL) {
@@ -24,37 +29,59 @@ int ag_scandir(const char *dirname,
         goto fail;
     }
 
+    ents = malloc(ents_bsz);
+    if (ents == NULL) {
+        goto fail;
+    }
+
     while ((entry = readdir(dirp)) != NULL) {
+        fprintf(stderr, "\n");
         if ((*filter)(dirname, entry, baton) == FALSE) {
             continue;
         }
+
         if (results_len >= names_len) {
-            struct dirent **tmp_names = names;
+            struct dirent **old_names = names;
             names_len *= 2;
             names = realloc(names, sizeof(struct dirent *) * names_len);
             if (names == NULL) {
-                free(tmp_names);
+                free(old_names);
                 goto fail;
             }
         }
 
-#if defined(__MINGW32__) || defined(__CYGWIN__)
-        d = malloc(sizeof(struct dirent));
-#else
-        d = malloc(entry->d_reclen);
-#endif
+        dsz = sizeof(struct dirent) + entry->d_reclen;
 
-        if (d == NULL) {
-            goto fail;
+        if (ents_blen + dsz > ents_bsz) {
+            struct dirent *old_ents = ents;
+            while (ents_blen + dsz > ents_bsz) {
+                ents_bsz *= 1.5;
+            }
+            ents = realloc(ents, ents_bsz);
+            if (ents == NULL) {
+                free(old_ents);
+                goto fail;
+            }
         }
-#if defined(__MINGW32__) || defined(__CYGWIN__)
-        memcpy(d, entry, sizeof(struct dirent));
-#else
-        memcpy(d, entry, entry->d_reclen);
-#endif
 
-        names[results_len] = d;
+        d = (struct dirent*) ((char*)ents + ents_blen);
+        memcpy(d, entry, dsz);
+
+        names[results_len] = (struct dirent*)ents_blen;
+        ents_blen += dsz;
+
         results_len++;
+    }
+
+    size_t i;
+    for (i = 0; i < results_len; i++) {
+        size_t result_as_offset = (size_t) names[i];
+        names[i] = (struct dirent*) ((char*)ents + result_as_offset);
+    }
+
+    if (results_len == 0) {
+        names[0] = NULL;
+        free(ents);
     }
 
     closedir(dirp);
@@ -66,12 +93,7 @@ fail:
         closedir(dirp);
     }
 
-    if (names != NULL) {
-        int i;
-        for (i = 0; i < results_len; i++) {
-            free(names[i]);
-        }
-        free(names);
-    }
+    free(ents);
+    free(names);
     return -1;
 }

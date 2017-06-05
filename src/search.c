@@ -632,8 +632,6 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
         }
 
     cleanup:
-        free(dir);
-        dir = NULL;
         if (queue_item == NULL) {
             free(dir_full_path);
             dir_full_path = NULL;
@@ -642,6 +640,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
 
 search_dir_cleanup:
     check_symloop_leave(&current_dirkey);
+    free(dir_list[0]);
     free(dir_list);
     dir_list = NULL;
 }
