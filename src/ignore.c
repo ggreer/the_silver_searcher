@@ -20,14 +20,6 @@
 const int fnmatch_flags = FNM_PATHNAME;
 #endif
 
-/* TODO: build a huge-ass list of files we want to ignore by default (build cache stuff, pyc files, etc) */
-
-const char *evil_hardcoded_ignore_files[] = {
-    ".",
-    "..",
-    NULL
-};
-
 /* Warning: changing the first two strings will break skip_vcs_ignores. */
 const char *ignore_pattern_files[] = {
     ".ignore",
@@ -285,15 +277,14 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
 /* This function is REALLY HOT. It gets called for every file */
 int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     const char *filename = dir->d_name;
+    size_t i;
+
     if (!opts.search_hidden_files && filename[0] == '.') {
         return 0;
     }
 
-    size_t i;
-    for (i = 0; evil_hardcoded_ignore_files[i] != NULL; i++) {
-        if (strcmp(filename, evil_hardcoded_ignore_files[i]) == 0) {
-            return 0;
-        }
+    if (filename[0] == '.' && (filename[1] == 0 || (filename[1] == '.' && filename[2] == 0))) {
+        return 0;
     }
 
     if (!opts.follow_symlinks && is_symlink(path, dir)) {
