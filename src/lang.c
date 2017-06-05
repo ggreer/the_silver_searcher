@@ -72,6 +72,7 @@ lang_spec_t langs[] = {
     { "plone", { "pt", "cpt", "metadata", "cpy", "py", "xml", "zcml" } },
     { "proto", { "proto" } },
     { "puppet", { "pp" } },
+    { "purescript", { "purs" } },
     { "python", { "py" } },
     { "qml", { "qml" } },
     { "racket", { "rkt", "ss", "scm" } },

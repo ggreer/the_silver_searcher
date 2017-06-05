@@ -206,7 +206,10 @@ Language types are output:
   
     --puppet
         .pp
-  
+ 
+    --purescript
+        .purs
+ 
     --python
         .py
   
