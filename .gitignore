@@ -1,3 +1,11 @@
+*.seed
+*.log
+*.csv
+*.dat
+*.out
+*.pid
+*.gz
+*.heapsnapshot
 *.dSYM
 *.gcda
 *.o
