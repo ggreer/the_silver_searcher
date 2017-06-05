@@ -236,6 +236,10 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                         print_path(path, sep);
                         print_line_number(print_context.line, sep);
                         print_column_number(matches, print_context.last_printed_match, print_context.prev_line_offset, sep);
+                        /* Handle the case of no newline at end of file */
+                        if (buf[i] == 0) {
+                            i--;
+                        }
                         print_line(buf, i, print_context.prev_line_offset);
                     }
                 } else {
