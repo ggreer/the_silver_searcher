@@ -112,7 +112,10 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     Toggle use of memory-mapped I/O. Defaults to true on platforms where
     `mmap()` is faster than `read()`. (All but macOS.)
 
-  * `--[no]multiline`:
+  * `-M --no-multiline`:
+    Match regexes on a single line only. Slower.
+
+  * `--multiline`:
     Match regexes across newlines. Enabled by default.
 
   * `-n --norecurse`:
