@@ -601,19 +601,49 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 
     if (file_search_regex) {
         int pcre_opts = 0;
+
         if (opts.casing == CASE_INSENSITIVE || (opts.casing == CASE_SMART && is_lowercase(file_search_regex))) {
             pcre_opts |= PCRE_CASELESS;
         }
-        if (opts.word_regexp) {
-            char *old_file_search_regex = file_search_regex;
-            ag_asprintf(&file_search_regex, "\\b%s\\b", file_search_regex);
-            free(old_file_search_regex);
+
+        if (opts.literal) {
+            size_t l = strlen(file_search_regex);
+            char *old_re = file_search_regex;
+            char *old_re2;
+            size_t j1, j2;
+
+            old_re2 = file_search_regex = ag_malloc(l * 2 + 1);
+            j2 = 0;
+            for (j1 = 0; j1 <= l; j1++) {
+                file_search_regex[j2++] = old_re[j1];
+                if (old_re[j1] == '\\' && old_re[j1 + 1] == 'E') {
+                    file_search_regex[j2++] = '\\';
+                }
+            }
+            file_search_regex[j2] = 0;
+
+            ag_asprintf(&file_search_regex, "\\Q%s\\E", file_search_regex);
+            free(old_re2);
+            free(old_re);
         }
+
+        if (opts.word_regexp) {
+            char *old_re = file_search_regex;
+            ag_asprintf(&file_search_regex, "\\b%s\\b", file_search_regex);
+            free(old_re);
+        }
+
+        if (has_filetype) {
+            char *old_re = strdup(file_search_regex);
+            num_exts = combine_file_extensions(ext_index, lang_num, &extensions);
+            lang_regex = make_lang_regex(extensions, num_exts);
+            ag_asprintf(&file_search_regex, "%s.*%s", old_re, lang_regex);
+            free(old_re);
+        }
+
         compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, file_search_regex, pcre_opts, 0);
         free(file_search_regex);
-    }
-
-    if (has_filetype) {
+    } else if (has_filetype) {
         num_exts = combine_file_extensions(ext_index, lang_num, &extensions);
         lang_regex = make_lang_regex(extensions, num_exts);
         compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, lang_regex, 0, 0);
