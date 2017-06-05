@@ -56,6 +56,9 @@ or
 * Ubuntu >= 13.10 (Saucy) or Debian >= 8 (Jessie)
 
         apt-get install silversearcher-ag
+* OpenSUSE Leap 42.1
+
+        zypper in the_silver_searcher
 * Fedora 21 and lower
 
         yum install the_silver_searcher
