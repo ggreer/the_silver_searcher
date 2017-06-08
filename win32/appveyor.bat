@@ -20,8 +20,10 @@ exit 1
 @echo on
 PATH C:\%MSYS2_DIR%\%MSYSTEM%\bin;C:\%MSYS2_DIR%\usr\bin;%PATH%
 set CHERE_INVOKING=yes
+:: Synchronize package databases and upgrade the core system
+C:\%MSYS2_DIR%\usr\bin\pacman --noconfirm --noprogressbar -Sy --needed filesystem mintty bash pacman pacman-mirrors msys2-runtime msys2-runtime-devel
 :: Install and update necessary packages
-bash -lc "for i in {1..3}; do pacman --noconfirm -S mingw-w64-%MSYS2_ARCH%-{pcre,xz} && break || sleep 15; done"
+bash -lc "for i in {1..3}; do pacman --noconfirm --noprogressbar -Su --needed mingw-w64-%MSYS2_ARCH%-{pcre,xz,libwinpthread-git,zlib} && break || sleep 15; done"
 
 bash -lc "./autogen.sh"
 :: Patching configure.
