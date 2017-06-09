@@ -65,7 +65,7 @@ md package
 
 :: Get version
 if "%APPVEYOR_REPO_TAG_NAME%"=="" (
-  for /f %%i in ('git rev-parse --short HEAD') do set ver=%%i
+  for /f %%i in ('git describe --tags --always') do set ver=%%i
 ) else (
   set ver=%APPVEYOR_REPO_TAG_NAME%
 )
