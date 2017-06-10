@@ -25,7 +25,7 @@ AX_PTHREAD(
 )
 
 # Run CFLAGS="-pg" ./configure if you want debug symbols
-if test "`$GREP -c '\b-O' >/dev/null ; echo $?`" = "0" ; then
+if ! echo "$CFLAGS" | "$GREP" '\(^\|[[[:space:]]]\)-O' > /dev/null; then
     CFLAGS="$CFLAGS -O2"
 fi
 
