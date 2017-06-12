@@ -38,9 +38,6 @@ if ERRORLEVEL 1 (
 bash -lc "for i in {1..3}; do pacman --noconfirm --noprogressbar -S --needed mingw-w64-%MSYS2_ARCH%-{pcre,xz} && break || sleep 15; done"
 
 bash -lc "./autogen.sh"
-:: Patching configure.
-:: Workaround for "./configure: line xxx: 0: Bad file descriptor"
-perl -i".bak" -pe "s/^test -n \".DJDIR\"/#$&/" configure
 :: Use static link.
 bash -lc "./configure PCRE_CFLAGS=-DPCRE_STATIC LDFLAGS=-static && make"
 
@@ -89,9 +86,6 @@ c:\cygwin\setup-x86.exe -qnNdO -P liblzma-devel,libpcre-devel,python3,python3-se
 PATH c:\cygwin\bin;%PATH%
 set CHERE_INVOKING=yes
 bash -lc "./autogen.sh"
-:: Patching configure.
-:: Workaround for "./configure: line XXX: 0: Bad file descriptor"
-perl -i".bak" -pe "s/^test -n \".DJDIR\"/#$&/" configure
 bash -lc "./configure && make"
 
 @echo off
