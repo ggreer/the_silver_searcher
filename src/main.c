@@ -182,6 +182,7 @@ int main(int argc, char **argv) {
                 log_err("Failed to get device information for path %s. Skipping...", paths[i]);
             }
 #endif
+            load_ignore_patterns_including_parent_dirs(ig, base_paths[i]);
             search_dir(ig, base_paths[i], paths[i], 0, s.st_dev);
             cleanup_ignore(ig);
         }
