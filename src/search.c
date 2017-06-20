@@ -501,7 +501,8 @@ void load_ignore_patterns_including_parent_dirs(ignores *ig, const char *dir_pat
 
     dirpath0 = NULL;
     dirpath = dir_real_path;
-    while ((dirpath0 == NULL || strcmp(dirpath0, dirpath) != 0)) {
+    while ((dirpath0 == NULL || strcmp(dirpath0, dirpath) != 0) &&
+           !is_repository_root(dir_real_path)) {
         load_ignore_patterns_from_dir(ig, dirpath);
         free(dirpath0);
         dirpath0 = ag_strdup(dirpath);
@@ -638,11 +639,17 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
             if (depth < opts.max_search_depth || opts.max_search_depth == -1) {
                 log_debug("Searching dir %s", dir_full_path);
                 ignores *child_ig;
+                ignores *parent_ig = ig;
+                size_t d_name_len =
 #ifdef HAVE_DIRENT_DNAMLEN
-                child_ig = init_ignore(ig, dir->d_name, dir->d_namlen);
+                    dir->d_namlen;
 #else
-                child_ig = init_ignore(ig, dir->d_name, strlen(dir->d_name));
+                    strlen(dir->d_name);
 #endif
+                if (is_repository_root(dir_full_path)) {
+                    parent_ig = NULL;
+                }
+                child_ig = init_ignore(parent_ig, dir->d_name, d_name_len);
                 search_dir(child_ig, base_path, dir_full_path, depth + 1,
                            original_dev);
                 cleanup_ignore(child_ig);

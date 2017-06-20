@@ -528,6 +528,27 @@ int is_named_pipe(const char *path, const struct dirent *d) {
         ;
 }
 
+int is_repository_root(const char *path) {
+    char *dotdir;
+    struct stat s;
+    int ret = FALSE;
+    char *repo_dotdirs[] = {
+        ".git", ".hg",
+        NULL
+    };
+    char **repo_dotdir = repo_dotdirs;
+    while (!ret && *repo_dotdir != NULL) {
+        ag_asprintf(&dotdir, "%s/%s", path, *repo_dotdir);
+        if (stat(dotdir, &s) == 0) {
+            ret = TRUE;
+        }
+        free(dotdir);
+        repo_dotdir++;
+    }
+    log_debug("Directory %s was%sconsidered a repository root.", path, (ret ? " " : " not "));
+    return ret;
+}
+
 void ag_asprintf(char **ret, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
