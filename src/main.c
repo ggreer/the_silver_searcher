@@ -11,6 +11,11 @@
 
 #include "config.h"
 
+#ifdef HAVE_CAPSICUM_HELPERS_H
+#include <capsicum_helpers.h>
+#include <sys/capsicum.h>
+#endif
+
 #ifdef HAVE_PTHREAD_H
 #include <pthread.h>
 #endif
@@ -40,6 +45,12 @@ int main(int argc, char **argv) {
         die("pledge: %s", strerror(errno));
     }
 #endif
+#ifdef HAVE_CAPSICUM_HELPERS_H
+    sandbox_paths_init();
+    caph_cache_catpages();
+    if (caph_limit_stdio() < 0)
+        die("caph_limit_stdio: %s", strerror(errno));
+#endif
 
     set_log_level(LOG_LEVEL_WARN);
 
@@ -49,6 +60,10 @@ int main(int argc, char **argv) {
     out_fd = stdout;
 
     parse_options(argc, argv, &base_paths, &paths);
+#ifdef HAVE_CAPSICUM_HELPERS_H
+    if (cap_enter() < 0 && errno != ENOSYS)
+        die("cap_enter: %s", strerror(errno));
+#endif
     log_debug("PCRE Version: %s", pcre_version());
     if (opts.stats) {
         memset(&stats, 0, sizeof(stats));

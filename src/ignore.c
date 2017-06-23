@@ -170,7 +170,11 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
 /* For loading git/hg ignore patterns */
 void load_ignore_patterns(ignores *ig, const char *path) {
     FILE *fp = NULL;
+#ifdef HAVE_CAPSICUM_HELPERS_H
+    fp = fopen_sandbox(path, "r");
+#else
     fp = fopen(path, "r");
+#endif
     if (fp == NULL) {
         log_debug("Skipping ignore file %s: not readable", path);
         return;

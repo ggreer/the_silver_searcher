@@ -246,7 +246,11 @@ void search_file(const char *file_full_path) {
     int rv = 0;
     FILE *fp = NULL;
 
+#ifdef HAVE_CAPSICUM_HELPERS_H
+    rv = stat_sandbox(file_full_path, &statbuf);
+#else
     rv = stat(file_full_path, &statbuf);
+#endif
     if (rv != 0) {
         log_err("Skipping %s: Error fstat()ing file.", file_full_path);
         goto cleanup;
@@ -263,7 +267,11 @@ void search_file(const char *file_full_path) {
         goto cleanup;
     }
 
+#ifdef HAVE_CAPSICUM_HELPERS_H
+    fd = open_sandbox(file_full_path, O_RDONLY, 0);
+#else
     fd = open(file_full_path, O_RDONLY);
+#endif
     if (fd < 0) {
         /* XXXX: strerror is not thread-safe */
         log_err("Skipping %s: Error opening file: %s", file_full_path, strerror(errno));
@@ -432,7 +440,11 @@ static int check_symloop_enter(const char *path, dirkey_t *outkey) {
     outkey->dev = 0;
     outkey->ino = 0;
 
+#ifdef HAVE_CAPSICUM_HELPERS_H
+    int res = stat_sandbox(path, &buf);
+#else
     int res = stat(path, &buf);
+#endif
     if (res != 0) {
         log_err("Error stat()ing: %s", path);
         return SYMLOOP_ERROR;

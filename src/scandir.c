@@ -14,7 +14,11 @@ int ag_scandir(const char *dirname,
     int names_len = 32;
     int results_len = 0;
 
+#ifdef HAVE_CAPSICUM_HELPERS_H
+    dirp = opendir_sandbox(dirname);
+#else
     dirp = opendir(dirname);
+#endif
     if (dirp == NULL) {
         goto fail;
     }

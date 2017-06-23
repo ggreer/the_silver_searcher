@@ -1,4 +1,6 @@
 #include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,6 +22,70 @@
         die("Memory allocation failed."); \
     }                                     \
     return ptr;
+
+#ifdef HAVE_CAPSICUM_HELPERS_H
+#include <sys/capsicum.h>
+#include <termios.h>
+
+int rootfd, cwdfd;
+
+void sandbox_paths_init(void) {
+    rootfd = open("/", O_RDONLY);
+    if (rootfd < 0)
+        die("open(\"/\"): %s", strerror(errno));
+    cwdfd = open(".", O_RDONLY);
+    if (cwdfd < 0)
+        die("open(\".\"): %s", strerror(errno));
+}
+
+FILE *fopen_sandbox(const char *path, const char *mode) {
+    int fd;
+
+    if (strcmp(mode, "r") != 0)
+        die("%s: unexpected mode '%s'", __func__, mode);
+
+    fd = open_sandbox(path, O_RDONLY, 0);
+    if (fd < 0)
+        return NULL;
+    return fdopen(fd, mode);
+}
+
+int open_sandbox(const char *path, int flags, mode_t mode) {
+    static const unsigned long cmds[] = { TIOCGETA, TIOCGWINSZ };
+    cap_rights_t rights;
+    int fd;
+
+    if (path[0] == '/')
+        fd = openat(rootfd, path + 1, flags, mode);
+    else
+        fd = openat(cwdfd, path, flags, mode);
+
+    if (fd >= 0) {
+        cap_rights_init(&rights, CAP_FCNTL, CAP_FSTAT, CAP_FSTATFS, CAP_IOCTL,
+                        CAP_MMAP_R);
+        if ((cap_rights_limit(fd, &rights) < 0 && errno != ENOSYS) ||
+            (cap_ioctls_limit(fd, cmds, nitems(cmds)) < 0 && errno != ENOSYS) ||
+            (cap_fcntls_limit(fd, CAP_FCNTL_GETFL) < 0 && errno != ENOSYS))
+            die("capsicum");
+    }
+    return fd;
+}
+
+DIR *opendir_sandbox(const char *path) {
+    int fd;
+
+    fd = open_sandbox(path, O_RDONLY | O_DIRECTORY, 0);
+    if (fd < 0)
+        return NULL;
+    return fdopendir(fd);
+}
+
+int stat_sandbox(const char *path, struct stat *buf) {
+    if (path[0] == '/')
+        return fstatat(rootfd, path + 1, buf, 0);
+    return fstatat(cwdfd, path, buf, 0);
+}
+#endif /* HAVE_CAPSICUM_HELPERS_H */
 
 void *ag_malloc(size_t size) {
     void *ptr = malloc(size);

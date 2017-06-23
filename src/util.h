@@ -53,6 +53,16 @@ typedef struct {
 
 ag_stats stats;
 
+#ifdef HAVE_CAPSICUM_HELPERS_H
+extern int rootfd, cwdfd;
+
+void sandbox_paths_init(void);
+FILE *fopen_sandbox(const char *path, const char *mode);
+int open_sandbox(const char *path, int flags, mode_t mode);
+DIR *opendir_sandbox(const char *path);
+int stat_sandbox(const char *path, struct stat *buf);
+#endif
+
 /* Union to translate between chars and words without violating strict aliasing */
 typedef union {
     char as_chars[sizeof(uint16_t)];

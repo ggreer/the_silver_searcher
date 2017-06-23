@@ -56,6 +56,8 @@ AS_IF([test "x$enable_lzma" != "xno"], [
     PKG_CHECK_MODULES([LZMA], [liblzma])
 ])
 
+AC_CHECK_HEADERS([capsicum_helpers.h])
+
 AC_CHECK_DECL([PCRE_CONFIG_JIT], [AC_DEFINE([USE_PCRE_JIT], [], [Use PCRE JIT])], [], [#include <pcre.h>])
 
 AC_CHECK_DECL([CPU_ZERO, CPU_SET], [AC_DEFINE([USE_CPU_SET], [], [Use CPU_SET macros])] , [], [#include <sched.h>])
