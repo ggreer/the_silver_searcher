@@ -67,7 +67,7 @@ or
         yum install epel-release.noarch the_silver_searcher
 * Gentoo
 
-        emerge the_silver_searcher
+        emerge -a sys-apps/the_silver_searcher
 * Arch
 
         pacman -S the_silver_searcher
