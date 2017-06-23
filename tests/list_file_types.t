@@ -168,6 +168,9 @@ Language types are output:
     --mathematica
         .m  .wl
   
+    --md
+        .markdown  .mdown  .mdwn  .mkdn  .mkd  .md
+  
     --mercury
         .m  .moo
   
