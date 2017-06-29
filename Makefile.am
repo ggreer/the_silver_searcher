@@ -14,7 +14,7 @@ dist_zshcomp_DATA = _the_silver_searcher
 EXTRA_DIST = Makefile.w32 LICENSE NOTICE the_silver_searcher.spec README.md
 
 all:
-	@$(MAKE) ag -r
+	@$(MAKE) ag$(EXEEXT) -r
 
 test: ag
 	cram -v tests/*.t
