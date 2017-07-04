@@ -6,7 +6,7 @@ A code searching tool similar to `ack`, with a focus on speed.
 
 [![Floobits Status](https://floobits.com/ggreer/ag.svg)](https://floobits.com/ggreer/ag/redirect)
 
-[![#ag on Freenode](http://img.shields.io/Freenode/%23ag.png)](https://webchat.freenode.net/?channels=ag)
+[![#ag on Freenode](https://img.shields.io/badge/Freenode-%23ag-brightgreen.svg)](https://webchat.freenode.net/?channels=ag)
 
 Do you know C? Want to improve ag? [I invite you to pair with me](http://geoff.greer.fm/2014/10/13/help-me-get-to-ag-10/).
 
