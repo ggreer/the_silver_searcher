@@ -12,6 +12,9 @@ Language types are output:
     --ada
         .ada  .adb  .ads
   
+    --asciidoc
+        .adoc  .ad  .asciidoc
+  
     --asm
         .asm  .s
   
@@ -111,6 +114,9 @@ Language types are output:
     --ini
         .ini
   
+    --ipython
+        .ipynb 
+  
     --jade
         .jade
   
@@ -188,6 +194,9 @@ Language types are output:
   
     --octave
         .m
+  
+    --org
+        .org
   
     --parrot
         .pir  .pasm  .pmc  .ops  .pod  .pg  .tg
