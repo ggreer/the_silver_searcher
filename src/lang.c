@@ -7,6 +7,7 @@
 lang_spec_t langs[] = {
     { "actionscript", { "as", "mxml" } },
     { "ada", { "ada", "adb", "ads" } },
+    { "adoc", { "adoc", "ad", "asciidoc" } },
     { "asm", { "asm", "s" } },
     { "batch", { "bat", "cmd" } },
     { "bitbake", { "bb", "bbappend", "bbclass", "inc" } },
@@ -40,6 +41,7 @@ lang_spec_t langs[] = {
     { "hh", { "h" } },
     { "html", { "htm", "html", "shtml", "xhtml" } },
     { "ini", { "ini" } },
+    { "ipynb", { "ipynb" } },
     { "jade", { "jade" } },
     { "java", { "java", "properties" } },
     { "js", { "es6", "js", "jsx", "vue" } },
@@ -66,6 +68,7 @@ lang_spec_t langs[] = {
     { "objcpp", { "mm", "h" } },
     { "ocaml", { "ml", "mli", "mll", "mly" } },
     { "octave", { "m" } },
+    { "org", { "org" } },
     { "parrot", { "pir", "pasm", "pmc", "ops", "pod", "pg", "tg" } },
     { "perl", { "pl", "pm", "pm6", "pod", "t" } },
     { "php", { "php", "phpt", "php3", "php4", "php5", "phtml" } },
