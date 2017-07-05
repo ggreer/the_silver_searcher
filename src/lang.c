@@ -64,6 +64,7 @@ lang_spec_t langs[] = {
     { "md", { "markdown", "mdown", "mdwn", "mkdn", "mkd", "md" } },
     { "mercury", { "m", "moo" } },
     { "nim", { "nim" } },
+    { "nix", { "nix" } },
     { "objc", { "m", "h" } },
     { "objcpp", { "mm", "h" } },
     { "ocaml", { "ml", "mli", "mll", "mly" } },
