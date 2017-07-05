@@ -7,7 +7,7 @@
 lang_spec_t langs[] = {
     { "actionscript", { "as", "mxml" } },
     { "ada", { "ada", "adb", "ads" } },
-    { "adoc", { "adoc", "ad", "asciidoc" } },
+    { "asciidoc", { "adoc", "ad", "asciidoc" } },
     { "asm", { "asm", "s" } },
     { "batch", { "bat", "cmd" } },
     { "bitbake", { "bb", "bbappend", "bbclass", "inc" } },
@@ -41,7 +41,7 @@ lang_spec_t langs[] = {
     { "hh", { "h" } },
     { "html", { "htm", "html", "shtml", "xhtml" } },
     { "ini", { "ini" } },
-    { "ipynb", { "ipynb" } },
+    { "ipython", { "ipynb" } },
     { "jade", { "jade" } },
     { "java", { "java", "properties" } },
     { "js", { "es6", "js", "jsx", "vue" } },
