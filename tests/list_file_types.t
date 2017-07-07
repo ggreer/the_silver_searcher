@@ -60,6 +60,9 @@ Language types are output:
     --delphi
         .pas  .int  .dfm  .nfm  .dof  .dpk  .dpr  .dproj  .groupproj  .bdsgroup  .bdsproj
   
+    --dot
+        .dot  .gv
+  
     --ebuild
         .ebuild  .eclass
   
