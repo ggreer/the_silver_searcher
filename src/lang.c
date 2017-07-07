@@ -23,6 +23,7 @@ lang_spec_t langs[] = {
     { "css", { "css" } },
     { "cython", { "pyx", "pxd", "pxi" } },
     { "delphi", { "pas", "int", "dfm", "nfm", "dof", "dpk", "dpr", "dproj", "groupproj", "bdsgroup", "bdsproj" } },
+    { "dot", { "dot", "gv" } },
     { "ebuild", { "ebuild", "eclass" } },
     { "elisp", { "el" } },
     { "elixir", { "ex", "eex", "exs" } },
