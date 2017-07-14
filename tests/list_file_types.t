@@ -81,6 +81,9 @@ Language types are output:
     --fsharp
         .fs  .fsi  .fsx
   
+    --fusion
+        .fusion
+  
     --gettext
         .po  .pot  .mo
   
