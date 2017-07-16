@@ -99,6 +99,7 @@ lang_spec_t langs[] = {
     { "awl", { "awl" }  },
     { "csv", { "csv" }  },
     { "acf", { "acf" }  },
+    { "pml", { "pml" }  },
     { "table", { "table" }  },
     { "ariba", {"aml","awl","csv","acf","table"}  }
 };
