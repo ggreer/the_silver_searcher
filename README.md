@@ -96,13 +96,17 @@ or
 
         pkg_add the_silver_searcher
 
-### Cygwin
-
-Run the relevant [`setup-*.exe`](https://cygwin.com/install.html), and select "the\_silver\_searcher" in the "Utils" category.
-
 ### Windows
 
-Unofficial daily builds are [available](https://github.com/k-takata/the_silver_searcher-win32).
+* Win32/64
+
+  Unofficial daily builds are [available](https://github.com/k-takata/the_silver_searcher-win32).
+* MSYS2
+
+        pacman -S mingw-w64-{i686,x86_64}-ag
+* Cygwin
+
+  Run the relevant [`setup-*.exe`](https://cygwin.com/install.html), and select "the\_silver\_searcher" in the "Utils" category.
 
 ## Building from source
 
@@ -134,7 +138,7 @@ Unofficial daily builds are [available](https://github.com/k-takata/the_silver_s
 
         ./build.sh
 
-  On Windows (inside an msys/MinGW shell):
+   On Windows (inside an msys/MinGW shell):
 
         make -f Makefile.w32
 3. Make install:
