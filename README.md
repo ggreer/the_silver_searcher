@@ -100,6 +100,10 @@ or
 
 Run the relevant [`setup-*.exe`](https://cygwin.com/install.html), and select "the\_silver\_searcher" in the "Utils" category.
 
+### Windows
+
+Unofficial daily builds are [available](https://github.com/k-takata/the_silver_searcher-win32).
+
 ## Building from source
 
 ### Building master
