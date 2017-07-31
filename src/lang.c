@@ -7,7 +7,7 @@
 lang_spec_t langs[] = {
     { "actionscript", { "as", "mxml" } },
     { "ada", { "ada", "adb", "ads" } },
-    { "asciidoc", { "adoc", "ad", "asciidoc" } },
+    { "asciidoc", { "adoc", "ad", "asc", "asciidoc" } },
     { "asm", { "asm", "s" } },
     { "batch", { "bat", "cmd" } },
     { "bitbake", { "bb", "bbappend", "bbclass", "inc" } },
