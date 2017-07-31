@@ -13,7 +13,7 @@ Language types are output:
         .ada  .adb  .ads
   
     --asciidoc
-        .adoc  .ad  .asciidoc
+        .adoc  .ad  .asc  .asciidoc
   
     --asm
         .asm  .s
