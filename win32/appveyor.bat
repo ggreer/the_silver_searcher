@@ -66,6 +66,7 @@ if "%APPVEYOR_REPO_TAG_NAME%"=="" (
 ) else (
   set ver=%APPVEYOR_REPO_TAG_NAME%
 )
+set ver=%ver:/=_%
 
 :: Create zip package
 set filelist=ag.exe LICENSE README.md
