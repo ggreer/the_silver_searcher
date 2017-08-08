@@ -176,12 +176,12 @@ void generate_hash(const char *find, const size_t f_len, uint8_t *h_table, const
 
 /* Boyer-Moore strstr */
 const char *boyer_moore_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len,
-                                const size_t alpha_skip_lookup[], const size_t *find_skip_lookup) {
+                                const size_t alpha_skip_lookup[], const size_t *find_skip_lookup, const int case_insensitive) {
     ssize_t i;
     size_t pos = f_len - 1;
 
     while (pos < s_len) {
-        for (i = f_len - 1; i >= 0 && s[pos] == find[i]; pos--, i--) {
+        for (i = f_len - 1; i >= 0 && (case_insensitive ? tolower(s[pos]) : s[pos]) == find[i]; pos--, i--) {
         }
         if (i < 0) {
             return s + pos + 1;
@@ -192,25 +192,9 @@ const char *boyer_moore_strnstr(const char *s, const char *find, const size_t s_
     return NULL;
 }
 
-/* Copy-pasted from above. Yes I know this is bad. One day I might even fix it. */
-const char *boyer_moore_strncasestr(const char *s, const char *find, const size_t s_len, const size_t f_len,
-                                    const size_t alpha_skip_lookup[], const size_t *find_skip_lookup) {
-    ssize_t i;
-    size_t pos = f_len - 1;
-
-    while (pos < s_len) {
-        for (i = f_len - 1; i >= 0 && tolower(s[pos]) == find[i]; pos--, i--) {
-        }
-        if (i < 0) {
-            return s + pos + 1;
-        }
-        pos += ag_max(alpha_skip_lookup[(unsigned char)s[pos]], find_skip_lookup[i]);
-    }
-
-    return NULL;
-}
-
-const char *hash_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len, uint8_t *h_table, const int case_sensitive) {
+// Clang's -fsanitize=alignment (included in -fsanitize=undefined) will flag
+// the intentional unaligned access here, so suppress it for this function
+NO_SANITIZE_ALIGNMENT const char *hash_strnstr(const char *s, const char *find, const size_t s_len, const size_t f_len, uint8_t *h_table, const int case_sensitive) {
     if (s_len < f_len)
         return NULL;
 
@@ -246,17 +230,6 @@ const char *hash_strnstr(const char *s, const char *find, const size_t s_len, co
     next_start:;
     }
     return NULL;
-}
-
-
-strncmp_fp get_strstr(enum case_behavior casing) {
-    strncmp_fp ag_strncmp_fp = &boyer_moore_strnstr;
-
-    if (casing == CASE_INSENSITIVE) {
-        ag_strncmp_fp = &boyer_moore_strncasestr;
-    }
-
-    return ag_strncmp_fp;
 }
 
 size_t invert_matches(const char *buf, const size_t buf_len, match_t matches[], size_t matches_len) {
@@ -550,7 +523,11 @@ int is_named_pipe(const char *path, const struct dirent *d) {
         return FALSE;
     }
     free(full_path);
-    return S_ISFIFO(s.st_mode) || S_ISSOCK(s.st_mode);
+    return S_ISFIFO(s.st_mode)
+#ifdef S_ISSOCK
+           || S_ISSOCK(s.st_mode)
+#endif
+        ;
 }
 
 void ag_asprintf(char **ret, const char *fmt, ...) {

@@ -1,6 +1,6 @@
 AC_INIT(
     [the_silver_searcher],
-    [1.0.2],
+    [2.0.0],
     [https://github.com/ggreer/the_silver_searcher/issues],
     [the_silver_searcher],
     [https://github.com/ggreer/the_silver_searcher])
@@ -10,6 +10,7 @@ AM_INIT_AUTOMAKE([no-define foreign subdir-objects])
 AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PREREQ([2.59])
+AC_PROG_GREP
 
 m4_ifdef(
     [AM_SILENT_RULES],
@@ -24,7 +25,12 @@ AX_PTHREAD(
 )
 
 # Run CFLAGS="-pg" ./configure if you want debug symbols
-CFLAGS="$CFLAGS $PTHREAD_CFLAGS $PCRE_CFLAGS -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -Wshadow -Wpointer-arith -Wcast-qual -Wmissing-prototypes -Wno-missing-braces -std=gnu89 -D_GNU_SOURCE -O2"
+if ! echo "$CFLAGS" | "$GREP" '\(^\|[[[:space:]]]\)-O' > /dev/null; then
+    CFLAGS="$CFLAGS -O2"
+fi
+
+CFLAGS="$CFLAGS $PTHREAD_CFLAGS $PCRE_CFLAGS -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -Wshadow"
+CFLAGS="$CFLAGS -Wpointer-arith -Wcast-qual -Wmissing-prototypes -Wno-missing-braces -std=gnu89 -D_GNU_SOURCE"
 LDFLAGS="$LDFLAGS"
 
 case $host in
@@ -53,11 +59,12 @@ AS_IF([test "x$enable_lzma" != "xno"], [
 AC_CHECK_DECL([PCRE_CONFIG_JIT], [AC_DEFINE([USE_PCRE_JIT], [], [Use PCRE JIT])], [], [#include <pcre.h>])
 
 AC_CHECK_DECL([CPU_ZERO, CPU_SET], [AC_DEFINE([USE_CPU_SET], [], [Use CPU_SET macros])] , [], [#include <sched.h>])
+AC_CHECK_HEADERS([sys/cpuset.h])
 
 AC_CHECK_MEMBER([struct dirent.d_type], [AC_DEFINE([HAVE_DIRENT_DTYPE], [], [Have dirent struct member d_type])], [], [[#include <dirent.h>]])
 AC_CHECK_MEMBER([struct dirent.d_namlen], [AC_DEFINE([HAVE_DIRENT_DNAMLEN], [], [Have dirent struct member d_namlen])], [], [[#include <dirent.h>]])
 
-AC_CHECK_FUNCS(fgetln getline realpath strlcpy strndup vasprintf madvise posix_fadvise pthread_setaffinity_np pledge)
+AC_CHECK_FUNCS(fgetln fopencookie getline realpath strlcpy strndup vasprintf madvise posix_fadvise pthread_setaffinity_np pledge)
 
 AC_CONFIG_FILES([Makefile the_silver_searcher.spec])
 AC_CONFIG_HEADERS([src/config.h])

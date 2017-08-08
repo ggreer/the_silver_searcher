@@ -11,8 +11,16 @@
 
 #include "config.h"
 
+#ifdef HAVE_SYS_CPUSET_H
+#include <sys/cpuset.h>
+#endif
+
 #ifdef HAVE_PTHREAD_H
 #include <pthread.h>
+#endif
+
+#if defined(HAVE_PTHREAD_SETAFFINITY_NP) && defined(__FreeBSD__)
+#include <pthread_np.h>
 #endif
 
 #include "log.h"
@@ -149,9 +157,13 @@ int main(int argc, char **argv) {
             if (rv != 0) {
                 die("Error in pthread_create(): %s", strerror(rv));
             }
-#if defined(HAVE_PTHREAD_SETAFFINITY_NP) && defined(USE_CPU_SET)
+#if defined(HAVE_PTHREAD_SETAFFINITY_NP) && (defined(USE_CPU_SET) || defined(HAVE_SYS_CPUSET_H))
             if (opts.use_thread_affinity) {
+#if defined(__linux__) || defined(HAS_MSVCLIBX)
                 cpu_set_t cpu_set;
+#elif __FreeBSD__
+                cpuset_t cpu_set;
+#endif
                 CPU_ZERO(&cpu_set);
                 CPU_SET(i % num_cores, &cpu_set);
                 rv = pthread_setaffinity_np(workers[i].thread, sizeof(cpu_set), &cpu_set);

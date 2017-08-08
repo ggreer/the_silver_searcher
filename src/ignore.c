@@ -30,8 +30,6 @@ const char *evil_hardcoded_ignore_files[] = {
 
 /* Warning: changing the first two strings will break skip_vcs_ignores. */
 const char *ignore_pattern_files[] = {
-    /* Warning: .agignore will one day be removed in favor of .ignore */
-    ".agignore",
     ".ignore",
     ".gitignore",
     ".git/info/exclude",
@@ -53,6 +51,8 @@ ignores *init_ignore(ignores *parent, const char *dirname, const size_t dirname_
     ig->slash_names_len = 0;
     ig->regexes = NULL;
     ig->regexes_len = 0;
+    ig->invert_regexes = NULL;
+    ig->invert_regexes_len = 0;
     ig->slash_regexes = NULL;
     ig->slash_regexes_len = 0;
     ig->dirname = dirname;
@@ -86,6 +86,7 @@ void cleanup_ignore(ignores *ig) {
     free_strings(ig->names, ig->names_len);
     free_strings(ig->slash_names, ig->slash_names_len);
     free_strings(ig->regexes, ig->regexes_len);
+    free_strings(ig->invert_regexes, ig->invert_regexes_len);
     free_strings(ig->slash_regexes, ig->slash_regexes_len);
     if (ig->abs_path) {
         free(ig->abs_path);
@@ -125,6 +126,11 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
         } else if (pattern[0] == '/') {
             patterns_p = &(ig->slash_regexes);
             patterns_len = &(ig->slash_regexes_len);
+            pattern++;
+            pattern_len--;
+        } else if (pattern[0] == '!') {
+            patterns_p = &(ig->invert_regexes);
+            patterns_len = &(ig->invert_regexes_len);
             pattern++;
             pattern_len--;
         } else {
@@ -265,6 +271,15 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
         }
     }
 
+    for (i = 0; i < ig->invert_regexes_len; i++) {
+        if (fnmatch(ig->invert_regexes[i], filename, fnmatch_flags) == 0) {
+            log_debug("file %s not ignored because name matches regex pattern !%s", filename, ig->invert_regexes[i]);
+            free(temp);
+            return 0;
+        }
+        log_debug("pattern !%s doesn't match file %s", ig->invert_regexes[i], filename);
+    }
+
     for (i = 0; i < ig->regexes_len; i++) {
         if (fnmatch(ig->regexes[i], filename, fnmatch_flags) == 0) {
             log_debug("file %s ignored because name matches regex pattern %s", filename, ig->regexes[i]);
@@ -308,15 +323,7 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     }
 
     scandir_baton_t *scandir_baton = (scandir_baton_t *)baton;
-    const char *base_path = scandir_baton->base_path;
-    const size_t base_path_len = scandir_baton->base_path_len;
-    const char *path_start = path;
-
-    for (i = 0; base_path[i] == path[i] && i < base_path_len; i++) {
-        /* base_path always ends with "/\0" while path doesn't, so this is safe */
-        path_start = path + i + 2;
-    }
-    log_debug("path_start %s filename %s", path_start, filename);
+    const char *path_start = scandir_baton->path_start;
 
     const char *extension = strchr(filename, '.');
     if (extension) {

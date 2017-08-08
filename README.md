@@ -6,7 +6,7 @@ A code searching tool similar to `ack`, with a focus on speed.
 
 [![Floobits Status](https://floobits.com/ggreer/ag.svg)](https://floobits.com/ggreer/ag/redirect)
 
-[![#ag on Freenode](http://img.shields.io/Freenode/%23ag.png)](https://webchat.freenode.net/?channels=ag)
+[![#ag on Freenode](https://img.shields.io/badge/Freenode-%23ag-brightgreen.svg)](https://webchat.freenode.net/?channels=ag)
 
 Do you know C? Want to improve ag? [I invite you to pair with me](http://geoff.greer.fm/2014/10/13/help-me-get-to-ag-10/).
 
@@ -42,7 +42,7 @@ I've written several blog posts showing how I've improved performance. These inc
 
 ## Installing
 
-### MacOS
+### macOS
 
     brew install the_silver_searcher
 
@@ -67,7 +67,7 @@ or
         yum install epel-release.noarch the_silver_searcher
 * Gentoo
 
-        emerge the_silver_searcher
+        emerge -a sys-apps/the_silver_searcher
 * Arch
 
         pacman -S the_silver_searcher
@@ -79,6 +79,10 @@ or
 * openSUSE:
 
         zypper install the_silver_searcher
+
+* CentOS:
+        
+        yum install the_silver_searcher
 
 * SUSE Linux Enterprise: Follow [these simple instructions](https://software.opensuse.org/download.html?project=utilities&package=the_silver_searcher).
 
@@ -101,7 +105,7 @@ Run the relevant [`setup-*.exe`](https://cygwin.com/install.html), and select "t
 ### Building master
 
 1. Install dependencies (Automake, pkg-config, PCRE, LZMA):
-    * MacOS:
+    * macOS:
 
             brew install automake pkg-config pcre xz
         or

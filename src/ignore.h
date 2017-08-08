@@ -15,6 +15,8 @@ struct ignores {
 
     char **regexes; /* For patterns that need fnmatch */
     size_t regexes_len;
+    char **invert_regexes; /* For "!" patterns */
+    size_t invert_regexes_len;
     char **slash_regexes;
     size_t slash_regexes_len;
 

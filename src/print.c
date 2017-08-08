@@ -94,6 +94,7 @@ __thread struct print_context {
     size_t prev_line;
     size_t last_prev_line;
     size_t prev_line_offset;
+    size_t line_preceding_current_match_offset;
     size_t lines_since_last_match;
     size_t last_printed_match;
     int in_a_match;
@@ -109,6 +110,7 @@ void print_init_context(void) {
     print_context.prev_line = 0;
     print_context.last_prev_line = 0;
     print_context.prev_line_offset = 0;
+    print_context.line_preceding_current_match_offset = 0;
     print_context.lines_since_last_match = INT_MAX;
     print_context.last_printed_match = 0;
     print_context.in_a_match = FALSE;
@@ -304,14 +306,10 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                     /* print headers for ackmate to parse */
                     print_line_number(print_context.line, ';');
                     for (; print_context.last_printed_match < cur_match; print_context.last_printed_match++) {
-                        /* Don't print negative offsets. This isn't quite right, but not many people use --ackmate */
-                        long start = (long)(matches[print_context.last_printed_match].start - print_context.prev_line_offset);
-                        if (start < 0) {
-                            start = 0;
-                        }
-                        fprintf(out_fd, "%li %li",
+                        size_t start = matches[print_context.last_printed_match].start - print_context.line_preceding_current_match_offset;
+                        fprintf(out_fd, "%lu %lu",
                                 start,
-                                (long)(matches[print_context.last_printed_match].end - matches[print_context.last_printed_match].start));
+                                matches[print_context.last_printed_match].end - matches[print_context.last_printed_match].start);
                         print_context.last_printed_match == cur_match - 1 ? fputc(':', out_fd) : fputc(',', out_fd);
                     }
                     print_line(buf, i, print_context.prev_line_offset);
@@ -398,6 +396,9 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
             print_trailing_context(path, &buf[print_context.prev_line_offset], i - print_context.prev_line_offset);
 
             print_context.prev_line_offset = i + 1; /* skip the newline */
+            if (!print_context.in_a_match) {
+                print_context.line_preceding_current_match_offset = i + 1;
+            }
 
             /* File doesn't end with a newline. Print one so the output is pretty. */
             if (i == buf_len && buf[i - 1] != '\n') {

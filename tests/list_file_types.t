@@ -66,6 +66,9 @@ Language types are output:
     --elixir
         .ex  .eex  .exs
   
+    --elm
+        .elm
+  
     --erlang
         .erl  .hrl
   
@@ -96,6 +99,9 @@ Language types are output:
     --haskell
         .hs  .lhs
   
+    --haxe
+        .hx
+  
     --hh
         .h
   
@@ -112,13 +118,13 @@ Language types are output:
         .java  .properties
   
     --js
-        .js  .jsx  .vue
+        .es6  .js  .jsx  .vue
   
     --json
         .json
   
     --jsp
-        .jsp  .jspx  .jhtm  .jhtml
+        .jsp  .jspx  .jhtm  .jhtml  .jspf  .tag  .tagf
   
     --julia
         .jl
@@ -162,6 +168,9 @@ Language types are output:
     --mathematica
         .m  .wl
   
+    --md
+        .markdown  .mdown  .mdwn  .mkdn  .mkd  .md
+  
     --mercury
         .m  .moo
   
@@ -191,6 +200,9 @@ Language types are output:
   
     --pike
         .pike  .pmod
+  
+    --plist
+        .plist
   
     --plone
         .pt  .cpt  .metadata  .cpy  .py  .xml  .zcml
@@ -276,6 +288,9 @@ Language types are output:
     --ts
         .ts  .tsx
   
+    --twig
+        .twig
+  
     --vala
         .vala  .vapi
   
@@ -304,7 +319,7 @@ Language types are output:
         .wadl
   
     --xml
-        .xml  .dtd  .xsl  .xslt  .ent  .tld
+        .xml  .dtd  .xsl  .xslt  .ent  .tld  .plist
   
     --yaml
         .yaml  .yml
