@@ -17,6 +17,7 @@
 *    2017-03-20 JFL Bug fix: _setmodeX() now checks its input values validity.*
 *    2017-03-22 JFL Bug fix: Static variables in fputcM must be thread-local. *
 *    2017-04-12 JFL Added puts().                                             *
+*    2017-08-09 JFL Added fprintfM() and printfM().                           *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -471,6 +472,17 @@ int vfprintfU(FILE *f, const char *pszFormat, va_list vl) { /* vfprintf UTF-8 st
   return vfprintfM(f, pszFormat, vl, CP_UTF8);
 }
 
+int fprintfM(UINT cp, FILE *f, const char *pszFormat, ...) { /* fprintf UTF-8 strings */
+  va_list vl;
+  int n;
+
+  va_start(vl, pszFormat);
+  n = vfprintfM(f, pszFormat, vl, cp);
+  va_end(vl);
+
+  return n;
+}
+
 int fprintfA(FILE *f, const char *pszFormat, ...) { /* fprintf UTF-8 strings */
   va_list vl;
   int n;
@@ -488,6 +500,17 @@ int fprintfU(FILE *f, const char *pszFormat, ...) { /* fprintf UTF-8 strings */
 
   va_start(vl, pszFormat);
   n = vfprintfM(f, pszFormat, vl, CP_UTF8);
+  va_end(vl);
+
+  return n;
+}
+
+int printfM(UINT cp, const char *pszFormat, ...) { /* printf UTF-8 strings */
+  va_list vl;
+  int n;
+
+  va_start(vl, pszFormat);
+  n = vfprintfM(stdout, pszFormat, vl, cp);
   va_end(vl);
 
   return n;
