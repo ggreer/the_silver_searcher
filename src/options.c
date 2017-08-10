@@ -122,6 +122,31 @@ ag was originally created by Geoff Greer. More information (and the latest relea
 can be found at http://geoff.greer.fm/ag\n");
 }
 
+#if SUPPORT_TWO_ENCODINGS
+/* Get the actual name of a code page */
+char *GetCPName(int iCP, LPCPINFOEX lpCpi) {
+  int i;
+  char *pszName = "";
+  CPINFOEX cpi;
+  if (!lpCpi) lpCpi = &cpi;
+  if (GetCPInfoEx(iCP, 0, lpCpi)) { /* Most code pages have a good descrition in the CPINFOEX structure */
+    /* (Including many that are not listed in the static list above) */
+    pszName = lpCpi->CodePageName;
+    /* Make a copy because we can't return the address of this one in the local stack frame */
+    /* Skip the code page number copy at the beginning of the CPINFOEX name */
+    while (strchr("0123456789", *pszName)) pszName++;
+    while (isspace(*pszName)) pszName++;	/* Skip spaces after the number */
+    if (*pszName == '(') pszName++;		/* Remove the leading '(' */
+    pszName = strdup(pszName);
+    i = (int)strlen(pszName) - 1;
+    if (pszName[i] == ')') pszName[i] = '\0'; /* Remove the trailing ')' */
+  }
+  /* But some code pages have a description that's an empty string "" */
+  if (!*pszName) pszName = "(Unknown name)";
+  return pszName;
+}
+#endif /* SUPPORT_TWO_ENCODINGS */
+
 void print_version(void) {
     char jit = '-';
     char lzma = '-';
@@ -137,9 +162,24 @@ void print_version(void) {
     zlib = '+';
 #endif
 
-    printf("ag version %s\n\n", PACKAGE_VERSION);
+    printf("ag version %s", PACKAGE_VERSION);
+#if defined(HAS_MSVCLIBX)
+#if defined(_WIN64)
+#define OS_NAME "Win64"
+#else
+#define OS_NAME "Win32"
+#endif
+    printf(" " OS_NAME DEBUG_VERSION);
+#endif /* defined(HAS_MSVCLIBX) */
+    printf("\n\n");
     printf("Features:\n");
     printf("  %cjit %clzma %czlib\n", jit, lzma, zlib);
+#if SUPPORT_TWO_ENCODINGS
+    printf("\nSupported text file encodings:\n");
+    int iACP = GetACP(); /* Get the Windows System Code Page */
+    printf("  Code Page %d = %s\n", iACP, GetCPName(iACP, NULL));
+    printf("  Code Page 65001 = UTF-8\n");
+#endif /* SUPPORT_TWO_ENCODINGS */
 }
 
 void init_options(void) {
