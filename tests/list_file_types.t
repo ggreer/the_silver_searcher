@@ -96,6 +96,9 @@ Language types are output:
     --haml
         .haml
   
+    --handlebars
+        .hbs
+  
     --haskell
         .hs  .lhs
   
