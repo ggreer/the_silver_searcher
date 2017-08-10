@@ -1,16 +1,40 @@
 # Microsoft Visual C++ compatibility libraries
 
-This folder contains external libraries necessary for building The Silver Searcher with Microsoft Visual C++.
+This folder contains external libraries necessary for building The Silver Searcher for Windows using Microsoft Visual C++.
 
 Usage:
 
-Open a command window; Go to the_silver_searcher root directory; Then run:
+Open a cmd.exe command window; Go to the_silver_searcher root directory; Then run:
 
     msc_libs\configure.bat
     msc_libs\make.bat
 
 This builds the necessary libraries in msc_libs, then ag.exe.  
-The 32 and 64 bits versions of ag.exe will be stored in bin\WIN32 and bin\WIN64 respectively.
+The 32 and 64 bits versions of ag.exe will be stored in bin\WIN32\ and bin\WIN64\ respectively.
+
+
+## Ag.exe features
+
+The ag.exe programs built with these libraries have the following features:
+
+- Support Windows XP and higher versions of Windows. (Windows Server 2003 minimum for the 64-bits version.)
+- Support path names up to 64KB. (Using WIN32 APIs not limited to 260 bytes, even in XP.)
+- Support Unicode path names.
+- Support text files encoded both in UTF-8 and in the current Windows System Code Page.  
+  (The latter depends on the Windows localization. Ex: CP 1252 for US and West-European versions of Windows.)
+- Support Unicode search strings and regular expressions.  
+  (Some limitations for regexps searches in files encoded in Windows system CP, especially for MBCS CPs.)  
+- Output non-ASCII characters correctly in any console code page.  
+  (Provided that the console font has bitmaps for them. See the table below.)  
+  (But if the output is piped to a file or another program, it'll be converted to the current console code page,
+  and unsupported characters will be lost. This is a limitation of the Windows console, not of ag.exe.)
+
+Console font          | Character families it can display
+--------------------- | ---------------------------------------------------------------------
+Arial sans MS         | Latin; Greek; Cyrillic
+Liberation Mono       | Latin; Greek; Cyrillic; Hebrew
+Microsoft YaHei       | Latin; Greek; Cyrillic; CJK Ideograms; Hiragana; Katakana; Hangul
+Yu Gothic             | Latin; Greek; Cyrillic; Dingbats; CJK Ideograms; Hiragana; Katakana
 
 
 ## Visual C++
@@ -21,16 +45,18 @@ https://www.visualstudio.com/vs/cplusplus/
 When installing it, select the workload "Desktop Development with C++",
 and the options "C++/CLI support" and "Standard Library modules".
 
-The ag build has been tested successfully with Visual Studio versions  2013, 2015, and 2017.  
+The ag build has been tested successfully with Visual Studio versions 2013, 2015, and 2017.  
 Older versions of Visual Studio will NOT to work, due to lack of C99 support.  
-Note that all libraries build successfully with Visual Studio 2005. So converting ag/src/*.c to be C89-compliant would be really useful.
+Note that all libraries build successfully with Visual Studio 2005. So converting ag/src/*.c to be C89-compliant
+would allow adding support for older versions of Windows, and even for MS-DOS!
 
 
 ## The configure.bat and make.bat scripts
 
 configure.bat searches the installed versions of Visual C++, Windows SDKs, and the necessary libraries.  
 It generates config.HOSTNAME.bat files, with definitions of the paths to the tools and libraries to use.  
-This script is automatically run once, the first time you build ag. (Running it manually allows to verify that all tools and libraries are correctly located, before going on with the build.)  
+This script is automatically run once, the first time you build ag. (Running it manually allows to verify
+that all tools and libraries are correctly located, before going on with the build.)  
 You need to run it again only if you install new versions of any of the build tools or libraries, or move them to different places.
 
 make.bat is a front-end to nmake.exe.  
@@ -40,8 +66,10 @@ A log file with all compiler messages is created every time, and displayed autom
 
 Both scripts are actually located in the msc_libs\include sub-directory.  
 The short eponymous scripts in msc_libs are just proxies included for your convenience.  
-You may want to add the absolute path to msc_libs\include in your PATH. This allows using make.bat in any directory, for rebuilding one component without rebuilding the rest.  
-For example, once the libraries have been built, you may want to run make.bat in the src directory, to save time when just rebuilding ag.exe.
+You may want to add the absolute path to msc_libs\include in your PATH. This allows using make.bat in any directory,
+for rebuilding one component without rebuilding the rest.  
+For example, once the libraries have been built, you may want to run make.bat in the src directory,
+to save time when just rebuilding ag.exe.
 
 
 ## MsvcLibX - MSVC Library Extensions
@@ -120,3 +148,30 @@ zlib.mak           | Zlib-specific make rules.
 
 #### Files modified
 None
+
+
+## Debug versions
+
+Setting the DEBUG environment variable before running make.bat allows to build the debug versions of the libraries and ag.exe programs.
+
+    set "DEBUG=1"
+    make
+
+The debug versions of the program are output in bin\WIN32\Debug\ and bin\WIN64\Debug\ respectively.
+
+Recommended: The debug versions of the pcre and zlib libraries output huge amounts of data, which is rarely interesting for ag.exe debugging.  
+After building the debug libraries for the first time, overwrite the debug versions of the pcre and zlib libraries with the non-debug ones.
+Then relink ag.exe using these libraries:
+
+    :# Overwrite the debug libraries
+    copy /y msc_libs\pcre\bin\WIN32\pcre.lib msc_libs\pcre\bin\WIN32\Debug\pcre.lib
+    copy /y msc_libs\pcre\bin\WIN64\pcre.lib msc_libs\pcre\bin\WIN64\Debug\pcre.lib
+    copy /y msc_libs\zlib\bin\WIN32\zlib.lib msc_libs\zlib\bin\WIN32\Debug\zlib.lib
+    copy /y msc_libs\zlib\bin\WIN64\zlib.lib msc_libs\zlib\bin\WIN64\Debug\zlib.lib
+    :# Delete the old debug versions of ag.exe
+    del bin\WIN32\Debug\ag.exe
+    del bin\WIN64\Debug\ag.exe
+    :# Descend into the src directory, to avoid relinking the debug libraries we just copied
+    cd src
+    :# Rebuild only ag.exe
+    ..\msc_libs\make.bat
