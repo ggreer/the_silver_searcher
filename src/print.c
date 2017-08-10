@@ -158,7 +158,13 @@ void print_trailing_context(const char *path, const char *buf, size_t n) {
         }
         print_line_number(print_context.line, sep);
 
+#if !SUPPORT_TWO_ENCODINGS
         fwrite(buf, 1, n, out_fd);
+#else /* SUPPORT_TWO_ENCODINGS */
+	UINT cp = CP_UTF8;
+	if (enc == ENC_WIN_CP) cp = CP_ACP;
+        fwriteM(buf, 1, n, out_fd, cp);
+#endif
         fputc('\n', out_fd);
     }
 
@@ -214,7 +220,13 @@ void print_line(const char *buf, size_t buf_pos, size_t prev_line_offset) {
         write_chars = opts.width;
     }
 
+#if !SUPPORT_TWO_ENCODINGS
     fwrite(buf + prev_line_offset, 1, write_chars, out_fd);
+#else /* SUPPORT_TWO_ENCODINGS */
+    UINT cp = CP_UTF8;
+    if (enc == ENC_WIN_CP) cp = CP_ACP;
+    fwriteM(buf + prev_line_offset, 1, write_chars, out_fd, cp);
+#endif
 }
 
 void print_binary_file_matches(const char *path) {
@@ -278,7 +290,13 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                             print_path(path, ':');
                         }
                         print_line_number(print_context.line - (opts.before - j), sep);
+#if !SUPPORT_TWO_ENCODINGS
                         fprintf(out_fd, "%s\n", print_context.context_prev_lines[print_context.prev_line]);
+#else /* SUPPORT_TWO_ENCODINGS */
+			UINT cp = CP_UTF8;
+			if (enc == ENC_WIN_CP) cp = CP_ACP;
+                        fprintfM(out_fd, "%s\n", print_context.context_prev_lines[print_context.prev_line], cp);
+#endif
                     }
                 }
             }
@@ -376,7 +394,13 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                             /* if only_matching is set, print only matches and newlines */
                             if (!opts.only_matching || print_context.printing_a_match) {
                                 if (opts.width == 0 || j - print_context.prev_line_offset < opts.width) {
+#if !SUPPORT_TWO_ENCODINGS
                                     fputc(buf[j], out_fd);
+#else /* SUPPORT_TWO_ENCODINGS */
+				    UINT cp = CP_UTF8;
+				    if (enc == ENC_WIN_CP) cp = CP_ACP;
+                                    fputcM(buf[j], out_fd, cp);
+#endif
                                 }
                             }
                         }

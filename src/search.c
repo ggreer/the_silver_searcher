@@ -21,6 +21,67 @@ pthread_mutex_t work_queue_mtx;
 
 symdir_t *symhash;
 
+#if SUPPORT_TWO_ENCODINGS
+char *szEncoding[] = {	/* Names of the encodings. Must match enum in search.h. */
+  "unknown",
+  "ASCII",
+  "Windows",
+  "UTF-8",
+};
+
+/*
+#if ((sizeof(szEncoding) / sizeof(char *)) != N_ENCODINGS)
+#error Mismatch between the ENCODING list and szEncoding list.
+#endif
+*/
+
+int CountUtf8CharBytes(const char *buf, const size_t buf_len) {
+  if (buf_len == 0) return 0;			/* Empty buffer */
+  if (!(buf[0] & 0x80)) return 1;		/* This is an ASCII character */
+  /* Else the first character is the beginning of a multi-byte UTF-8 sequence */
+  if (buf_len == 1) return 0;			/* Truncated sequence => Invalid UTF-8 */
+  if ((buf[1] & 0xC0) != 0x80) return 0;	/* Not a continuation character => Invalid UTF-8 */
+  if ((buf[0] & 0xE0) == 0xC0) return 2;	/* Valid 2-byte sequence */
+  if (buf_len == 2) return 0; 			/* Truncated sequence => Invalid UTF-8 */
+  if ((buf[2] & 0xC0) != 0x80) return 0;	/* Not a continuation character => Invalid UTF-8 */
+  if ((buf[0] & 0xF0) == 0xE0) return 3;	/* Valid 3-byte sequence */
+  if (buf_len == 3) return 0; 			/* Truncated sequence => Invalid UTF-8 */
+  if ((buf[3] & 0xC0) != 0x80) return 0;	/* Not a continuation character => Invalid UTF-8 */
+  if ((buf[0] & 0xF8) == 0xF0) return 4;	/* Valid 4-byte sequence */
+  return 0;	/* There are no valid UTF-8 sequences > 4 bytes */
+}
+
+/* Use heuristics to guess a likely encoding. */
+/* (It's not possible to find the encoding correctly in all cases.) */
+/* I considered using the uchardet library, but we don't need to support ANY encoding,
+   just the two most likely, which are the Windows System Code Page, and UTF-8.
+   (The same two 8-bit encodings supported by Windows itself, in Notepad, etc.) */
+/* MBCS code pages (China/Korea/Japan) are only partially supported. (Fixed strings will work, but ranges of chars will not.) */
+/* UTF-16 and UTF-32 are NOT supported for now. */
+ENCODING detect_encoding(const char *buf, const size_t buf_len) {
+  size_t iOffset;
+  int iFoundNonAscii = FALSE;
+  int nValidUtf8 = 0;
+  /* First check if there's an UTF-8 BOM. This is very quick. */
+  if ((buf_len >= 3) && !memcmp(buf, "\xEF\xBB\xBF", 3)) return ENC_UTF8;
+  /* Then scan non-ASCII characters, and see if they're all valid UTF-8 or not. */
+  for (iOffset = 0; iOffset < buf_len; iOffset++) {
+    int n;
+    if (!(buf[iOffset] & 0x80)) continue; /* This is an ASCII character */
+    iFoundNonAscii = TRUE;
+    n = CountUtf8CharBytes(buf+iOffset, buf_len-iOffset);
+    if (!n) return ENC_WIN_CP; /* Invalid UTF-8 => Assume this is the Windows System Code Page. */
+    nValidUtf8 += 1;
+    if (nValidUtf8 > 20) return ENC_UTF8; /* Heuristic: If we've got enough valid ones, assume they're all valid. */
+    iOffset += n-1; /* Skip the UTF-8 character. (All but the last byte, which will be skipped by the for loop) */
+  }
+  if (!iFoundNonAscii) return ENC_ASCII;
+  return ENC_UTF8;
+}
+
+__thread int enc = ENC_UNKNOWN; /* The current file encoding */
+#endif /* SUPPORT_TWO_ENCODINGS */
+
 void search_buf(const char *buf, const size_t buf_len,
                 const char *dir_full_path) {
     int binary = -1; /* 1 = yes, 0 = no, -1 = don't know */
@@ -35,6 +96,20 @@ void search_buf(const char *buf, const size_t buf_len,
             return;
         }
     }
+
+    char *query = opts.query;
+    int query_len = opts.query_len;
+
+#if SUPPORT_TWO_ENCODINGS
+    /* Detect the data encoding, and select the corresponding query */
+    enc = detect_encoding(buf, buf_len);
+    log_debug("File %s encoding is %s.", dir_full_path, szEncoding[enc]);
+    if (enc != ENC_UTF8) { /* ASCII, or Windows System Code Page */
+      /* Use the non-UTF8 query for pure ASCII too, as it should be faster */
+      query = opts.query2;
+      query_len = opts.query2_len;
+    }
+#endif /* SUPPORT_TWO_ENCODINGS */
 
     size_t matches_len = 0;
     match_t *matches;
@@ -56,26 +131,26 @@ void search_buf(const char *buf, const size_t buf_len,
         matches_spare = 0;
     }
 
-    if (!opts.literal && opts.query_len == 1 && opts.query[0] == '.') {
+    if (!opts.literal && query_len == 1 && query[0] == '.') {
         matches_size = 1;
         matches = matches == NULL ? ag_malloc(matches_size * sizeof(match_t)) : matches;
         matches[0].start = 0;
         matches[0].end = buf_len;
         matches_len = 1;
-    } else if (opts.literal) {
+    } else if (opts.literal) {		/* Searching for a literal string */
         const char *match_ptr = buf;
 
         while (buf_offset < buf_len) {
 /* hash_strnstr only for little-endian platforms that allow unaligned access */
 #if defined(__i386__) || defined(__x86_64__)
             /* Decide whether to fall back on boyer-moore */
-            if ((size_t)opts.query_len < 2 * sizeof(uint16_t) - 1 || opts.query_len >= UCHAR_MAX) {
-                match_ptr = boyer_moore_strnstr(match_ptr, opts.query, buf_len - buf_offset, opts.query_len, alpha_skip_lookup, find_skip_lookup, opts.casing == CASE_INSENSITIVE);
+            if ((size_t)query_len < 2 * sizeof(uint16_t) - 1 || query_len >= UCHAR_MAX) {
+                match_ptr = boyer_moore_strnstr(match_ptr, query, buf_len - buf_offset, query_len, alpha_skip_lookup, find_skip_lookup, opts.casing == CASE_INSENSITIVE);
             } else {
-                match_ptr = hash_strnstr(match_ptr, opts.query, buf_len - buf_offset, opts.query_len, h_table, opts.casing == CASE_SENSITIVE);
+                match_ptr = hash_strnstr(match_ptr, query, buf_len - buf_offset, query_len, h_table, opts.casing == CASE_SENSITIVE);
             }
 #else
-            match_ptr = boyer_moore_strnstr(match_ptr, opts.query, buf_len - buf_offset, opts.query_len, alpha_skip_lookup, find_skip_lookup, opts.casing == CASE_INSENSITIVE);
+            match_ptr = boyer_moore_strnstr(match_ptr, query, buf_len - buf_offset, query_len, alpha_skip_lookup, find_skip_lookup, opts.casing == CASE_INSENSITIVE);
 #endif
 
             if (match_ptr == NULL) {
@@ -84,7 +159,7 @@ void search_buf(const char *buf, const size_t buf_len,
 
             if (opts.word_regexp) {
                 const char *start = match_ptr;
-                const char *end = match_ptr + opts.query_len;
+                const char *end = match_ptr + query_len;
 
                 /* Check whether both start and end of the match lie on a word
                  * boundary
@@ -96,7 +171,7 @@ void search_buf(const char *buf, const size_t buf_len,
                     /* It's a match */
                 } else {
                     /* It's not a match */
-                    match_ptr += find_skip_lookup[0] - opts.query_len + 1;
+                    match_ptr += find_skip_lookup[0] - query_len + 1;
                     buf_offset = match_ptr - buf;
                     continue;
                 }
@@ -105,22 +180,32 @@ void search_buf(const char *buf, const size_t buf_len,
             realloc_matches(&matches, &matches_size, matches_len + matches_spare);
 
             matches[matches_len].start = match_ptr - buf;
-            matches[matches_len].end = matches[matches_len].start + opts.query_len;
+            matches[matches_len].end = matches[matches_len].start + query_len;
             buf_offset = matches[matches_len].end;
             log_debug("Match found. File %s, offset %lu bytes.", dir_full_path, matches[matches_len].start);
             matches_len++;
-            match_ptr += opts.query_len;
+            match_ptr += query_len;
 
             if (opts.max_matches_per_file > 0 && matches_len >= opts.max_matches_per_file) {
                 log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
                 break;
             }
         }
-    } else {
+    } else {				/* Searching for a regular expression */
         int offset_vector[3];
+        pcre **re = opts.re;
+        pcre_extra **re_extra = opts.re_extra;
+#if SUPPORT_TWO_ENCODINGS
+	if (enc != ENC_UTF8) { /* ASCII, or Windows System Code Page */
+	  /* Use the non-UTF8 regular expression for pure ASCII too, as it should be faster */
+	  re = opts.re2;
+	  re_extra = opts.re2_extra;
+	}
+#endif /* SUPPORT_TWO_ENCODINGS */
         if (opts.multiline) {
+            int rv = 0;
             while (buf_offset < buf_len &&
-                   (pcre_exec(opts.re, opts.re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
+                   (rv = pcre_exec(re, re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
                 log_debug("Regex match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
                 buf_offset = offset_vector[1];
                 if (offset_vector[0] == offset_vector[1]) {
@@ -139,6 +224,9 @@ void search_buf(const char *buf, const size_t buf_len,
                     break;
                 }
             }
+            if (rv == PCRE_ERROR_BADUTF8) { /* We must let it known to the user that the file was not searched */
+                log_err("Invalid UTF-8 encoding in %s. Skipping this file.", dir_full_path);
+            }
         } else {
             while (buf_offset < buf_len) {
                 const char *line;
@@ -148,8 +236,11 @@ void search_buf(const char *buf, const size_t buf_len,
                 }
                 size_t line_offset = 0;
                 while (line_offset < line_len) {
-                    int rv = pcre_exec(opts.re, opts.re_extra, line, line_len, line_offset, 0, offset_vector, 3);
+                    int rv = pcre_exec(re, re_extra, line, line_len, line_offset, 0, offset_vector, 3);
                     if (rv < 0) {
+			if (rv == PCRE_ERROR_BADUTF8) { /* We must let it known to the user that the file was not searched */
+			    log_err("Invalid UTF-8 encoding in %s. Skipping this file.", dir_full_path);
+			}
                         break;
                     }
                     size_t line_to_buf = buf_offset + line_offset;
