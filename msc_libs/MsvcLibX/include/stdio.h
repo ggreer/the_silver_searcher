@@ -16,6 +16,7 @@
 *    2017-03-05 JFL Added fputs() series like for fputc.		      *
 *    2017-03-12 JFL Restructured the UTF16 writing mechanism.		      *
 *    2017-04-12 JFL Added puts(), and ANSI versions of fputc, fputs, fwrite.  *
+*    2017-08-09 JFL Added vfprintfM(), fprintfM() and printfM().              *
 *									      *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -69,6 +70,9 @@ extern "C" {
 #ifdef _WIN32	/* Automatically defined when targeting a Win32 application */
 
 /* UTF-8 output routines defined in iconv.c */
+extern int vfprintfM(FILE *f, const char *pszFormat, va_list vl, UINT cp);
+extern int fprintfM(UINT cp, FILE *f, const char *pszFormat, ...);
+extern int printfM(UINT cp, const char *pszFormat, ...);
 extern int vfprintfU(FILE *f, const char *pszFormat, va_list vl);
 extern int fprintfU(FILE *f, const char *pszFormat, ...);
 extern int printfU(const char *pszFormat, ...);
