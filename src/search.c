@@ -22,7 +22,8 @@ pthread_mutex_t work_queue_mtx;
 symdir_t *symhash;
 
 #if SUPPORT_TWO_ENCODINGS
-char *szEncoding[] = {	/* Names of the encodings. Must match enum in search.h. */
+/* Names of the encodings. Must match enum in search.h. */
+char *szEncoding[] = {
   "unknown",
   "ASCII",
   "Windows",
@@ -36,19 +37,30 @@ char *szEncoding[] = {	/* Names of the encodings. Must match enum in search.h. *
 */
 
 int CountUtf8CharBytes(const char *buf, const size_t buf_len) {
-  if (buf_len == 0) return 0;			/* Empty buffer */
-  if (!(buf[0] & 0x80)) return 1;		/* This is an ASCII character */
-  /* Else the first character is the beginning of a multi-byte UTF-8 sequence */
-  if (buf_len == 1) return 0;			/* Truncated sequence => Invalid UTF-8 */
-  if ((buf[1] & 0xC0) != 0x80) return 0;	/* Not a continuation character => Invalid UTF-8 */
-  if ((buf[0] & 0xE0) == 0xC0) return 2;	/* Valid 2-byte sequence */
-  if (buf_len == 2) return 0; 			/* Truncated sequence => Invalid UTF-8 */
-  if ((buf[2] & 0xC0) != 0x80) return 0;	/* Not a continuation character => Invalid UTF-8 */
-  if ((buf[0] & 0xF0) == 0xE0) return 3;	/* Valid 3-byte sequence */
-  if (buf_len == 3) return 0; 			/* Truncated sequence => Invalid UTF-8 */
-  if ((buf[3] & 0xC0) != 0x80) return 0;	/* Not a continuation character => Invalid UTF-8 */
-  if ((buf[0] & 0xF8) == 0xF0) return 4;	/* Valid 4-byte sequence */
-  return 0;	/* There are no valid UTF-8 sequences > 4 bytes */
+    if (buf_len == 0)
+        return 0; /* Empty buffer */
+    if (!(buf[0] & 0x80))
+        return 1; /* This is an ASCII character */
+    /* Else the first character is the beginning of a multi-byte UTF-8 sequence */
+    if (buf_len == 1)
+        return 0; /* Truncated sequence => Invalid UTF-8 */
+    if ((buf[1] & 0xC0) != 0x80)
+        return 0; /* Not a continuation character => Invalid UTF-8 */
+    if ((buf[0] & 0xE0) == 0xC0)
+        return 2; /* Valid 2-byte sequence */
+    if (buf_len == 2)
+        return 0; /* Truncated sequence => Invalid UTF-8 */
+    if ((buf[2] & 0xC0) != 0x80)
+        return 0; /* Not a continuation character => Invalid UTF-8 */
+    if ((buf[0] & 0xF0) == 0xE0)
+        return 3; /* Valid 3-byte sequence */
+    if (buf_len == 3)
+        return 0; /* Truncated sequence => Invalid UTF-8 */
+    if ((buf[3] & 0xC0) != 0x80)
+        return 0; /* Not a continuation character => Invalid UTF-8 */
+    if ((buf[0] & 0xF8) == 0xF0)
+        return 4; /* Valid 4-byte sequence */
+    return 0;     /* There are no valid UTF-8 sequences > 4 bytes */
 }
 
 /* Use heuristics to guess a likely encoding. */
@@ -59,24 +71,34 @@ int CountUtf8CharBytes(const char *buf, const size_t buf_len) {
 /* MBCS code pages (China/Korea/Japan) are only partially supported. (Fixed strings will work, but ranges of chars will not.) */
 /* UTF-16 and UTF-32 are NOT supported for now. */
 ENCODING detect_encoding(const char *buf, const size_t buf_len) {
-  size_t iOffset;
-  int iFoundNonAscii = FALSE;
-  int nValidUtf8 = 0;
-  /* First check if there's an UTF-8 BOM. This is very quick. */
-  if ((buf_len >= 3) && !memcmp(buf, "\xEF\xBB\xBF", 3)) return ENC_UTF8;
-  /* Then scan non-ASCII characters, and see if they're all valid UTF-8 or not. */
-  for (iOffset = 0; iOffset < buf_len; iOffset++) {
-    int n;
-    if (!(buf[iOffset] & 0x80)) continue; /* This is an ASCII character */
-    iFoundNonAscii = TRUE;
-    n = CountUtf8CharBytes(buf+iOffset, buf_len-iOffset);
-    if (!n) return ENC_WIN_CP; /* Invalid UTF-8 => Assume this is the Windows System Code Page. */
-    nValidUtf8 += 1;
-    if (nValidUtf8 > 20) return ENC_UTF8; /* Heuristic: If we've got enough valid ones, assume they're all valid. */
-    iOffset += n-1; /* Skip the UTF-8 character. (All but the last byte, which will be skipped by the for loop) */
-  }
-  if (!iFoundNonAscii) return ENC_ASCII;
-  return ENC_UTF8;
+    size_t iOffset;
+    int iFoundNonAscii = FALSE;
+    int nValidUtf8 = 0;
+    /* First check if there's an UTF-8 BOM. This is very quick. */
+    if ((buf_len >= 3) && !memcmp(buf, "\xEF\xBB\xBF", 3)) {
+        return ENC_UTF8;
+    }
+    /* Then scan non-ASCII characters, and see if they're all valid UTF-8 or not. */
+    for (iOffset = 0; iOffset < buf_len; iOffset++) {
+        int n;
+        if (!(buf[iOffset] & 0x80)) {
+            continue; /* This is an ASCII character */
+        }
+        iFoundNonAscii = TRUE;
+        n = CountUtf8CharBytes(buf + iOffset, buf_len - iOffset);
+        if (!n) {
+            return ENC_WIN_CP; /* Invalid UTF-8 => Assume this is the Windows System Code Page. */
+        }
+        nValidUtf8 += 1;
+        if (nValidUtf8 > 20) {
+            return ENC_UTF8; /* Heuristic: If we've got enough valid ones, assume they're all valid. */
+        }
+        iOffset += n - 1;    /* Skip the UTF-8 character. (All but the last byte, which will be skipped by the for loop) */
+    }
+    if (!iFoundNonAscii) {
+        return ENC_ASCII;
+    }
+    return ENC_UTF8;
 }
 
 __thread int enc = ENC_UNKNOWN; /* The current file encoding */
@@ -137,7 +159,7 @@ void search_buf(const char *buf, const size_t buf_len,
         matches[0].start = 0;
         matches[0].end = buf_len;
         matches_len = 1;
-    } else if (opts.literal) {		/* Searching for a literal string */
+    } else if (opts.literal) {          /* Searching for a literal string */
         const char *match_ptr = buf;
 
         while (buf_offset < buf_len) {
@@ -191,16 +213,16 @@ void search_buf(const char *buf, const size_t buf_len,
                 break;
             }
         }
-    } else {				/* Searching for a regular expression */
+    } else {                            /* Searching for a regular expression */
         int offset_vector[3];
         pcre *re = opts.re;
         pcre_extra *re_extra = opts.re_extra;
 #if SUPPORT_TWO_ENCODINGS
-	if (enc != ENC_UTF8) { /* ASCII, or Windows System Code Page */
-	  /* Use the non-UTF8 regular expression for pure ASCII too, as it should be faster */
-	  re = opts.re2;
-	  re_extra = opts.re2_extra;
-	}
+        if (enc != ENC_UTF8) { /* ASCII, or Windows System Code Page */
+          /* Use the non-UTF8 regular expression for pure ASCII too, as it should be faster */
+          re = opts.re2;
+          re_extra = opts.re2_extra;
+        }
 #endif /* SUPPORT_TWO_ENCODINGS */
         if (opts.multiline) {
             int rv = 0;
@@ -238,9 +260,9 @@ void search_buf(const char *buf, const size_t buf_len,
                 while (line_offset < line_len) {
                     int rv = pcre_exec(re, re_extra, line, line_len, line_offset, 0, offset_vector, 3);
                     if (rv < 0) {
-			if (rv == PCRE_ERROR_BADUTF8) { /* We must let it known to the user that the file was not searched */
-			    log_err("Invalid UTF-8 encoding in %s. Skipping this file.", dir_full_path);
-			}
+                        if (rv == PCRE_ERROR_BADUTF8) { /* We must let it known to the user that the file was not searched */
+                            log_err("Invalid UTF-8 encoding in %s. Skipping this file.", dir_full_path);
+                        }
                         break;
                     }
                     size_t line_to_buf = buf_offset + line_offset;
