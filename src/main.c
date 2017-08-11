@@ -139,13 +139,15 @@ int main(int argc, char **argv) {
             opts.literal_ends_wordchar = is_wordchar(opts.query[opts.query_len - 1]);
         }
 #if SUPPORT_TWO_ENCODINGS
-	/* Generate the Windows System Code page version of the query */
-	opts.query2 = DupAndConvert(opts.query, CP_UTF8, CP_ACP, NULL);
-	/* TO DO: Update DupAndConvert to add a failure mode if not all characters
+        /* Generate the Windows System Code page version of the query */
+        opts.query2 = DupAndConvert(opts.query, CP_UTF8, CP_ACP, NULL);
+        /* TO DO: Update DupAndConvert to add a failure mode if not all characters
 		  can be converted. Then here disable query2, as it's bound to fail
 		  finding these unconvertible characters in the CP_ACP data */
-	if (!opts.query2) die("Error in main(): Not enough memory");
-	opts.query2_len = strlen(opts.query2);
+        if (!opts.query2) {
+            die("Error in main(): Not enough memory");
+        }
+        opts.query2_len = strlen(opts.query2);
 #endif /* SUPPORT_TWO_ENCODINGS */
     } else {
         if (opts.casing == CASE_INSENSITIVE) {
@@ -160,12 +162,14 @@ int main(int argc, char **argv) {
         }
         compile_study(&opts.re, &opts.re_extra, opts.query, pcre_opts, study_opts);
 #if SUPPORT_TWO_ENCODINGS
-	/* Repeat the compilation for a Windows System Code page version of the query */
-	/* Use . as the default character, to match any characters in a regexp. */
-	/* TO DO: Actually we need a more complex heuristic, to manage complex cases like ranges, etc. */
-	opts.query2 = DupAndConvert(opts.query, CP_UTF8, CP_ACP, ".");
-	if (!opts.query2) die("Error in main(): Not enough memory");
-	opts.query2_len = strlen(opts.query2);
+        /* Repeat the compilation for a Windows System Code page version of the query */
+        /* Use . as the default character, to match any characters in a regexp. */
+        /* TO DO: Actually we need a more complex heuristic, to manage complex cases like ranges, etc. */
+        opts.query2 = DupAndConvert(opts.query, CP_UTF8, CP_ACP, ".");
+        if (!opts.query2) {
+            die("Error in main(): Not enough memory");
+        }
+        opts.query2_len = strlen(opts.query2);
         compile_study(&opts.re2, &opts.re2_extra, opts.query2, pcre_opts & ~PCRE_UTF8, study_opts);
 #endif /* SUPPORT_TWO_ENCODINGS */
     }
