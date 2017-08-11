@@ -125,25 +125,37 @@ can be found at http://geoff.greer.fm/ag\n");
 #if SUPPORT_TWO_ENCODINGS
 /* Get the actual name of a code page */
 char *GetCPName(int iCP, LPCPINFOEX lpCpi) {
-  int i;
-  char *pszName = "";
-  CPINFOEX cpi;
-  if (!lpCpi) lpCpi = &cpi;
-  if (GetCPInfoEx(iCP, 0, lpCpi)) { /* Most code pages have a good descrition in the CPINFOEX structure */
-    /* (Including many that are not listed in the static list above) */
-    pszName = lpCpi->CodePageName;
-    /* Make a copy because we can't return the address of this one in the local stack frame */
-    /* Skip the code page number copy at the beginning of the CPINFOEX name */
-    while (strchr("0123456789", *pszName)) pszName++;
-    while (isspace(*pszName)) pszName++;	/* Skip spaces after the number */
-    if (*pszName == '(') pszName++;		/* Remove the leading '(' */
-    pszName = strdup(pszName);
-    i = (int)strlen(pszName) - 1;
-    if (pszName[i] == ')') pszName[i] = '\0'; /* Remove the trailing ')' */
-  }
-  /* But some code pages have a description that's an empty string "" */
-  if (!*pszName) pszName = "(Unknown name)";
-  return pszName;
+    int i;
+    char *pszName = "";
+    CPINFOEX cpi;
+    if (!lpCpi) {
+        lpCpi = &cpi;
+    }
+    if (GetCPInfoEx(iCP, 0, lpCpi)) { /* Most code pages have a good descrition in the CPINFOEX structure */
+        /* (Including many that are not listed in the static list above) */
+        pszName = lpCpi->CodePageName;
+        /* Make a copy because we can't return the address of this one in the local stack frame */
+        /* Skip the code page number copy at the beginning of the CPINFOEX name */
+        while (strchr("0123456789", *pszName)) {
+            pszName++;
+        }
+        while (isspace(*pszName)) {
+            pszName++;  /* Skip spaces after the number */
+        }
+        if (*pszName == '(') {
+            pszName++;          /* Remove the leading '(' */
+        }
+        pszName = strdup(pszName);
+        i = (int)strlen(pszName) - 1;
+        if (pszName[i] == ')') {
+            pszName[i] = '\0'; /* Remove the trailing ')' */
+        }
+    }
+    /* But some code pages have a description that's an empty string "" */
+    if (!*pszName) {
+        pszName = "(Unknown name)";
+    }
+    return pszName;
 }
 #endif /* SUPPORT_TWO_ENCODINGS */
 
