@@ -193,8 +193,8 @@ void search_buf(const char *buf, const size_t buf_len,
         }
     } else {				/* Searching for a regular expression */
         int offset_vector[3];
-        pcre **re = opts.re;
-        pcre_extra **re_extra = opts.re_extra;
+        pcre *re = opts.re;
+        pcre_extra *re_extra = opts.re_extra;
 #if SUPPORT_TWO_ENCODINGS
 	if (enc != ENC_UTF8) { /* ASCII, or Windows System Code Page */
 	  /* Use the non-UTF8 regular expression for pure ASCII too, as it should be faster */
