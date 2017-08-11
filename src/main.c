@@ -142,8 +142,8 @@ int main(int argc, char **argv) {
         /* Generate the Windows System Code page version of the query */
         opts.query2 = DupAndConvert(opts.query, CP_UTF8, CP_ACP, NULL);
         /* TO DO: Update DupAndConvert to add a failure mode if not all characters
-		  can be converted. Then here disable query2, as it's bound to fail
-		  finding these unconvertible characters in the CP_ACP data */
+                  can be converted. Then here disable query2, as it's bound to fail
+                  finding these unconvertible characters in the CP_ACP data */
         if (!opts.query2) {
             die("Error in main(): Not enough memory");
         }
