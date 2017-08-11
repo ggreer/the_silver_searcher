@@ -24,10 +24,10 @@ symdir_t *symhash;
 #if SUPPORT_TWO_ENCODINGS
 /* Names of the encodings. Must match enum in search.h. */
 char *szEncoding[] = {
-  "unknown",
-  "ASCII",
-  "Windows",
-  "UTF-8",
+    "unknown",
+    "ASCII",
+    "Windows",
+    "UTF-8",
 };
 
 /*
@@ -60,7 +60,7 @@ int CountUtf8CharBytes(const char *buf, const size_t buf_len) {
         return 0; /* Not a continuation character => Invalid UTF-8 */
     if ((buf[0] & 0xF8) == 0xF0)
         return 4; /* Valid 4-byte sequence */
-    return 0;     /* There are no valid UTF-8 sequences > 4 bytes */
+    return 0; /* There are no valid UTF-8 sequences > 4 bytes */
 }
 
 /* Use heuristics to guess a likely encoding. */
@@ -93,7 +93,7 @@ ENCODING detect_encoding(const char *buf, const size_t buf_len) {
         if (nValidUtf8 > 20) {
             return ENC_UTF8; /* Heuristic: If we've got enough valid ones, assume they're all valid. */
         }
-        iOffset += n - 1;    /* Skip the UTF-8 character. (All but the last byte, which will be skipped by the for loop) */
+        iOffset += n - 1; /* Skip the UTF-8 character. (All but the last byte, which will be skipped by the for loop) */
     }
     if (!iFoundNonAscii) {
         return ENC_ASCII;
@@ -127,9 +127,9 @@ void search_buf(const char *buf, const size_t buf_len,
     enc = detect_encoding(buf, buf_len);
     log_debug("File %s encoding is %s.", dir_full_path, szEncoding[enc]);
     if (enc != ENC_UTF8) { /* ASCII, or Windows System Code Page */
-      /* Use the non-UTF8 query for pure ASCII too, as it should be faster */
-      query = opts.query2;
-      query_len = opts.query2_len;
+        /* Use the non-UTF8 query for pure ASCII too, as it should be faster */
+        query = opts.query2;
+        query_len = opts.query2_len;
     }
 #endif /* SUPPORT_TWO_ENCODINGS */
 
@@ -159,7 +159,7 @@ void search_buf(const char *buf, const size_t buf_len,
         matches[0].start = 0;
         matches[0].end = buf_len;
         matches_len = 1;
-    } else if (opts.literal) {          /* Searching for a literal string */
+    } else if (opts.literal) { /* Searching for a literal string */
         const char *match_ptr = buf;
 
         while (buf_offset < buf_len) {
@@ -213,15 +213,15 @@ void search_buf(const char *buf, const size_t buf_len,
                 break;
             }
         }
-    } else {                            /* Searching for a regular expression */
+    } else { /* Searching for a regular expression */
         int offset_vector[3];
         pcre *re = opts.re;
         pcre_extra *re_extra = opts.re_extra;
 #if SUPPORT_TWO_ENCODINGS
         if (enc != ENC_UTF8) { /* ASCII, or Windows System Code Page */
-          /* Use the non-UTF8 regular expression for pure ASCII too, as it should be faster */
-          re = opts.re2;
-          re_extra = opts.re2_extra;
+            /* Use the non-UTF8 regular expression for pure ASCII too, as it should be faster */
+            re = opts.re2;
+            re_extra = opts.re2_extra;
         }
 #endif /* SUPPORT_TWO_ENCODINGS */
         if (opts.multiline) {

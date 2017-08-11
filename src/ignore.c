@@ -223,7 +223,7 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
 #ifdef _WIN32
             || (slash_filename[0] == '\\')
 #endif
-                ) {
+        ) {
             slash_filename++;
         }
         match_pos = binary_search(slash_filename, ig->names, 0, ig->names_len);
@@ -252,7 +252,7 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
 #ifdef _WIN32
                     || *pos == '\\'
 #endif
-                    ) {
+                ) {
                     log_debug("file %s ignored because path somewhere matches name %s", slash_filename, ig->names[i]);
                     free(temp);
                     return 1;
@@ -379,7 +379,7 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
 #ifdef _WIN32
                 && filename[filename_len - 1] != '\\'
 #endif
-                ) {
+            ) {
                 char *temp;
                 ag_asprintf(&temp, "%s/", filename);
                 int rv = path_ignore_search(ig, path_start, temp);

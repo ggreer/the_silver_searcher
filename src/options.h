@@ -19,7 +19,7 @@ enum case_behavior {
 };
 
 enum path_print_behavior {
-    PATH_PRINT_DEFAULT,           /* PRINT_TOP if > 1 file being searched, else PRINT_NOTHING */
+    PATH_PRINT_DEFAULT, /* PRINT_TOP if > 1 file being searched, else PRINT_NOTHING */
     PATH_PRINT_DEFAULT_EACH_LINE, /* PRINT_EACH_LINE if > 1 file being searched, else PRINT_NOTHING */
     PATH_PRINT_TOP,
     PATH_PRINT_EACH_LINE,
@@ -27,7 +27,7 @@ enum path_print_behavior {
 };
 
 #if defined(HAS_MSVCLIBX)
-#define SUPPORT_TWO_ENCODINGS 1	/* Support Windows System Code Page in addition to UTF-8 */
+#define SUPPORT_TWO_ENCODINGS 1 /* Support Windows System Code Page in addition to UTF-8 */
 #endif
 
 typedef struct {
@@ -72,8 +72,8 @@ typedef struct {
     pcre *re;
     pcre_extra *re_extra;
 #if SUPPORT_TWO_ENCODINGS
-    pcre *re2;			/* re, converted into the second text encoding */
-    pcre_extra *re2_extra;	/* re_extra, converted likewise */
+    pcre *re2; /* re, converted into the second text encoding */
+    pcre_extra *re2_extra; /* re_extra, converted likewise */
 #endif /* SUPPORT_TWO_ENCODINGS */
     int recurse_dirs;
     int search_all_files;
@@ -84,12 +84,12 @@ typedef struct {
     int search_stream; /* true if tail -F blah | ag */
     int stats;
     size_t stream_line_num; /* This should totally not be in here */
-    int match_found;        /* This should totally not be in here */
+    int match_found; /* This should totally not be in here */
     ino_t stdout_inode;
     char *query;
     int query_len;
 #if SUPPORT_TWO_ENCODINGS
-    char *query2;		/* query, converted into the second text encoding */
+    char *query2; /* query, converted into the second text encoding */
     int query2_len;
 #endif /* SUPPORT_TWO_ENCODINGS */
     char *pager;

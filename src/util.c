@@ -313,7 +313,7 @@ void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opt
     *re = pcre_compile(q, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
     if (*re == NULL) {
         die("Bad regex! pcre_compile(\"%s\", 0x%X) failed at position %i: %s\nIf you meant to search for a literal string, run ag with -Q",
-            q, pcre_opts, 
+            q, pcre_opts,
             pcre_err_offset,
             pcre_err);
     }
