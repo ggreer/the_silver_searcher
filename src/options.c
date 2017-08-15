@@ -225,9 +225,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     option_t *longopts;
     char *lang_regex = NULL;
     size_t *ext_index = NULL;
-    char *extensions = NULL;
+    const char **extensions = NULL;
     size_t num_exts = 0;
-    char *names = NULL;
+    const char **names = NULL;
     size_t num_names = 0;
 
     init_options();

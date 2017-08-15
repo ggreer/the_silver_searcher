@@ -118,7 +118,7 @@ size_t get_lang_count() {
     return sizeof(langs) / sizeof(lang_spec_t);
 }
 
-char *make_lang_regex(char *ext_array, size_t num_exts, char *name_array, size_t num_names) {
+char *make_lang_regex(const char **ext_array, size_t num_exts, const char **name_array, size_t num_names) {
     int regex_capacity = 100;
     char *regex = ag_malloc(regex_capacity);
     int regex_length = 0;
@@ -130,7 +130,7 @@ char *make_lang_regex(char *ext_array, size_t num_exts, char *name_array, size_t
         strcpy(regex, "(\\.(");
 
         for (i = 0; i < num_exts; ++i) {
-            const char *extension = ext_array + i * SINGLE_EXT_LEN;
+            const char *extension = ext_array[i];
             int extension_length = strlen(extension);
             while (regex_length + extension_length + 3 + subsequent > regex_capacity) {
                 regex_capacity *= 2;
@@ -149,7 +149,7 @@ char *make_lang_regex(char *ext_array, size_t num_exts, char *name_array, size_t
     }
 
     for (i = 0; i < num_names; ++i) {
-        const char *name = name_array + i * SINGLE_NAME_LEN;
+        const char *name = name_array[i];
         int name_length = strlen(name);
         while (regex_length + name_length + 3 + subsequent > regex_capacity) {
             regex_capacity *= 2;
@@ -174,17 +174,17 @@ char *make_lang_regex(char *ext_array, size_t num_exts, char *name_array, size_t
 }
 
 void combine_file_extensions(size_t *extension_index, size_t len,
-                             size_t *num_extensions, char **exts,
-                             size_t *num_names, char **names) {
+                             size_t *num_extensions, const char ***exts,
+                             size_t *num_names, const char ***names) {
     /* Keep it fixed as 100 for the reason that if you have more than 100
      * file types to search, you'd better search all the files.
      * */
     static const size_t ext_capacity = 100;
     static const size_t name_capacity = 100;
-    (*exts) = (char *)ag_malloc(ext_capacity * SINGLE_EXT_LEN);
-    memset((*exts), 0, ext_capacity * SINGLE_EXT_LEN);
-    (*names) = (char *)ag_malloc(ext_capacity * SINGLE_NAME_LEN);
-    memset((*names), 0, name_capacity * SINGLE_NAME_LEN);
+    (*exts) = (const char **)ag_malloc(ext_capacity * sizeof(const char **));
+    memset((*exts), 0, ext_capacity * sizeof(const char **));
+    (*names) = (const char **)ag_malloc(ext_capacity * sizeof(const char **));
+    memset((*names), 0, name_capacity * sizeof(const char **));
     size_t num_of_extensions = 0;
     size_t num_of_names = 0;
 
@@ -192,25 +192,21 @@ void combine_file_extensions(size_t *extension_index, size_t len,
     for (i = 0; i < len; ++i) {
         size_t j = 0;
         const char *ext = langs[extension_index[i]].extensions[j];
-        while (ext) {
+        while (ext && j < MAX_EXTENSIONS) {
             if (num_of_extensions == ext_capacity) {
                 break;
             }
-            char *pos = (*exts) + num_of_extensions * SINGLE_EXT_LEN;
-            strncpy(pos, ext, strlen(ext));
-            ++num_of_extensions;
+            (*exts)[num_of_extensions++] = ext;
             ext = langs[extension_index[i]].extensions[++j];
         }
 
         j = 0;
         const char *name = langs[extension_index[i]].names[j];
-        while (name) {
+        while (name && j < MAX_NAMES) {
             if (num_of_names == name_capacity) {
                 break;
             }
-            char *pos = (*names) + num_of_names * SINGLE_NAME_LEN;
-            strncpy(pos, name, strlen(name));
-            ++num_of_names;
+            (*names)[num_of_names++] = name;
             name = langs[extension_index[i]].names[++j];
         }
     }
