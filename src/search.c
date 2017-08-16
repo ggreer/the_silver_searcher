@@ -60,7 +60,7 @@ int CountUtf8CharBytes(const char *buf, const size_t buf_len) {
         return 0; /* Not a continuation character => Invalid UTF-8 */
     if ((buf[0] & 0xF8) == 0xF0)
         return 4; /* Valid 4-byte sequence */
-    return 0; /* There are no valid UTF-8 sequences > 4 bytes */
+    return 0;     /* There are no valid UTF-8 sequences > 4 bytes */
 }
 
 /* Use heuristics to guess a likely encoding. */
@@ -102,7 +102,7 @@ ENCODING detect_encoding(const char *buf, const size_t buf_len) {
 }
 
 __thread int enc = ENC_UNKNOWN; /* The current file encoding */
-#endif /* SUPPORT_TWO_ENCODINGS */
+#endif                          /* SUPPORT_TWO_ENCODINGS */
 
 void search_buf(const char *buf, const size_t buf_len,
                 const char *dir_full_path) {

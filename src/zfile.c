@@ -45,9 +45,9 @@ static const cookie_io_functions_t zfile_io = {
 
 #define KB (1024)
 struct zfile {
-    FILE *in; // Source FILE stream
+    FILE *in;              // Source FILE stream
     uint64_t logic_offset, // Logical offset in output (forward seeks)
-        decode_offset, // Where we've decoded to
+        decode_offset,     // Where we've decoded to
         actual_len;
     uint32_t outbuf_start;
 

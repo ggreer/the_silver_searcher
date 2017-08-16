@@ -17,8 +17,8 @@
 #include "util.h"
 
 const char *color_line_number = "\033[1;33m"; /* bold yellow */
-const char *color_match = "\033[30;43m"; /* black with yellow background */
-const char *color_path = "\033[1;32m"; /* bold green */
+const char *color_match = "\033[30;43m";      /* black with yellow background */
+const char *color_path = "\033[1;32m";        /* bold green */
 
 /* TODO: try to obey out_fd? */
 void usage(void) {
@@ -481,7 +481,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 set_log_level(LOG_LEVEL_DEBUG);
 #ifdef HAS_MSVCLIBX
                 SET_DEBUG_PUTS(ag_debug_puts); /* MsvcLibX debug output now goes though ag_debug_puts -> log_debug */
-                DEBUG_ON(); /* Enable MsvcLibX debug output in the DEBUG version of the program */
+                DEBUG_ON();                    /* Enable MsvcLibX debug output in the DEBUG version of the program */
 #endif
                 break;
             case 'f':

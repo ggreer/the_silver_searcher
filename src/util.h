@@ -42,7 +42,7 @@ char *ag_strndup(const char *s, size_t size);
 
 typedef struct {
     size_t start; /* Byte at which the match starts */
-    size_t end; /* and where it ends */
+    size_t end;   /* and where it ends */
 } match_t;
 
 typedef struct {

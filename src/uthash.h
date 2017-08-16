@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    As decltype is only available in newer compilers (VS2010 or gcc 4.3+
    when compiling c++ source) this code uses whatever method is needed
    or, for VS2008 where neither is available, uses casting workarounds. */
-#if defined(_MSC_VER) /* MS compiler */
+#if defined(_MSC_VER)                        /* MS compiler */
 #if _MSC_VER >= 1600 && defined(__cplusplus) /* VS2010 or newer in C++ mode */
 #define DECLTYPE(x) (decltype(x))
 #else /* VS2008 or older (or VS2010 in C mode) */
@@ -93,9 +93,9 @@ typedef unsigned char uint8_t;
 #endif
 
 /* initial number of buckets */
-#define HASH_INITIAL_NUM_BUCKETS 32 /* initial number of buckets        */
+#define HASH_INITIAL_NUM_BUCKETS 32     /* initial number of buckets        */
 #define HASH_INITIAL_NUM_BUCKETS_LOG2 5 /* lg2 of initial number of buckets */
-#define HASH_BKT_CAPACITY_THRESH 10 /* expand when bucket count reaches */
+#define HASH_BKT_CAPACITY_THRESH 10     /* expand when bucket count reaches */
 
 /* calculate the element whose hash handle address is hhe */
 #define ELMT_FROM_HH(tbl, hhp) ((void *)(((char *)(hhp)) - ((tbl)->hho)))
@@ -919,7 +919,7 @@ typedef struct UT_hash_table {
     unsigned num_buckets, log2_num_buckets;
     unsigned num_items;
     struct UT_hash_handle *tail; /* tail hh in app order, for fast append    */
-    ptrdiff_t hho; /* hash handle offset (byte pos of hash handle in element */
+    ptrdiff_t hho;               /* hash handle offset (byte pos of hash handle in element */
 
     /* in an ideal situation (all buckets used equally), no bucket would have
     * more than ceil(#items/#buckets) items. that's the ideal chain length. */
@@ -949,13 +949,13 @@ typedef struct UT_hash_table {
 
 typedef struct UT_hash_handle {
     struct UT_hash_table *tbl;
-    void *prev; /* prev element in app order      */
-    void *next; /* next element in app order      */
+    void *prev;                     /* prev element in app order      */
+    void *next;                     /* next element in app order      */
     struct UT_hash_handle *hh_prev; /* previous hh in bucket order    */
     struct UT_hash_handle *hh_next; /* next hh in bucket order        */
-    void *key; /* ptr to enclosing struct's key  */
-    unsigned keylen; /* enclosing struct's key len     */
-    unsigned hashv; /* result of hash-fcn(key)        */
+    void *key;                      /* ptr to enclosing struct's key  */
+    unsigned keylen;                /* enclosing struct's key len     */
+    unsigned hashv;                 /* result of hash-fcn(key)        */
 } UT_hash_handle;
 
 #endif /* UTHASH_H */

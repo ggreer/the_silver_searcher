@@ -67,7 +67,7 @@ void color_normal(FILE *f) {
     set_output_color(default_attr);
 }
 #pragma warning(default : 4100) /* Restore warning "unreferenced formal parameter" */
-#else /* Write ANSI escape sequences for Unix */
+#else                           /* Write ANSI escape sequences for Unix */
 void color_highlight_path(FILE *f) {
     fprintf(f, "%s", opts.color_path);
 }
