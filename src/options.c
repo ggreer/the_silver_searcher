@@ -348,10 +348,12 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         exit(1);
     }
 
-    rv = fstat(fileno(stdin), &statbuf);
-    if (rv == 0) {
-        if (S_ISFIFO(statbuf.st_mode) || S_ISREG(statbuf.st_mode)) {
-            opts.search_stream = 1;
+    if (!ag_isatty(fileno(stdin))) {
+        rv = fstat(fileno(stdin), &statbuf);
+        if (rv == 0) {
+            if (S_ISFIFO(statbuf.st_mode) || S_ISREG(statbuf.st_mode)) {
+                opts.search_stream = 1;
+            }
         }
     }
 
@@ -359,7 +361,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         * turn off colors
         * print filenames on every line
      */
-    if (!isatty(fileno(stdout))) {
+    if (!ag_isatty(fileno(stdout))) {
         opts.color = 0;
         group = 0;
 
@@ -842,6 +844,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     (*base_paths)[i] = NULL;
 
 #ifdef _WIN32
-    windows_use_ansi(opts.color_win_ansi);
+    // fprintf_win32 already passthrough ansi on cyg-tty (it translates only if
+    // win console), but let's be explicit and save it repeating runtime tests.
+    windows_use_ansi(opts.color_win_ansi || cyg_isatty(fileno(stdout)));
 #endif
 }
