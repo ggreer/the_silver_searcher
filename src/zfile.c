@@ -4,7 +4,6 @@
 #include <sys/types.h>
 
 #include <assert.h>
-#include <err.h>
 #include <errno.h>
 #include <inttypes.h>
 #include <limits.h>
@@ -16,6 +15,9 @@
 
 #include "config.h"
 
+#ifdef HAVE_ERR_H
+#include <err.h>
+#endif
 #ifdef HAVE_ZLIB_H
 #include <zlib.h>
 #endif
