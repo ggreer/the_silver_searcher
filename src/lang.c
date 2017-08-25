@@ -37,6 +37,7 @@ lang_spec_t langs[] = {
     { "go", { "go" } },
     { "groovy", { "groovy", "gtmpl", "gpp", "grunit", "gradle" } },
     { "haml", { "haml" } },
+    { "handlebars", { "hbs" } },
     { "haskell", { "hs", "lhs" } },
     { "haxe", { "hx" } },
     { "hh", { "h" } },
