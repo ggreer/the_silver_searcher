@@ -3,6 +3,10 @@
 #endif
 #include <sys/types.h>
 
+#ifdef __CYGWIN__
+typedef _off64_t off64_t;
+#endif
+
 #include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
