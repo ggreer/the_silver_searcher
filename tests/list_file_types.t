@@ -118,7 +118,7 @@ Language types are output:
         .ini
   
     --ipython
-        .ipynb 
+        .ipynb
   
     --jade
         .jade
