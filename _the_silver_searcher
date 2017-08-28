@@ -5,7 +5,7 @@
 local ret=1
 local -a args expl
 
-# Intentionally avoided many possible mutual exlusions because it is
+# Intentionally avoided many possible mutual exclusions because it is
 # likely that earlier options come from an alias. In line with this
 # the following conditionally adds options that assert defaults.
 [[ -n $words[(r)(-[is]|--ignore-case|--case-sensitive)] ]] && args+=(
@@ -39,7 +39,7 @@ while _tags; do
     '(-f --follow)'{-f,--follow}'[follow symlinks]' \
     '(-F --fixed-strings --literal -Q)'{--fixed-strings,-F,--literal,-Q}'[use literal strings]' \
     '--nogroup[repeat filename for each match line]' \
-    '(1 -G --file-search-regex)-g+[print filenames matching a pattern]:regex' \
+    '(1 -G --file-search-regex -g --filename-pattern)'{--filename-pattern=,-g+}'[print filenames matching a pattern]:regex' \
     '(-G --file-search-regex)'{-G+,--file-search-regex=}'[limit search to filenames matching pattern]:regex' \
     '(-H --heading --noheading)'{-H,--heading}'[print filename with each match]' \
     '(-H --heading --noheading --nofilename)--noheading[suppress printing of filenames]' \
@@ -48,6 +48,7 @@ while _tags; do
     '(-i --ignore-case)'{-i,--ignore-case}'[match case-insensitively]' \
     '(-l --files-with-matches)'{-l,--files-with-matches}"[output matching files' names only]" \
     '(-L --files-without-matches)'{-L,--files-without-matches}"[output non-matching files' names only]" \
+    "--print-all-files[print headings for all files searched, even those that don't contain matches]" \
     '(--max-count -m)'{--max-count=,-m+}'[stop after specified no of matches in each file]:max number of matches' \
     '--numbers[prefix output with line numbers, even for streams]' \
     '--nonumbers[suppress printing of line numbers]' \
@@ -59,7 +60,7 @@ while _tags; do
     '--silent[suppress all log messages, including errors]' \
     '(--stats-only)--stats[print stats (files scanned, time taken, etc.)]' \
     '(--stats)--stats-only[print stats and nothing else]' \
-    '(-U --skip-vcs-ignores)'{-U,--skip-vcs-ignores}'[ignore VCS files (stil obey .ignore)]' \
+    '(-U --skip-vcs-ignores)'{-U,--skip-vcs-ignores}'[ignore VCS files (still obey .ignore)]' \
     '(-v --invert-match)'{-v,--invert-match}'[select non-matching lines]' \
     '--vimgrep[output results like vim :vimgrep /pattern/g would]' \
     '(-w --word-regexp)'{-w,--word-regexp}'[force pattern to match only whole words]' \
