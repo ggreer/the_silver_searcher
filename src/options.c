@@ -631,14 +631,6 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     argc -= optind;
     argv += optind;
 
-    if (opts.pager) {
-        out_fd = popen(opts.pager, "w");
-        if (!out_fd) {
-            perror("Failed to run pager");
-            exit(1);
-        }
-    }
-
 #ifdef HAVE_PLEDGE
     if (opts.skip_vcs_ignores) {
         if (pledge("stdio rpath proc", NULL) == -1) {
@@ -783,6 +775,14 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     if (opts.query_len == 0) {
         log_err("Error: No query. What do you want to search for?");
         exit(1);
+    }
+
+    if (opts.pager) {
+        out_fd = popen(opts.pager, "w");
+        if (!out_fd) {
+            perror("Failed to run pager");
+            exit(1);
+        }
     }
 
     if (!is_regex(opts.query)) {
