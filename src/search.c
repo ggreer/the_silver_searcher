@@ -2,6 +2,8 @@
 #include "print.h"
 #include "scandir.h"
 
+#define UNUSED(var) (void)(var)
+
 void search_buf(const char *buf, const size_t buf_len,
                 const char *dir_full_path) {
     int binary = -1; /* 1 = yes, 0 = no, -1 = don't know */
@@ -429,6 +431,8 @@ void *search_file_worker(void *i) {
 
 static int check_symloop_enter(const char *path, dirkey_t *outkey) {
 #ifdef _WIN32
+    UNUSED(path);
+    UNUSED(outkey);
     return SYMLOOP_OK;
 #else
     struct stat buf;
@@ -462,6 +466,7 @@ static int check_symloop_enter(const char *path, dirkey_t *outkey) {
 
 static int check_symloop_leave(dirkey_t *dirkey) {
 #ifdef _WIN32
+    UNUSED(dirkey);
     return SYMLOOP_OK;
 #else
     symdir_t *item_found = NULL;
