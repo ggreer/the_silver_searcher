@@ -31,7 +31,7 @@ typedef _off64_t off64_t;
 
 #include "decompress.h"
 
-#if HAVE_FOPENCOOKIE
+#if HAVE_FOPENCOOKIE && HAVE_LZMA_H && HAVE_ZLIB_H
 
 #define min(a, b) ({				\
 	__typeof (a) _a = (a);			\
@@ -400,4 +400,4 @@ zfile_close(void *cookie_) {
     return 0;
 }
 
-#endif /* HAVE_FOPENCOOKIE */
+#endif /* HAVE_FOPENCOOKIE && HAVE_LZMA_H && HAVE_ZLIB_H */
