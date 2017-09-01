@@ -354,10 +354,41 @@ void search_stream(FILE *stream, const char *path) {
     ssize_t line_len = 0;
     size_t line_cap = 0;
     size_t i;
-
+#if HAS_MSVCLIBX /* Short term workaround for MsvcLibX lack of support for Unicode on stdin */
+#include "iconv.h"
+    UINT cp = 0;
+#endif
     print_init_context();
 
     for (i = 1; (line_len = getline(&line, &line_cap, stream)) > 0; i++) {
+#if HAS_MSVCLIBX /* Short term workaround for MsvcLibX lack of support for Unicode on stdin */
+        if (fileno(stream) == 0) { /* If reading from stdin */
+            struct stat s;
+            fstat(0, &s);
+            if (!cp) {
+                if (S_ISFIFO(s.st_mode)) { /* If it's a pipe, Windows converted it to the console code page */
+                    cp = consoleCodePage;
+                } else { /* It's a file. The encoding varies */
+                    if ((line_len >= 3) && !memcmp(line, "\xEF\xBB\xBF", 3)) {
+                        cp = 65001; /* There's a BOM, that's UTF-8 */
+                    } else {
+                        cp = systemCodePage; /* Assume it's in the system code page */
+                        /* TO DO: Dynamically detect if it's ANSI or UTF8 with no BOM */
+                    }
+                }
+            }
+            if (cp != CP_UTF8) {
+                if ((line_len * 4) >= line_cap) { /* Prevent buffer overflows */
+                    line_cap = (line_len * 4) + 1; /* Worst case size for UTF-8 characters */
+                    line = realloc(line, line_cap);
+                    if (!line) { /* Out of memory */
+                        return;  /* That's real bad */
+                    }
+                }
+                line_len = ConvertString(line, line_cap, cp, CP_UTF8, NULL);
+            }
+        }
+#endif
         opts.stream_line_num = i;
         search_buf(line, line_len, path);
         if (line[line_len - 1] == '\n') {
