@@ -96,9 +96,24 @@ or
 
         pkg_add the_silver_searcher
 
-### Cygwin
+### Windows
 
-Run the relevant [`setup-*.exe`](https://cygwin.com/install.html), and select "the\_silver\_searcher" in the "Utils" category.
+* Win32/64
+
+  Unofficial daily builds are [available](https://github.com/k-takata/the_silver_searcher-win32).
+  
+  Another version with additional features is available [there](https://github.com/JFLarvoire/the_silver_searcher/releases).
+
+  * Supports text files encoded in both Windows System code page (Ex: CP 1252) and UTF-8.
+  * Supports unicode search strings, and outputs Unicode results.
+  * Supports unicode pathname > 260 characters, junctions, and symbolic links.
+  
+* MSYS2
+
+        pacman -S mingw-w64-{i686,x86_64}-ag
+* Cygwin
+
+  Run the relevant [`setup-*.exe`](https://cygwin.com/install.html), and select "the\_silver\_searcher" in the "Utils" category.
 
 ## Building from source
 
@@ -142,7 +157,7 @@ Run the relevant [`setup-*.exe`](https://cygwin.com/install.html), and select "t
 
         ./build.sh
 
-    * On Windows (inside a cmd shell with Microsoft Visual C++):
+    * On Windows (inside a cmd shell with Microsoft Visual C++, using [this](https://github.com/JFLarvoire/the_silver_searcher) set of sources):
 
         msc_libs\make.bat
 
