@@ -361,7 +361,7 @@ void search_stream(FILE *stream, const char *path) {
     print_init_context();
 
     for (i = 1; (line_len = getline(&line, &line_cap, stream)) > 0; i++) {
-#if HAS_MSVCLIBX /* Short term workaround for MsvcLibX lack of support for Unicode on stdin */
+#if HAS_MSVCLIBX                   /* Short term workaround for MsvcLibX lack of support for Unicode on stdin */
         if (fileno(stream) == 0) { /* If reading from stdin */
             struct stat s;
             fstat(0, &s);
@@ -378,7 +378,7 @@ void search_stream(FILE *stream, const char *path) {
                 }
             }
             if (cp != CP_UTF8) {
-                if ((line_len * 4) >= line_cap) { /* Prevent buffer overflows */
+                if ((line_len * 4) >= line_cap) {  /* Prevent buffer overflows */
                     line_cap = (line_len * 4) + 1; /* Worst case size for UTF-8 characters */
                     line = realloc(line, line_cap);
                     if (!line) { /* Out of memory */
