@@ -1,0 +1,96 @@
+###############################################################################
+#									      #
+#   File name	    NMakefile						      #
+#									      #
+#   Description     An NMake file for making ag libs, ag, and its releases    #
+#									      #
+#   Notes	    make.bat looks for a default nmake file called NMakeFile. #
+#									      #
+#   History								      #
+#    2017-09-01 JFL jf.larvoire@free.fr created this file.                    #
+#		    							      #
+###############################################################################
+
+default: all
+
+# This help definition overrides the second one included in All.mak below.
+help:
+    type <<
+Usage: make.bat [options] [nmake_options] [macro_definitions] [targets] ...
+
+Macro definitions:     (They must be quoted, else the = sign will be lost)
+  "DEBUG=1"            Generate the debug version. <==> Target in a Debug\ dir.
+  "OS=WIN32 WIN64"     List of target OSs to build for
+  "WINVER=5.1"         Minimum target OS version. 5.1=WinXP, 6.1=Win7
+
+Targets:
+  all                  Build all available sources (default)
+  clean                Erase all output files
+  distclean            Erase all output files and all configuration files
+  release              Generate a bin/ag.zip release
+<<
+
+# Include common definitions
+!INCLUDE <All.mak>
+
+# Build just the libraries
+libs msc_libs:
+    $(BMAKE) -C msc_libs $@ 
+
+# Build just the executables
+exes src:
+    $(BMAKE) -C src $@ 
+
+# Create a binary release (bin\ag.zip)
+release:
+    call <<"$(TMP)\ag-release-$(PID).bat"
+	setlocal EnableExtensions EnableDelayedExpansion
+
+	:# Prepare running 7-zip
+	if not defined ProgramFiles set "ProgramFiles=C:\Program Files"
+	if not exist "%ProgramFiles%\7-zip\7z.exe" (
+	  $(MSG) Error: This requires installing 7-zip
+	  exit /b 1
+	)
+	set PATH=%PATH%;%ProgramFiles%\7-zip
+	set "7ZIP=call :7zip"
+	goto :start
+	
+	:# Subroutine that runs 7zip, and abort the script in case of a zipping error
+	:7zip
+	"%ProgramFiles%\7-zip\7z.exe" %*
+	if errorlevel 1 exit 1
+	exit /b 0
+
+	:# Recreate the zip from scratch
+	:start
+	cd bin
+	set "ZIP=!CD!\ag.zip"		&:# Output file name
+	$(MSG) Creating !ZIP! ...
+	if exist "!ZIP!" del "!ZIP!"
+	
+	:# Add the various versions of ag.exe
+	for %%d in (DOS WIN95 WINXP WIN32 IA64 WIN64 ARM ARM64) do (
+	  if exist "%%d\ag.exe" (
+	    set "AG=%%d\ag.exe"
+	    $(MSG) Adding !AG!
+	    !7ZIP! -- a "!ZIP!" "!AG!"
+	  )
+	)
+	
+	:# Add the doc files
+	cd ..
+	$(MSG) Adding README
+	type README.md | FIND "" /V > README.txt	&:# Converts LF to CRLF
+	dump README.txt | head -10
+	!7ZIP! -- a "!ZIP!" README.txt
+	del README.txt
+	$(MSG) Adding LICENSE
+	type LICENSE | FIND "" /V > LICENSE.txt		&:# Converts LF to CRLF
+	dump LICENSE.txt | head -10
+	!7ZIP! -- a "!ZIP!" LICENSE.txt
+	del LICENSE.txt
+	
+	$(MSG) ... done
+<<
+
