@@ -20,7 +20,7 @@
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
 \*****************************************************************************/
 
-#define _UTF8_SOURCE /* Generate the UTF-8 version of routines */
+#define _UTF8_LIB_SOURCE /* Generate the UTF-8 version of routines */
 
 #include <ctype.h>
 #include <string.h>

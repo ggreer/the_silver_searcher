@@ -9,6 +9,7 @@
 *   History:								      *
 *    2017-02-28 JFL Created this file.					      *
 *    2017-03-03 JFL Added the prototype for strndup().			      *
+*    2017-05-31 JFL Added the prototype for strerror().			      *
 *									      *
 *         © Copyright 2017 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -29,7 +30,7 @@ extern "C" {
 #define strdup _strdup		/* This one _is_ standard */
 
 /* Additional routines in MsvcLibX */
-char *strndup(const char *s, size_t size); 
+char *strndup(const char *s, size_t size);
 
 /************************ MS-DOS-specific definitions ************************/
 
@@ -40,6 +41,9 @@ char *strndup(const char *s, size_t size);
 /************************ Win32-specific definitions *************************/
 
 #ifdef _WIN32	/* Automatically defined when targeting a Win32 application */
+
+#define strerror strerrorX /* Rename our modified version to avoid conflicts */
+char *strerrorX(int errnum);
 
 #endif /* defined(_WIN32) */
 

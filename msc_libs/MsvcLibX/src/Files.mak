@@ -34,6 +34,7 @@
 #    2017-03-02 JFL Removed references to files removed earlier.              #
 #    2017-03-03 JFL Added fwrite.obj.   		                      #
 #    2017-03-22 JFL Added missing dependencies.			              #
+#    2017-05-31 JFL Added dependencies on stdio.h, stdlib.h, string.h, etc.   #
 #                   							      #
 #         © Copyright 2016 Hewlett Packard Enterprise Development LP          #
 # Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 #
@@ -154,7 +155,7 @@ $(I)\unistd.h: $(I)\msvclibx.h $(I)\dirent.h
 
 # $(I)\utime.h:  
 
-$(I)\windowsU.h: $(I)\msvclibx.h 
+$(I)\windows.h: $(I)\msvclibx.h 
 
 $(I)\xfreopen.h: $(I)\msvclibx.h 
 
@@ -165,103 +166,103 @@ $(I)\sys\types.h: $(I)\msvclibx.h
 #			Source files dependancies			      #
 ###############################################################################
 
-access.c: $(CI)\debugm.h $(I)\MsvcLibX.h
+access.c: $(CI)\debugm.h $(I)\io.h $(I)\msvclibx.h $(I)\stdio.h $(I)\windows.h
 
-basename.c: $(I)\libgen.h
+basename.c: $(I)\libgen.h $(I)\limits.h $(I)\msvclibx.h $(I)\stdlib.h $(I)\string.h
 
-chdir.c: $(CI)\debugm.h $(I)\iconv.h $(I)\unistd.h
+chdir.c: $(CI)\debugm.h $(I)\iconv.h $(I)\stdio.h $(I)\string.h $(I)\unistd.h $(I)\windows.h
 
-clock_gettime.c: $(I)\MsvcLibX.h $(I)\time.h $(I)\sys\stat.h
+clock_gettime.c: $(I)\msvclibx.h $(I)\time.h $(I)\sys\stat.h $(I)\windows.h
 
 debugv.c: $(CI)\debugm.h
 
-dirent.c: $(CI)\debugm.h $(I)\dirent.h $(I)\sys\stat.h $(I)\unistd.h
+dirent.c: $(CI)\debugm.h $(I)\dirent.h $(I)\io.h $(I)\reparsept.h $(I)\sys\stat.h $(I)\stdlib.h $(I)\string.h $(I)\unistd.h $(I)\windows.h
 
-dirname.c: $(I)\libgen.h
+dirname.c: $(I)\libgen.h $(I)\limits.h $(I)\msvclibx.h $(I)\stdlib.h $(I)\string.h
 
-err2errno.c: $(CI)\debugm.h $(I)\MsvcLibX.h
+err2errno.c: $(CI)\debugm.h $(I)\msvclibx.h $(I)\stdio.h $(I)\windows.h
 
-filetime.c: $(I)\sys\stat.h
+filetime.c: $(I)\sys\stat.h $(I)\time.h $(I)\windows.h
 
-fnmatch.c: $(CI)\debugm.h $(I)\fnmatch.h
+fnmatch.c: $(CI)\debugm.h $(I)\fnmatch.h $(I)\string.h
 
-fopen.c: $(CI)\debugm.h $(I)\MsvcLibX.h
+fopen.c: $(CI)\debugm.h $(I)\fcntl.h $(I)\io.h $(I)\msvclibx.h $(I)\stdio.h $(I)\windows.h
 
-fstat64.c: fstat.c $(CI)\debugm.h $(I)\dirent.h $(I)\MsvcLibX.h $(I)\sys\stat.h $(I)\stdint.h
+fstat64.c: fstat.c $(CI)\debugm.h $(I)\dirent.h $(I)\msvclibx.h $(I)\sys\stat.h $(I)\stdint.h $(I)\stdio.h $(I)\string.h $(I)\windows.h
 
-fstat64i32.c: fstat.c $(CI)\debugm.h $(I)\dirent.h $(I)\MsvcLibX.h $(I)\sys\stat.h $(I)\stdint.h
+fstat64i32.c: fstat.c $(CI)\debugm.h $(I)\dirent.h $(I)\msvclibx.h $(I)\sys\stat.h $(I)\stdint.h $(I)\stdio.h $(I)\string.h $(I)\windows.h
 
-fullpath.c: $(I)\stdlib.h $(I)\limits.h
+fullpath.c: $(I)\limits.h $(I)\stdlib.h $(I)\limits.h $(I)\stdlib.h $(I)\windows.h
 
-fwrite.c: $(CI)\debugm.h $(I)\MsvcLibX.h  $(I)\stdio.h $(I)\iconv.h $(I)\unistd.h
+fwrite.c: $(CI)\debugm.h $(I)\iconv.h $(I)\msvclibx.h $(I)\stdio.h $(I)\iconv.h $(I)\stdio.h $(I)\unistd.h $(I)\windows.h
 
-getcwd.c: $(CI)\debugm.h $(I)\unistd.h
+getcwd.c: $(CI)\debugm.h $(I)\stdio.h $(I)\unistd.h $(I)\windows.h
 
-GetFileAttributes.c: $(I)\windowsU.h $(I)\limits.h
+GetFileAttributes.c: $(I)\limits.h $(I)\windows.h
 
-GetFileAttributesEx.c: $(I)\windowsU.h $(I)\limits.h
+GetFileAttributesEx.c: $(I)\limits.h $(I)\windows.h
 
-GetFullPathName.c: $(CI)\debugm.h $(I)\windowsU.h $(I)\limits.h
+GetFullPathName.c: $(CI)\debugm.h $(I)\limits.h $(I)\stdio.h $(I)\stdlib.h $(I)\unistd.h $(I)\windows.h
 
-GetLongPathName.c: $(CI)\debugm.h $(I)\windowsU.h $(I)\limits.h
+GetLongPathName.c: $(CI)\debugm.h $(I)\limits.h $(I)\stdio.h $(I)\windows.h
 
-getopt.c: $(I)\getopt.h
+getopt.c: $(I)\getopt.h $(I)\stdio.h $(I)\stdlib.h $(I)\string.h
 
-getpagesize.c: $(I)\MsvcLibX.h $(I)\unistd.h
+getpagesize.c: $(I)\msvclibx.h $(I)\unistd.h $(I)\windows.h
 
-# getppid.c:
+getppid.c: $(I)\unistd.h $(I)\windows.h
 
-gettimeofday.c: $(I)\MsvcLibX.h $(I)\time.h $(I)\sys\time.h
+gettimeofday.c: $(I)\msvclibx.h $(I)\time.h $(I)\sys\time.h
 
 grp.c: $(I)\grp.h 
 
-iconv.c: $(CI)\debugm.h $(I)\iconv.h
+iconv.c: $(CI)\debugm.h $(I)\fcntl.h $(I)\iconv.h $(I)\io.h $(I)\stdio.h $(I)\string.h $(I)\unistd.h $(I)\windows.h
 
-lstat32.c: lstat.c $(CI)\debugm.h $(I)\dirent.h $(I)\MsvcLibX.h $(I)\sys\stat.h $(I)\stdint.h $(I)\unistd.h
+lstat32.c: lstat.c $(CI)\debugm.h $(I)\dirent.h $(I)\msvclibx.h $(I)\sys\stat.h $(I)\stdint.h $(I)\stdio.h $(I)\string.h $(I)\unistd.h $(I)\windows.h
 
-lstat32i64.c: lstat.c $(CI)\debugm.h $(I)\dirent.h $(I)\MsvcLibX.h $(I)\sys\stat.h $(I)\stdint.h $(I)\unistd.h
+lstat32i64.c: lstat.c $(CI)\debugm.h $(I)\dirent.h $(I)\msvclibx.h $(I)\sys\stat.h $(I)\stdint.h $(I)\stdio.h $(I)\string.h $(I)\unistd.h $(I)\windows.h
 
-lstat64.c: lstat.c $(CI)\debugm.h $(I)\dirent.h $(I)\MsvcLibX.h $(I)\sys\stat.h $(I)\stdint.h $(I)\unistd.h
+lstat64.c: lstat.c $(CI)\debugm.h $(I)\dirent.h $(I)\msvclibx.h $(I)\sys\stat.h $(I)\stdint.h $(I)\stdio.h $(I)\string.h $(I)\unistd.h $(I)\windows.h
 
-lstat64i32.c: lstat.c $(CI)\debugm.h $(I)\dirent.h $(I)\MsvcLibX.h $(I)\sys\stat.h $(I)\stdint.h $(I)\unistd.h
+lstat64i32.c: lstat.c $(CI)\debugm.h $(I)\dirent.h $(I)\msvclibx.h $(I)\sys\stat.h $(I)\stdint.h $(I)\stdio.h $(I)\string.h $(I)\unistd.h $(I)\windows.h
 
-main.c: $(I)\MsvcLibX.h
+main.c: $(I)\iconv.h $(I)\msvclibx.h $(I)\stdio.h $(I)\stdlib.h $(I)\windows.h
 
-mb2wpath.c: $(CI)\debugm.h $(I)\MsvcLibX.h
+mb2wpath.c: $(CI)\debugm.h $(I)\direct.h $(I)\msvclibx.h $(I)\windows.h
 
-mkdir.c: $(I)\MsvcLibX.h $(I)\sys\stat.h
+mkdir.c: $(I)\direct.h $(I)\msvclibx.h $(I)\sys\stat.h $(I)\stdio.h $(I)\windows.h
 
-mkdtemp.c: $(I)\unistd.h
+mkdtemp.c: $(I)\fcntl.h $(I)\stdlib.h $(I)\time.h $(I)\unistd.h
 
-mkstemp.c: $(I)\unistd.h
+mkstemp.c: $(I)\fcntl.h $(I)\io.h $(I)\stdlib.h $(I)\time.h $(I)\unistd.h
 
-open.c: $(CI)\debugm.h $(I)\MsvcLibX.h $(I)\fcntl.h
+open.c: $(CI)\debugm.h $(I)\fcntl.h $(I)\io.h $(I)\msvclibx.h $(I)\fcntl.h $(I)\windows.h
 
 pwd.c: $(I)\pwd.h 
 
-readlink.c: $(CI)\debugm.h $(I)\unistd.h $(I)\reparsept.h
+readlink.c: $(CI)\debugm.h $(I)\unistd.h $(I)\reparsept.h $(I)\string.h $(I)\unistd.h $(I)\windows.h
 
-realpath.c: $(CI)\debugm.h $(I)\unistd.h
+realpath.c: $(CI)\debugm.h $(I)\direct.h $(I)\stdlib.h $(I)\string.h $(I)\unistd.h $(I)\windows.h
 
-rmdir.c: $(CI)\debugm.h $(I)\MsvcLibX.h $(I)\sys\stat.h
+rmdir.c: $(CI)\debugm.h $(I)\msvclibx.h $(I)\sys\stat.h $(I)\stdio.h $(I)\string.h $(I)\windows.h
 
-spawn.c: $(CI)\debugm.h $(I)\MsvcLibX.h $(I)\process.h
+spawn.c: $(CI)\debugm.h $(I)\msvclibx.h $(I)\process.h $(I)\stdio.h $(I)\windows.h
 
-strerror.c: $(I)\MsvcLibX.h
+strerror.c: $(I)\msvclibx.h $(I)\stdlib.h $(I)\string.h
 
-# strndup.c: 
+strndup.c: $(I)\stdlib.h $(I)\string.h
 
-# strptime.c:
+strptime.c: $(I)\string.h $(I)\time.h
 
-symlink.c: $(CI)\debugm.h $(I)\reparsept.h $(I)\unistd.h
+symlink.c: $(CI)\debugm.h $(I)\reparsept.h $(I)\unistd.h $(I)\windows.h
 
-uname.c: $(I)\MsvcLibX.h $(I)\sys\utsname.h
+uname.c: $(I)\msvclibx.h $(I)\stdlib.h $(I)\sys\utsname.h $(I)\windows.h
 
-unlink.c: $(CI)\debugm.h $(I)\MsvcLibX.h $(I)\sys\stat.h
+unlink.c: $(CI)\debugm.h $(I)\msvclibx.h $(I)\sys\stat.h $(I)\string.h $(I)\windows.h
 
-utime.c: $(CI)\debugm.h $(I)\unistd.h $(I)\utime.h $(I)\sys\time.h
+utime.c: $(CI)\debugm.h $(I)\io.h $(I)\string.h $(I)\unistd.h $(I)\utime.h $(I)\sys\time.h $(I)\windows.h
 
-utimes.c: $(CI)\debugm.h $(I)\unistd.h $(I)\sys\time.h
+utimes.c: $(CI)\debugm.h $(I)\io.h $(I)\string.h $(I)\unistd.h $(I)\sys\time.h $(I)\windows.h
 
-xfreopen.c: $(I)\xfreopen.h
+xfreopen.c: $(I)\fcntl.h $(I)\io.h $(I)\string.h $(I)\xfreopen.h
 

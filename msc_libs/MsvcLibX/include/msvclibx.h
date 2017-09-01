@@ -14,6 +14,10 @@
 *    2016-09-20 JFL Added workaround preventing warnings in WIN95 builds.     *
 *    2016-09-28 JFL Can also be included by MS' Resource Compiler.            *
 *    2017-02-05 JFL Changed the UTF-8 programs initialization method.         *
+*    2017-06-28 JFL Fixed non _UTF8_SOURCE programs initialization by using   *
+*		    new constant _UTF8_LIB_SOURCE instead within MsvcLibX src.*
+*		    (The 2017-02-05 change always dragged in _initU(), even   *
+*		     for ANSI programs.)				      *
 *									      *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -102,9 +106,18 @@ extern int MultiByteToWidePath(UINT nCodePage, LPCSTR pszName, LPWSTR pwszName, 
 #define PUBLIC_SYMBOL_NAME(s) _##s
 #endif
 
-/* Support for UTF-8 command lines */
+/* Support for UTF-8 programs */
 #if defined(_WIN32)
-#if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
+/* Unix programs are assumed to all support UTF8 */
+#if (defined(_BSD_SOURCE) || defined(_GNU_SOURCE)) && !defined(_UTF8_SOURCE)
+#define _UTF8_SOURCE
+#endif
+/* UTF8 library sources are UTF8 sources */
+#if defined(_UTF8_LIB_SOURCE) && !defined(_UTF8_SOURCE)
+#define _UTF8_SOURCE
+#endif
+/* But only the UTF8 sources NOT from a library should link with _initU() */
+#if defined(_UTF8_SOURCE) && !defined(_UTF8_LIB_SOURCE)
 /* Force linking in MsvcLibX' UTF-8 initialization module */
 #pragma comment(linker, "/include:" MSVCLIBX_STRINGIZE(PUBLIC_SYMBOL_NAME(_initU)))
 #endif /* defined(_UTF8_SOURCE) ... */

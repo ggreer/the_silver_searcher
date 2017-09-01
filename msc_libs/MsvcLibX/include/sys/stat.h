@@ -19,6 +19,8 @@
 *    2015-11-15 JFL Visual Studio 2015 moved this file to the Windows Kit UCRT.
 *    2016-09-15 JFL Fixed a warning in Visual Studio 2015.		      *
 *    2017-03-20 JFL Moved unlink & rmdir definitions for unistd.h.	      *
+*    2017-09-01 JFL Bug fix: Sockets and Fifos ARE supported in WIN32. Enable *
+*		    macros S_ISSOCK and S_ISFIFO.			      *
 *									      *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -327,22 +329,21 @@ extern char *Filetime2String(const FILETIME *pFT, char *pBuf, size_t nBufSize);
 #define S_ISREG(m)  S_ISTYPE(m, S_IFREG)  /* Test for a regular file */
 #ifdef _WIN32	/* Only Windows supports these */
 #define S_ISLNK(m)  S_ISTYPE(m, S_IFLNK)  /* Test for a symbolic link */
-#endif
-#if 0		/* Only Unix supports these? At least MsvcLibX does not support them now. */
-#define S_ISBLK(m)  S_ISTYPE(m, S_IFBLK)  /* Test for a block device */
 #define S_ISFIFO(m) S_ISTYPE(m, S_IFIFO)  /* Test for a pipe or FIFO */
 #define S_ISSOCK(m) S_ISTYPE(m, S_IFSOCK) /* Test for a socket */
+#else		/* DOS does not */
+#define S_ISLNK(m) 0	/* Test for a symbolic link */
+#define S_ISFIFO(m) 0	/* Test for a pipe or FIFO */
+#define S_ISSOCK(m) 0	/* Test for a socket */
 #endif
-
+/* All the following aren't supported in DOS or WIN32 */
 #define S_ISBLK(m)  0	/* Test for a block device */
 #define S_ISCTG(m)  0	/* Test for a high performance ("contiguous data") file */
 #define S_ISDOOR(m) 0	/* Test for a door */
-#define S_ISFIFO(m) 0	/* Test for a pipe or FIFO */
 #define S_ISMPB(m)  0	/* Test for a multiplexed block device */
 #define S_ISMPC(m)  0	/* Test for a multiplexed character device */
 #define S_ISNWK(m)  0	/* Test for a network special file (HP-UX) */
 #define S_ISPORT(m) 0	/* Test for a port */
-#define S_ISSOCK(m) 0	/* Test for a socket */
 #define S_ISWHT(m)  0	/* Test for a whiteout (4.4BSD) */
 
 
@@ -396,7 +397,7 @@ extern char *Filetime2String(const FILETIME *pFT, char *pBuf, size_t nBufSize);
 #if defined(_MSDOS)
 #define _mkdirx(path, mode) _mkdir(path)
 #elif defined(_WIN32)
-#if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
+#if defined(_UTF8_SOURCE)
 #define _mkdirx(path, mode) mkdirU(path, mode)
 #else /* _ANSI_SOURCE */
 #define _mkdirx(path, mode) mkdirA(path, mode)

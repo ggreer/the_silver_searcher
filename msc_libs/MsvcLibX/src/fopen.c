@@ -11,12 +11,14 @@
 *    2014-07-01 JFL Added support for pathnames >= 260 characters. 	      *
 *    2017-03-12 JFL Restructured the UTF16 writing mechanism.		      *
 *    2017-03-18 JFL Bug fix: Only change Xlation when writing to a valid file.*
+*    2017-04-27 JFL Fixed 2017-03-18 bug: Failures returned a wrong errno.    *
+*    2017-05-12 JFL Correctly indent the debug output.                        *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
 \*****************************************************************************/
 
-#define _UTF8_SOURCE /* Generate the UTF-8 version of printf routines */
+#define _UTF8_LIB_SOURCE /* Generate the UTF-8 version of printf routines */
 
 #define _CRT_SECURE_NO_WARNINGS 1 /* Avoid Visual C++ security warnings */
 
@@ -86,12 +88,12 @@ FILE *fopenM(const char *pszName, const char *pszMode, UINT cp) {
   DEBUG_CODE({
     char szUtf8[UTF8_PATH_MAX];
     DEBUG_WSTR2UTF8(wszName, szUtf8, sizeof(szUtf8));
-    DEBUG_PRINTF(("_wfopen(\"%s\", \"%s\");\n", szUtf8, pszMode));
+    DEBUG_ENTER(("_wfopen(\"%s\", \"%s\");\n", szUtf8, pszMode));
   });
   hFile = _wfopen(wszName, wszMode);
 
   /* Find out the initial translation mode, and change it if appropriate */
-  if ((hFile != INVALID_HANDLE_VALUE) && (strchr(pszMode, 'w') || strchr(pszMode, 'a'))) {
+  if (hFile && (strchr(pszMode, 'w') || strchr(pszMode, 'a'))) {
     iFile = fileno(hFile);
     iMode = _setmodeX(iFile, _O_TEXT);	/* Get the initial mode. Any mode can switch to _O_TEXT. */
     if ((iMode & _O_TEXT) && _isatty(iFile)) { /* If writing text to the console */
@@ -100,7 +102,7 @@ FILE *fopenM(const char *pszName, const char *pszMode, UINT cp) {
     _setmodeX(iFile, iMode);		/* Restore the initial mode */
   }
 
-  DEBUG_PRINTF(("  return 0x%p;\n", hFile));
+  DEBUG_LEAVE(("return 0x%p;\n", hFile));
   return hFile;
 }
 

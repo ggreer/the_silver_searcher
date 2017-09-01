@@ -30,7 +30,7 @@
 #if defined(_WIN32)
 extern int openA(const char *, int, ...); /* MsvcLibX ANSI version of open */
 extern int openU(const char *, int, ...); /* MsvcLibX UTF-8 version of open */
-#if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
+#if defined(_UTF8_SOURCE)
 #define open openU
 #else /* _ANSI_SOURCE */
 #define open openA

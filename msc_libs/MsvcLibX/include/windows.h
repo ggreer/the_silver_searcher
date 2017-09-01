@@ -39,7 +39,7 @@ DWORD WINAPI GetLongPathNameU(LPCTSTR lpShortName, LPTSTR lpBuf, DWORD nBufferLe
 
 /********** Redefine the legacy names to point to the UTF-8 version **********/
 
-#if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
+#if defined(_UTF8_SOURCE)
 
 #undef GetFileAttributes
 #define GetFileAttributes GetFileAttributesU

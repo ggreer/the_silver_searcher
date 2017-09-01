@@ -8,6 +8,7 @@
 *		    							      *
 *   History:								      *
 *    2014-03-06 JFL Created this module.				      *
+*    2015-05-31 JFL Get the strerror() prototype from string.h.		      *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -18,6 +19,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include "msvclibx.h"
+#include <string.h>
 
 #ifdef _WIN32
 

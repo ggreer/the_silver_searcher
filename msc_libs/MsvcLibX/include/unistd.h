@@ -54,7 +54,7 @@
 #if defined(_MSDOS)
 #define getcwd(path, size) _getcwd(path, (int)(size)) /* Use MSVC LIB's own, changing argument 2 type */
 #elif defined(_WIN32)
-#if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
+#if defined(_UTF8_SOURCE)
 #define getcwd getcwdU
 #define _getdcwd _getdcwdU
 #define chdir chdirU
@@ -86,7 +86,7 @@ int chdir(const char *path);
 #if defined(_MSDOS)
 #define access _access
 #elif defined(_WIN32)
-#if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
+#if defined(_UTF8_SOURCE)
 #define access _accessU
 int _accessU(const char *pszFilename, int iAccessMode);
 #else /* _ANSI_SOURCE */
@@ -106,7 +106,7 @@ pid_t getppid(void);	/* Get parent PID */
 
 /* Path management */
 #if defined(_WIN32)
-#if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
+#if defined(_UTF8_SOURCE)
 #define realpath realpathU
 #define CompactPath CompactPathU
 #else /* _ANSI_SOURCE */
@@ -134,7 +134,7 @@ typedef _W64 int ssize_t;
 
 /* Link management functions */
 #if defined(_WIN32)
-#if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
+#if defined(_UTF8_SOURCE)
 #define readlink readlinkU
 #define symlink symlinkU
 #define symlinkd symlinkdU

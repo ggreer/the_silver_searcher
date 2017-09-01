@@ -99,7 +99,7 @@ int lutimesW(const WCHAR *path, const struct timeval tvp[2]);
 /* Same as 'utimes', but takes an open file descriptor instead of a name. */
 int futimes(int fd, const struct timeval tvp[2]);
 
-#if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
+#if defined(_UTF8_SOURCE)
 #define utimes utimesU
 #define lutimes lutimesU
 #else /* _ANSI_SOURCE */

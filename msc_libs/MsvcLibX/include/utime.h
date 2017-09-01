@@ -54,7 +54,7 @@
 #error "32-bits time_t not supported in MsvcLibX' utime."
 #else
 #define utimbuf __utimbuf64
-#if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
+#if defined(_UTF8_SOURCE)
 #define utime utimeU
 #define lutime lutimeU
 #else /* _ANSI_SOURCE */

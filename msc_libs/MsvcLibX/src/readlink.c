@@ -19,6 +19,8 @@
 *    2014-07-03 JFL Added support for pathnames >= 260 characters. 	      *
 *    2016-09-09 JFL Fixed a crash in debug mode, due to stack overflows.      *
 *    2017-03-22 JFL Added routines TrimTailSlashesW() and ResolveTailLinks*().*
+*    2017-05-31 JFL Get strerror() prototype from string.h.                   *
+*    2017-06-27 JFL Decode the new reparse point types defined in reparsept.h.*
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -26,10 +28,11 @@
 
 #define _CRT_SECURE_NO_WARNINGS 1 /* Avoid Visual C++ security warnings */
 
-#define _UTF8_SOURCE /* Generate the UTF-8 version of routines */
+#define _UTF8_LIB_SOURCE /* Generate the UTF-8 version of routines */
 
 #include <unistd.h>
 #include <errno.h>
+#include <string.h>
 #include "debugm.h"
 
 #ifdef _WIN32
@@ -217,21 +220,33 @@ DWORD ReadReparsePointW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
   DEBUG_CODE_IF_ON(
     char *pType = "";
     switch (dwTag) {
-    case IO_REPARSE_TAG_RESERVED_ZERO:	pType = "Reserved"; break;	
+    case IO_REPARSE_TAG_RESERVED_ZERO:		pType = "Reserved"; break;	
     case IO_REPARSE_TAG_RESERVED_ONE:		pType = "Reserved"; break;
+    case IO_REPARSE_TAG_RESERVED_TWO:		pType = "Reserved"; break;
     case IO_REPARSE_TAG_MOUNT_POINT:		pType = "Mount point or junction"; break;
     case IO_REPARSE_TAG_HSM:			pType = "Hierarchical Storage Manager"; break;
-    case IO_REPARSE_TAG_DRIVER_EXTENDER:	pType = "Home server drive extender"; break;
+    case IO_REPARSE_TAG_DRIVE_EXTENDER:		pType = "Home server drive extender"; break;
     case IO_REPARSE_TAG_HSM2:			pType = "Hierarchical Storage Manager Product #2"; break;
     case IO_REPARSE_TAG_SIS:			pType = "Single-instance storage filter driver"; break;
     case IO_REPARSE_TAG_WIM:			pType = "Windows boot Image File"; break;
     case IO_REPARSE_TAG_CSV:			pType = "Cluster Shared Volume"; break;
     case IO_REPARSE_TAG_DFS:			pType = "Distributed File System"; break;
-    case IO_REPARSE_TAG_FILTER_MANAGER:	pType = "Filter manager test harness"; break;
+    case IO_REPARSE_TAG_FILTER_MANAGER:		pType = "Filter manager test harness"; break;
     case IO_REPARSE_TAG_SYMLINK:		pType = "Symbolic link"; break;
+    case IO_REPARSE_TAG_IIS_CACHE:		pType = "Internet Information Services cache"; break;
     case IO_REPARSE_TAG_DFSR:			pType = "Distributed File System R filter"; break;
-    case IO_REPARSE_TAG_DEDUP:		pType = "Deduplicated volume"; break;
-    case IO_REPARSE_TAG_NFS:			pType = "NFS share"; break;
+    case IO_REPARSE_TAG_DEDUP:			pType = "Deduplicated file"; break;
+    case IO_REPARSE_TAG_NFS:			pType = "NFS symbolic link"; break;
+    case IO_REPARSE_TAG_APPXSTREAM:		pType = "APPXSTREAM (?)"; break;
+    case IO_REPARSE_TAG_FILE_PLACEHOLDER:	pType = "Placeholder for a OneDrive file"; break;
+    case IO_REPARSE_TAG_DFM:			pType = "DFM (?)"; break;
+    case IO_REPARSE_TAG_WOF:			pType = "Windows Overlay Filesystem compressed file"; break;
+    case IO_REPARSE_TAG_WCI:			pType = "Windows Container Image?"; break;
+    case IO_REPARSE_TAG_GLOBAL_REPARSE:		pType = "GLOBAL_REPARSE (?)"; break;
+    case IO_REPARSE_TAG_CLOUD:			pType = "CLOUD (?)"; break;
+    case IO_REPARSE_TAG_APPEXECLINK:		pType = "APPEXECLINK (?)"; break;
+    case IO_REPARSE_TAG_GVFS:			pType = "GVFS (?)"; break;
+    case IO_REPARSE_TAG_LX_SYMLINK:		pType = "Linux Sub-System Symbolic Link"; break;
     default:					pType = "Unknown type! Please report its value and update readlink.c."; break;
     }
     DEBUG_PRINTF(("ReparseTag = 0x%04X; // %s\n", (unsigned)(dwTag), pType));

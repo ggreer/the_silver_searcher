@@ -16,7 +16,7 @@
 
 #ifdef _WIN32	/* Automatically defined when targeting a Win32 application */
 
-#define _UTF8_SOURCE
+#define _UTF8_LIB_SOURCE
 
 #define _CRT_SECURE_NO_WARNINGS 1 /* Avoid Visual C++ 2005 security warnings */
 

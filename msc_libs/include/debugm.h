@@ -119,8 +119,10 @@
 *    2017-03-24 JFL Added macro SET_DEBUG_PUTS() to hide the global variable. *
 *    2017-03-29 JFL Revert to the old implementation for DOS, as the big      *
 *		    DEBUG_GLOBALS macro sometimes chokes the DOS compiler.    *
+*    2017-08-25 JFL Added an OS identification string definition.	      *
+*		    Bug fix in _VSNPRINTF_EMULATION.			      *
 *		    							      *
-*         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
+*        (C) Copyright 2016 Hewlett Packard Enterprise Development LP         *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
 \*****************************************************************************/
 
@@ -150,8 +152,8 @@
 
 #ifndef _MSC_VER /* Emulate Microsoft's _vsnprintf() using the standard vsnprintf() */
 #define _VSNPRINTF_EMULATION \
-int _vsnprintf(const char *pBuf, int iBufSize, char *pszFormat, va_list vl) {  \
-  int iRet = vsnprintf(buf, iBufSize, pszFormat, vl);                          \
+int _vsnprintf(char *pBuf, int iBufSize, const char *pszFormat, va_list vl) {  \
+  int iRet = vsnprintf(pBuf, iBufSize, pszFormat, vl);                         \
   if (iRet > iBufSize) iRet = -1;                                              \
   return iRet;			                                               \
 }
@@ -368,6 +370,44 @@ extern DEBUG_TLS int iIndent;	/* Debug messages indentation. Thread local. */
 #define DEBUG_FREEUTF8(pUtf8) DEBUG_CODE(free(pUtf8))
 
 #endif /* defined(_WIN32) */
+
+/******************** OS identification string definition ********************/
+
+#ifdef _MSDOS		/* Automatically defined when targeting an MS-DOS app. */
+#  define EXE_OS_NAME "DOS"
+#endif /* _MSDOS */
+
+#ifdef _OS2		/* To be defined on the command line for the OS/2 version */
+#  define EXE_OS_NAME "OS/2"
+#endif /* _OS2 */
+
+#ifdef _WIN32		/* Automatically defined when targeting a Win32 app. */
+#  if defined(__MINGW64__)
+#    define EXE_OS_NAME "MinGW64"
+#  elif defined(__MINGW32__)
+#    define EXE_OS_NAME "MinGW32"
+#  elif defined(_WIN64)
+#    define EXE_OS_NAME "Win64"
+#  else
+#    define EXE_OS_NAME "Win32"
+#  endif
+#endif /* _WIN32 */
+
+#ifdef __unix__		/* Automatically defined when targeting a Unix app. */
+#  if defined(__CYGWIN64__)
+#    define EXE_OS_NAME "Cygwin64"
+#  elif defined(__CYGWIN32__)
+#    define EXE_OS_NAME "Cygwin"
+#  elif defined(_TRU64)
+#    define EXE_OS_NAME "Tru64"	/* 64-bits Alpha Tru64 */
+#  elif defined(__linux__)
+#    define EXE_OS_NAME "Linux"
+#  else
+#    define EXE_OS_NAME "Unix"
+#  endif
+#endif /* __unix__ */
+
+/**************** End of OS identification string definition *****************/
 
 #endif /* !defined(_DEBUGM_H) */
 

@@ -133,6 +133,7 @@
 #    2017-02-28 JFL Bug fix: Enclose all $(MAKEPATH) references in "quotes".  #
 #    2017-03-02 JFL Added the CLEAN_DIRS and CLEAN_FILES variables.           #
 #    2017-03-13 JFL Fix build if environment variable OS is not defined.      #
+#    2017-08-29 JFL Bugfix: The help target did output a "1 file copied" msg. #
 #		    							      #
 #       © Copyright 2016-2017 Hewlett Packard Enterprise Development LP       #
 # Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 #
@@ -602,16 +603,19 @@ w2u:
 
 # Help message describing the targets
 help:
-    copy << con
-Nmake definitions:     (Definition must be quoted if it contains spaces)
-  DEBUG=1              Generate the debug version. <==> Target in a Debug\ dir.
-  MEM=L                Build the DOS version w. large memory model. Dflt: T or S
-  OS=BIOS DOS WIN95 WIN32 WIN64   List of target OSs to build for
-  WINVER=4.0           Target OS version. 4.0=Win95/NT4, 5.1=WinXP, 6.1=Win7
+    type <<
+Usage: make.bat [options] [nmake_options] [macro_definitions] [targets] ...
+
+Macro definitions:     (They must be quoted, else the = sign will be lost)
+  "DEBUG=1"            Generate the debug version. <==> Target in a Debug\ dir.
+  "MEM=L"              Build the DOS version w. large memory model. Dflt: T or S
+  "OS=BIOS DOS WIN95 WIN32 WIN64"   List of target OSs to build for
+  "WINVER=4.0"         Target OS version. 4.0=Win95/NT4, 5.1=WinXP, 6.1=Win7
 
 Targets:
   all                    Build all available sources
   clean                  Erase all output files in BIOS, DOS, WIN32, WIN64
+  distclean              Erase all output files and all configuration files
   {prog}.com             Build BIOS and DOS versions of {prog}.com
   {prog}.exe             Build DOS and all Windows versions of {prog}.com
   Debug\{prog}.exe       Build BIOS and DOS versions of the same

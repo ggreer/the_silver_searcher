@@ -18,6 +18,7 @@
 *                   in all apps, even when targeting XP or older systems that *
 *                   do not support symlinks.                                  *
 *    2016-08-25 JFL Fixed two warnings.                                       *
+*    2017-05-03 JFL Dynamically allocate debug strings in junction().         *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -25,7 +26,7 @@
 
 #define _CRT_SECURE_NO_WARNINGS 1 /* Avoid Visual C++ security warnings */
 
-#define _UTF8_SOURCE /* Generate the UTF-8 version of routines */
+#define _UTF8_LIB_SOURCE /* Generate the UTF-8 version of routines */
 
 #include <unistd.h>
 #include <errno.h>
@@ -71,16 +72,17 @@ int junctionW(const WCHAR *targetName, const WCHAR *junctionName) {
   DWORD  dwReturnedLength;
   PMOUNTPOINT_WRITE_BUFFER reparseInfo = (PMOUNTPOINT_WRITE_BUFFER)wszReparseBuffer;
   DEBUG_CODE(
-  char szJunction8[UTF8_PATH_MAX];
-  char szTarget8[UTF8_PATH_MAX];
-  char szTemp8[UTF8_PATH_MAX];
+  char *pszJunction8;
+  char *pszTarget8;
+  char *pszTemp8;
   )
   UINT uiDriveType;
   DWORD dwFileSystemFlags;
 
-  DEBUG_WSTR2UTF8(junctionName, szJunction8, sizeof(szJunction8));
-  DEBUG_WSTR2UTF8(targetName, szTarget8, sizeof(szTarget8));
-  DEBUG_ENTER(("junction(\"%s\", \"%s\");\n", szTarget8, szJunction8));
+  DEBUG_WSTR2NEWUTF8(junctionName, pszJunction8);
+  DEBUG_WSTR2NEWUTF8(targetName, pszTarget8);
+  DEBUG_ENTER(("junction(\"%s\", \"%s\");\n", pszTarget8, pszJunction8));
+  DEBUG_FREEUTF8(pszJunction8);
 
   /* Get the full path of the junction */
   if (!GetFullPathNameW(junctionName, PATH_MAX, wszJunctionFullName, &pwszFilePart)) {
@@ -102,17 +104,25 @@ int junctionW(const WCHAR *targetName, const WCHAR *junctionName) {
     lstrcatW(wszTargetTempName, targetName);
     if (!GetFullPathNameW(wszTargetTempName, PATH_MAX, wszTargetFullName, &pwszFilePart)) {
       errno = Win32ErrorToErrno();
-      RETURN_INT_COMMENT(-1, ("%s is an invalid target directory name\n", szTarget8));
+      /* RETURN_INT_COMMENT(-1, ("%s is an invalid target directory name\n", szTarget8)); */
+      DEBUG_LEAVE(("return -1; // %s is an invalid target directory name\n", pszTarget8));
+      DEBUG_FREEUTF8(pszTarget8);
+      return -1;
     }
-    DEBUG_WSTR2UTF8(wszTargetFullName, szTemp8, sizeof(szTemp8));
-    XDEBUG_PRINTF(("wszTargetFullName = \"%s\"; // After absolutization relative to the junction\n", szTemp8));
+    DEBUG_WSTR2NEWUTF8(wszTargetFullName, pszTemp8);
+    XDEBUG_PRINTF(("wszTargetFullName = \"%s\"; // After absolutization relative to the junction\n", pszTemp8));
+    DEBUG_FREEUTF8(pszTemp8);
   } else { /* Already an absolute name. Just make sure it's canonic. (Without . or ..) */
     if (!GetFullPathNameW(targetName, PATH_MAX, wszTargetFullName, &pwszFilePart)) {
       errno = Win32ErrorToErrno();
-      RETURN_INT_COMMENT(-1, ("%s is an invalid target directory name\n", szTarget8));
+      /* RETURN_INT_COMMENT(-1, ("%s is an invalid target directory name\n", szTarget8)); */
+      DEBUG_LEAVE(("return -1; // %s is an invalid target directory name\n", pszTarget8));
+      DEBUG_FREEUTF8(pszTarget8);
+      return -1;
     }
-    DEBUG_WSTR2UTF8(wszTargetFullName, szTemp8, sizeof(szTemp8));
-    XDEBUG_PRINTF(("wszTargetFullName = \"%s\"; // After direct reabsolutization\n", szTemp8));
+    DEBUG_WSTR2NEWUTF8(wszTargetFullName, pszTemp8);
+    XDEBUG_PRINTF(("wszTargetFullName = \"%s\"; // After direct reabsolutization\n", pszTemp8));
+    DEBUG_FREEUTF8(pszTemp8);
   }
   /* Make sure the target drive letter is upper case */
 #pragma warning(disable:4305) /* truncation from 'LPSTR' to 'WCHAR' */
@@ -120,21 +130,25 @@ int junctionW(const WCHAR *targetName, const WCHAR *junctionName) {
   wszTargetFullName[0] = (WCHAR)CharUpperW((WCHAR *)(wszTargetFullName[0]));
 #pragma warning(default:4706)
 #pragma warning(default:4705)
+  DEBUG_FREEUTF8(pszTarget8);
 
   /* Make sure that the junction is on a file system that supports reparse points (Ex: NTFS) */
   wszVolumeName[0] = wszJunctionFullName[0];
   GetVolumeInformationW(wszVolumeName, NULL, 0, NULL, NULL, &dwFileSystemFlags, wszFileSystem, sizeof(wszFileSystem)/sizeof(WCHAR));
   if (!(dwFileSystemFlags & FILE_SUPPORTS_REPARSE_POINTS)) {
     errno = EDOM;
-    DEBUG_WSTR2UTF8(wszFileSystem, szTemp8, sizeof(szTemp8));
-    RETURN_INT_COMMENT(-1, ("Junctions are not supported on %s volumes\n", szTemp8));
+    DEBUG_WSTR2NEWUTF8(wszFileSystem, pszTemp8);
+    /* RETURN_INT_COMMENT(-1, ("Junctions are not supported on %s volumes\n", szTemp8)); */
+    DEBUG_LEAVE(("return -1; // Junctions are not supported on %s volumes\n", pszTemp8));
+    DEBUG_FREEUTF8(pszTemp8);
+    return -1;
   }
 
   /* On network drives, make sure the target refers to the local drive on the server */
   /* Note: The local path on the server can be inferred in simple cases, but not in the general case */
   uiDriveType = GetDriveTypeW(wszVolumeName);
-  DEBUG_WSTR2UTF8(wszVolumeName, szTemp8, sizeof(szTemp8));
-  XDEBUG_PRINTF(("GetDriveType(\"%s\") = %d // %s drive\n", szTemp8, uiDriveType, (uiDriveType == DRIVE_REMOTE) ? "Network" : "Local"));
+  DEBUG_WSTR2NEWUTF8(wszVolumeName, pszTemp8);
+  XDEBUG_PRINTF(("GetDriveType(\"%s\") = %d // %s drive\n", pszTemp8, uiDriveType, (uiDriveType == DRIVE_REMOTE) ? "Network" : "Local"));
   if (uiDriveType == DRIVE_REMOTE) {
     WCHAR  wszLocalName[] = L"X:";
     WCHAR wszRemoteName[PATH_MAX];
@@ -145,10 +159,11 @@ int junctionW(const WCHAR *targetName, const WCHAR *junctionName) {
     if (dwErr == NO_ERROR) {
       WCHAR *pwsz;
       DEBUG_CODE(
-      char szRemote8[UTF8_PATH_MAX];
+      char *pszRemote8;
       )
-      DEBUG_WSTR2UTF8(wszRemoteName, szRemote8, sizeof(szRemote8));
-      XDEBUG_PRINTF(("net use %c: %s\n", (char)(wszLocalName[0]), szRemote8));
+      DEBUG_WSTR2NEWUTF8(wszRemoteName, pszRemote8);
+      XDEBUG_PRINTF(("net use %c: %s\n", (char)(wszLocalName[0]), pszRemote8));
+      DEBUG_FREEUTF8(pszRemote8);
       if ((wszRemoteName[0] == L'\\') && (wszRemoteName[1] == L'\\')) {
 	pwsz = wcschr(wszRemoteName+2, L'\\');
 	if (pwsz) {
@@ -168,9 +183,10 @@ int junctionW(const WCHAR *targetName, const WCHAR *junctionName) {
 	}
       }
     } else {
-      XDEBUG_PRINTF(("WNetGetConnection(\"%s\") failed: Error %d\n", szTemp8, dwErr));
+      XDEBUG_PRINTF(("WNetGetConnection(\"%s\") failed: Error %d\n", pszTemp8, dwErr));
     }
   }
+  DEBUG_FREEUTF8(pszTemp8);
 
   /* Make the native target name */
   lNativeName = wsprintfW(wszTargetNativeName, L"\\??\\%s", wszTargetFullName );
@@ -181,15 +197,19 @@ int junctionW(const WCHAR *targetName, const WCHAR *junctionName) {
   }
 
   /* Create the link - ignore errors since it might already exist */
-  DEBUG_WSTR2UTF8(wszJunctionFullName, szJunction8, sizeof(szJunction8));
-  DEBUG_WSTR2UTF8(wszTargetNativeName, szTarget8, sizeof(szTarget8));
-  DEBUG_PRINTF(("// Creating junction \"%s\" -> \"%s\"\n", szJunction8, szTarget8));
+  DEBUG_WSTR2NEWUTF8(wszJunctionFullName, pszJunction8);
+  DEBUG_WSTR2NEWUTF8(wszTargetNativeName, pszTarget8);
+  DEBUG_PRINTF(("// Creating junction \"%s\" -> \"%s\"\n", pszJunction8, pszTarget8));
   CreateDirectoryW(junctionName, NULL);
   hFile = CreateFileW(junctionName, GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
 		      FILE_FLAG_OPEN_REPARSE_POINT|FILE_FLAG_BACKUP_SEMANTICS, NULL );
   if (hFile == INVALID_HANDLE_VALUE) {
     errno = Win32ErrorToErrno();
-    RETURN_INT_COMMENT(-1, ("Error creating %s:\n", szJunction8));
+    /* RETURN_INT_COMMENT(-1, ("Error creating %s:\n", szJunction8)); */
+    DEBUG_LEAVE(("return -1; // Error creating %s:\n", pszJunction8));
+    DEBUG_FREEUTF8(pszJunction8);
+    DEBUG_FREEUTF8(pszTarget8);
+    return -1;
   }
 
   /* Build the reparse info */
@@ -208,11 +228,19 @@ int junctionW(const WCHAR *targetName, const WCHAR *junctionName) {
     errno = Win32ErrorToErrno();
     CloseHandle(hFile);
     RemoveDirectoryW(junctionName);
-    RETURN_INT_COMMENT(-1, ("Error setting junction for %s:\n", szJunction8));
+    /* RETURN_INT_COMMENT(-1, ("Error setting junction for %s:\n", szJunction8)); */
+    DEBUG_LEAVE(("return -1; // Error setting junction for %s:\n", pszJunction8));
+    DEBUG_FREEUTF8(pszJunction8);
+    DEBUG_FREEUTF8(pszTarget8);
+    return -1;
   }
 
   CloseHandle(hFile);
-  RETURN_INT_COMMENT(0, ("Created \"%s\" -> \"%s\"\n", szJunction8, szTarget8));
+  /* RETURN_INT_COMMENT(0, ("Created \"%s\" -> \"%s\"\n", szJunction8, szTarget8)); */
+  DEBUG_LEAVE(("return 0; // Created \"%s\" -> \"%s\"\n", pszJunction8, pszTarget8));
+  DEBUG_FREEUTF8(pszJunction8);
+  DEBUG_FREEUTF8(pszTarget8);
+  return 0;
 }
 
 /* MsvcLibX-specific routine to create an NTFS junction - MultiByte char version */

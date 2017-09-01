@@ -122,6 +122,7 @@
 #    2016-10-21 JFL Added missing inference rules for assembly language.      #
 #		    Define _MSDOS and _MODEL constants for the assembler.     #
 #    2017-03-02 JFL Fixed src2objs.bat and use it indirectly via src2objs.mak.#
+#    2017-08-29 JFL Bugfix: The help target did output a "1 file copied" msg. #
 #		    							      #
 #         © Copyright 2016 Hewlett Packard Enterprise Development LP          #
 # Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 #
@@ -1129,22 +1130,22 @@ clean:
 
 # Help message describing the targets
 help:
-    copy << con
+    type <<
 Targets:
- clean                    Erase all files in the $(R) directory
- $(R)\{prog}.com           Build {prog}.com release version from {prog}.c/cpp
- $(R)\Debug\{prog}.com     Build {prog}.com debug version from {prog}.c/cpp
- $(R)\{prog}.exe           Build {prog}.exe release version from {prog}.c/cpp
- $(R)\Debug\{prog}.exe     Build {prog}.exe debug version from {prog}.c/cpp
- $(R)\OBJ\{prog}.obj       Compile {prog}.obj release version from {prog}.c/cpp
- $(R)\Debug\OBJ\{prog}.obj Compile {prog}.obj debug version from {prog}.c/cpp
- $(R)[\Debug][\OBJ]\T\*    Compile/Build the tiny version of *
- $(R)[\Debug][\OBJ]\S\*    Compile/Build the small version of *
- $(R)[\Debug][\OBJ]\L\*    Compile/Build the large version of *
- {prog}.com               Build $(R)[\Debug]\{prog}.com from {prog}.c/cpp
- {prog}.exe               Build $(R)[\Debug]\{prog}.exe from {prog}.c/cpp
- {prog}.obj               Compile $(R)[\Debug]\OBJ\{prog}.obj from {prog}.c/cpp
- {prog}.res               Compile $(R)[\Debug]\OBJ\{prog}.res from {prog}.rc
+  clean                    Erase all files in the $(R) directory
+  $(R)\{prog}.com           Build {prog}.com release version from {prog}.c/cpp
+  $(R)\Debug\{prog}.com     Build {prog}.com debug version from {prog}.c/cpp
+  $(R)\{prog}.exe           Build {prog}.exe release version from {prog}.c/cpp
+  $(R)\Debug\{prog}.exe     Build {prog}.exe debug version from {prog}.c/cpp
+  $(R)\OBJ\{prog}.obj       Compile {prog}.obj release version from {prog}.c/cpp
+  $(R)\Debug\OBJ\{prog}.obj Compile {prog}.obj debug version from {prog}.c/cpp
+  $(R)[\Debug][\OBJ]\T\*    Compile/Build the tiny version of *
+  $(R)[\Debug][\OBJ]\S\*    Compile/Build the small version of *
+  $(R)[\Debug][\OBJ]\L\*    Compile/Build the large version of *
+  {prog}.com               Build $(R)[\Debug]\{prog}.com from {prog}.c/cpp
+  {prog}.exe               Build $(R)[\Debug]\{prog}.exe from {prog}.c/cpp
+  {prog}.obj               Compile $(R)[\Debug]\OBJ\{prog}.obj from {prog}.c/cpp
+  {prog}.res               Compile $(R)[\Debug]\OBJ\{prog}.res from {prog}.rc
 
 The debug mode is set based on the first definition found in...
  1) The nmake command line option "DEBUG=0|1"

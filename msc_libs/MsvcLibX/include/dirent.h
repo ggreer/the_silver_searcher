@@ -233,7 +233,7 @@ extern _dirent *readdir(DIR *pDir);	    /* Read a directory entry. Return pDirEn
 
 #elif defined(_WIN32)
 
-#if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
+#if defined(_UTF8_SOURCE)
 #define opendir opendirU
 #define readdir readdirU
 #define scandir scandirU

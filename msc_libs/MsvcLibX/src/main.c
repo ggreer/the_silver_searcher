@@ -17,7 +17,7 @@
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
 \*****************************************************************************/
 
-#define _UTF8_SOURCE
+#define _UTF8_LIB_SOURCE
 #define _CRT_SECURE_NO_WARNINGS /* Avoid depreciation warnings */
 
 #include <stdio.h>

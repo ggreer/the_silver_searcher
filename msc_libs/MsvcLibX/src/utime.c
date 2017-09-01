@@ -12,19 +12,20 @@
 *    2014-06-04 JFL Fixed minors issues in debugging code.		      *
 *    2014-07-02 JFL Added support for pathnames >= 260 characters. 	      *
 *    2016-08-25 JFL Added missing routine utimeA().                	      *
+*    2017-05-31 JFL Get strerror() prototype from string.h.                   *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
 \*****************************************************************************/
 
-#define _UTF8_SOURCE /* Generate the UTF-8 version of Windows print routines */
+#define _UTF8_LIB_SOURCE /* Generate the UTF-8 version of Windows print routines */
 
 #define _CRT_SECURE_NO_WARNINGS 1 /* Avoid Visual C++ security warnings */
 
 #include <errno.h>
 #include <sys/time.h> /* Must be included before any direct or indirect <windows.h> inclusion */
 #include <utime.h>
-
+#include <string.h>
 #include "debugm.h"
 
 #if defined(_DEBUG)

@@ -17,6 +17,7 @@
 *    2017-03-20 JFL Bug fix: _setmodeX() now checks its input values validity.*
 *    2017-03-22 JFL Bug fix: Static variables in fputcM must be thread-local. *
 *    2017-04-12 JFL Added puts().                                             *
+*    2017-05-11 JFL Fixed fputc() for files in binary mode.                   *
 *    2017-08-09 JFL Added fprintfM() and printfM().                           *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
@@ -194,7 +195,11 @@ UINT codePage = CP_UNDEFINED;	/* The user-specified code page */
 #undef _setmode
 
 /* List of known file modes */
+/* TO DO: This list should actually be dynamically allocated, as the low level
+          I/O library supports an illimited number of files. */ 
 int iWideFileMode[FOPEN_MAX] = {0};
+
+#define _O_CONV 0x100000  /* Convert encoding from/to the console code page (default for console & pipes) */
 
 /* Change the file translation mode, and record it in iWideFileMode[] */
 int _setmodeX(int iFile, int iMode) {
@@ -338,6 +343,7 @@ int fputwsW(const wchar_t *pws, FILE *f) {
 
 /* Write a UTF-8 byte, converting full UTF-8 characters to the console code page */
 int fputcM(int c, FILE *f, UINT cp) {
+  /* TO DO: There should be one set of static buffers per FILE */
   STATIC char buf[5];
   STATIC int nInBuf = 0;
   STATIC int nExpected = 0;
@@ -346,6 +352,10 @@ int fputcM(int c, FILE *f, UINT cp) {
   int iRet;
   int iFile = fileno(f);
 
+  if (iWideFileMode[iFile] & _O_BINARY) { /* For binary files, don't change anything */
+    return fputc(c, f);
+  }
+  /* Else this is a text file. The character encoding may need to be converted */
   if ((cp == CP_UTF8) && (!IS_ASCII(c))) { /* Make sure we got a complete character */
     if (IS_LEAD_BYTE(c)) {
       buf[0] = (char)c;
@@ -386,7 +396,7 @@ int fputcM(int c, FILE *f, UINT cp) {
     iRet = fputs(buf, f);
   }
   if ((iRet >= 0) && DEBUG_IS_ON()) fflush(f); /* Slower, but ensures we get everything before crashes! */
-  /* printf(" fputc('\\x%02.2X') ", c & 0xFF); */
+  /* printf(" fputc('\\x%02X') ", c & 0xFF); */
   if (iRet < 0) return EOF;
   return c;
 }
@@ -540,3 +550,37 @@ int printfU(const char *pszFormat, ...) { /* printf UTF-8 strings */
 
 #endif /* _WIN32 */
 
+/*---------------------------------------------------------------------------*/
+
+#if NEEDED
+
+#ifdef _WIN32
+#undef fgetc
+
+int fgetcM(FILE *hf, UINT cp) {
+  static char szBuf[8];
+  static int nBuf = 0;	/* nBuf characters available, starting at offset iBuf */
+  static int iBuf = 0;
+  int c;
+  UINT inputCodePage = consoleCodePage;
+  if (codePage != CP_UNDEFINED) { /* The user wants a specific encoding */
+    inputCodePage = codePage;
+  }
+  if (iBuf >= nBuf) { /* If there is no character left in the static buffer */
+    c = fgetc(hf);
+    if (c == -1) return c;		/* Input error */
+    if (cp == inputCodePage) return c;	/* No translation needed */
+    nBuf = ConvertBuf((char *)&c, 1, inputCodePage, szBuf, sizeof(szBuf), cp, NULL);
+    if (nBuf <= 0) return -1;		/* Conversion error */
+    iBuf = 0;
+  }
+  return (int)(unsigned char)(szBuf[iBuf++]);
+}
+
+int fgetcU(FILE *hf) {
+  return fgetcM(hf, CP_UTF8);
+}
+
+#endif /* defined(_WIN32) */
+
+#endif

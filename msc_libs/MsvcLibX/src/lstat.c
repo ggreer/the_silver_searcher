@@ -23,7 +23,7 @@
 
 #define _CRT_SECURE_NO_WARNINGS 1 /* Avoid Visual C++ security warnings */
 
-#define _UTF8_SOURCE /* Generate the UTF-8 version of routines */
+#define _UTF8_LIB_SOURCE /* Generate the UTF-8 version of routines */
 
 /* Microsoft C libraries include files */
 #include <errno.h>

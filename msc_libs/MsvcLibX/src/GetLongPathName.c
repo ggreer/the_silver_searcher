@@ -16,7 +16,7 @@
 
 #ifdef _WIN32	/* Automatically defined when targeting a Win32 application */
 
-#define _UTF8_SOURCE
+#define _UTF8_LIB_SOURCE
 
 #include <windows.h>	/* Also includes MsvcLibX' WIN32 UTF-8 extensions */
 #include <limits.h>

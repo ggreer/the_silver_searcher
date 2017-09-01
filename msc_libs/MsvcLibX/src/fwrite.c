@@ -15,7 +15,7 @@
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
 \*****************************************************************************/
 
-#define _UTF8_SOURCE /* Generate the UTF-8 version of printf routines */
+#define _UTF8_LIB_SOURCE /* Generate the UTF-8 version of printf routines */
 
 #define _CRT_SECURE_NO_WARNINGS 1 /* Avoid Visual C++ security warnings */
 

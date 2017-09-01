@@ -23,7 +23,7 @@
 
 #if defined(_WIN32)
 extern intptr_t _spawnvpU(int iMode, const char *pszCommand, char *const *argv);
-#if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
+#if defined(_UTF8_SOURCE)
 #define _spawnvp _spawnvpU
 #else /* _ANSI_SOURCE */
 #define _spawnvp _spawnvp

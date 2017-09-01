@@ -36,7 +36,7 @@ extern "C" {
 
 extern char *_fullpathU(char *absPath, const char *relPath, size_t maxLength);
 
-#if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
+#if defined(_UTF8_SOURCE)
 #define _fullpath _fullpathU		/* For processing UTF-8 pathnames */
 #endif
 

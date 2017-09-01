@@ -79,7 +79,7 @@ extern int printfU(const char *pszFormat, ...);
 extern int vfprintfA(FILE *f, const char *pszFormat, va_list vl);
 extern int fprintfA(FILE *f, const char *pszFormat, ...);
 extern int printfA(const char *pszFormat, ...);
-#if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
+#if defined(_UTF8_SOURCE)
 #define vfprintf vfprintfU	/* For outputing UTF-8 strings */
 #define fprintf fprintfU	/* For outputing UTF-8 strings */
 #define printf printfU		/* For outputing UTF-8 strings */
@@ -97,7 +97,7 @@ extern int fputwsW(const wchar_t *pws, FILE *f);
 FILE *fopenM(const char *pszName, const char *pszMode, UINT cp);
 FILE *fopenA(const char *pszName, const char *pszMode);
 FILE *fopenU(const char *pszName, const char *pszMode);
-#if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
+#if defined(_UTF8_SOURCE)
 #define fopen fopenU		/* For opening in UTF-8 mode */
 #else
 #define fopen fopenA		/* For opening in ANSI mode */
@@ -111,7 +111,7 @@ FILE *fdopenX(int iFile, const char *pszMode);
 extern int fputcM(int c, FILE *f, UINT cp);
 extern int fputcA(int c, FILE *f);
 extern int fputcU(int c, FILE *f);
-#if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
+#if defined(_UTF8_SOURCE)
 #define fputc fputcU		/* For outputing UTF-8 bytes */
 #else
 #define fputc fputcA		/* For outputing ANSI bytes */
@@ -121,7 +121,7 @@ extern int fputcU(int c, FILE *f);
 extern int fputsM(const char *buf, FILE *f, UINT cp);
 extern int fputsA(const char *buf, FILE *f);
 extern int fputsU(const char *buf, FILE *f);
-#if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
+#if defined(_UTF8_SOURCE)
 #define fputs fputsU		/* For outputing UTF-8 strings */
 #else
 #define fputs fputsA		/* For outputing ANSI strings */
@@ -130,7 +130,7 @@ extern int fputsU(const char *buf, FILE *f);
 /* puts() alternatives */
 extern int putsA(const char *buf);
 extern int putsU(const char *buf);
-#if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
+#if defined(_UTF8_SOURCE)
 #define puts putsU		/* For outputing UTF-8 strings */
 #else
 #define puts putsA		/* For outputing ANSI strings */
@@ -140,7 +140,7 @@ extern int putsU(const char *buf);
 extern size_t fwriteM(const void *buf, size_t itemSize, size_t nItems, FILE *stream, UINT cp);
 extern size_t fwriteA(const void *buf, size_t itemSize, size_t nItems, FILE *stream);
 extern size_t fwriteU(const void *buf, size_t itemSize, size_t nItems, FILE *stream);
-#if defined(_UTF8_SOURCE) || defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
+#if defined(_UTF8_SOURCE)
 #define fwrite fwriteU
 #else
 #define fwrite fwriteA
