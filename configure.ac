@@ -66,6 +66,11 @@ AC_CHECK_MEMBER([struct dirent.d_namlen], [AC_DEFINE([HAVE_DIRENT_DNAMLEN], [], 
 
 AC_CHECK_FUNCS(fgetln fopencookie getline realpath strlcpy strndup vasprintf madvise posix_fadvise pthread_setaffinity_np pledge)
 
+# Only build zfile.c if we need it
+AM_CONDITIONAL([USE_FOPENCOOKIE], [(test "$ac_cv_func_fopencookie" = "yes") &&
+                                   (test "$ac_cv_header_zlib_h" = "yes" || test "$ac_cv_header_lzma_h" = "yes")])
+AM_COND_IF([USE_FOPENCOOKIE], [AC_DEFINE([USE_FOPENCOOKIE], [], [Use fopencookie streaming in zfile.c])])
+
 AC_CONFIG_FILES([Makefile the_silver_searcher.spec])
 AC_CONFIG_HEADERS([src/config.h])
 

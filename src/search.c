@@ -357,7 +357,7 @@ void search_file(const char *file_full_path) {
     if (opts.search_zip_files) {
         ag_compression_type zip_type = is_zipped(buf, f_len);
         if (zip_type != AG_NO_COMPRESSION) {
-#if HAVE_FOPENCOOKIE
+#ifdef USE_FOPENCOOKIE
             log_debug("%s is a compressed file. stream searching", file_full_path);
             fp = decompress_open(fd, "r", zip_type);
             search_stream(fp, file_full_path);
