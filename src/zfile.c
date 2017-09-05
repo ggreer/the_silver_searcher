@@ -50,6 +50,7 @@ static const cookie_io_functions_t zfile_io = {
 #define KB (1024)
 struct zfile {
     FILE *in;              // Source FILE stream
+    const char *filepath;  // file path (used only for error printing)
     uint64_t logic_offset, // Logical offset in output (forward seeks)
         decode_offset,     // Where we've decoded to
         actual_len;
@@ -165,7 +166,7 @@ zfile_cookie_cleanup(struct zfile *cookie) {
  * read-only stream.
  */
 FILE *
-decompress_open(int fd, const char *mode, ag_compression_type ctype) {
+decompress_open(int fd, const char *mode, ag_compression_type ctype, const char *filepath) {
     struct zfile *cookie;
     FILE *res, *in;
     int error;
@@ -192,6 +193,7 @@ decompress_open(int fd, const char *mode, ag_compression_type ctype) {
         goto out;
     }
 
+    cookie->filepath = filepath;
     cookie->in = in;
     cookie->logic_offset = 0;
     cookie->decode_offset = 0;
@@ -318,12 +320,12 @@ zfile_read(void *cookie_, char *buf, size_t size) {
             nb = fread(cookie->inbuf, 1, sizeof cookie->inbuf,
                        cookie->in);
             if (ferror(cookie->in)) {
-                warn("error read core");
-                exit(1);
+                log_err("%s: zfile: fread error", cookie->filepath);
+                return -1;
             }
-            if (nb == 0 && feof(cookie->in)) {
-                warn("truncated file");
-                exit(1);
+            if (nb == 0 && !feof(cookie->in)) {
+                log_err("%s: zfile: truncated file", cookie->filepath);
+                return -1;
             }
             if (cookie->ctype == AG_XZ) {
 #ifdef HAVE_LZMA_H
@@ -356,7 +358,7 @@ zfile_read(void *cookie_, char *buf, size_t size) {
 #ifdef HAVE_ZLIB_H
             ret = inflate(&cookie->stream.gz, Z_NO_FLUSH);
             if (ret != Z_OK && ret != Z_STREAM_END) {
-                log_err("Found mem/data error while decompressing zlib stream: %s", zError(ret));
+                log_err("%s: Found mem/data error while decompressing zlib stream: %s", cookie->filepath, zError(ret));
                 return -1;
             }
 #endif
@@ -364,7 +366,7 @@ zfile_read(void *cookie_, char *buf, size_t size) {
 #ifdef HAVE_LZMA_H
             lzret = lzma_code(&cookie->stream.lzma, LZMA_RUN);
             if (lzret != LZMA_OK && lzret != LZMA_STREAM_END) {
-                log_err("Found mem/data error while decompressing xz/lzma stream: %d", lzret);
+                log_err("%s: Found mem/data error while decompressing xz/lzma stream: %d", cookie->filepath, lzret);
                 return -1;
             }
 #endif
