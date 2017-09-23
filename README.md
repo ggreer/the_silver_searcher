@@ -163,7 +163,7 @@ You may need to use `sudo` or run as root for the make install.
 
 ### Vim
 
-You can use Ag with [ack.vim][] by adding the following line to your `.vimrc`:
+You can use Ag with [ack.vim](https://github.com/mileszs/ack.vim) by adding the following line to your `.vimrc`:
 
     let g:ackprg = 'ag --nogroup --nocolor --column'
 
