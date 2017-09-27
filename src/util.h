@@ -46,7 +46,7 @@ typedef struct {
 } match_t;
 
 typedef struct {
-    long total_bytes;
+    long long total_bytes;
     long total_files;
     long total_matches;
     long total_file_matches;
