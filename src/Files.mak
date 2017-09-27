@@ -32,10 +32,11 @@ ALL=bin_link config.h ag.exe # debug/ag.exe
 
 # Create a link from this bin dir to the silver searcher's main bin dir.
 # Make.bat creates an empty directory here, that we now change to a junction to ..\bin, if not done already.
+# Caution, if invoked in this subdirectory, make.bat also creates a log file in bin\. In this case, it's not possible to create the junction.
 # We use a junction instead of a symlinkd, because, unlike junctions, Windows does not allow symlinkd creations by default.
 # $(OUTDIR)=bin by default, but may be changed on some systems. (And it is on my battery of test VMs)
 bin_link:
-    for /f %o in ("$(OS)") do if not exist $(OUTDIR)\%o $(HEADLINE) Creating link bin & rd $(OUTDIR) & mklink /j $(OUTDIR) ..\$(OUTDIR)
+    for /f %o in ("$(OS)") do if not exist $(OUTDIR)\%o $(HEADLINE) Creating link $(OUTDIR) to ..\$(OUTDIR) & rd $(OUTDIR) & mklink /j $(OUTDIR) ..\$(OUTDIR)
 
 # Make file, and default log file, base name
 MODULE=ag
