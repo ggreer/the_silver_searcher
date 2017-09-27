@@ -319,6 +319,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "group", no_argument, &group, 1 },
         { "heading", no_argument, &opts.print_path, PATH_PRINT_TOP },
         { "help", no_argument, NULL, 'h' },
+        { "help-windows", no_argument, NULL, '?' },
         { "hidden", no_argument, &opts.search_hidden_files, 1 },
         { "ignore", required_argument, NULL, 0 },
         { "ignore-case", no_argument, NULL, 'i' },
@@ -431,7 +432,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     char *file_search_regex = NULL;
-    while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:FfHhiLlm:nop:QRrSsvVtuUwW:z0", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:FfHhiLlm:nop:QRrSsvVtuUwW:z0?", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 if (optarg) {
@@ -503,6 +504,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.print_path = PATH_PRINT_TOP;
                 break;
             case 'h':
+            case '?':
                 help = 1;
                 break;
             case 'i':
