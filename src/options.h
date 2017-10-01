@@ -21,6 +21,7 @@ enum case_behavior {
 enum path_print_behavior {
     PATH_PRINT_DEFAULT,           /* PRINT_TOP if > 1 file being searched, else PRINT_NOTHING */
     PATH_PRINT_DEFAULT_EACH_LINE, /* PRINT_EACH_LINE if > 1 file being searched, else PRINT_NOTHING */
+    PATH_PRINT_FORCED,
     PATH_PRINT_TOP,
     PATH_PRINT_EACH_LINE,
     PATH_PRINT_NOTHING

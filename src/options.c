@@ -522,7 +522,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                     opts.max_search_depth = atoi(optarg);
                     break;
                 } else if (strcmp(longopts[opt_index].name, "filename") == 0) {
-                    opts.print_path = PATH_PRINT_DEFAULT;
+                    opts.print_path = PATH_PRINT_FORCED;
                     opts.print_line_numbers = TRUE;
                     break;
                 } else if (strcmp(longopts[opt_index].name, "ignore-dir") == 0) {
