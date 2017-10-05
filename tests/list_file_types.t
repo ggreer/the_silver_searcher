@@ -128,10 +128,10 @@ Language types are output:
   
     --ipython
         .ipynb
-   
+  
     --j
         .ijs
-    
+  
     --jade
         .jade
   
