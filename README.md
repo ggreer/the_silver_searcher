@@ -173,6 +173,8 @@ or:
 
 Which has the same effect but will report every match on the line.
 
+[ack.vim]: https://github.com/mileszs/ack.vim
+
 ### Emacs
 
 You can use [ag.el][] as an Emacs front-end to Ag. See also: [helm-ag].
@@ -187,7 +189,7 @@ TextMate users can use Ag with [my fork](https://github.com/ggreer/AckMate) of t
 ## Other stuff you might like
 
 * [Ack](https://github.com/petdance/ack2) - Better than grep. Without Ack, Ag would not exist.
-* [ack.vim](https://github.com/mileszs/ack.vim)
+* [ack.vim][]
 * [Exuberant Ctags](http://ctags.sourceforge.net/) - Faster than Ag, but it builds an index beforehand. Good for *really* big codebases.
 * [Git-grep](http://git-scm.com/docs/git-grep) - As fast as Ag but only works on git repos.
 * [ripgrep](https://github.com/BurntSushi/ripgrep)
