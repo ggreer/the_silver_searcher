@@ -9,6 +9,7 @@
 *   History:								      *
 *    2014-03-24 JFL Created this module.				      *
 *    2014-07-02 JFL Added support for pathnames >= 260 characters. 	      *
+*    2017-10-03 JFL Fixed support for pathnames >= 260 characters. 	      *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -42,25 +43,30 @@
 |   History								      |
 |    2014-03-24 JFL Created this routine.                      		      |
 |    2014-07-02 JFL Added support for pathnames >= 260 characters. 	      |
+|    2017-10-03 JFL Removed the dependency on PATH_MAX and fixed size buffers.|
+|                   Added routine accessM, called by accessA and accessU.     |
 *                                                                             *
 \*---------------------------------------------------------------------------*/
 
-int _accessU(const char *pszName, int iMode) {
-  WCHAR wszName[PATH_MAX];
-  int n;
+int _accessM(const char *pszName, int iMode, UINT cp) {
+  WCHAR *pwszName;
+  int iAccess;
 
   /* Convert the pathname to a unicode string, with the proper extension prefixes if it's longer than 260 bytes */
-  n = MultiByteToWidePath(CP_UTF8,		/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
-    			  pszName,		/* lpMultiByteStr, */
-			  wszName,		/* lpWideCharStr, */
-			  COUNTOF(wszName)	/* cchWideChar, */
-			  );
-  if (!n) {
-    errno = Win32ErrorToErrno();
-    return -1;
-  }
+  pwszName = MultiByteToNewWidePath(cp, pszName);
+  if (!pwszName) return -1;
 
-  return _waccess(wszName, iMode);
+  iAccess = _waccess(pwszName, iMode);
+  free(pwszName);
+  return iAccess;
+}
+
+int _accessA(const char *pszName, int iMode) {
+  return _accessM(pszName, iMode, CP_ACP);
+}
+
+int _accessU(const char *pszName, int iMode) {
+  return _accessM(pszName, iMode, CP_UTF8);
 }
 
 #endif /* defined(_WIN32) */

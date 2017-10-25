@@ -22,6 +22,8 @@
 *                   Bug fix: Detect and report output buffer overflows.       *
 *                   Convert short WIN32 paths to long paths.                  *
 *    2016-09-13 JFL Resize output buffers, to avoid wasting lots of memory.   *
+*    2017-10-03 JFL Added an ugly version of ResolveLinksM. To be fixed.      *
+*    2017-10-04 JFL Added WIN32 routine CompactPathW().			      *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -55,7 +57,7 @@
 |   Notes	    Allows having path = outbuf, ie. in-place compacting.     |
 |		    Supports both relative and absolute paths.		      |
 |									      |
-|   Returns	    0 = success, or -1 = error, with errno set		      |
+|   Returns	    The length of the output string			      |
 |									      |
 |   History								      |
 |    2014-02-19 JFL Created this routine                                      |
@@ -152,34 +154,34 @@ its_a_dot_part:
 
   /* Join all remaining parts into a single path */
   if (!outSize) {
-not_compact_enough:
+buffer_is_too_small:
     errno = ENAMETOOLONG;
     RETURN_INT_COMMENT(-1, ("Name too long\n"));
   }
   outSize -= 1;	/* Leave room for the final NUL */
   if (isAbsolute) {
-    if (!outSize) goto not_compact_enough;
+    if (!outSize) goto buffer_is_too_small;
     *(pcOut++) = '\\';
     outSize -= 1;
   }
   if (nParts) {
     /* Copy part 0 if it's not already at the right place */
-    if (lParts[0] > outSize) goto not_compact_enough;
+    if (lParts[0] > outSize) goto buffer_is_too_small;
     if (pcOut != pParts[0]) strncpy(pcOut, pParts[0], lParts[0]);
     pcOut += lParts[0];
     outSize -= lParts[0];
   } else {
     if (pcOut == outbuf) {
-      if (!outSize) goto not_compact_enough;
+      if (!outSize) goto buffer_is_too_small;
       *(pcOut++) = '.'; /* Special case for "subdir\..", which is "." and not "" */
       outSize -= 1;
     }
   }
   for (i=1; i<nParts; i++) {
-    if (!outSize) goto not_compact_enough;
+    if (!outSize) goto buffer_is_too_small;
     *(pcOut++) = '\\';
     outSize -= 1;
-    if (lParts[i] > outSize) goto not_compact_enough;
+    if (lParts[i] > outSize) goto buffer_is_too_small;
     if (pcOut != pParts[i]) strncpy(pcOut, pParts[i], lParts[i]);
     pcOut += lParts[i];
     outSize -= lParts[i];
@@ -255,6 +257,170 @@ realpath_failed:
 
 /*---------------------------------------------------------------------------*\
 *                                                                             *
+|   Function	    CompactPathW					      |
+|									      |
+|   Description	    Remove all ., .., and extra / or \ separators in a path   |
+|									      |
+|   Parameters	    const WCHAR *path	  Pathname to cleanup	 	      |
+|		    WCHAR *buf		  Output buffer    		      |
+|		    size_t bufsize	  Size of the output buffer in WCHARs |
+|									      |
+|   Notes	    Allows having path = outbuf, ie. in-place compacting.     |
+|		    Supports both relative and absolute paths.		      |
+|									      |
+|   Returns	    The length of the output string			      |
+|									      |
+|   History								      |
+|    2014-02-19 JFL Created the 8-bit version of this routine.                |
+|    2017-10-04 JFL Adapted to 16-bit characters.                             |
+*									      *
+\*---------------------------------------------------------------------------*/
+
+int CompactPathW(const WCHAR *path, WCHAR *outbuf, size_t bufsize) {
+  const WCHAR *pcIn;
+  WCHAR *pcOut;
+  int i, j, inSize, outSize;
+  WCHAR c = L'\0';
+  WCHAR lastc = L'\0';
+#define MAX_SUBDIRS (PATH_MAX / 2) /* Worst case is: \1\1\1\1\1\1... */
+  const WCHAR *pParts[MAX_SUBDIRS];
+  int lParts[MAX_SUBDIRS];
+  int lPart = 0;
+  int nParts = 0;
+  int isAbsolute = FALSE;
+  int nDotDotParts = 0;
+  DEBUG_CODE(
+    char *pszUtf8;
+  )
+  int iLen;
+
+  DEBUG_WSTR2NEWUTF8(path, pszUtf8);
+  DEBUG_ENTER(("CompactPathW(L\"%s\", 0x%p, %lu);\n", pszUtf8, outbuf, (unsigned long)bufsize));
+  DEBUG_FREEUTF8(pszUtf8);
+
+  pcIn = path;
+  inSize = (int)lstrlenW(path) + 1;
+  pcOut = outbuf;
+  outSize = (int)bufsize;
+
+  if (*pcIn && (pcIn[1] == L':')) { /* There's a drive letter */
+    *(pcOut++) = *(pcIn++);		/* Copy it */
+    *(pcOut++) = *(pcIn++);
+    inSize -= 2;
+    outSize -= 2;
+  }
+
+  /* Scan the input pathname, recording pointers to every part of the pathname */
+  for (i=0; i<inSize; i++) {
+    c = pcIn[i];
+    if (c == L'/') c = L'\\';
+    if ((c == L'\\') && (lastc == L'\\')) continue; /* Condense multiple \ into one */
+    if ((c == L'\\') && (lastc == L'\0')) { /* This is an absolute pathname */
+      isAbsolute = TRUE;
+      lastc = c;
+      continue;
+    }
+    if ((c != L'\\') && ((lastc == L'\\') || (lastc == L'\0'))) { /* Beginning of a new node */
+      if (nParts == MAX_SUBDIRS) {
+	errno = ENAMETOOLONG;
+	RETURN_INT_COMMENT(-1, ("Name too long\n"));
+      }
+      pParts[nParts] = pcIn + i;
+      lPart = 0;
+    }
+    if (c && (c != L'\\')) {
+      lPart += 1;
+    } else { /* End of a node */
+      lParts[nParts++] = lPart;
+      DEBUG_WSTR2NEWUTF8(pParts[nParts-1], pszUtf8);
+      XDEBUG_PRINTF(("pParts[%d] = \"%.*s\"; l = %d\n", nParts-1, lPart, pszUtf8, lPart));
+      DEBUG_FREEUTF8(pszUtf8);
+    }
+    lastc = c;
+    if (c == L'\0') break;
+  }
+
+  /* Eliminate . and .. parts */
+  for (i=0; i<nParts; i++) {
+    DEBUG_WSTR2NEWUTF8(pParts[i], pszUtf8);
+    XDEBUG_PRINTF(("for pParts[%d] = \"%.*s\"\n", i, lParts[i], pszUtf8));
+    DEBUG_FREEUTF8(pszUtf8);
+    if ((pParts[i][0] == L'.') && (lParts[i] == 1)) { /* It's a . part */
+its_a_dot_part:
+      XDEBUG_PRINTF(("It's a L'.'. Removing part #%d\n", i));
+      nParts -= 1;
+      for (j=i; j<nParts; j++) {
+      	pParts[j] = pParts[j+1];
+      	lParts[j] = lParts[j+1];
+      }
+      i -= 1;
+      continue;
+    }
+    if ((pParts[i][0] == L'.') && (pParts[i][1] == L'.') && (lParts[i] == 2)) { /* It's a .. part */
+      if (i == nDotDotParts) {
+	XDEBUG_PRINTF(("It's a L'..', but it's at the root.\n"));
+      	if (isAbsolute) goto its_a_dot_part; /* .. in root is like . */
+      	nDotDotParts += 1; /* Else for relative paths, keep this .. */
+      	continue;
+      }
+      XDEBUG_PRINTF(("It's a L'..'. Removing parts #%d and #%d\n", i-1, i));
+      nParts -= 2;
+      for (j=i-1; j<nParts; j++) {
+      	pParts[j] = pParts[j+2];
+      	lParts[j] = lParts[j+2];
+      }
+      i -= 2;
+      continue;
+    }
+  }
+
+  /* Join all remaining parts into a single path */
+  if (!outSize) {
+buffer_is_too_small:
+    errno = ENAMETOOLONG;
+    RETURN_INT_COMMENT(-1, ("Name too long\n"));
+  }
+  outSize -= 1;	/* Leave room for the final NUL */
+  if (isAbsolute) {
+    if (!outSize) goto buffer_is_too_small;
+    *(pcOut++) = L'\\';
+    outSize -= 1;
+  }
+  if (nParts) {
+    /* Copy part 0 if it's not already at the right place */
+    if (lParts[0] > outSize) goto buffer_is_too_small;
+    if (pcOut != pParts[0]) lstrcpynW(pcOut, pParts[0], lParts[0]+1);
+    pcOut += lParts[0];
+    outSize -= lParts[0];
+  } else {
+    if (pcOut == outbuf) {
+      if (!outSize) goto buffer_is_too_small;
+      *(pcOut++) = L'.'; /* Special case for "subdir\..", which is "." and not "" */
+      outSize -= 1;
+    }
+  }
+  for (i=1; i<nParts; i++) {
+    if (!outSize) goto buffer_is_too_small;
+    *(pcOut++) = L'\\';
+    outSize -= 1;
+    if (lParts[i] > outSize) goto buffer_is_too_small;
+    if (pcOut != pParts[i]) {
+      lstrcpynW(pcOut, pParts[i], lParts[i]+1);
+    }
+    pcOut += lParts[i];
+    outSize -= lParts[i];
+  }
+  *pcOut = L'\0';
+
+  iLen = (int)(pcOut - outbuf);
+  DEBUG_WSTR2NEWUTF8(outbuf, pszUtf8);
+  DEBUG_LEAVE(("return %d; // L\"%s\"\n", iLen, pszUtf8));
+  DEBUG_FREEUTF8(pszUtf8);
+  return iLen;
+}
+
+/*---------------------------------------------------------------------------*\
+*                                                                             *
 |   Function	    ResolveLinks					      |
 |									      |
 |   Description	    Resolve all link names within a pathname		      |
@@ -284,6 +450,20 @@ typedef struct _NAMELIST {
   struct _NAMELIST *prev;
   char *path;
 } NAMELIST;
+
+/* TODO: Create a real ResolveLinksM common routine, called by ResolveLinksA
+         and ResolveLinksU, then remove this uglyness */
+int ResolveLinksM(const char *path, char *buf, size_t bufsize, UINT cp) {
+  switch (cp) {
+    case CP_ACP:
+      return ResolveLinksA(path, buf, bufsize);
+    case CP_UTF8:
+      return ResolveLinksU(path, buf, bufsize);
+    default:
+      errno = EINVAL;
+      return -1;
+  }
+}
 
 /* Get the canonic name of a file, after resolving all links in its pathname */
 int ResolveLinksU1(const char *path, char *buf, size_t bufsize, NAMELIST *prev, int iDepth) {

@@ -19,6 +19,7 @@
 *    2017-04-12 JFL Added puts().                                             *
 *    2017-05-11 JFL Fixed fputc() for files in binary mode.                   *
 *    2017-08-09 JFL Added fprintfM() and printfM().                           *
+*    2017-09-27 JFL Added standard C library routines iconv(), etc.	      *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -159,6 +160,90 @@ int CountCharacters(const char *string, UINT cp) {
     return -1;
   }
   return n;
+}
+
+/*---------------------------------------------------------------------------*\
+*                                                                             *
+|   Functions:	    iconv						      |
+|									      |
+|   Description:    Standard C library's iconv				      |
+|									      |
+|   Parameters:     See Standard C library's iconv	 		      |
+|		    							      |
+|   Returns:	    See Standard C library's iconv			      |
+|		    							      |
+|   Notes:	    							      |
+|		    							      |
+|   History:								      |
+|    2017-09-27 JFL Created this routine.	                	      |
+*									      *
+\*---------------------------------------------------------------------------*/
+
+static short GetEncodingCP(const char *pszEnc) {
+  UINT cp = 0;
+  CPINFOEX cpi = {0};
+  if (!pszEnc[0]) {						/* Ex: "" */
+    return (short)consoleCodePage;
+  } else if ((pszEnc[0] == 'C') && (pszEnc[1] == 'P')) {	/* Ex: "CP1252" */
+    cp = atoi(pszEnc+2);
+  } else if ((pszEnc[0] || pszEnc[1]) && !pszEnc[2]) {		/* Ex: 1252L (Non-standard) (Will fail for multiples of 256) */
+    cp = *(unsigned short *)pszEnc;
+  } else if (!strcmp(pszEnc, "UTF-7")) {
+    cp = 65000;
+  } else if (!strcmp(pszEnc, "UTF-8")) {
+    cp = 65001;
+  } else if (!strcmp(pszEnc, "UTF-16")) {
+    cp = 1200;
+/*
+  } else if (!strcmp(pszEnc, "UTF-16LE")) {
+    cp = 1200;
+  } else if (!strcmp(pszEnc, "UTF-16BE")) {
+    cp = 1201;
+*/
+  }
+  if ((!cp) || !GetCPInfoEx(cp, 0, &cpi)) {
+    errno = EINVAL;
+    return 0;
+  }
+  return (short)cp;
+}
+
+#define WORD0(var) (((WORD *)&var)[0])
+#define WORD1(var) (((WORD *)&var)[1])
+
+iconv_t iconv_open(const char *toEnc, const char *fromEnc) {
+  iconv_t cpFromTo;
+  short cp;
+  cp = GetEncodingCP(fromEnc);
+  if (!cp) return (iconv_t)-1;
+  WORD0(cpFromTo) = cp;
+  cp = GetEncodingCP(toEnc);
+  if (!cp) return (iconv_t)-1;
+  WORD1(cpFromTo) = cp;
+  return cpFromTo;
+}
+
+size_t iconv(iconv_t cpFromTo, char **inBuf, size_t *inBytesLeft, char **outBuf, size_t *outBytesLeft) {
+  UINT cpFrom = WORD0(cpFromTo);
+  UINT cpTo = WORD1(cpFromTo);
+  char *pFromBuf = *inBuf;
+  size_t nFromBufSize = *inBytesLeft;
+  char *pToBuf = *outBuf;
+  size_t nToBufSize = *outBytesLeft;
+  int iToSize;
+  if (((!inBuf) || (!*inBuf)) && (outBuf && *outBuf) && (outBytesLeft && *outBytesLeft)) {
+    return 0; /* Return the output buffer to its default shift state */
+  }
+  iToSize = ConvertBuf(pFromBuf, nFromBufSize, cpFrom, pToBuf, nToBufSize, cpTo, NULL);
+  /* TO DO: Manage the invalid character cases */
+  /* TO DO: Manage the query cases, with NULL output pointers or 0 sizes */
+  /* TO DO: Manage conversions from/to UTF-16 */
+  if (iToSize == -1) return (size_t)-1;
+  *inBuf += *inBytesLeft;
+  *inBytesLeft = 0;
+  *outBuf += iToSize;
+  *outBytesLeft -= iToSize;
+  return iToSize;
 }
 
 /*---------------------------------------------------------------------------*\

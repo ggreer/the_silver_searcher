@@ -10,6 +10,8 @@
 *    2014-03-04 JFL Created this module.				      *
 *    2014-03-24 JFL Renamed "statx.h" as the standard <sys/stat.h>.	      *
 *    2014-07-02 JFL Added support for pathnames >= 260 characters. 	      *
+*    2017-10-02 JFL Fixed support for pathnames >= 260 characters. 	      *
+*    2017-10-04 JFL Improved the debugging output.			      *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -41,61 +43,46 @@
 |   Returns         0 = Success; -1 = Error and errno set.		      |
 |                                                                             |
 |   Notes                                                                     |
-|                                                                             |
+|                   							      |
 |   History								      |
 |    2014-03-04 JFL Created this routine.                      		      |
 |    2014-07-02 JFL Added support for pathnames >= 260 characters. 	      |
+|    2017-10-02 JFL Removed the dependency on PATH_MAX.			      |
+|                   Added common routine mkdirM, called by mkdirA and mkdirU. |
 *                                                                             *
 \*---------------------------------------------------------------------------*/
 
 #pragma warning(disable:4100) /* Ignore the "unreferenced formal parameter" warning */
 
-int mkdirU(const char *pszName, mode_t iMode) {
-  WCHAR wszName[PATH_MAX];
-  int n;
+int mkdirM(const char *pszName, mode_t iMode, UINT cp) {
+  WCHAR *pwszName = NULL;
   BOOL bDone;
+  int iErr = -1; /* Assume failure */
+
+  DEBUG_ENTER(("mkdir(\"%s\", 0x%X)\n", pszName, iMode));
 
   /* Convert the pathname to a unicode string, with the proper extension prefixes if it's longer than 260 bytes */
-  n = MultiByteToWidePath(CP_UTF8,		/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
-    			  pszName,		/* lpMultiByteStr, */
-			  wszName,		/* lpWideCharStr, */
-			  COUNTOF(wszName)	/* cchWideChar, */
-			  );
-  if (!n) {
-    errno = Win32ErrorToErrno();
-    return -1;
-  }
+  pwszName = MultiByteToNewWidePath(cp, pszName);
+  if (!pwszName) goto cleanup_and_return;
 
-  bDone = CreateDirectoryW(wszName, NULL);
+  bDone = CreateDirectoryW(pwszName, NULL);
   if (!bDone) {
     errno = Win32ErrorToErrno();
-    return -1;
+  } else {
+    iErr = 0; /* Success confirmed */
   }
-  return 0;
+
+cleanup_and_return:
+  free(pwszName);
+  RETURN_INT_COMMENT(iErr, (iErr ? "Failed. errno=%d - %s\n" : "Success\n", errno, strerror(errno)));
+}
+
+int mkdirU(const char *pszName, mode_t iMode) {
+  return mkdirM(pszName, iMode, CP_UTF8);
 }
 
 int mkdirA(const char *pszName, mode_t iMode) {
-  WCHAR wszName[PATH_MAX];
-  int n;
-  BOOL bDone;
-
-  /* Convert the pathname to a unicode string, with the proper extension prefixes if it's longer than 260 bytes */
-  n = MultiByteToWidePath(CP_ACP,		/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
-    			  pszName,		/* lpMultiByteStr, */
-			  wszName,		/* lpWideCharStr, */
-			  COUNTOF(wszName)	/* cchWideChar, */
-			  );
-  if (!n) {
-    errno = Win32ErrorToErrno();
-    return -1;
-  }
-
-  bDone = CreateDirectoryW(wszName, NULL);
-  if (!bDone) {
-    errno = Win32ErrorToErrno();
-    return -1;
-  }
-  return 0;
+  return mkdirM(pszName, iMode, CP_ACP);
 }
 
 #endif /* defined(_WIN32) */

@@ -10,6 +10,7 @@
 *    2014-03-05 JFL Created routine rmdir() in lstat.c.                       *
 *    2014-06-30 JFL Added support for 32K Unicode paths.           	      *
 *    2017-03-18 JFL Created this module, with 3 versions rmdir[AUM]().        *
+*    2017-10-03 JFL Fixed support for 32K Unicode paths.           	      *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -53,12 +54,11 @@ int rmdirM(const char *path, UINT cp) {
   int iErr;
   BOOL bDone;
   struct stat st;
-  WCHAR wszName[UNICODE_PATH_MAX];
-  int n;
+  WCHAR *pwszName;
 
   DEBUG_ENTER(("rmdir(\"%s\");\n", path));
 
-  iErr = lstat(path, &st);
+  iErr = lstat(path, &st); /* TODO: Change this to lstatM() or lstatW when available */ 
   if (iErr) RETURN_INT(iErr);
 
   if (!S_ISDIR(st.st_mode)) {
@@ -67,18 +67,11 @@ int rmdirM(const char *path, UINT cp) {
   }
 
   /* Convert the pathname to a unicode string, with the proper extension prefixes if it's longer than 260 bytes */
-  n = MultiByteToWidePath(cp,   		/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
-    			  path,			/* lpMultiByteStr, */
-			  wszName,		/* lpWideCharStr, */
-			  UNICODE_PATH_MAX	/* cchWideChar, */
-			  );
-  if (!n) {
-    errno = Win32ErrorToErrno();
-    RETURN_INT_COMMENT(-1, ("errno=%d - %s\n", errno, strerror(errno)));
-  }
+  pwszName = MultiByteToNewWidePath(cp, path);
+  if (!pwszName) RETURN_INT_COMMENT(-1, ("errno=%d - %s\n", errno, strerror(errno)));
 
-  bDone = RemoveDirectoryW(wszName);
-
+  bDone = RemoveDirectoryW(pwszName);
+  free(pwszName);
   if (bDone) {
     RETURN_INT_COMMENT(0, ("Success\n"));
   } else {

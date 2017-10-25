@@ -10,6 +10,7 @@
 *    2017-02-16 JFL Created this module.				      *
 *    2017-03-12 JFL Restructured the UTF16 writing mechanism.		      *
 *    2017-03-18 JFL Bug fix: Only change Xlation when writing to a valid file.*
+*    2017-10-03 JFL Fixed support for pathnames >= 260 characters. 	      *
 *                                                                             *
 *         © Copyright 2017 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -51,25 +52,18 @@
 #define WRITE_MODE_MASK (_O_WRONLY | _O_RDWR | _O_APPEND)
 
 int openM(UINT cp, const char *pszName, int iFlags, int iPerm) {
-  WCHAR wszName[UNICODE_PATH_MAX];
-  int n;
+  WCHAR *pwszName;
   int iFile;
   int iMode;
 
   /* Convert the pathname to a unicode string, with the proper extension prefixes if it's longer than 260 bytes */
-  n = MultiByteToWidePath(cp,			/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
-    			  pszName,		/* lpMultiByteStr, */
-			  wszName,		/* lpWideCharStr, */
-			  COUNTOF(wszName)	/* cchWideChar, */
-			  );
-  if (!n) {
-    errno = Win32ErrorToErrno();
-    return -1;
-  }
+  pwszName = MultiByteToNewWidePath(cp, pszName);
+  if (!pwszName) return -1;
 
   /* return _wopen(wszName, iFlags, iPerm); */
   DEBUG_PRINTF(("_wopen(\"%s\", 0x%X, 0x%X);\n", pszName, iFlags, iPerm));
-  iFile = _wopen(wszName, iFlags, iPerm);
+  iFile = _wopen(pwszName, iFlags, iPerm);
+  free(pwszName);
 
   /* Find out the initial translation mode, and change it if appropriate */
   if (iFile >= 0) {

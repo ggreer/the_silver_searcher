@@ -23,7 +23,9 @@
 *    2014-06-06 JFL Fixed macro _D_EXACT_NAMLEN().			      *
 *    2015-12-07 JFL Added the conditional definition of symlink constants, so *
 *		    that our code builds even in XP and older Windows SDKs.   *
-*									      *
+*    2017-10-02 JFL Removed struct _dirhandle dependency on MAX_PATH.	      *
+*		    Renamed it as struct _DIR.				      *
+*		    							      *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
 \*****************************************************************************/
@@ -93,7 +95,7 @@ struct dirent { /* Standard C library structure returning directory entries. */
 #pragma pack()
 
 #pragma pack(1)
-struct _dirhandle { /* Private structure, not for use by users */
+struct _DIR { /* Private structure, not for use by users */
   struct dirent sDirent;
   /* char dta_buf[128];		/* Protection area, in case MS-DOS uses the whole DTA, and not just the struct _fileinfo ahead of it. */
   char wildcards[4];		/* Leave room for the "\*.*" that we append initially. This field MUST follow sDirent. */
@@ -157,9 +159,9 @@ struct dirent { /* Structure used to return information about directory entries.
   char d_name[(NAME_MAX+1)*sizeof(WCHAR)]; /* Null-terminated file name */
 };
 
-struct _dirhandle { /* Private structure, not for use by users */
+struct _DIR { /* Private structure, not for use by users */
   struct dirent sDirent;
-  WCHAR wszDirName[MAX_PATH+1];	/* Null-terminated directory name */
+  WCHAR *pwszDirName;		/* Null-terminated directory name */
   HANDLE hFindFile;		/* Search handle */
   WIN32_FIND_DATAW wfd;		/* Where Win32 will store the file information */
 };
@@ -195,7 +197,7 @@ struct dirent { /* Structure used to return information about directory entries.
   char d_name[NAME_MAX+1];	/* Null-terminated file name. Must be last */
 };
 
-struct _dirhandle { /* Private structure, not for use by users */
+struct _DIR { /* Private structure, not for use by users */
   struct dirent sDirent;
   short hDir; 			/* Directory handle */
   FILEFINDBUF buf;		/* Where OS/2 will store the file information */
@@ -208,8 +210,8 @@ struct _dirhandle { /* Private structure, not for use by users */
 
 /********************** End of OS-specific definitions ***********************/
 
-typedef struct _dirhandle DIR; /* Directory enumerator handle */
-typedef struct dirent _dirent; /* Directory entry */
+typedef struct _DIR DIR;	/* Directory enumerator handle */
+typedef struct dirent _dirent;	/* Directory entry */
 
 #define MAXNAMELEN NAME_MAX /* Alias used by some Unix versions */
 

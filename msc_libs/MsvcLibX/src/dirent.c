@@ -32,6 +32,8 @@
 *    2017-05-11 JFL Recognize LinuX SubSystem symlinks.			      *
 *    2017-06-27 JFL Renamed IO_REPARSE_TAG_LXSS_SYMLINK as ..._TAG_LX_SYMLINK.*
 *		    Added IO_REPARSE_TAG_NFS to known symbolic link types.    *
+*    2017-10-02 JFL Removed dependencies on MAX_PATH or PATH_MAX.	      *
+*		    Fixed support for pathnames >= 260 characters.	      *
 *		    							      *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -271,11 +273,13 @@ DIR *opendirW(const WCHAR *wszName) { /* Open a directory - Wide char version */
   int err;
   DWORD dw;
   DEBUG_CODE(
-  char szUtf8[UTF8_PATH_MAX];
+  char *pszUtf8;
   )
+  int lName;
 
-  DEBUG_WSTR2UTF8(wszName, szUtf8, sizeof(szUtf8));
-  DEBUG_ENTER(("opendir(\"%s\");\n", szUtf8));
+  DEBUG_WSTR2NEWUTF8(wszName, pszUtf8);
+  DEBUG_ENTER(("opendir(\"%s\");\n", pszUtf8));
+  DEBUG_FREEUTF8(pszUtf8);
 
   dw = GetFileAttributesW(wszName);
   err = 0;
@@ -287,45 +291,44 @@ DIR *opendirW(const WCHAR *wszName) { /* Open a directory - Wide char version */
     }
   }
   if (err) {
-    RETURN_CONST_COMMENT(NULL, ("errno=%d - %s\n", errno, strerror(errno)));
-  }
-  if (lstrlenW(wszName) >= sizeof(pDir->wszDirName)) {
-    errno = ENAMETOOLONG;
+return_err:
     RETURN_CONST_COMMENT(NULL, ("errno=%d - %s\n", errno, strerror(errno)));
   }
   pDir = malloc(sizeof(DIR));
   if (!pDir) {
+return_ENOMEM:
     errno = ENOMEM;
-    RETURN_CONST_COMMENT(NULL, ("errno=%d - %s\n", errno, strerror(errno)));
+    goto return_err;
+  }
+  lName = lstrlenW(wszName);
+  pDir->pwszDirName = malloc(sizeof(WCHAR) * (lName + 1));
+  if (!pDir->pwszDirName) {
+    free(pDir);
+    goto return_ENOMEM;
   }
   pDir->hFindFile = INVALID_HANDLE_VALUE;
-  lstrcpyW(pDir->wszDirName, wszName);
+  lstrcpyW(pDir->pwszDirName, wszName);
   DEBUG_LEAVE(("return 0x%p; // Success\n", pDir));
   return pDir;
 }
 
-DIR *opendirM(const char *name, UINT cp) { /* Open a directory - MultiByte char version */
-  WCHAR wszName[PATH_MAX];
-  int n;
+DIR *opendirM(const char *pszName, UINT cp) { /* Open a directory - MultiByte char version */
+  WCHAR *pwszName;
+  DIR *result;
 
   /* Convert the pathname to a unicode string, with the proper extension prefixes if it's longer than 260 bytes */
-  n = MultiByteToWidePath(cp,			/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
-    			  name,			/* lpMultiByteStr, */
-			  wszName,		/* lpWideCharStr, */
-			  COUNTOF(wszName)	/* cchWideChar, */
-			  );
-  if (!n) {
-    errno = Win32ErrorToErrno();
-    DEBUG_PRINTF(("opendirM(\"%s\"); // Can't convert name to Unicode: errno=%d - %s\n", name, errno, strerror(errno)));
-    return NULL;
-  }
+  pwszName = MultiByteToNewWidePath(cp, pszName);
+  if (!pwszName) return NULL;
 
-  return opendirW(wszName);
+  result = opendirW(pwszName);
+  free(pwszName);
+  return result;
 }
 
 int closedir(DIR *pDir) { /* Close the directory. Return 0 if successful, -1 if not. */
   DEBUG_PRINTF(("closedir(0x%p);\n", pDir));
   if (pDir) {
+    free(pDir->pwszDirName);
     if (pDir->hFindFile != INVALID_HANDLE_VALUE) FindClose(pDir->hFindFile);
     pDir->hFindFile = INVALID_HANDLE_VALUE;
     free(pDir);
@@ -344,21 +347,27 @@ _dirent *readdirW(DIR *pDir) {
   int n;
   DEBUG_CODE(
   char szTime[40];
-  char szUtf8[UTF8_PATH_MAX];
+  char *pszUtf8;
   )
 
   DEBUG_ENTER(("readdir(0x%p);\n", pDir));
 
   if (pDir->hFindFile == INVALID_HANDLE_VALUE) {
-    WCHAR wszPattern[MAX_PATH+5];
-    lstrcpyW(wszPattern, pDir->wszDirName);
-    n = lstrlenW(wszPattern);
-    if (n && (wszPattern[n-1] != L'\\') && (wszPattern[n-1] != L':')) wszPattern[n++] = L'\\';
-    lstrcpyW(wszPattern+n, L"*.*");
-    pDir->hFindFile = FindFirstFileW(wszPattern, &pDir->wfd);
-    if (pDir->hFindFile == INVALID_HANDLE_VALUE) {
-      iErr = Win32ErrorToErrno();
-      if (!iErr) iErr = ENOENT;
+    WCHAR *pwszPattern;
+    n = lstrlenW(pDir->pwszDirName);
+    pwszPattern = malloc(sizeof(WCHAR) * (n + 5)); /* Room for wszDirName + "\*.*" */
+    if (pwszPattern) {
+      lstrcpyW(pwszPattern, pDir->pwszDirName);
+      if (n && (pwszPattern[n-1] != L'\\') && (pwszPattern[n-1] != L':')) pwszPattern[n++] = L'\\';
+      lstrcpyW(pwszPattern+n, L"*.*");
+      pDir->hFindFile = FindFirstFileW(pwszPattern, &pDir->wfd);
+      if (pDir->hFindFile == INVALID_HANDLE_VALUE) {
+	iErr = Win32ErrorToErrno();
+	if (!iErr) iErr = ENOENT;
+      }
+      free(pwszPattern);
+    } else {
+      iErr = errno; /* ENOMEM */
     }
   } else {
     iErr = !FindNextFileW(pDir->hFindFile, &pDir->wfd);
@@ -394,22 +403,43 @@ check_attr_again:
     switch (dwTag) {
       case IO_REPARSE_TAG_MOUNT_POINT:	/* NTFS junction or mount point */
 	{ /* We must read the link to distinguish junctions from mount points. */
-	WCHAR wszPath[PATH_MAX];
-	WCHAR wszBuf[PATH_MAX];
-	ssize_t n = lstrlenW(pDir->wszDirName);
-	if ((n + 1 + lstrlenW(pDir->wfd.cFileName)) >= PATH_MAX) {
-	  errno = ENAMETOOLONG; /* DIRNAME\LINKNAME won't fit in wszPath[] */
-	  DEBUG_LEAVE(("return NULL; // errno=%d - %s\n", errno, strerror(errno)));
+	WCHAR *pwszPath = NULL;
+	WCHAR *pwszBuf = NULL;
+	ssize_t n = lstrlenW(pDir->pwszDirName);
+	ssize_t lwPath = n + 1 + lstrlenW(pDir->wfd.cFileName) + 1;
+	ssize_t lwBuf = PATH_MAX; /* This will be sufficient in most cases, If not, the buf will be extended below */
+	pwszPath = malloc(sizeof(WCHAR) * lwPath);
+	if (!pwszPath) {
+return_ENOMEM:
+	  DEBUG_LEAVE(("return NULL; // Out of memory\n"));
+	  return NULL;
 	}
 	bIsMountPoint = TRUE;
-	lstrcpyW(wszPath, pDir->wszDirName);
-	if (n && (wszPath[n-1] != L'\\')) wszPath[n++] = L'\\';
-	lstrcpyW(wszPath+n, pDir->wfd.cFileName);
-	n = readlinkW(wszPath, wszBuf, COUNTOF(wszBuf));
+	lstrcpyW(pwszPath, pDir->pwszDirName);
+	if (n && (pwszPath[n-1] != L'\\')) pwszPath[n++] = L'\\';
+	lstrcpyW(pwszPath+n, pDir->wfd.cFileName);
+realloc_wBuf:
+	pwszBuf = malloc(sizeof(WCHAR) * lwBuf);
+	if (!pwszBuf) {
+	  free(pwszPath);
+	  goto return_ENOMEM;
+	}
+	n = readlinkW(pwszPath, pwszBuf, lwBuf);
 	/* Junction targets are absolute pathnames, starting with a drive letter. Ex: C: */
 	/* readlink() fails if the reparse point does not target a valid pathname */
-	if (n < 0) goto this_is_not_a_symlink; /* This is not a junction. */
+	if (n < 0) {
+	  if (errno == ENAMETOOLONG) { /* The output buffer was too small. Retry with a bigger one */
+	    free(pwszBuf); /* No need to copy the old content */
+	    lwBuf *= 2;
+	    goto realloc_wBuf;
+	  }
+	  free(pwszPath);
+	  free(pwszBuf);
+	  goto this_is_not_a_symlink; /* This is not a junction. */
+	}
 	bIsJunction = TRUE; /* Else this is a junction. Fall through to the symlink case. */
+	free(pwszPath);
+	free(pwszBuf);
 	} 	      
       case IO_REPARSE_TAG_SYMLINK:		/* NTFS symbolic link */
       case IO_REPARSE_TAG_NFS:			/* NFS symbolic link */
@@ -438,13 +468,14 @@ this_is_not_a_symlink:
   (*(ULARGE_INTEGER *)&(pDirent->d_filesize)).LowPart = pDir->wfd.nFileSizeLow;
   (*(ULARGE_INTEGER *)&(pDirent->d_filesize)).HighPart = pDir->wfd.nFileSizeHigh;
 
-  DEBUG_WSTR2UTF8((WCHAR *)(pDirent->d_name), szUtf8, sizeof(szUtf8));
+  DEBUG_WSTR2NEWUTF8((WCHAR *)(pDirent->d_name), pszUtf8);
   DEBUG_LEAVE(("return 0x%p; // %s 0x%05X %10lld %s\n",
 		pDirent,
 		Filetime2String(&pDirent->d_LastWriteTime, szTime, sizeof(szTime)),
 		(int)(pDirent->d_attribs),
 		pDirent->d_filesize,
-		szUtf8));
+		pszUtf8));
+  DEBUG_FREEUTF8(pszUtf8);
   return &(pDir->sDirent);
 }
 

@@ -4,15 +4,16 @@
 *									      *
 *   Description	    Updated utime() and port of standard C library's lutime() *
 *                                                                             *
-*   Notes	    TO DO: Create W, A, U versions of ResolveLinks(), then    *
-*		    	   create W, A, U versions of utime().		      *
-*		    							      *
+*   Notes	    							      *
+*                                                                             *
 *   History								      *
 *    2014-02-12 JFL Created this module.				      *
 *    2014-06-04 JFL Fixed minors issues in debugging code.		      *
 *    2014-07-02 JFL Added support for pathnames >= 260 characters. 	      *
 *    2016-08-25 JFL Added missing routine utimeA().                	      *
 *    2017-05-31 JFL Get strerror() prototype from string.h.                   *
+*    2017-10-03 JFL Fixed support for pathnames >= 260 characters. 	      *
+*                   Added common routines xxxxM, called by xxxxA and xxxxU.   *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -103,10 +104,11 @@ int lutimeW(const WCHAR *path, const struct utimbuf *times) {
 
   DEBUG_CODE({
     char buf[100];
-    char szUtf8[UTF8_PATH_MAX];
+    char *pszUtf8;
     Utimbuf2String(buf, sizeof(buf), times);
-    DEBUG_WSTR2UTF8(path, szUtf8, sizeof(szUtf8));
-    DEBUG_ENTER(("lutime(\"%s\", %s);\n", szUtf8, buf));
+    DEBUG_WSTR2NEWUTF8(path, pszUtf8);
+    DEBUG_ENTER(("lutime(\"%s\", %s);\n", pszUtf8, buf));
+    DEBUG_FREEUTF8(pszUtf8);
   });
 
   dwAttr = GetFileAttributesW(path);
@@ -136,40 +138,27 @@ int lutimeW(const WCHAR *path, const struct utimbuf *times) {
   RETURN_INT_COMMENT(iErr, ("errno = %d\n", iErr ? errno : 0));
 }
 
-int lutimeA(const char *path, const struct utimbuf *times) {
-  WCHAR wszPath[PATH_MAX];
-  int n;
+int lutimeM(const char *path, const struct utimbuf *times, UINT cp) {
+  WCHAR *pwszPath;
+  int iRet;
 
   /* Convert the pathname to a unicode string, with the proper extension prefixes if it's longer than 260 bytes */
-  n = MultiByteToWidePath(CP_ACP,		/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
-    			  path,			/* lpMultiByteStr, */
-			  wszPath,		/* lpWideCharStr, */
-			  COUNTOF(wszPath)	/* cchWideChar, */
-			  );
-  if (!n) {
-    errno = Win32ErrorToErrno();
-    DEBUG_ENTER(("lutimeA(\"%s\", %p);\n", path, times));
+  pwszPath = MultiByteToNewWidePath(cp, path);
+  if (!pwszPath) {
+    DEBUG_ENTER(("lutimeM(\"%s\", %p);\n", path, times));
     RETURN_INT_COMMENT(-1, ("errno=%d - %s\n", errno, strerror(errno)));
   }
-  return lutimeW(wszPath, times);
+  iRet = lutimeW(pwszPath, times);
+  free(pwszPath);
+  return iRet;
+}
+
+int lutimeA(const char *path, const struct utimbuf *times) {
+  return lutimeM(path, times, CP_ACP);
 }
 
 int lutimeU(const char *path, const struct utimbuf *times) {
-  WCHAR wszPath[PATH_MAX];
-  int n;
-
-  /* Convert the pathname to a unicode string, with the proper extension prefixes if it's longer than 260 bytes */
-  n = MultiByteToWidePath(CP_UTF8,		/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
-    			  path,			/* lpMultiByteStr, */
-			  wszPath,		/* lpWideCharStr, */
-			  COUNTOF(wszPath)	/* cchWideChar, */
-			  );
-  if (!n) {
-    errno = Win32ErrorToErrno();
-    DEBUG_ENTER(("lutimeU(\"%s\", %p);\n", path, times));
-    RETURN_INT_COMMENT(-1, ("errno=%d - %s\n", errno, strerror(errno)));
-  }
-  return lutimeW(wszPath, times);
+  return lutimeM(path, times, CP_UTF8);
 }
 
 /* Same as 'utime', but takes an open file descriptor instead of a name. */
@@ -178,39 +167,29 @@ int futime(int fd, const struct utimbuf *times) {
 }
 
 /* Change the file access time to times->actime and its modification time to times->modtime. */
-int utimeA(const char *file, const struct utimbuf *times) {
-  char buf[PATH_MAX];
+int utimeM(const char *file, const struct utimbuf *times, UINT cp) {
+  char buf[UTF8_PATH_MAX]; /* Will be more than enough in all cases */
   int iErr;
 
   DEBUG_CODE({
-    char buf[100];
-    Utimbuf2String(buf, sizeof(buf), times);
-    DEBUG_ENTER(("utime(\"%s\", %s);\n", file, buf));
+    char szTimes[100];
+    Utimbuf2String(szTimes, sizeof(szTimes), times);
+    DEBUG_ENTER(("utime(\"%s\", %s);\n", file, szTimes));
   });
 
-  iErr = ResolveLinksA(file, buf, sizeof(buf));
+  iErr = ResolveLinksM(file, buf, sizeof(buf), cp);
   if (iErr) RETURN_INT_COMMENT(iErr, ("Cannot resolve the link\n"));
 
-  iErr = lutimeA(buf, times);
+  iErr = lutimeM(buf, times, cp);
   RETURN_INT_COMMENT(iErr, ("errno = %d\n", iErr ? errno : 0));
 }
 
-/* Change the file access time to times->actime and its modification time to times->modtime. */
+int utimeA(const char *file, const struct utimbuf *times) {
+  return utimeM(file, times, CP_ACP);
+}
+
 int utimeU(const char *file, const struct utimbuf *times) {
-  char buf[UTF8_PATH_MAX];
-  int iErr;
-
-  DEBUG_CODE({
-    char buf[100];
-    Utimbuf2String(buf, sizeof(buf), times);
-    DEBUG_ENTER(("utime(\"%s\", %s);\n", file, buf));
-  });
-
-  iErr = ResolveLinksU(file, buf, sizeof(buf));
-  if (iErr) RETURN_INT_COMMENT(iErr, ("Cannot resolve the link\n"));
-
-  iErr = lutimeU(buf, times);
-  RETURN_INT_COMMENT(iErr, ("errno = %d\n", iErr ? errno : 0));
+  return utimeM(file, times, CP_UTF8);
 }
 
 #endif /* defined(_WIN32) */

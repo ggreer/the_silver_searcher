@@ -4,9 +4,8 @@
 *									      *
 *   Description:    WIN32 port of standard C library's *utimes()	      *
 *                                                                             *
-*   Notes:	    TO DO: Create W, A, U versions of ResolveLinks(), then    *
-*		    	   create W, A, U versions of utimes().		      *
-*		    							      *
+*   Notes:	    							      *
+*                                                                             *
 *   History:								      *
 *    2014-02-07 JFL Created this module.				      *
 *    2014-03-24 JFL Renamed "statx.h" as the standard <sys/stat.h>.	      *
@@ -14,6 +13,8 @@
 *    2014-06-04 JFL Added handling of UTIME_NOW and UTIME_OMIT.		      *
 *    2014-07-02 JFL Added support for pathnames >= 260 characters. 	      *
 *    2017-05-31 JFL Get strerror() prototype from string.h.                   *
+*    2017-10-03 JFL Fixed support for pathnames >= 260 characters. 	      *
+*                   Added common routines xxxxM, called by xxxxA and xxxxU.   *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -124,10 +125,11 @@ int lutimesW(const WCHAR *path, const struct timeval tvp[2]) {
 
   DEBUG_CODE({
     char buf[100];
-    char szUtf8[UTF8_PATH_MAX];
+    char *pszUtf8;
     Timeval2String(buf, sizeof(buf), tvp+1);
-    DEBUG_WSTR2UTF8(path, szUtf8, sizeof(szUtf8));
-    DEBUG_ENTER(("lutimes(\"%s\", %s);\n", szUtf8, buf));
+    DEBUG_WSTR2NEWUTF8(path, pszUtf8);
+    DEBUG_ENTER(("lutimes(\"%s\", %s);\n", pszUtf8, buf));
+    DEBUG_FREEUTF8(pszUtf8);
   });
 
   dwAttr = GetFileAttributesW(path);
@@ -157,40 +159,27 @@ int lutimesW(const WCHAR *path, const struct timeval tvp[2]) {
   RETURN_INT_COMMENT(iErr, ("errno = %d\n", iErr ? errno : 0));
 }
 
-int lutimesA(const char *path, const struct timeval tvp[2]) {
-  WCHAR wszPath[PATH_MAX];
-  int n;
+int lutimesM(const char *path, const struct timeval tvp[2], UINT cp) {
+  WCHAR *pwszPath;
+  int iRet;
 
   /* Convert the pathname to a unicode string, with the proper extension prefixes if it's longer than 260 bytes */
-  n = MultiByteToWidePath(CP_ACP,		/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
-    			  path,			/* lpMultiByteStr, */
-			  wszPath,		/* lpWideCharStr, */
-			  COUNTOF(wszPath)	/* cchWideChar, */
-			  );
-  if (!n) {
-    errno = Win32ErrorToErrno();
-    DEBUG_ENTER(("lutimesA(\"%s\", %p);\n", path, tvp));
+  pwszPath = MultiByteToNewWidePath(cp, path);
+  if (!pwszPath) {
+    DEBUG_ENTER(("lutimesM(\"%s\", %p);\n", path, tvp));
     RETURN_INT_COMMENT(-1, ("errno=%d - %s\n", errno, strerror(errno)));
   }
-  return lutimesW(wszPath, tvp);
+  iRet = lutimesW(pwszPath, tvp);
+  free(pwszPath);
+  return iRet;
+}
+
+int lutimesA(const char *path, const struct timeval tvp[2]) {
+  return lutimesM(path, tvp, CP_ACP);
 }
 
 int lutimesU(const char *path, const struct timeval tvp[2]) {
-  WCHAR wszPath[PATH_MAX];
-  int n;
-
-  /* Convert the pathname to a unicode string, with the proper extension prefixes if it's longer than 260 bytes */
-  n = MultiByteToWidePath(CP_UTF8,		/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
-    			  path,			/* lpMultiByteStr, */
-			  wszPath,		/* lpWideCharStr, */
-			  COUNTOF(wszPath)	/* cchWideChar, */
-			  );
-  if (!n) {
-    errno = Win32ErrorToErrno();
-    DEBUG_ENTER(("lutimesU(\"%s\", %p);\n", path, tvp));
-    RETURN_INT_COMMENT(-1, ("errno=%d - %s\n", errno, strerror(errno)));
-  }
-  return lutimesW(wszPath, tvp);
+  return lutimesM(path, tvp, CP_UTF8);
 }
 
 /* Same as 'utimes', but takes an open file descriptor instead of a name. */
@@ -199,21 +188,29 @@ int futimes(int fd, const struct timeval tvp[2]) {
 }
 
 /* Change the file access time to tvp[0] and its modification time to tvp[1]. */
-int utimes(const char *file, const struct timeval tvp[2]) {
-  char buf[UTF8_PATH_MAX];
+int utimesM(const char *file, const struct timeval tvp[2], UINT cp) {
+  char buf[UTF8_PATH_MAX]; /* Will be more than enough in all cases */
   int iErr;
 
   DEBUG_CODE({
-    char buf[100];
-    Timeval2String(buf, sizeof(buf), tvp+1);
-    DEBUG_ENTER(("utimes(\"%s\", %s);\n", file, buf));
+    char szTimes[100];
+    Timeval2String(szTimes, sizeof(szTimes), tvp+1);
+    DEBUG_ENTER(("utimes(\"%s\", %s);\n", file, szTimes));
   });
 
-  iErr = ResolveLinksU(file, buf, sizeof(buf));
+  iErr = ResolveLinksM(file, buf, sizeof(buf), cp);
   if (iErr) RETURN_INT_COMMENT(iErr, ("Cannot resolve the link\n"));
 
-  iErr = lutimesU(buf, tvp);
+  iErr = lutimesM(buf, tvp, cp);
   RETURN_INT_COMMENT(iErr, ("errno = %d\n", iErr ? errno : 0));
+}
+
+int utimesA(const char *file, const struct timeval tvp[2]) {
+  return utimesM(file, tvp, CP_ACP);
+}
+
+int utimesU(const char *file, const struct timeval tvp[2]) {
+  return utimesM(file, tvp, CP_UTF8);
 }
 
 #endif /* defined(_WIN32) */

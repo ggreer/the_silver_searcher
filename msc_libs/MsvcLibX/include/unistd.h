@@ -113,6 +113,7 @@ pid_t getppid(void);	/* Get parent PID */
 #define realpath realpathA
 #define CompactPath CompactPathA
 #endif
+int CompactPathW(const WCHAR *path, WCHAR *outbuf, size_t bufsize); /* A proprietary subroutine, that cleans up . and .. parts. */
 #endif /* defined(_WIN32) */
 char *realpath(const char *path, char *buf); /* Posix routine, normally defined in stdlib.h. Output buf must contain PATH_MAX bytes */
 int CompactPath(const char *path, char *outbuf, size_t bufsize); /* A proprietary subroutine, that cleans up . and .. parts. */
@@ -171,6 +172,7 @@ DWORD GetReparseTagW(const WCHAR *path);				    /* MsvcLibX Get a Repase Point t
 DWORD GetReparseTagM(const char *path, UINT cp);			    /* MsvcLibX Get a Repase Point tag - MultiByte char version */
 #define GetReparseTagA(path) GetReparseTagM(path, CP_ACP)		    /* MsvcLibX Get a Repase Point tag - ANSI version */
 #define GetReparseTagU(path) GetReparseTagM(path, CP_UTF8)		    /* MsvcLibX Get a Repase Point tag - ANSI version */
+int ResolveLinksM(const char *path, char *buf, size_t bufsize, UINT cp);    /* Resolve pathnames with symlinks, symlinkds, and junctions */
 int ResolveLinksA(const char *path, char *buf, size_t bufsize);		    /* Resolve pathnames with symlinks, symlinkds, and junctions */
 int ResolveLinksU(const char *path, char *buf, size_t bufsize);		    /* Resolve pathnames with symlinks, symlinkds, and junctions */
 int ResolveTailLinksW(const WCHAR *path, WCHAR *buf, size_t bufsize);	    /* Resolve node names with symlinks, symlinkds, and junctions */

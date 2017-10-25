@@ -11,6 +11,7 @@
 *    2014-02-28 JFL Added support for UTF-8 pathnames.                 	      *
 *    2014-06-30 JFL Added support for 32K Unicode paths.           	      *
 *    2017-03-18 JFL Created this module, with 3 versions unlink[AUM]().       *
+*    2017-10-03 JFL Fixed support for pathnames >= 260 characters. 	      *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -55,12 +56,11 @@ int unlinkM(const char *path, UINT cp) {
   int iErr;
   BOOL bDone;
   struct stat st;
-  WCHAR wszName[UNICODE_PATH_MAX];
-  int n;
+  WCHAR *pwszName;
 
   DEBUG_ENTER(("unlink(\"%s\");\n", path));
 
-  iErr = lstat(path, &st);
+  iErr = lstat(path, &st); /* TODO: Change this to lstatM() or lstatW when available */
   if (iErr) RETURN_INT(iErr);
 
   if ((!S_ISREG(st.st_mode)) && (!S_ISLNK(st.st_mode))) {
@@ -69,24 +69,17 @@ int unlinkM(const char *path, UINT cp) {
   }
 
   /* Convert the pathname to a unicode string, with the proper extension prefixes if it's longer than 260 bytes */
-  n = MultiByteToWidePath(cp,   		/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
-    			  path,			/* lpMultiByteStr, */
-			  wszName,		/* lpWideCharStr, */
-			  UNICODE_PATH_MAX	/* cchWideChar, */
-			  );
-  if (!n) {
-    errno = Win32ErrorToErrno();
-    RETURN_INT_COMMENT(-1, ("errno=%d - %s\n", errno, strerror(errno)));
-  }
+  pwszName = MultiByteToNewWidePath(cp, path);
+  if (!pwszName) RETURN_INT_COMMENT(-1, ("errno=%d - %s\n", errno, strerror(errno)));
 
 #if _MSVCLIBX_STAT_DEFINED
   if (S_ISLNK(st.st_mode) && (st.st_Win32Attrs & FILE_ATTRIBUTE_DIRECTORY)) {
     /* This link is a junction or a symlinkd */
-    bDone = RemoveDirectoryW(wszName);
+    bDone = RemoveDirectoryW(pwszName);
   } else
 #endif
-  bDone = DeleteFileW(wszName);
-
+  bDone = DeleteFileW(pwszName);
+  free(pwszName);
   if (bDone) {
     RETURN_INT_COMMENT(0, ("Success\n"));
   } else {

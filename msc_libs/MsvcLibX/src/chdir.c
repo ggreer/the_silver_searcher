@@ -9,6 +9,7 @@
 *   History:								      *
 *    2014-02-28 JFL Created this module.				      *
 *    2014-07-02 JFL Added support for pathnames >= 260 characters. 	      *
+*    2017-10-03 JFL Fixed support for pathnames >= 260 characters. 	      *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -41,6 +42,7 @@
 |									      |
 |   History:								      |
 |     2000-12-04 JFL Initial implementation.				      |
+|    2017-10-03 JFL Removed the dependency on PATH_MAX and fixed size buffers.|
 *									      *
 \*---------------------------------------------------------------------------*/
 
@@ -104,43 +106,35 @@ int chdir(const char *pszDir)
 |   History:								      |
 |    2014-02-28 JFL Created this routine                               	      |
 |    2014-07-02 JFL Added support for pathnames >= 260 characters. 	      |
+|                   Added common routine chdirM, called by chdirA and chdirU. |
 *									      *
 \*---------------------------------------------------------------------------*/
 
-int chdirA(const char *pszDir) {
-  WCHAR wszDir[PATH_MAX];
+int chdirM(const char *pszDir, UINT cp) {
+  WCHAR *pwszDir;
   BOOL bDone;
-  int n;
+
   DEBUG_PRINTF(("chdir(\"%s\");\n", pszDir));
+
   /* Convert the pathname to a unicode string, with the proper extension prefixes if it's longer than 260 bytes */
-  n = MultiByteToWidePath(CP_ACP,		/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
-    			  pszDir,		/* lpMultiByteStr, */
-			  wszDir,		/* lpWideCharStr, */
-			  COUNTOF(wszDir)	/* cchWideChar, */
-			  );
-  bDone = SetCurrentDirectoryW(wszDir);
+  pwszDir = MultiByteToNewWidePath(cp, pszDir);
+  if (!pwszDir) return -1;
+
+  bDone = SetCurrentDirectoryW(pwszDir);
+  free(pwszDir);
   if (!bDone) {
     errno = Win32ErrorToErrno();
+    return -1;
   }
-  return bDone ? 0 : -1;
+  return 0;
+}
+
+int chdirA(const char *pszDir) {
+  return chdirM(pszDir, CP_ACP);
 }
 
 int chdirU(const char *pszDir) {
-  WCHAR wszDir[PATH_MAX];
-  BOOL bDone;
-  int n;
-  DEBUG_PRINTF(("chdir(\"%s\");\n", pszDir));
-  /* Convert the pathname to a unicode string, with the proper extension prefixes if it's longer than 260 bytes */
-  n = MultiByteToWidePath(CP_UTF8,		/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
-    			  pszDir,		/* lpMultiByteStr, */
-			  wszDir,		/* lpWideCharStr, */
-			  COUNTOF(wszDir)	/* cchWideChar, */
-			  );
-  bDone = SetCurrentDirectoryW(wszDir);
-  if (!bDone) {
-    errno = Win32ErrorToErrno();
-  }
-  return bDone ? 0 : -1;
+  return chdirM(pszDir, CP_UTF8);
 }
 
 #endif /* defined(_WIN32) */

@@ -13,6 +13,7 @@
 *    2017-03-18 JFL Bug fix: Only change Xlation when writing to a valid file.*
 *    2017-04-27 JFL Fixed 2017-03-18 bug: Failures returned a wrong errno.    *
 *    2017-05-12 JFL Correctly indent the debug output.                        *
+*    2017-10-03 JFL Fixed support for pathnames >= 260 characters. 	      *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -49,11 +50,12 @@
 |   History								      |
 |    2014-03-04 JFL Created this routine.                      		      |
 |    2014-07-01 JFL Added support for pathnames >= 260 characters. 	      |
+|    2017-10-03 JFL Removed the dependency on PATH_MAX and fixed size buffers.|
 *                                                                             *
 \*---------------------------------------------------------------------------*/
 
 FILE *fopenM(const char *pszName, const char *pszMode, UINT cp) {
-  WCHAR wszName[UNICODE_PATH_MAX];
+  WCHAR *pwszName;
   WCHAR wszMode[20];
   int n;
   FILE *hFile;
@@ -61,15 +63,8 @@ FILE *fopenM(const char *pszName, const char *pszMode, UINT cp) {
   int iMode;
 
   /* Convert the pathname to a unicode string, with the proper extension prefixes if it's longer than 260 bytes */
-  n = MultiByteToWidePath(cp,			/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
-    			  pszName,		/* lpMultiByteStr, */
-			  wszName,		/* lpWideCharStr, */
-			  COUNTOF(wszName)	/* cchWideChar, */
-			  );
-  if (!n) {
-    errno = Win32ErrorToErrno();
-    return NULL;
-  }
+  pwszName = MultiByteToNewWidePath(cp, pszName);
+  if (!pwszName) return NULL;
 
   /* Convert the mode to a unicode string. This is not a pathname, so just do a plain conversion */
   n = MultiByteToWideChar(cp,			/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
@@ -81,16 +76,18 @@ FILE *fopenM(const char *pszName, const char *pszMode, UINT cp) {
 			  );
   if (!n) {
     errno = Win32ErrorToErrno();
+    free(pwszName);
     return NULL;
   }
 
-  /* return _wfopen(wszName, wszMode); */
+  /* return _wfopen(pwszName, wszMode); */
   DEBUG_CODE({
-    char szUtf8[UTF8_PATH_MAX];
-    DEBUG_WSTR2UTF8(wszName, szUtf8, sizeof(szUtf8));
-    DEBUG_ENTER(("_wfopen(\"%s\", \"%s\");\n", szUtf8, pszMode));
+    char *pszUtf8;
+    DEBUG_WSTR2NEWUTF8(pwszName, pszUtf8);
+    DEBUG_ENTER(("_wfopen(\"%s\", \"%s\");\n", pszUtf8, pszMode));
+    DEBUG_FREEUTF8(pszUtf8);
   });
-  hFile = _wfopen(wszName, wszMode);
+  hFile = _wfopen(pwszName, wszMode);
 
   /* Find out the initial translation mode, and change it if appropriate */
   if (hFile && (strchr(pszMode, 'w') || strchr(pszMode, 'a'))) {
@@ -102,6 +99,7 @@ FILE *fopenM(const char *pszName, const char *pszMode, UINT cp) {
     _setmodeX(iFile, iMode);		/* Restore the initial mode */
   }
 
+  free(pwszName);
   DEBUG_LEAVE(("return 0x%p;\n", hFile));
   return hFile;
 }

@@ -16,6 +16,7 @@
 *    2014-03-24 JFL Renamed "statx.h" as the standard <sys/stat.h>.	      *
 *    2014-06-30 JFL Added support for 32K Unicode paths.           	      *
 *    2017-03-18 JFL Moved unlink() and rmdir() to their own source files.     *
+*    2017-10-05 JFL Removed one huge buffer on stack, to lower stack usage.   *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -130,8 +131,7 @@ int lstat(const char *path, struct stat *pStat) {
   DEBUG_CODE(
   char szTime[100];
   )
-  WCHAR wszName[UNICODE_PATH_MAX];
-  int n;
+  WCHAR *pwszName = NULL;
 
   DEBUG_ENTER((STRINGIZE(lstat) "(\"%s\", 0x%p);\n", path, pStat));
 
@@ -150,19 +150,13 @@ int lstat(const char *path, struct stat *pStat) {
 #endif
 
   /* Convert the pathname to a unicode string, with the proper extension prefixes if it's longer than 260 bytes */
-  n = MultiByteToWidePath(CP_UTF8,		/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
-    			  path,			/* lpMultiByteStr, */
-			  wszName,		/* lpWideCharStr, */
-			  UNICODE_PATH_MAX	/* cchWideChar, */
-			  );
-  if (!n) {
-    errno = Win32ErrorToErrno();
-    RETURN_INT_COMMENT(-1, ("errno=%d - %s\n", errno, strerror(errno)));
-  }
+  pwszName = MultiByteToNewWidePath(CP_UTF8, path);
+  if (!pwszName) RETURN_INT_COMMENT(-1, ("errno=%d - %s\n", errno, strerror(errno)));
 
-  bDone = GetFileAttributesExW(wszName, GetFileExInfoStandard, &fileData);
+  bDone = GetFileAttributesExW(pwszName, GetFileExInfoStandard, &fileData);
   if (!bDone) {
     errno = Win32ErrorToErrno();
+    free(pwszName);
     RETURN_INT_COMMENT(-1, ("GetFileAttributesEx(); // Failed\n"));
   }
   XDEBUG_PRINTF(("GetFileAttributesEx(); // Success\n"));
@@ -206,7 +200,7 @@ check_attr_again:
 	WCHAR wbuf[UNICODE_PATH_MAX];
 	ssize_t n;
 	bIsMountPoint = TRUE;
-	n = readlinkW(wszName, wbuf, UNICODE_PATH_MAX);
+	n = readlinkW(pwszName, wbuf, UNICODE_PATH_MAX);
 	/* Junction targets are absolute pathnames, starting with a drive letter. Ex: C: */
 	/* readlink() fails if the reparse point does not target a valid pathname */
 	if (n < 0) goto this_is_not_a_symlink; /* This is not a junction. */
@@ -247,6 +241,7 @@ this_is_not_a_symlink:
   pStat->st_ReparseTag = dwTag;
 #endif
 
+  free(pwszName);
   RETURN_INT_COMMENT(0, ("%s  mode = 0x%04X  size = %I64d bytes\n", szTime, pStat->st_mode, qwSize));
 }
 

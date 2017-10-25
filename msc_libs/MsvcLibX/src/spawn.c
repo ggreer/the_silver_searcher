@@ -9,6 +9,7 @@
 *   History:								      *
 *    2014-03-27 JFL Created this module.				      *
 *    2014-07-03 JFL Added support for pathnames >= 260 characters. 	      *
+*    2017-10-03 JFL Fixed support for pathnames >= 260 characters. 	      *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -47,7 +48,7 @@
 \*---------------------------------------------------------------------------*/
 
 intptr_t _spawnvpU(int iMode, const char *pszCommand, char *const *argv) {
-  WCHAR wszCommand[PATH_MAX];
+  WCHAR *pwszCommand;
   WCHAR **wszArgv;
   int n;
   int nArgs;
@@ -67,19 +68,15 @@ intptr_t _spawnvpU(int iMode, const char *pszCommand, char *const *argv) {
   })
 
   /* Convert the pathname to a unicode string, with the proper extension prefixes if it's longer than 260 bytes */
-  n = MultiByteToWidePath(CP_UTF8,		/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
-    			  pszCommand,		/* lpMultiByteStr, */
-			  wszCommand,		/* lpWideCharStr, */
-			  COUNTOF(wszCommand)	/* cchWideChar, */
-			  );
-  if (!n) {
-    errno = Win32ErrorToErrno();
-    return -1;
-  }
+  pwszCommand = MultiByteToNewWidePath(CP_UTF8, pszCommand);
+  if (!pwszCommand) return -1;
 
   for (nArgs=0; argv[nArgs]; nArgs++) ;	/* Count the number of arguments */
   wszArgv = (WCHAR **)malloc((nArgs+1) * sizeof(WCHAR *));
-  if (!wszArgv) return -1;    /* errno already set by malloc */
+  if (!wszArgv) {
+    free(pwszCommand);
+    return -1;    /* errno already set by malloc */
+  }
 
   for (iArg=0; argv[iArg]; iArg++) {	/* Convert every argument */
     int iArgBufSize = lstrlen(argv[iArg]) + 1;
@@ -87,6 +84,7 @@ intptr_t _spawnvpU(int iMode, const char *pszCommand, char *const *argv) {
     if (!wszArgv[iArg]) {
       while (iArg) free(wszArgv[--iArg]);	/* Free the partial arg list */
       free(wszArgv);
+      free(pwszCommand);
       return -1;      /* errno already set by malloc */
     }
     /* Convert the argument to a unicode string. This is not a pathname, so just do a plain conversion */
@@ -101,15 +99,17 @@ intptr_t _spawnvpU(int iMode, const char *pszCommand, char *const *argv) {
       errno = Win32ErrorToErrno();
       while (iArg >= 0) free(wszArgv[iArg--]);	/* Free the partial arg list */
       free(wszArgv);
+      free(pwszCommand);
       return -1;
     }
   }
   wszArgv[nArgs] = NULL;
 
-  iRet = _wspawnvp(iMode, wszCommand, wszArgv);
+  iRet = _wspawnvp(iMode, pwszCommand, wszArgv);
 
   while (nArgs) free(wszArgv[--nArgs]);	/* Free the full arg list */
   free(wszArgv);
+  free(pwszCommand);
   return iRet;
 }
 

@@ -73,13 +73,17 @@ extern int Win32ErrorToErrno(); /* Converts the last WIN32 error to a Posix erro
 #endif
 /* Convert an ANSI or UTF-8 or OEM pathname to a Unicode string. Defined in mb2wpath.c. */
 typedef unsigned int UINT;  /* Defined in windef.h */
+typedef char* LPSTR; /* Defined in winnt.h */
 typedef const char* LPCSTR; /* Defined in winnt.h */
 #ifndef _WCHAR_T_DEFINED
 typedef unsigned short wchar_t; /* Defined in crtdefs.h */
 #define _WCHAR_T_DEFINED
 #endif
 typedef wchar_t* LPWSTR;    /* Defined in winnt.h */
+/* Routines in mb2wpath.c */
 extern int MultiByteToWidePath(UINT nCodePage, LPCSTR pszName, LPWSTR pwszName, int nWideBufSize);
+extern LPWSTR MultiByteToNewWidePath(UINT nCodePage, LPCSTR pszName);
+extern int TrimLongPathPrefix(LPSTR pszName); /* Remove \\?\ and \\?\UNC\ prefixes */
 #endif
 /* Count the number of elements in an array */
 #define COUNTOF(array) (sizeof(array)/sizeof(array[0]))
