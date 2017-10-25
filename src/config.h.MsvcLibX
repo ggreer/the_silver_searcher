@@ -85,9 +85,6 @@
 /* Define to the full name of this package. */
 #define PACKAGE_NAME "the_silver_searcher"
 
-/* Define to the full name and version of this package. */
-#define PACKAGE_STRING "the_silver_searcher 2.1.1"
-
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "the_silver_searcher"
 
@@ -95,7 +92,10 @@
 #define PACKAGE_URL "https://github.com/ggreer/the_silver_searcher"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "2.1.1"
+#define PACKAGE_VERSION "2.1.2"
+
+/* Define to the full name and version of this package. */
+#define PACKAGE_STRING "the_silver_searcher " PACKAGE_VERSION
 
 /* Define to necessary symbol if this constant uses a non-standard name on
    your system. */
