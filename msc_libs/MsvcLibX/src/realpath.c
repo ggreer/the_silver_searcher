@@ -24,6 +24,7 @@
 *    2016-09-13 JFL Resize output buffers, to avoid wasting lots of memory.   *
 *    2017-10-03 JFL Added an ugly version of ResolveLinksM. To be fixed.      *
 *    2017-10-04 JFL Added WIN32 routine CompactPathW().			      *
+*    2017-10-30 JFL Added support for UNC paths in CompactPath[W]().	      *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -84,6 +85,12 @@ int CompactPath(const char *path, char *outbuf, size_t bufsize) {
   inSize = (int)strlen(path) + 1;
   pcOut = outbuf;
   outSize = (int)bufsize;
+
+  if ((pcIn[0] == '\\') && (pcIn[1] == '\\')) { /* This is a \\server\share UNC path */
+    *(pcOut++) = *(pcIn++); /* Copy the initial first \, so that the remainder looks like an absolute path */
+    inSize -= 1;
+    outSize -= 1;
+  }
 
   if (*pcIn && (pcIn[1] == ':')) { /* There's a drive letter */
     *(pcOut++) = *(pcIn++);		/* Copy it */
@@ -302,6 +309,12 @@ int CompactPathW(const WCHAR *path, WCHAR *outbuf, size_t bufsize) {
   inSize = (int)lstrlenW(path) + 1;
   pcOut = outbuf;
   outSize = (int)bufsize;
+
+  if ((pcIn[0] == L'\\') && (pcIn[1] == L'\\')) { /* This is a \\server\share UNC path */
+    *(pcOut++) = *(pcIn++); /* Copy the initial first \, so that the remainder looks like an absolute path */
+    inSize -= 1;
+    outSize -= 1;
+  }
 
   if (*pcIn && (pcIn[1] == L':')) { /* There's a drive letter */
     *(pcOut++) = *(pcIn++);		/* Copy it */

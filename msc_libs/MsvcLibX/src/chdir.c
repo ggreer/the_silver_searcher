@@ -101,8 +101,24 @@ int chdir(const char *pszDir)
 |									      |
 |   Parameters:     const char *pszDir	   Target directory pathname	      |
 |									      |
-|   Returns:	    0=Done; Else OS error code.		 		      |
+|   Returns:	    0=Done; -1=Failed.			 		      |
 |									      |
+|   Notes:	    Contrary to most other WIN32 APIs, SetCurrentDirectoryW() |
+|		    does NOT allow extending the path length beyond 260 bytes |
+|		    by prepending a \\?\ prefix.			      |
+|		    https://stackoverflow.com/a/44519069/2215591	      |
+|		    							      |
+|		    To fix this, use a manifest defining longPathAware=true.  |
+|		    Setting longPathAware=true will lift the 260-bytes WIN32  |
+|		    APIs limitation in Windows 10 version 1607 and later,     |
+|		    if and only if the registry value LongPathsEnabled in     |
+|		    HKLM\SYSTEM\CurrentControlSet\Control\FileSystem is set   |
+|		    to 1.						      |
+|		    							      |
+|		    If support for long path lengths in older versions of     |
+|		    Windows is desired (XP to 8), then avoid using chdir() or |
+|		    SetCurrentDirectoryW().				      |
+|		    							      |
 |   History:								      |
 |    2014-02-28 JFL Created this routine                               	      |
 |    2014-07-02 JFL Added support for pathnames >= 260 characters. 	      |
@@ -113,20 +129,22 @@ int chdir(const char *pszDir)
 int chdirM(const char *pszDir, UINT cp) {
   WCHAR *pwszDir;
   BOOL bDone;
+  int iErr = 0;
 
-  DEBUG_PRINTF(("chdir(\"%s\");\n", pszDir));
+  DEBUG_ENTER(("chdir(\"%s\");\n", pszDir));
 
   /* Convert the pathname to a unicode string, with the proper extension prefixes if it's longer than 260 bytes */
   pwszDir = MultiByteToNewWidePath(cp, pszDir);
   if (!pwszDir) return -1;
 
   bDone = SetCurrentDirectoryW(pwszDir);
-  free(pwszDir);
   if (!bDone) {
     errno = Win32ErrorToErrno();
-    return -1;
+    iErr = -1;
   }
-  return 0;
+  free(pwszDir);
+  DEBUG_QUIET_LEAVE();
+  return iErr;
 }
 
 int chdirA(const char *pszDir) {

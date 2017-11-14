@@ -40,16 +40,19 @@
 !MESSAGE Started MsvcLibX/src/NMakefile in $(MAKEDIR) # Display this make file name
 !ENDIF
 
-!IF DEFINED(OUTDIR)
-OD=$(OUTDIR)^\
-!IF "$(OUTDIR:\=)"=="$(OUTDIR)"
-LIBDIR=..\$(OUTDIR)\lib	# If OUTDIR is relative, put it in MsvcLibX top directory
-!ELSE
-LIBDIR=$(OUTDIR)\lib    # If OUTDIR is absolute, use it as is
+!IF !DEFINED(OUTDIR)
+OUTDIR=bin
+OD=bin\			# Output directory - In the default bin subdirectory
+!ELSEIF "$(OUTDIR)"=="."
+OD=			# Output directory - In the current directory
+!ELSE # It's defined and not empty
+OD=$(OUTDIR)\		# Output directory - In the specified directory
 !ENDIF
+
+!IF "$(OUTDIR:\=)"=="$(OUTDIR)"
+LIBDIR=..\$(OD)lib	# If OUTDIR is relative, put it in MsvcLibX top directory
 !ELSE
-OD=
-LIBDIR=..\lib
+LIBDIR=$(OD)lib		# If OUTDIR is absolute, use it as is
 !ENDIF
 
 MSG=>con echo		# Command for writing a progress message on the console
@@ -307,7 +310,7 @@ clean mostlyclean distclean:
     if exist $(OD)WIN64 rd /s /q $(OD)WIN64
     -if exist $(STINCLUDE)\ARM.mak $(MAKE) /$(MAKEFLAGS) /f $(STINCLUDE)\ARM.mak clean
     if exist $(OD)ARM rd /s /q $(OD)ARM
-!IF DEFINED(OUTDIR)
+!IF DEFINED(OUTDIR) && "$(OUTDIR)" != "" && "$(OUTDIR)" != "." && "$(OUTDIR)" != ".."
     -rd /S /Q $(OUTDIR) >NUL 2>&1
 !ENDIF
     -if "$@"=="distclean" del /Q config.*.bat >NUL 2>&1

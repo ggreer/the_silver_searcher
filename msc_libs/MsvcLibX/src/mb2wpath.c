@@ -16,6 +16,7 @@
 *                   Added the management of relative paths.                   *
 *    2017-10-25 JFL Fixed MultiByteToWidePath support for paths with / seps.  *
 *                   Added routine TrimLongPathPrefix().			      *
+*    2017-10-31 JFL Improved a debug message.                                 *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -78,10 +79,14 @@ LPWSTR MultiByteToNewWideString(UINT cp, DWORD dwFlags, LPCSTR pszStr) {
 |    2017-10-02 JFL Changed the return value to the string size. Was size+1.  |
 |    2017-10-04 JFL Added the management of relative paths.                   |
 |    2017-10-25 JFL Fixed support for paths with / separators.                |
+|    2017-10-30 JFL Bugfix: Don't add a \\?\ prefix if there's one already.   |
+|		    Fixed a memory leak when converting to an absolute path.  |
 *                   							      *
 \*---------------------------------------------------------------------------*/
 
 #define CRITICAL_LENGTH 240 /* Documented as 255 or 260, but some APIs (ex: CreateDirectoryW) fail between 240 and 250 */
+
+#define strncmpW(s1, s2, l) (CompareStringW(LOCALE_INVARIANT, 0, s1, l, s2, l)-2)
 
 int MultiByteToWidePath(
   UINT nCodePage,
@@ -129,17 +134,24 @@ int MultiByteToWidePath(
     iLen += lRelPath;
     iLen = CompactPathW(pwszBuf2, pwszBuf2, UNICODE_PATH_MAX);
     if (iLen >= CRITICAL_LENGTH) { /* Then processing this pathname requires prepending a special prefix */
+      DEBUG_CODE({
+	char *pszRelUtf8;
+	char *pszAbsUtf8;
+	DEBUG_WSTR2NEWUTF8(pwszName, pszRelUtf8);
+	DEBUG_WSTR2NEWUTF8(pwszBuf2, pszAbsUtf8);
+	DEBUG_PRINTF(("// Relative name \"%s\" changed to \"%s\"\n", pszRelUtf8, pszAbsUtf8));
+	DEBUG_FREEUTF8(pszRelUtf8);
+	DEBUG_FREEUTF8(pszAbsUtf8);
+      });
       free(pwszName);
       pwszName = pwszBuf2;
       lName = iLen;
-      DEBUG_CODE({
-	char *pszUtf8;
-	DEBUG_WSTR2NEWUTF8(pwszName, pszUtf8);
-	DEBUG_PRINTF(("// Relative name changed to \"%s\"\n", pszUtf8));
-	DEBUG_FREEUTF8(pszUtf8);
-      });
-      /* Then prepend it with "\\?\" to get 32K Unicode paths instead of 260-byte ANSI paths */
-      goto prepend_win32_prefix;
+      if (strncmpW(pwszName, L"\\\\?\\", 4)) { /* If there's not already one returned by GetCurrentDirectoryW() */
+	/* Then prepend it with "\\?\" to get 32K Unicode paths instead of 260-byte ANSI paths */
+	goto prepend_win32_prefix;
+      }
+    } else { /* OK, we don't need the absolute path. Free its buffer. */
+      free(pwszBuf2);
     }
   } else if (lName >= CRITICAL_LENGTH) { /* Then processing this pathname requires prepending a special prefix */
     /* See http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx */

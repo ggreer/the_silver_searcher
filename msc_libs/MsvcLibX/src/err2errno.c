@@ -50,6 +50,7 @@
 |    2014-02-05 JFL Created this routine                                      |
 |    2014-03-05 JFL Added the default call to _get_errno_from_oserr().        |
 |    2015-12-07 JFL Use the new error conversion routine name in the UCRT.    |
+|    2017-10-31 JFL Added case ERROR_FILENAME_EXCED_RANGE.		      |
 *									      *
 \*---------------------------------------------------------------------------*/
 
@@ -107,6 +108,8 @@ int Win32ErrorToErrno() {
       return EBADF; /* Not supposed to happen in Posix OSs, but may happen when experimenting with junction() IOCTLs. */
     case ERROR_NO_UNICODE_TRANSLATION:
       return EILSEQ;
+    case ERROR_FILENAME_EXCED_RANGE:
+      return ENAMETOOLONG;
     default: {
       int errno0, errno1;
       errno0 = errno; /* Preserve the initial errno */
