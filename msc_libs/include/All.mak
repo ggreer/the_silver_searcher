@@ -134,6 +134,9 @@
 #    2017-03-02 JFL Added the CLEAN_DIRS and CLEAN_FILES variables.           #
 #    2017-03-13 JFL Fix build if environment variable OS is not defined.      #
 #    2017-08-29 JFL Bugfix: The help target did output a "1 file copied" msg. #
+#    2017-10-22 JFL Changed OUTDIR default to the bin subdirectory.           #
+#    2017-10-30 JFL Corrected a typo in the help message.                     #
+#    2017-11-13 JFL Added inference rules to build a DLL.		      #
 #		    							      #
 #       © Copyright 2016-2017 Hewlett Packard Enterprise Development LP       #
 # Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 #
@@ -150,10 +153,13 @@ TMP=.
 !ENDIF
 !ENDIF
 
-!IF DEFINED(OUTDIR)
-OD=$(OUTDIR)^\
-!ELSE
-OD=
+!IF !DEFINED(OUTDIR)
+OUTDIR=bin
+OD=bin\			# Output directory - In the default bin subdirectory
+!ELSEIF "$(OUTDIR)"=="."
+OD=			# Output directory - In the current directory
+!ELSE # It's defined and not empty
+OD=$(OUTDIR)\		# Output directory - In the specified directory
 !ENDIF
 
 ###############################################################################
@@ -367,6 +373,17 @@ SUBMAKE=$(MAKE) /$(MAKEFLAGS) /F "$(MAKEFILE)" $(MAKEDEFS) # Recursive call to t
     $(IFWIN64) $(MAKE) /$(MAKEFLAGS) /f "$(MAKEPATH)\WIN64.mak" $(MAKEDEFS) $@
     $(IFARM)   $(MAKE) /$(MAKEFLAGS) /f "$(MAKEPATH)\ARM.mak"   $(MAKEDEFS) $@
 
+# Inference rule to build a makefile-defined DLL. Build BIOS, DOS, Win32, and Win64 versions.
+.mak.dll:
+    @echo Applying inference rule .mak.dll:
+    $(IFBIOS)  $(MAKE) /$(MAKEFLAGS) /f "$(MAKEPATH)\BIOS.mak"  $(MAKEDEFS) $@
+    $(IFDOS)   $(MAKE) /$(MAKEFLAGS) /f "$(MAKEPATH)\DOS.mak"   $(MAKEDEFS) $@
+    $(IFWIN95) $(MAKE) /$(MAKEFLAGS) /f "$(MAKEPATH)\WIN95.mak" $(MAKEDEFS) $@
+    $(IFWIN32) $(MAKE) /$(MAKEFLAGS) /f "$(MAKEPATH)\WIN32.mak" $(MAKEDEFS) $@
+    $(IFIA64)  $(MAKE) /$(MAKEFLAGS) /f "$(MAKEPATH)\IA64.mak"  $(MAKEDEFS) $@
+    $(IFWIN64) $(MAKE) /$(MAKEFLAGS) /f "$(MAKEPATH)\WIN64.mak" $(MAKEDEFS) $@
+    $(IFARM)   $(MAKE) /$(MAKEFLAGS) /f "$(MAKEPATH)\ARM.mak"   $(MAKEDEFS) $@
+
 # Inference rule to build a simple program. Build BIOS, DOS, Win32, and Win64 debug versions.
 {.\}.c{Debug\}.com:
     @echo Applying inference rule {.\}.c{Debug\}.com:
@@ -399,7 +416,7 @@ SUBMAKE=$(MAKE) /$(MAKEFLAGS) /F "$(MAKEFILE)" $(MAKEDEFS) # Recursive call to t
     $(IFARM)   $(MAKE) /$(MAKEFLAGS) /f "$(MAKEPATH)\ARM.mak"   $(MAKEDEFS) $(OD)ARM\$@
 
 {.\}.asm{Debug\}.exe:
-    @echo Applying inference rule {.\}.c{Debug\}.exe:
+    @echo Applying inference rule {.\}.asm{Debug\}.exe:
     $(IFBIOS)  $(MAKE) /$(MAKEFLAGS) /f "$(MAKEPATH)\BIOS.mak"  $(MAKEDEFS) $(OD)BIOS\$@
     $(IFDOS)   $(MAKE) /$(MAKEFLAGS) /f "$(MAKEPATH)\DOS.mak"   $(MAKEDEFS) $(OD)DOS\$@
     $(IFWIN95) $(MAKE) /$(MAKEFLAGS) /f "$(MAKEPATH)\WIN95.mak" $(MAKEDEFS) $(OD)WIN95\$@
@@ -421,7 +438,18 @@ SUBMAKE=$(MAKE) /$(MAKEFLAGS) /F "$(MAKEFILE)" $(MAKEDEFS) # Recursive call to t
 
 # Inference rule to build a makefile-defined library. Build BIOS, DOS, Win32, and Win64 versions.
 {.\}.mak{Debug\}.lib:
-    @echo Applying inference rule {.\}.cpp{Debug\}.exe:
+    @echo Applying inference rule {.\}.mak{Debug\}.lib:
+    $(IFBIOS)  $(MAKE) /$(MAKEFLAGS) /f "$(MAKEPATH)\BIOS.mak"  $(MAKEDEFS) $(OD)BIOS\$@
+    $(IFDOS)   $(MAKE) /$(MAKEFLAGS) /f "$(MAKEPATH)\DOS.mak"   $(MAKEDEFS) $(OD)DOS\$@
+    $(IFWIN95) $(MAKE) /$(MAKEFLAGS) /f "$(MAKEPATH)\WIN95.mak" $(MAKEDEFS) $(OD)WIN95\$@
+    $(IFWIN32) $(MAKE) /$(MAKEFLAGS) /f "$(MAKEPATH)\WIN32.mak" $(MAKEDEFS) $(OD)WIN32\$@
+    $(IFIA64)  $(MAKE) /$(MAKEFLAGS) /f "$(MAKEPATH)\IA64.mak"  $(MAKEDEFS) $(OD)IA64\$@
+    $(IFWIN64) $(MAKE) /$(MAKEFLAGS) /f "$(MAKEPATH)\WIN64.mak" $(MAKEDEFS) $(OD)WIN64\$@
+    $(IFARM)   $(MAKE) /$(MAKEFLAGS) /f "$(MAKEPATH)\ARM.mak"   $(MAKEDEFS) $(OD)ARM\$@
+
+# Inference rule to build a makefile-defined DLL. Build BIOS, DOS, Win32, and Win64 versions.
+{.\}.mak{Debug\}.dll:
+    @echo Applying inference rule {.\}.mak{Debug\}.dll:
     $(IFBIOS)  $(MAKE) /$(MAKEFLAGS) /f "$(MAKEPATH)\BIOS.mak"  $(MAKEDEFS) $(OD)BIOS\$@
     $(IFDOS)   $(MAKE) /$(MAKEFLAGS) /f "$(MAKEPATH)\DOS.mak"   $(MAKEDEFS) $(OD)DOS\$@
     $(IFWIN95) $(MAKE) /$(MAKEFLAGS) /f "$(MAKEPATH)\WIN95.mak" $(MAKEDEFS) $(OD)WIN95\$@
@@ -576,7 +604,7 @@ clean mostlyclean distclean:
     if exist "$(MAKEPATH)\IA64.mak"  $(MAKE) /$(MAKEFLAGS) /c /s /f "$(MAKEPATH)\IA64.mak" clean
     if exist "$(MAKEPATH)\WIN64.mak" $(MAKE) /$(MAKEFLAGS) /c /s /f "$(MAKEPATH)\WIN64.mak" clean
     if exist "$(MAKEPATH)\ARM.mak"   $(MAKE) /$(MAKEFLAGS) /c /s /f "$(MAKEPATH)\ARM.mak" clean
-!IF DEFINED(OUTDIR)
+!IF DEFINED(OUTDIR) && "$(OUTDIR)" != "" && "$(OUTDIR)" != "." && "$(OUTDIR)" != ".."
     -rd /S /Q $(OUTDIR)	>NUL 2>&1
 !ENDIF
     -del /Q *.bak	>NUL 2>&1
@@ -617,7 +645,7 @@ Targets:
   clean                  Erase all output files in BIOS, DOS, WIN32, WIN64
   distclean              Erase all output files and all configuration files
   {prog}.com             Build BIOS and DOS versions of {prog}.com
-  {prog}.exe             Build DOS and all Windows versions of {prog}.com
+  {prog}.exe             Build DOS and all Windows versions of {prog}.exe
   Debug\{prog}.exe       Build BIOS and DOS versions of the same
   {prog}.exe             Build DOS, WIN32, and WIN64 versions of {prog}.exe
   Debug\{prog}.exe       Build DOS, WIN32, and WIN64 debug versions of the same
