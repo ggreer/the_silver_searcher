@@ -9,10 +9,11 @@
  *
  *      Pthreads-win32 - POSIX Threads Library for Win32
  *      Copyright(C) 1998 John E. Bossom
- *      Copyright(C) 1999,2005 Pthreads-win32 contributors
- * 
- *      Contact Email: rpj@callisto.canberra.edu.au
- * 
+ *      Copyright(C) 1999,2012 Pthreads-win32 contributors
+ *
+ *      Homepage1: http://sourceware.org/pthreads-win32/
+ *      Homepage2: http://sourceforge.net/projects/pthreads4w/
+ *
  *      The current list of contributors is contained
  *      in the file CONTRIBUTORS included with the source
  *      code distribution. The list can also be seen at the
@@ -38,6 +39,10 @@
  * Algorithm:
  * See the comments at the top of pthread_cond_wait.c.
  */
+
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
 
 #include "pthread.h"
 #include "implement.h"
@@ -112,7 +117,7 @@ ptw32_cond_unblock (pthread_cond_t * cond, int unblockAll)
       /* Use the non-cancellable version of sem_wait() */
       if (ptw32_semwait (&(cv->semBlockLock)) != 0)
 	{
-	  result = errno;
+	  result = PTW32_GET_ERRNO();
 	  (void) pthread_mutex_unlock (&(cv->mtxUnblockLock));
 	  return result;
 	}
@@ -141,7 +146,7 @@ ptw32_cond_unblock (pthread_cond_t * cond, int unblockAll)
     {
       if (sem_post_multiple (&(cv->semBlockQueue), nSignalsToIssue) != 0)
 	{
-	  result = errno;
+	  result = PTW32_GET_ERRNO();
 	}
     }
 

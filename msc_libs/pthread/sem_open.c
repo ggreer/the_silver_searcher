@@ -15,10 +15,11 @@
  *
  *      Pthreads-win32 - POSIX Threads Library for Win32
  *      Copyright(C) 1998 John E. Bossom
- *      Copyright(C) 1999,2005 Pthreads-win32 contributors
- * 
- *      Contact Email: rpj@callisto.canberra.edu.au
- * 
+ *      Copyright(C) 1999,2012 Pthreads-win32 contributors
+ *
+ *      Homepage1: http://sourceware.org/pthreads-win32/
+ *      Homepage2: http://sourceforge.net/projects/pthreads4w/
+ *
  *      The current list of contributors is contained
  *      in the file CONTRIBUTORS included with the source
  *      code distribution. The list can also be seen at the
@@ -41,6 +42,10 @@
  *      59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
 #include "pthread.h"
 #include "semaphore.h"
 #include "implement.h"
@@ -50,9 +55,14 @@
 #pragma warning( disable : 4100 )
 #endif
 
-int
-sem_open (const char *name, int oflag, mode_t mode, unsigned int value)
+sem_t
+*sem_open (const char *name, int oflag, ...)
 {
-  errno = ENOSYS;
-  return -1;
+  /* Note: this is a POSIX.1b-1993 conforming stub; POSIX.1-2001 removed
+   * the requirement to provide this stub, and also removed the validity
+   * of ENOSYS as a resultant errno state; nevertheless, it makes sense
+   * to retain the POSIX.1b-1993 conforming behaviour here.
+   */
+  PTW32_SET_ERRNO(ENOSYS);
+  return SEM_FAILED;
 }				/* sem_open */

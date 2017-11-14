@@ -9,10 +9,11 @@
  *
  *      Pthreads-win32 - POSIX Threads Library for Win32
  *      Copyright(C) 1998 John E. Bossom
- *      Copyright(C) 1999,2005 Pthreads-win32 contributors
- * 
- *      Contact Email: rpj@callisto.canberra.edu.au
- * 
+ *      Copyright(C) 1999,2012 Pthreads-win32 contributors
+ *
+ *      Homepage1: http://sourceware.org/pthreads-win32/
+ *      Homepage2: http://sourceforge.net/projects/pthreads4w/
+ *
  *      The current list of contributors is contained
  *      in the file CONTRIBUTORS included with the source
  *      code distribution. The list can also be seen at the
@@ -35,6 +36,10 @@
  *      59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
 #include "pthread.h"
 #include "implement.h"
 
@@ -45,24 +50,13 @@
 /*
  * ptw32_throw
  *
- * All canceled and explicitly exited POSIX threads go through
+ * All cancelled and explicitly exited POSIX threads go through
  * here. This routine knows how to exit both POSIX initiated threads and
  * 'implicit' POSIX threads for each of the possible language modes (C,
  * C++, and SEH).
  */
-#if defined(_MSC_VER)
-/*
- * Ignore the warning:
- * "C++ exception specification ignored except to indicate that
- * the function is not __declspec(nothrow)."
- */
-#pragma warning(disable:4290)
-#endif
 void
 ptw32_throw (DWORD exception)
-#if defined(__CLEANUP_CXX)
-  throw(ptw32_exception_cancel,ptw32_exception_exit)
-#endif
 {
   /*
    * Don't use pthread_self() to avoid creating an implicit POSIX thread handle
@@ -71,7 +65,7 @@ ptw32_throw (DWORD exception)
   ptw32_thread_t * sp = (ptw32_thread_t *) pthread_getspecific (ptw32_selfThreadKey);
 
 #if defined(__CLEANUP_SEH)
-  ULONG_PTR exceptionInformation[3];
+  DWORD exceptionInformation[3];
 #endif
 
   sp->state = PThreadStateExiting;
@@ -90,21 +84,21 @@ ptw32_throw (DWORD exception)
        * explicit thread exit here after cleaning up POSIX
        * residue (i.e. cleanup handlers, POSIX thread handle etc).
        */
-#if ! defined (PTW32_CONFIG_MINGW) || defined (__MSVCRT__) || defined (__DMC__)
+#if ! defined (__MINGW32__) || defined (__MSVCRT__) || defined (__DMC__)
       unsigned exitCode = 0;
 
       switch (exception)
-	{
-	case PTW32_EPS_CANCEL:
-	  exitCode = (unsigned)(size_t) PTHREAD_CANCELED;
-	  break;
-	case PTW32_EPS_EXIT:
-	  if (NULL != sp)
-	    {
-	      exitCode = (unsigned)(size_t) sp->exitStatus;
-	    }
-	  break;
-	}
+        {
+      	  case PTW32_EPS_CANCEL:
+      		exitCode = (unsigned)(size_t) PTHREAD_CANCELED;
+      		break;
+      	  case PTW32_EPS_EXIT:
+      		if (NULL != sp)
+      		  {
+      			exitCode = (unsigned)(size_t) sp->exitStatus;
+      		  }
+      		break;
+        }
 #endif
 
 #if defined(PTW32_STATIC_LIB)
@@ -113,7 +107,7 @@ ptw32_throw (DWORD exception)
 
 #endif
 
-#if ! defined (PTW32_CONFIG_MINGW) || defined (__MSVCRT__) || defined (__DMC__)
+#if ! defined (__MINGW32__) || defined (__MSVCRT__) || defined (__DMC__)
       _endthreadex (exitCode);
 #else
       _endthread ();
@@ -124,9 +118,9 @@ ptw32_throw (DWORD exception)
 #if defined(__CLEANUP_SEH)
 
 
-  exceptionInformation[0] = (ULONG_PTR) (exception);
-  exceptionInformation[1] = (ULONG_PTR) (0);
-  exceptionInformation[2] = (ULONG_PTR) (0);
+  exceptionInformation[0] = (DWORD) (exception);
+  exceptionInformation[1] = (DWORD) (0);
+  exceptionInformation[2] = (DWORD) (0);
 
   RaiseException (EXCEPTION_PTW32_SERVICES, 0, 3, (ULONG_PTR *) exceptionInformation);
 

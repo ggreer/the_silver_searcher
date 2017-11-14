@@ -9,10 +9,11 @@
  *
  *      Pthreads-win32 - POSIX Threads Library for Win32
  *      Copyright(C) 1998 John E. Bossom
- *      Copyright(C) 1999,2005 Pthreads-win32 contributors
- * 
- *      Contact Email: rpj@callisto.canberra.edu.au
- * 
+ *      Copyright(C) 1999,2012 Pthreads-win32 contributors
+ *
+ *      Homepage1: http://sourceware.org/pthreads-win32/
+ *      Homepage2: http://sourceforge.net/projects/pthreads4w/
+ *
  *      The current list of contributors is contained
  *      in the file CONTRIBUTORS included with the source
  *      code distribution. The list can also be seen at the
@@ -255,8 +256,11 @@
  *   return result;
  * }
  * -------------------------------------------------------------
- *
  */
+
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
 
 #include "pthread.h"
 #include "implement.h"
@@ -303,7 +307,7 @@ ptw32_cond_wait_cleanup (void *args)
       /* Use the non-cancellable version of sem_wait() */
       if (ptw32_semwait (&(cv->semBlockLock)) != 0)
 	{
-	  *resultPtr = errno;
+	  *resultPtr = PTW32_GET_ERRNO();
 	  /*
 	   * This is a fatal error for this CV,
 	   * so we deliberately don't unlock
@@ -314,7 +318,7 @@ ptw32_cond_wait_cleanup (void *args)
       cv->nWaitersBlocked -= cv->nWaitersGone;
       if (sem_post (&(cv->semBlockLock)) != 0)
 	{
-	  *resultPtr = errno;
+	  *resultPtr = PTW32_GET_ERRNO();
 	  /*
 	   * This is a fatal error for this CV,
 	   * so we deliberately don't unlock
@@ -335,7 +339,7 @@ ptw32_cond_wait_cleanup (void *args)
     {
       if (sem_post (&(cv->semBlockLock)) != 0)
 	{
-	  *resultPtr = errno;
+	  *resultPtr = PTW32_GET_ERRNO();
 	  return;
 	}
     }
@@ -384,14 +388,14 @@ ptw32_cond_timedwait (pthread_cond_t * cond,
   /* Thread can be cancelled in sem_wait() but this is OK */
   if (sem_wait (&(cv->semBlockLock)) != 0)
     {
-      return errno;
+      return PTW32_GET_ERRNO();
     }
 
   ++(cv->nWaitersBlocked);
 
   if (sem_post (&(cv->semBlockLock)) != 0)
     {
-      return errno;
+      return PTW32_GET_ERRNO();
     }
 
   /*
@@ -430,7 +434,7 @@ ptw32_cond_timedwait (pthread_cond_t * cond,
        */
       if (sem_timedwait (&(cv->semBlockQueue), abstime) != 0)
 	{
-	  result = errno;
+	  result = PTW32_GET_ERRNO();
 	}
     }
 

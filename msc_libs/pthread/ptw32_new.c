@@ -8,9 +8,10 @@
  *
  *      Pthreads-win32 - POSIX Threads Library for Win32
  *      Copyright(C) 1998 John E. Bossom
- *      Copyright(C) 1999,2005 Pthreads-win32 contributors
+ *      Copyright(C) 1999,2012 Pthreads-win32 contributors
  *
- *      Contact Email: rpj@callisto.canberra.edu.au
+ *      Homepage1: http://sourceware.org/pthreads-win32/
+ *      Homepage2: http://sourceforge.net/projects/pthreads4w/
  *
  *      The current list of contributors is contained
  *      in the file CONTRIBUTORS included with the source
@@ -33,6 +34,10 @@
  *      if not, write to the Free Software Foundation, Inc.,
  *      59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
+
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
 
 #include "pthread.h"
 #include "implement.h"
@@ -79,6 +84,10 @@ ptw32_new (void)
   tp->threadLock = 0;
   tp->robustMxListLock = 0;
   tp->robustMxList = NULL;
+  tp->name = NULL;
+#if defined(HAVE_CPU_AFFINITY)
+  CPU_ZERO((cpu_set_t*)&tp->cpuset);
+#endif
   tp->cancelEvent = CreateEvent (0, (int) PTW32_TRUE,	/* manualReset  */
 				 (int) PTW32_FALSE,	/* setSignaled  */
 				 NULL);
@@ -90,4 +99,5 @@ ptw32_new (void)
     }
 
   return t;
+
 }

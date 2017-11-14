@@ -1,16 +1,17 @@
 /*
- * autostatic.c
+ * dll.c
  *
  * Description:
- * This translation unit implements static auto-init and auto-exit logic.
+ * This translation unit implements DLL initialisation.
  *
  * --------------------------------------------------------------------------
  *
  *      Pthreads-win32 - POSIX Threads Library for Win32
  *      Copyright(C) 1998 John E. Bossom
- *      Copyright(C) 1999,2005 Pthreads-win32 contributors
+ *      Copyright(C) 1999,2012 Pthreads-win32 contributors
  *
- *      Contact Email: rpj@callisto.canberra.edu.au
+ *      Homepage1: http://sourceware.org/pthreads-win32/
+ *      Homepage2: http://sourceforge.net/projects/pthreads4w/
  *
  *      The current list of contributors is contained
  *      in the file CONTRIBUTORS included with the source
@@ -34,12 +35,114 @@
  *      59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#if defined(PTW32_STATIC_LIB) && defined(_MSC_VER) && _MSC_VER >= 1400
+#  undef PTW32_STATIC_LIB
+#  define PTW32_STATIC_TLSLIB
+#endif
+
 #include "pthread.h"
 #include "implement.h"
 
+#if !defined(PTW32_STATIC_LIB)
+
+#if defined(_MSC_VER)
+/*
+ * lpvReserved yields an unreferenced formal parameter;
+ * ignore it
+ */
+#pragma warning( disable : 4100 )
+#endif
+
+#if defined(__cplusplus)
+/*
+ * Dear c++: Please don't mangle this name. -thanks
+ */
+extern "C"
+#endif				/* __cplusplus */
+  BOOL WINAPI
+#if defined(PTW32_STATIC_TLSLIB)
+PTW32_StaticLibMain (HINSTANCE hinstDll, DWORD fdwReason, LPVOID lpvReserved)
+#else
+DllMain (HINSTANCE hinstDll, DWORD fdwReason, LPVOID lpvReserved)
+#endif
+{
+  BOOL result = PTW32_TRUE;
+
+  switch (fdwReason)
+    {
+
+    case DLL_PROCESS_ATTACH:
+      result = pthread_win32_process_attach_np ();
+      break;
+
+    case DLL_THREAD_ATTACH:
+      /*
+       * A thread is being created
+       */
+      result = pthread_win32_thread_attach_np ();
+      break;
+
+    case DLL_THREAD_DETACH:
+      /*
+       * A thread is exiting cleanly
+       */
+      result = pthread_win32_thread_detach_np ();
+      break;
+
+    case DLL_PROCESS_DETACH:
+      (void) pthread_win32_thread_detach_np ();
+      result = pthread_win32_process_detach_np ();
+      break;
+    }
+
+  return (result);
+
+}				/* DllMain */
+
+#endif /* !PTW32_STATIC_LIB */
+
+#if ! defined(PTW32_BUILD_INLINED)
+/*
+ * Avoid "translation unit is empty" warnings
+ */
+typedef int foo;
+#endif
+
+/* Visual Studio 8+ can leverage PIMAGE_TLS_CALLBACK CRT segments, which
+ * give a static lib its very own DllMain.
+ */
+#ifdef PTW32_STATIC_TLSLIB
+
+static void WINAPI
+TlsMain(PVOID h, DWORD r, PVOID u)
+{
+  (void)PTW32_StaticLibMain((HINSTANCE)h, r, u);
+}
+
+#ifdef _M_X64
+# pragma const_seg(".CRT$XLB")
+EXTERN_C const PIMAGE_TLS_CALLBACK _xl_b = TlsMain;
+# pragma const_seg()
+#else
+# pragma data_seg(".CRT$XLB")
+EXTERN_C PIMAGE_TLS_CALLBACK _xl_b = TlsMain;
+# pragma data_seg()
+#endif /* _M_X64 */
+
+#endif /* PTW32_STATIC_TLSLIB */
+
 #if defined(PTW32_STATIC_LIB)
 
-#if defined(PTW32_CONFIG_MINGW) || defined(_MSC_VER)
+/*
+ * Note: MSVC 8 and higher use code in dll.c, which enables TLS cleanup
+ * on thread exit. Code here can only do process init and exit functions.
+ */
+
+#if defined(__MINGW32__) || defined(_MSC_VER)
 
 /* For an explanation of this code (at least the MSVC parts), refer to
  *
@@ -70,7 +173,7 @@ static int on_process_exit(void)
     return 0;
 }
 
-#if defined(PTW32_CONFIG_MINGW)
+#if defined(__GNUC__)
 __attribute__((section(".ctors"), used)) static int (*gcc_ctor)(void) = on_process_init;
 __attribute__((section(".dtors"), used)) static int (*gcc_dtor)(void) = on_process_exit;
 #elif defined(_MSC_VER)
@@ -88,7 +191,7 @@ static int (*msc_dtor)(void) = on_process_exit;
 #  endif
 #endif
 
-#endif /* defined(PTW32_CONFIG_MINGW) || defined(_MSC_VER) */
+#endif /* defined(__MINGW32__) || defined(_MSC_VER) */
 
 /* This dummy function exists solely to be referenced by other modules
  * (specifically, in implement.h), so that the linker can't optimize away
@@ -98,9 +201,3 @@ void ptw32_autostatic_anchor(void) { abort(); }
 
 #endif /* PTW32_STATIC_LIB */
 
-#if ! defined(PTW32_BUILD_INLINED)
-/*
- * Avoid "translation unit is empty" warnings
- */
-typedef int foo;
-#endif

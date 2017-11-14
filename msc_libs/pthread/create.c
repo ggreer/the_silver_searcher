@@ -9,9 +9,10 @@
  *
  *      Pthreads-win32 - POSIX Threads Library for Win32
  *      Copyright(C) 1998 John E. Bossom
- *      Copyright(C) 1999,2005 Pthreads-win32 contributors
+ *      Copyright(C) 1999,2012 Pthreads-win32 contributors
  *
- *      Contact Email: rpj@callisto.canberra.edu.au
+ *      Homepage1: http://sourceware.org/pthreads-win32/
+ *      Homepage2: http://sourceforge.net/projects/pthreads4w/
  *
  *      The current list of contributors is contained
  *      in the file CONTRIBUTORS included with the source
@@ -35,6 +36,10 @@
  *      59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
 #include "pthread.h"
 #include "implement.h"
 #if ! defined(_UWIN) && ! defined(WINCE)
@@ -43,48 +48,49 @@
 
 int
 pthread_create (pthread_t * tid,
-		const pthread_attr_t * attr,
-		void *(PTW32_CDECL *start) (void *), void *arg)
-     /*
-      * ------------------------------------------------------
-      * DOCPUBLIC
-      *      This function creates a thread running the start function,
-      *      passing it the parameter value, 'arg'. The 'attr'
-      *      argument specifies optional creation attributes.
-      *      The identity of the new thread is returned
-      *      via 'tid', which should not be NULL.
-      *
-      * PARAMETERS
-      *      tid
-      *              pointer to an instance of pthread_t
-      *
-      *      attr
-      *              optional pointer to an instance of pthread_attr_t
-      *
-      *      start
-      *              pointer to the starting routine for the new thread
-      *
-      *      arg
-      *              optional parameter passed to 'start'
-      *
-      *
-      * DESCRIPTION
-      *      This function creates a thread running the start function,
-      *      passing it the parameter value, 'arg'. The 'attr'
-      *      argument specifies optional creation attributes.
-      *      The identity of the new thread is returned
-      *      via 'tid', which should not be the NULL pointer.
-      *
-      * RESULTS
-      *              0               successfully created thread,
-      *              EINVAL          attr invalid,
-      *              EAGAIN          insufficient resources.
-      *
-      * ------------------------------------------------------
-      */
+    const pthread_attr_t * attr,
+    void *(PTW32_CDECL *start) (void *), void *arg)
+/*
+ * ------------------------------------------------------
+ * DOCPUBLIC
+ *      This function creates a thread running the start function,
+ *      passing it the parameter value, 'arg'. The 'attr'
+ *      argument specifies optional creation attributes.
+ *      The identity of the new thread is returned
+ *      via 'tid', which should not be NULL.
+ *
+ * PARAMETERS
+ *      tid
+ *              pointer to an instance of pthread_t
+ *
+ *      attr
+ *              optional pointer to an instance of pthread_attr_t
+ *
+ *      start
+ *              pointer to the starting routine for the new thread
+ *
+ *      arg
+ *              optional parameter passed to 'start'
+ *
+ *
+ * DESCRIPTION
+ *      This function creates a thread running the start function,
+ *      passing it the parameter value, 'arg'. The 'attr'
+ *      argument specifies optional creation attributes.
+ *      The identity of the new thread is returned
+ *      via 'tid', which should not be the NULL pointer.
+ *
+ * RESULTS
+ *              0               successfully created thread,
+ *              EINVAL          attr invalid,
+ *              EAGAIN          insufficient resources.
+ *
+ * ------------------------------------------------------
+ */
 {
   pthread_t thread;
   ptw32_thread_t * tp;
+  ptw32_thread_t * sp;
   register pthread_attr_t a;
   HANDLE threadH = 0;
   int result = EAGAIN;
@@ -92,7 +98,6 @@ pthread_create (pthread_t * tid,
   ThreadParms *parms = NULL;
   unsigned int stackSize;
   int priority;
-  pthread_t self;
 
   /*
    * Before doing anything, check that tid can be stored through
@@ -101,6 +106,11 @@ pthread_create (pthread_t * tid,
    * This is assured by conditionally assigning *tid again at the end.
    */
   tid->x = 0;
+
+  if (NULL == (sp = (ptw32_thread_t *)pthread_self().p))
+    {
+      goto FAIL0;
+    }
 
   if (attr != NULL)
     {
@@ -111,7 +121,8 @@ pthread_create (pthread_t * tid,
       a = NULL;
     }
 
-  if ((thread = ptw32_new ()).p == NULL)
+  thread = ptw32_new();
+  if (thread.p == NULL)
     {
       goto FAIL0;
     }
@@ -129,22 +140,34 @@ pthread_create (pthread_t * tid,
   parms->start = start;
   parms->arg = arg;
 
-#if defined(HAVE_SIGSET_T)
-
   /*
-   * Threads inherit their initial sigmask from their creator thread.
+   * Threads inherit their initial sigmask and CPU affinity from their creator thread.
    */
-  self = pthread_self();
-  tp->sigmask = ((ptw32_thread_t *)self.p)->sigmask;
-
-#endif /* HAVE_SIGSET_T */
-
+#if defined(HAVE_SIGSET_T)
+  tp->sigmask = sp->sigmask;
+#endif
+#if defined(HAVE_CPU_AFFINITY)
+  tp->cpuset = sp->cpuset;
+#endif
 
   if (a != NULL)
     {
+#if defined(HAVE_CPU_AFFINITY)
+      cpu_set_t none;
+      cpu_set_t attr_cpuset;
+      ((_sched_cpu_set_vector_*)&attr_cpuset)->_cpuset = a->cpuset;
+
+      CPU_ZERO(&none);
+      if (! CPU_EQUAL(&attr_cpuset, &none))
+        {
+          tp->cpuset = a->cpuset;
+        }
+#endif
       stackSize = (unsigned int)a->stacksize;
       tp->detachState = a->detachstate;
       priority = a->param.sched_priority;
+      if (a->thrname != NULL)
+        tp->name = _strdup(a->thrname);
 
 #if (THREAD_PRIORITY_LOWEST > THREAD_PRIORITY_NORMAL)
       /* WinCE */
@@ -164,17 +187,14 @@ pthread_create (pthread_t * tid,
        * PTHREAD_EXPLICIT_SCHED and priority THREAD_PRIORITY_NORMAL.
        */
       if (PTHREAD_INHERIT_SCHED == a->inheritsched)
-	{
-	  /*
-	   * If the thread that called pthread_create() is a Win32 thread
-	   * then the inherited priority could be the result of a temporary
-	   * system adjustment. This is not the case for POSIX threads.
-	   */
-#if ! defined(HAVE_SIGSET_T)
-	  self = pthread_self ();
-#endif
-	  priority = ((ptw32_thread_t *) self.p)->sched_priority;
-	}
+        {
+          /*
+           * If the thread that called pthread_create() is a Win32 thread
+           * then the inherited priority could be the result of a temporary
+           * system adjustment. This is not the case for POSIX threads.
+           */
+          priority = sp->sched_priority;
+        }
 
 #endif
 
@@ -200,29 +220,35 @@ pthread_create (pthread_t * tid,
    * finished with it here.
    */
 
-#if ! defined (PTW32_CONFIG_MINGW) || defined (__MSVCRT__) || defined (__DMC__)
+#if ! defined (__MINGW32__) || defined (__MSVCRT__) || defined (__DMC__)
 
   tp->threadH =
-    threadH =
-    (HANDLE) _beginthreadex ((void *) NULL,	/* No security info             */
-			     stackSize,		/* default stack size   */
-			     ptw32_threadStart,
-			     parms,
-			     (unsigned)
-			     CREATE_SUSPENDED,
-			     (unsigned *) &(tp->thread));
+      threadH =
+          (HANDLE) _beginthreadex ((void *) NULL,	/* No security info             */
+              stackSize,		/* default stack size   */
+              ptw32_threadStart,
+              parms,
+              (unsigned)
+              CREATE_SUSPENDED,
+              (unsigned *) &(tp->thread));
 
   if (threadH != 0)
     {
       if (a != NULL)
-	{
-	  (void) ptw32_setthreadpriority (thread, SCHED_OTHER, priority);
-	}
+        {
+          (void) ptw32_setthreadpriority (thread, SCHED_OTHER, priority);
+        }
+
+#if defined(HAVE_CPU_AFFINITY)
+
+      SetThreadAffinityMask(tp->threadH, tp->cpuset);
+
+#endif
 
       if (run)
-	{
-	  ResumeThread (threadH);
-	}
+        {
+          ResumeThread (threadH);
+        }
     }
 
 #else
@@ -237,9 +263,9 @@ pthread_create (pthread_t * tid,
     ptw32_mcs_lock_acquire(&tp->stateLock, &stateLock);
 
     tp->threadH =
-      threadH =
-      (HANDLE) _beginthread (ptw32_threadStart, stackSize,	/* default stack size   */
-			     parms);
+        threadH =
+            (HANDLE) _beginthread (ptw32_threadStart, stackSize,	/* default stack size   */
+                parms);
 
     /*
      * Make the return code match _beginthreadex's.
@@ -251,19 +277,26 @@ pthread_create (pthread_t * tid,
     else
       {
         if (!run)
-	  {
-	    /*
-	     * beginthread does not allow for create flags, so we do it now.
-	     * Note that beginthread itself creates the thread in SUSPENDED
-	     * mode, and then calls ResumeThread to start it.
-	     */
-	    SuspendThread (threadH);
-	  }
+          {
+            /*
+             * beginthread does not allow for create flags, so we do it now.
+             * Note that beginthread itself creates the thread in SUSPENDED
+             * mode, and then calls ResumeThread to start it.
+             */
+            SuspendThread (threadH);
+          }
 
         if (a != NULL)
-	  {
-	    (void) ptw32_setthreadpriority (thread, SCHED_OTHER, priority);
-	  }
+          {
+            (void) ptw32_setthreadpriority (thread, SCHED_OTHER, priority);
+          }
+
+#if defined(HAVE_CPU_AFFINITY)
+
+        SetThreadAffinityMask(tp->threadH, tp->cpuset);
+
+#endif
+
       }
 
     ptw32_mcs_lock_release (&stateLock);
@@ -282,16 +315,17 @@ pthread_create (pthread_t * tid,
    * ------------
    */
 
-FAIL0:
+  FAIL0:
   if (result != 0)
     {
+
       ptw32_threadDestroy (thread);
       tp = NULL;
 
       if (parms != NULL)
-	{
-	  free (parms);
-	}
+        {
+          free (parms);
+        }
     }
   else
     {
