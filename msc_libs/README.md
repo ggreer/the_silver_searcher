@@ -155,7 +155,7 @@ None
 Setting the DEBUG environment variable before running make.bat allows to build the debug versions of the libraries and ag.exe programs.
 
     set "DEBUG=1"
-    make
+    msc_libs\make.bat
 
 The debug versions of the program are output in bin\WIN32\Debug\ and bin\WIN64\Debug\ respectively.
 
