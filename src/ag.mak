@@ -23,7 +23,7 @@ CFLAGS=$(CFLAGS) /DHAVE_STRUCT_TIMESPEC
 !ENDIF
 
 # Extra libraries to link with ag.exe
-LIBS=$(LIBS) pcre.lib pthread.lib zlib.lib
+LIBS=$(LIBS) pcre.lib pthreadVC2.lib zlib.lib
 
 #-----------------------------------------------------------------------------#
 #                       Include files dependencies                            #
