@@ -121,6 +121,7 @@
 *		    DEBUG_GLOBALS macro sometimes chokes the DOS compiler.    *
 *    2017-08-25 JFL Added an OS identification string definition.	      *
 *		    Bug fix in _VSNPRINTF_EMULATION.			      *
+*    2017-10-30 JFL Added macro DEBUG_QUIET_LEAVE().			      *
 *		    							      *
 *        (C) Copyright 2016 Hewlett Packard Enterprise Development LP         *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -250,6 +251,7 @@ extern DEBUG_TLS int iIndent;	/* Debug messages indentation. Thread local. */
 #endif /* defined(_MSDOS) */
 #define DEBUG_ENTER(args)  DEBUG_DO(DEBUG_PRINTF(args); iIndent += DEBUG_INDENT_STEP;)
 #define DEBUG_LEAVE(args)  DEBUG_DO(DEBUG_PRINTF(args); iIndent -= DEBUG_INDENT_STEP;)
+#define DEBUG_QUIET_LEAVE()  DEBUG_DO(iIndent -= DEBUG_INDENT_STEP;)
 
 #define DEBUG_RETURN_INT(i, comment) DEBUG_DO(int DEBUG_i = (i); \
   DEBUG_LEAVE(("return %d; // " comment "\n", DEBUG_i)); return DEBUG_i;)
@@ -306,11 +308,12 @@ extern DEBUG_TLS int iIndent;	/* Debug messages indentation. Thread local. */
 
 #define DEBUG_PRINT_INDENT() DEBUG_DO_NOTHING() /* Print call-depth spaces */
 
-#define DEBUG_FPRINTF(args) DEBUG_DO_NOTHING()  /* Print a debug string to a stream */
-#define DEBUG_PRINTF(args) DEBUG_DO_NOTHING()   /* Print a debug string to stdout */
-#define XDEBUG_PRINTF(args) DEBUG_DO_NOTHING()  /* Print an extra debug string to stdout */
-#define DEBUG_ENTER(args)  DEBUG_DO_NOTHING()   /* Print and increase indent */
-#define DEBUG_LEAVE(args)  DEBUG_DO_NOTHING()   /* Print and decrease indent */
+#define DEBUG_FPRINTF(args)  DEBUG_DO_NOTHING() /* Print a debug string to a stream */
+#define DEBUG_PRINTF(args)   DEBUG_DO_NOTHING() /* Print a debug string to stdout */
+#define XDEBUG_PRINTF(args)  DEBUG_DO_NOTHING() /* Print an extra debug string to stdout */
+#define DEBUG_ENTER(args)    DEBUG_DO_NOTHING() /* Print and increase indent */
+#define DEBUG_LEAVE(args)    DEBUG_DO_NOTHING() /* Print and decrease indent */
+#define DEBUG_QUIET_LEAVE()  DEBUG_DO_NOTHING() /* Print and decrease indent */
 
 #define DEBUG_RETURN_INT(i, comment) return(i)
 
