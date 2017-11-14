@@ -31,7 +31,7 @@
 #		    MEM=T	 Build the tiny ver.  (<=> objects in OBJ\T)  #
 #		    MEM=S	 Build the small ver. (<=> objects in OBJ\S)  #
 #		    MEM=L	 Build the large ver. (<=> objects in OBJ\L)  #
-#		    OUTDIR=path  Output to path\DOS\. Default: To .\DOS\      #
+#		    OUTDIR=path  Output to path\DOS\. Default: To bin\DOS\    #
 #		    PROGRAM=name Set the output file base name		      #
 #									      #
 #		    If a specific target [path\]{prog}.exe is specified,      #
@@ -123,6 +123,7 @@
 #		    Define _MSDOS and _MODEL constants for the assembler.     #
 #    2017-03-02 JFL Fixed src2objs.bat and use it indirectly via src2objs.mak.#
 #    2017-08-29 JFL Bugfix: The help target did output a "1 file copied" msg. #
+#    2017-10-22 JFL Changed OUTDIR default to the bin subdirectory.           #
 #		    							      #
 #         © Copyright 2016 Hewlett Packard Enterprise Development LP          #
 # Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 #
@@ -213,9 +214,13 @@ MMN=huge
 
 # Define directories
 S=.				# Where to find source files
-R=$(T)				# Root output path.
-!IF DEFINED(OUTDIR)
-R=$(OUTDIR)\$(T)
+!IF !DEFINED(OUTDIR)
+OUTDIR=bin
+R=bin\$(T)			# Root output path - In the default bin subdirectory
+!ELSEIF "$(OUTDIR)"=="."
+R=$(T)				# Root output path - In the current directory
+!ELSE # It's defined and not empty
+R=$(OUTDIR)\$(T)		# Root output path - In the specified directory
 !ENDIF
 BD=$(R)$(DS)
 B=$(BD)\BIN\$(MEM)		# Where to store binary executable files

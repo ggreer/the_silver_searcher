@@ -105,13 +105,17 @@
 :#                  NMakefile homonyms.                                       *
 :#   2017-03-05 JFL Added variable LOGDIR to control where to store the log.  *
 :#   2017-03-10 JFL Get nmake.exe path from WIN32_PATH or WIN64_PATH.	      *
+:#   2017-10-22 JFL Changed OUTDIR default to the bin subdirectory.           *
+:#                  Added %MD_OUTDIR% to allow creating a junction or symlink.*
+:#   2017-10-22 JFL Support goals like bin\WIN32\myprog.exe.                  *
+:#   2017-10-27 JFL Fixed OUTDIR changes.				      *
 :#                                                                            *
 :#      © Copyright 2016-2017 Hewlett Packard Enterprise Development LP       *
 :# Licensed under the Apache 2.0 license  www.apache.org/licenses/LICENSE-2.0 *
 :#*****************************************************************************
 
 setlocal EnableExtensions EnableDelayedExpansion
-set "VERSION=2017-03-10"
+set "VERSION=2017-10-27"
 set "SCRIPT=%~nx0"				&:# Script name
 set "SPATH=%~dp0" & set "SPATH=!SPATH:~0,-1!"	&:# Script path, without the trailing \
 set  "ARG0=%~f0"				&:# Script full pathname
@@ -1180,6 +1184,10 @@ exit /b
 :#                        End of the debugging library                        #
 :#----------------------------------------------------------------------------#
 
+:is_dir pathname        -- Check if a pathname refers to an existing directory
+for /f "tokens=1,2 delims=d" %%a in ("-%~a1") do if not "%%~b"=="" exit /b 0
+exit /b 1
+
 :#----------------------------------------------------------------------------#
 :#                                                                            #
 :#  Function        GetPid                                                    #
@@ -1528,7 +1536,18 @@ call :GetConfig :# Get Development tools location. Also defines OUTDIR.
 if errorlevel 1 exit /b
 
 :# Create the output directory if needed
-if not "%OUTDIR%"=="" if not exist "%OUTDIR%" md "%OUTDIR%" & if errorlevel 1 (
+if "%OUTDIR%"=="" (
+  set "OUTDIR=bin"
+  set "OUTDIR\=bin\"
+) else if "%OUTDIR%"=="." (
+  set "OUTDIR\="
+) else (
+  set "OUTDIR\=%OUTDIR%\"
+)
+
+:# Allow optionally creating a junction or a symbolic link instead of a subdirectory
+if not defined MD_OUTDIR set MD_OUTDIR=md "%OUTDIR%"
+if not "%OUTDIR%"=="" call :is_dir "%OUTDIR%" || %MD_OUTDIR% || (
   >&2 echo Cannot create output directory "%OUTDIR%".
   exit /b 1
 )
@@ -1536,7 +1555,7 @@ if not "%OUTDIR%"=="" if not exist "%OUTDIR%" md "%OUTDIR%" & if errorlevel 1 (
 :# Select a log file
 if "%DOLOG%"=="1" if not defined LOGFILE ( :# Create one, in OUTDIR if defined
   set "LOGFILE=make.log"
-  if not "%OUTDIR%"=="" set "LOGFILE=%OUTDIR%\!LOGFILE!"
+  set "LOGFILE=%OUTDIR\%!LOGFILE!"
   if exist "!LOGFILE!" del "!LOGFILE!"
   call :Debug.SetLog "!LOGFILE!"
 ) &:# else keep using the parent instance log file
@@ -1579,10 +1598,13 @@ if "!ARG:~0,1!"=="/" ( :# This is a switch
     set "LASTGOAL=!ARG!" &:# Record the last goal, without quotes
     set MAKEGOALS=!MAKEGOALS! !"ARG"!
     if not defined MAKEFILE if exist "%STINCLUDE%\All.mak" (
-      %ECHO.D% :# Looking for SUBDIR in goal !"ARG"!
-      :# Look for the first \ index
       set "SUBDIR="
-      for /l %%i in (0,1,10) do if not defined SUBDIR if "!ARG:~%%i,1!"=="\" set "SUBDIR=!ARG:~0,%%i!"
+      %ECHO.D% :# Looking for SUBDIR in goal !"ARG"!
+      :# If the goal includes a path, then extract the last component of that path.
+      if not "!ARG:\=!"=="!ARG!" for %%a in ("!ARG!") do for %%b in ("%%~dpa") do (
+      	set "B=%%~b" &:# But this path ends with a trailing \, which we remove below
+        for %%c in ("!B:~0,-1!") do set "SUBDIR=%%~nxc"
+      )
       if defined SUBDIR if exist "%STINCLUDE%\!SUBDIR!.mak" (
       	set "MAKEFILE=%STINCLUDE%\!SUBDIR!.mak"
 	%ECHO.D% :# Setting MAKEFILE !MAKEFILE! after goal !"ARG"!

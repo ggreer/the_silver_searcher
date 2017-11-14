@@ -171,13 +171,14 @@
 :#   2017-03-05 JFL Added variable LOGDIR to control where to store the log.  *
 :#   2017-03-10 JFL Added support for Visual Studio 2017.		      *
 :#   2017-03-12 JFL Defining variable OS limits builds to that OS list.       *
+:#   2017-10-27 JFL Changed OUTDIR default to the bin subdirectory.           *
 :#                                                                            *
 :#      © Copyright 2016-2017 Hewlett Packard Enterprise Development LP       *
 :# Licensed under the Apache 2.0 license  www.apache.org/licenses/LICENSE-2.0 *
 :#*****************************************************************************
 
 setlocal EnableExtensions EnableDelayedExpansion
-set "VERSION=2017-03-12"
+set "VERSION=2017-10-27"
 set "SCRIPT=%~nx0"				&:# Script name
 set "SPATH=%~dp0" & set "SPATH=!SPATH:~0,-1!"	&:# Script path, without the trailing \
 set  "ARG0=%~f0"				&:# Script full pathname
@@ -1934,7 +1935,7 @@ echo   -l LOGFILE    Log output into a file. Default: Don't
 echo   -L            Disable logging. Default: Use the parent script log file, if any
 echo   -masm PATH    Path to MASM install dir. Default: C:\MASM
 echo   -msvc PATH    Path to MSVC 16-bits tools install dir. Default: C:\MSVC
-echo   -o OUTDIR     Output base directory. Default: .
+echo   -o OUTDIR     Output base directory. Default: bin
 echo   -p            Set persistent project path variables in HKCU\Environment
 echo   -r            Recursively configure all subprojects. Default
 echo   -R            Do not recursively configure all subprojects
@@ -2142,7 +2143,7 @@ for %%d in ("%windir%" "%HOME%" ".") do (
     )
   )
 )
-%ECHOVARS.D% SDK_LIST
+%ECHOVARS.D% SDK_LIST OUTDIR
 
 :# Search for the requested SDKs in the specified dir, then the default install dir, then in other likely places
 %CONFIG%.
@@ -2200,8 +2201,14 @@ if defined HAS_SDK_FLAGS set "HAS_SDK_FLAGS=%HAS_SDK_FLAGS:~1%"
 %CONFIG% set "HAS_SDK_FLAGS=%HAS_SDK_FLAGS%" ^&:# SDK detection flags for the C compiler
 
 :# Libraries we build may optionally be output in a subdirectory
-set "\OUTDIR="
-if defined OUTDIR if "!OUTDIR:\=!"=="!OUTDIR!" set "\OUTDIR=\!OUTDIR!"
+if not defined OUTDIR (
+  set "\OUTDIR=\bin"		&rem Output path - In the default bin subdirectory
+) else if "%OUTDIR%"=="." (
+  set "\OUTDIR="		&rem Output path - In the current directory
+) else (
+  set "\OUTDIR=\!OUTDIR!"	&rem Output path - In the specified directory
+)
+%ECHOVARS.D% \OUTDIR
 
 :# Update 16-bits include and library paths for well-known libraries
 for %%v in (VC16) do if defined %%v (
@@ -2446,15 +2453,18 @@ for %%s in (
 
 :# A few global configuration variables
 set "COMMENT[OUTDIR]=Output base directory"
+set "COMMENT[MD_OUTDIR]=How to create the output directory"
 set "COMMENT[LOGDIR]=Log file directory"
 set "COMMENT[IGNORE_NMAKEFILE]=Do not use the NMakefile here"
 set "COMMENT[OS]=Limit builds to these target Operating Systems"
 if "%OS%"=="Windows_NT" set "OS=" &:# This is the Windows' homonym default, same as undefined for us here.
-for %%v in (OUTDIR LOGDIR IGNORE_NMAKEFILE OS) do (
+for %%v in (OUTDIR MD_OUTDIR LOGDIR IGNORE_NMAKEFILE OS) do (
   if defined %%v (
     %CONFIG%.
     %CONFIG% SET "%%v=!%%v!" ^&:# !COMMENT[%%v]!
   )
+  :# Free a little bit of variable space
+  set "COMMENT[%%v]="
 )
 
 if defined POST_MAKE_ACTIONS (

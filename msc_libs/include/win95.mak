@@ -22,7 +22,7 @@
 #		    Command-line definitions:				      #
 #		    DEBUG=0	 Build the release ver. (<=> target WIN95)    #
 #		    DEBUG=1	 Build the debug ver. (<=> target WIN95\DEBUG)#
-#		    OUTDIR=path  Output to path\WIN95\. Default: To .\WIN95\  #
+#		    OUTDIR=path  Output to path\WIN95\. Default: To bin\WIN95\#
 #		    PROGRAM=name Set the output file base name		      #
 #									      #
 #		    If a specific target [path\]{prog}.exe is specified,      #
