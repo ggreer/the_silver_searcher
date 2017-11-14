@@ -15,6 +15,15 @@
 :# First search in Ag's wincompat libraries
 set "MY_SDKS=..\msc_libs %MY_SDKS%"
 
+:# Store output files one level up
+:# set "OUTDIR=..\bin"
+:# We use a junction instead of a symlinkd, because Windows allows creating junctions by default, but not symlinkds.
+set "MD_OUTDIR=mklink /j bin ..\bin >NUL"
+
+:# Even if the right tools are available, avoid trying to build ag.exe for DOS and WIN95, which are not supported yet.
+if "%OS%"=="Windows_NT" set "OS=" &:# This is the Windows' homonym default, same as undefined for us here.
+if not defined OS set "OS=WIN32 WIN64" &:# Only WIN32 and WIN64 are supported so far.
+
 :# Configure.bat does not know about these libraries
 set "SDK.PCRE.NAME=Perl Compatible Regular Expressions"
 set "SDK.PCRE.FILE=pcre.h.in"     &:# A unique file at the base of that library tree
@@ -24,7 +33,7 @@ set "SDK.PCRE.LIBPATH=$(BR)"      &:# $(BR) = SysToolsLib OS-specific output dir
 set "SDK.PTHREAD.NAME=Posix Threads for Windows"
 set "SDK.PTHREAD.FILE=pthread.h"  &:# A unique file at the base of that library tree
 set "SDK.PTHREAD.INCPATH=."       &:# Include files are in the base directory
-set "SDK.PTHREAD.LIBPATH=$(BR)"   &:# $(BR) = SysToolsLib OS-specific output directory
+set "SDK.PTHREAD.LIBPATH=$(BR)\LIBs" &:# $(BR) = SysToolsLib OS-specific output directory
 
 set "SDK.ZLIB.NAME=General Purpose Compression Library"
 set "SDK.ZLIB.FILE=zlib.h"        &:# A unique file at the base of that library tree
