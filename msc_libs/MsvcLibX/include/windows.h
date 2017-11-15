@@ -58,3 +58,4 @@ DWORD WINAPI GetLongPathNameU(LPCTSTR lpShortName, LPTSTR lpBuf, DWORD nBufferLe
 #endif /* defined(_WIN32) */
 
 #endif /* defined(_MSVCLIBX_WINDOWS_H) */
+

@@ -38,3 +38,4 @@ extern int openU(const char *, int, ...); /* MsvcLibX UTF-8 version of open */
 #endif /* defined(_WIN32) */
 
 #endif /* defined(_MSVCLIBX_FCNTL_H)  */
+

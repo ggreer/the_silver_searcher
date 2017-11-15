@@ -666,3 +666,4 @@ Targets:
 
 Also supports .obj and .res to compile C, C++, ASM, and Windows .RC files.
 <<NOKEEP
+
