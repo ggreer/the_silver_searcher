@@ -308,12 +308,12 @@ extern DEBUG_TLS int iIndent;	/* Debug messages indentation. Thread local. */
 
 #define DEBUG_PRINT_INDENT() DEBUG_DO_NOTHING() /* Print call-depth spaces */
 
-#define DEBUG_FPRINTF(args)  DEBUG_DO_NOTHING() /* Print a debug string to a stream */
-#define DEBUG_PRINTF(args)   DEBUG_DO_NOTHING() /* Print a debug string to stdout */
-#define XDEBUG_PRINTF(args)  DEBUG_DO_NOTHING() /* Print an extra debug string to stdout */
-#define DEBUG_ENTER(args)    DEBUG_DO_NOTHING() /* Print and increase indent */
-#define DEBUG_LEAVE(args)    DEBUG_DO_NOTHING() /* Print and decrease indent */
-#define DEBUG_QUIET_LEAVE()  DEBUG_DO_NOTHING() /* Print and decrease indent */
+#define DEBUG_FPRINTF(args) DEBUG_DO_NOTHING()  /* Print a debug string to a stream */
+#define DEBUG_PRINTF(args)  DEBUG_DO_NOTHING()  /* Print a debug string to stdout */
+#define XDEBUG_PRINTF(args) DEBUG_DO_NOTHING()  /* Print an extra debug string to stdout */
+#define DEBUG_ENTER(args)   DEBUG_DO_NOTHING()  /* Print and increase indent */
+#define DEBUG_LEAVE(args)   DEBUG_DO_NOTHING()  /* Print and decrease indent */
+#define DEBUG_QUIET_LEAVE() DEBUG_DO_NOTHING()  /* Print and decrease indent */
 
 #define DEBUG_RETURN_INT(i, comment) return(i)
 
