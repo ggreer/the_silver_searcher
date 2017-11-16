@@ -135,4 +135,3 @@ size_t fwriteU(const void *buf, size_t itemSize, size_t nItems, FILE *f) {
 
 #endif /* defined(_WIN32) */
 
-

@@ -79,4 +79,3 @@ int uname(struct utsname *pun) {
 }
 
 #endif /* defined(_WIN32) */
-

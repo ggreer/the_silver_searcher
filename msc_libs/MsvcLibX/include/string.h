@@ -55,4 +55,3 @@ char *strerrorX(int errnum);
 
 #endif /* defined(_MSVCLIBX_string_H)  */
 
-

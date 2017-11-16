@@ -54,4 +54,3 @@ char *strerror(int errnum) {
 
 #endif /* defined(_WIN32) */
 
-

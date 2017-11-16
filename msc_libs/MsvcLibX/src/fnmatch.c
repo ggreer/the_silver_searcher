@@ -122,4 +122,3 @@ int fnmatch(const char *pszPattern, const char *pszName, int iFlags) {
 }
 #pragma warning(default:4706)
 
-

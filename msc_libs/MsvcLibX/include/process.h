@@ -32,4 +32,3 @@ extern intptr_t _spawnvpU(int iMode, const char *pszCommand, char *const *argv);
 
 #endif /* defined(_MSVCLIBX_PROCESS_H)  */
 
-

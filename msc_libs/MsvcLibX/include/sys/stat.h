@@ -417,4 +417,3 @@ extern int mkdirA(const char *path, mode_t mode);
 
 #endif /* defined(_MSVCLIBX_STAT_H)  */
 
-
