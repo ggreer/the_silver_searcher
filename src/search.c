@@ -7,7 +7,7 @@ void search_buf(const char *buf, const size_t buf_len,
     int binary = -1; /* 1 = yes, 0 = no, -1 = don't know */
     size_t buf_offset = 0;
 
-    if (opts.search_stream) {
+    if (opts.search_as_text || opts.search_stream) {
         binary = 0;
     } else if (!opts.search_binary_files) {
         binary = is_binary((const void *)buf, buf_len);
