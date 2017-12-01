@@ -101,6 +101,10 @@ or
 * Win32/64
 
   Unofficial daily builds are [available](https://github.com/k-takata/the_silver_searcher-win32).
+  
+* Chocolatey
+
+        choco install ag
 * MSYS2
 
         pacman -S mingw-w64-{i686,x86_64}-ag
