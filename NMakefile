@@ -34,8 +34,8 @@ Targets:
 !INCLUDE <All.mak>
 
 # Build just the libraries
-libs msc_libs:
-    $(BMAKE) -C msc_libs $@ 
+libs win32:
+    $(BMAKE) -C win32 $@ 
 
 # Build just the executables
 exes src:

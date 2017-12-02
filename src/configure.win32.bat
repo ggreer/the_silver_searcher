@@ -13,7 +13,7 @@
 :#*****************************************************************************
 
 :# First search in Ag's wincompat libraries
-set "MY_SDKS=..\msc_libs %MY_SDKS%"
+set "MY_SDKS=..\win32 %MY_SDKS%"
 
 :# Store output files one level up
 :# set "OUTDIR=..\bin"

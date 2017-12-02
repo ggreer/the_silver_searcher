@@ -150,7 +150,7 @@ or
 
     * Windows with Visual C++:
 
-            Nothing to do. All necessary libraries are provided in the [msc_libs](msc_libs/README.md) subdirectory.
+            Nothing to do. All necessary libraries are provided in the [win32](win32/README.md) subdirectory.
 
     * Windows with MinGW:  
 
@@ -163,7 +163,7 @@ or
 
     * On Windows (inside a cmd shell with Microsoft Visual C++, using [this](https://github.com/JFLarvoire/the_silver_searcher) set of sources):
 
-        msc_libs\make.bat
+        win32\make.bat
 
     * On Windows (inside an msys/MinGW shell with gcc):
 
