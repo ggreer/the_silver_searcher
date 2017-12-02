@@ -108,6 +108,10 @@ or
   * Supports unicode search strings, and outputs Unicode results.
   * Supports unicode pathname > 260 characters, junctions, and symbolic links.
   
+* Chocolatey
+
+        choco install ag
+
 * MSYS2
 
         pacman -S mingw-w64-{i686,x86_64}-ag
