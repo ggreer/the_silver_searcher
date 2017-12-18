@@ -589,7 +589,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 }
 
                 log_err("option %s does not take a value", longopts[opt_index].name);
-                /* fall through */
+            /* fall through */
             default:
                 usage();
                 exit(1);
