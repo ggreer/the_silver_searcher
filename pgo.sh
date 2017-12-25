@@ -4,9 +4,7 @@ set -e
 cd "$(dirname "$0")"
 
 make clean
-CFLAGS="$CFLAGS -fprofile-generate"
-./build.sh
+./build.sh CFLAGS="$CFLAGS -fprofile-generate"
 ./ag example ..
 make clean
-CFLAGS="$CFLAGS -fprofile-use"
-./build.sh
+./build.sh CFLAGS="$CFLAGS -fprofile-correction -fprofile-use"
