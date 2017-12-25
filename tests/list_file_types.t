@@ -45,6 +45,9 @@ Language types are output:
     --coffee
         .coffee  .cjsx
   
+    --coq
+        .coq  .g  .v
+  
     --cpp
         .cpp  .cc  .C  .cxx  .m  .hpp  .hh  .h  .H  .hxx  .tpp
   
@@ -128,6 +131,9 @@ Language types are output:
   
     --ipython
         .ipynb
+  
+    --isabelle
+        .thy
   
     --j
         .ijs
@@ -308,6 +314,9 @@ Language types are output:
   
     --tex
         .tex  .cls  .sty
+  
+    --tla
+        .tla
   
     --tt
         .tt  .tt2  .ttml
