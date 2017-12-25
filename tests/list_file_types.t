@@ -66,6 +66,9 @@ Language types are output:
     --delphi
         .pas  .int  .dfm  .nfm  .dof  .dpk  .dpr  .dproj  .groupproj  .bdsgroup  .bdsproj
   
+    --dlang
+        .d  .di
+  
     --dot
         .dot  .gv
   
