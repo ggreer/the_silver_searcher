@@ -138,6 +138,9 @@ Language types are output:
     --java
         .java  .properties
   
+    --jinja2
+        .j2
+  
     --js
         .es6  .js  .jsx  .vue
   
