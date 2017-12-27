@@ -99,9 +99,10 @@ void search_buf(const char *buf, const size_t buf_len,
         }
     } else {
         int offset_vector[3];
+        int wspace[20];
         if (opts.multiline) {
             while (buf_offset < buf_len &&
-                   (pcre_exec(opts.re, opts.re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
+                   (pcre_dfa_exec(opts.re, opts.re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3, wspace, 20)) >= 0) {
                 log_debug("Regex match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
                 buf_offset = offset_vector[1];
                 if (offset_vector[0] == offset_vector[1]) {
@@ -129,7 +130,7 @@ void search_buf(const char *buf, const size_t buf_len,
                 }
                 size_t line_offset = 0;
                 while (line_offset < line_len) {
-                    int rv = pcre_exec(opts.re, opts.re_extra, line, line_len, line_offset, 0, offset_vector, 3);
+                    int rv = pcre_dfa_exec(opts.re, opts.re_extra, line, line_len, line_offset, 0, offset_vector, 3, wspace, 20);
                     if (rv < 0) {
                         break;
                     }
@@ -310,7 +311,7 @@ void search_file(const char *file_full_path) {
     }
 
     if (!opts.literal && f_len > INT_MAX) {
-        log_err("Skipping %s: pcre_exec() can't handle files larger than %i bytes.", file_full_path, INT_MAX);
+        log_err("Skipping %s: pcre_dfa_exec() can't handle files larger than %i bytes.", file_full_path, INT_MAX);
         goto cleanup;
     }
 
@@ -584,8 +585,9 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
 
         if (!is_directory(path, dir)) {
             if (opts.file_search_regex) {
-                rc = pcre_exec(opts.file_search_regex, NULL, dir_full_path, strlen(dir_full_path),
-                               0, 0, offset_vector, 3);
+                int wspace[20];
+                rc = pcre_dfa_exec(opts.file_search_regex, NULL, dir_full_path, strlen(dir_full_path),
+                               0, 0, offset_vector, 3, wspace, 20);
                 if (rc < 0) { /* no match */
                     log_debug("Skipping %s due to file_search_regex.", dir_full_path);
                     goto cleanup;

@@ -199,8 +199,9 @@ static int ackmate_dir_match(const char *dir_name) {
     if (opts.ackmate_dir_filter == NULL) {
         return 0;
     }
+    int wspace[20];
     /* we just care about the match, not where the matches are */
-    return pcre_exec(opts.ackmate_dir_filter, NULL, dir_name, strlen(dir_name), 0, 0, NULL, 0);
+    return pcre_dfa_exec(opts.ackmate_dir_filter, NULL, dir_name, strlen(dir_name), 0, 0, NULL, 0, wspace, 20);
 }
 
 /* This is the hottest code in Ag. 10-15% of all execution time is spent here */
