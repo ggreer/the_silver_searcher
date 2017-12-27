@@ -42,10 +42,10 @@ typedef struct {
 } match_t;
 
 typedef struct {
-    long total_bytes;
-    long total_files;
-    long total_matches;
-    long total_file_matches;
+    size_t total_bytes;
+    size_t total_files;
+    size_t total_matches;
+    size_t total_file_matches;
     struct timeval time_start;
     struct timeval time_end;
 } ag_stats;
