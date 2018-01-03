@@ -542,7 +542,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                      * PATH_PRINT_EACH_LINE */
                     if (opts.print_path == PATH_PRINT_NOTHING)
                         break;
-                    opts.print_path == PATH_PRINT_EACH_LINE;
+                    opts.print_path = PATH_PRINT_EACH_LINE;
                     break;
                 } else if (strcmp(longopts[opt_index].name, "no-pager") == 0 ||
                            strcmp(longopts[opt_index].name, "nopager") == 0) {
