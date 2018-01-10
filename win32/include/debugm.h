@@ -85,6 +85,10 @@
 *    RETURN_INT(i)			Leave and trace return integer	      *
 *    RETURN_CHAR(c)			Leave and trace return character      *
 *    RETURN_STRING(s)			Leave and trace return string	      *
+*    RETURN_PTR(p)			Leave and trace return pointer	      *
+*    RETURN_LONG(l)			Leave and trace return long	      *
+*    RETURN_CSTRING(s)			Leave and trace return const. string  *
+*    RETURN_CPTR(p)			Leave and trace return const. pointer *
 *                                                                             *
 *    RETURN_COMMENT((format, ...))	Leave, print comment and return	      *
 *    RETURN_CONST_COMMENT(value, (...)) Leave, print comment & return a const.*
@@ -267,6 +271,14 @@ extern DEBUG_TLS int iIndent;	/* Debug messages indentation. Thread local. */
   DEBUG_LEAVE(("return '%c';\n", DEBUG_c)); return DEBUG_c;)
 #define RETURN_BOOL(b) DEBUG_DO(int DEBUG_b = (b); \
   DEBUG_LEAVE(("return %s;\n", DEBUG_b ? "TRUE" : "FALSE")); return DEBUG_b;)
+#define RETURN_PTR(p) DEBUG_DO(void *DEBUG_p = (p); \
+  DEBUG_LEAVE(("return %p;\n", DEBUG_p)); return DEBUG_p;)
+#define RETURN_LONG(l) DEBUG_DO(long DEBUG_l = (l); \
+  DEBUG_LEAVE(("return %ld;\n", DEBUG_l)); return DEBUG_l;)
+#define RETURN_CSTRING(s) DEBUG_DO(const char *DEBUG_s = (s); \
+  DEBUG_LEAVE(("return \"%s\";\n", DEBUG_s)); return DEBUG_s;)
+#define RETURN_CPTR(p) DEBUG_DO(const void *DEBUG_p = (p); \
+  DEBUG_LEAVE(("return %p;\n", DEBUG_p)); return DEBUG_p;)
 
 #if defined(_MSDOS)
 #define RETURN_COMMENT(args) DEBUG_DO(DEBUG_LEAVE(("return; // ")); \
@@ -324,6 +336,10 @@ extern DEBUG_TLS int iIndent;	/* Debug messages indentation. Thread local. */
 #define RETURN_STRING(s) return(s)
 #define RETURN_CHAR(c) return(c)
 #define RETURN_BOOL(b) return(b)
+#define RETURN_PTR(p) return(p)
+#define RETURN_LONG(l) return(l)
+#define RETURN_CSTRING(s) return(s)
+#define RETURN_CPTR(p) return(p)
 
 #define RETURN_COMMENT(args) return
 #define RETURN_CONST_COMMENT(value, args) return(value)
