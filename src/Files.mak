@@ -10,6 +10,7 @@
 #                                                                             #
 #   History                                                                   #
 #    2017-02-15 JFL Created this file.                                        #
+#    2018-01-11 JFL Added a message when creating config.h.		      #
 #                                                                             #
 ###############################################################################
 
@@ -47,5 +48,6 @@ CLEAN_FILES = \
 
 # Hand-made config.h for Visual C++ / MsvcLibX builds
 config.h: config.h.MsvcLibX
+    $(MSG) Creating $@
     copy /y config.h.MsvcLibX config.h
 
