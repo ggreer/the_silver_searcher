@@ -5,13 +5,15 @@
 :#                                                                            *
 :#  Description	    Generate object files names from source files names	      *
 :#                                                                            *
-:#  Notes								      *
-:#									      *
+:#  Notes	    The output is read back by a make file, and so must be    *
+:#		    a valid make file itself. For example use # for comments. *
+:#		    							      *
 :#  History	                                                              *
 :#   2010-04-07 JFL Created this batch.                                       *
 :#   2017-03-01 JFL Streamlined the code.                                     *
 :#   2017-03-02 JFL Added VERSION and option -V.                              *
 :#   2017-03-03 JFL Output two distinct variables: OBJECTS and PLUSOBJS       *
+:#   2018-01-12 JFL Updated comments.				              *
 :#                                                                            *
 :#      © Copyright 2016-2017 Hewlett Packard Enterprise Development LP       *
 :# Licensed under the Apache 2.0 license  www.apache.org/licenses/LICENSE-2.0 *
@@ -64,6 +66,7 @@ set "OBJ[.asm]=obj"
 set "OBJ[.r]=obj"
 set "OBJ[.rc]=res"
 
+:# Convert the list of sources to a list of object files
 :next
 if .%1.==.. goto :done
 for %%s in (%1) do (
@@ -87,6 +90,8 @@ for %%s in (%1) do (
 shift
 goto :next
 :done
+
+:# Output the result
 echo OBJECTS=%OBJECTS%
 echo PLUSOBJS=%+OBJECTS%
 exit /b %ERR%
