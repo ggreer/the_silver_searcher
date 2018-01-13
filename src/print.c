@@ -135,6 +135,10 @@ void print_line(const char *buf, size_t buf_pos, size_t prev_line_offset) {
     if (opts.width > 0 && opts.width < write_chars) {
         write_chars = opts.width;
     }
+    if (buf[prev_line_offset + write_chars - 1] == '\0') {
+        /* A line might not include a new line character. */
+        write_chars--;
+    }
 
     fwrite(buf + prev_line_offset, 1, write_chars, out_fd);
 }
