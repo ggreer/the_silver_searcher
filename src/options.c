@@ -197,6 +197,13 @@ void cleanup_options(void) {
     if (opts.file_search_regex_extra) {
         pcre_free(opts.file_search_regex_extra);
     }
+
+    if (opts.filetype_regex) {
+        pcre_free(opts.filetype_regex);
+    }
+    if (opts.filetype_regex_extra) {
+        pcre_free(opts.filetype_regex_extra);
+    }
 }
 
 void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
@@ -617,7 +624,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     if (has_filetype) {
         num_exts = combine_file_extensions(ext_index, lang_num, &extensions);
         lang_regex = make_lang_regex(extensions, num_exts);
-        compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, lang_regex, 0, 0);
+        compile_study(&opts.filetype_regex, &opts.filetype_regex_extra, lang_regex, 0, 0);
     }
 
     if (extensions) {

@@ -37,6 +37,8 @@ typedef struct {
     int match_files;
     pcre *file_search_regex;
     pcre_extra *file_search_regex_extra;
+    pcre *filetype_regex;
+    pcre_extra *filetype_regex_extra;
     int color;
     char *color_line_number;
     char *color_match;
