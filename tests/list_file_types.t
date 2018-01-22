@@ -206,7 +206,7 @@ Language types are output:
   
     --mercury
         .m  .moo
-
+  
     --naccess
         .asa  .rsa
   
@@ -233,7 +233,7 @@ Language types are output:
   
     --parrot
         .pir  .pasm  .pmc  .ops  .pod  .pg  .tg
-
+  
     --pdb
         .pdb
   
