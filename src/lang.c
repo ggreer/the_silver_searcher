@@ -18,6 +18,7 @@ lang_spec_t langs[] = {
     { "chpl", { "chpl" } },
     { "clojure", { "clj", "cljs", "cljc", "cljx" } },
     { "coffee", { "coffee", "cjsx" } },
+    { "conf", { "config" } },
     { "coq", { "coq", "g", "v" } },
     { "cpp", { "cpp", "cc", "C", "cxx", "m", "hpp", "hh", "h", "H", "hxx", "tpp" } },
     { "crystal", { "cr", "ecr" } },
