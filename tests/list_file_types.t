@@ -208,7 +208,7 @@ Language types are output:
         .m  .moo
 
     --naccess
-        .asa .rsa
+        .asa  .rsa
   
     --nim
         .nim
