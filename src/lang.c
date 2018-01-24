@@ -111,6 +111,7 @@ lang_spec_t langs[] = {
     { "swift", { "swift" } },
     { "tcl", { "tcl", "itcl", "itk" } },
     { "tex", { "tex", "cls", "sty" } },
+    { "thrift", { "thrift" } },
     { "tla", { "tla" } },
     { "tt", { "tt", "tt2", "ttml" } },
     { "toml", { "toml" } },

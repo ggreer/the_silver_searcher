@@ -324,6 +324,9 @@ Language types are output:
     --tex
         .tex  .cls  .sty
   
+    --thrift
+        .thrift
+  
     --tla
         .tla
   
