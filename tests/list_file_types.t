@@ -207,6 +207,9 @@ Language types are output:
     --mercury
         .m  .moo
   
+    --naccess
+        .asa  .rsa
+  
     --nim
         .nim
   
@@ -230,6 +233,9 @@ Language types are output:
   
     --parrot
         .pir  .pasm  .pmc  .ops  .pod  .pg  .tg
+  
+    --pdb
+        .pdb
   
     --perl
         .pl  .pm  .pm6  .pod  .t
