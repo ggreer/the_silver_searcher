@@ -371,6 +371,11 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.stdout_inode = statbuf.st_ino;
     }
 
+    /* Suppress colors if user has NO_COLOR set (to any value). Allow --color to explicitly override */
+    if (getenv("NO_COLOR") != NULL) {
+        opts.color = 0;
+    }
+
     char *file_search_regex = NULL;
     while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:FfHhiLlm:nop:QRrSsvVtuUwW:z0", longopts, &opt_index)) != -1) {
         switch (ch) {
