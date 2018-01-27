@@ -88,6 +88,7 @@ lang_spec_t langs[] = {
     { "plist", { "plist" } },
     { "plone", { "pt", "cpt", "metadata", "cpy", "py", "xml", "zcml" } },
     { "proto", { "proto" } },
+    { "pug", { "pug" } },
     { "puppet", { "pp" } },
     { "python", { "py" } },
     { "qml", { "qml" } },

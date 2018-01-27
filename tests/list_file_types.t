@@ -255,6 +255,9 @@ Language types are output:
     --proto
         .proto
   
+    --pug
+        .pug
+  
     --puppet
         .pp
   
