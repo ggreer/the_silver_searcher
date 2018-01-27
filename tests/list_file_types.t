@@ -321,6 +321,9 @@ Language types are output:
     --tcl
         .tcl  .itcl  .itk
   
+    --terraform
+        .tf
+  
     --tex
         .tex  .cls  .sty
   
