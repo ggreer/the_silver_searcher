@@ -213,7 +213,12 @@ int main(int argc, char **argv) {
         double time_diff = ((long)stats.time_end.tv_sec * 1000000 + stats.time_end.tv_usec) -
                            ((long)stats.time_start.tv_sec * 1000000 + stats.time_start.tv_usec);
         time_diff /= 1000000;
-        printf("%zu matches\n%zu files contained matches\n%zu files searched\n%zu bytes searched\n%f seconds\n",
+        printf(
+#if defined(_WIN32) && (_MSC_VER < 1800)
+               "%Iu matches\n%Iu files contained matches\n%Iu files searched\n%Iu bytes searched\n%f seconds\n",
+#else
+               "%zu matches\n%zu files contained matches\n%zu files searched\n%zu bytes searched\n%f seconds\n",
+#endif
                stats.total_matches, stats.total_file_matches, stats.total_files, stats.total_bytes, time_diff);
         pthread_mutex_destroy(&stats_mtx);
     }
