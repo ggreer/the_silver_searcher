@@ -215,11 +215,11 @@ int main(int argc, char **argv) {
         time_diff /= 1000000;
         printf(
 #if defined(_WIN32) && (_MSC_VER < 1800)
-               "%Iu matches\n%Iu files contained matches\n%Iu files searched\n%Iu bytes searched\n%f seconds\n",
+            "%Iu matches\n%Iu files contained matches\n%Iu files searched\n%Iu bytes searched\n%f seconds\n",
 #else
-               "%zu matches\n%zu files contained matches\n%zu files searched\n%zu bytes searched\n%f seconds\n",
+            "%zu matches\n%zu files contained matches\n%zu files searched\n%zu bytes searched\n%f seconds\n",
 #endif
-               stats.total_matches, stats.total_file_matches, stats.total_files, stats.total_bytes, time_diff);
+            stats.total_matches, stats.total_file_matches, stats.total_files, stats.total_bytes, time_diff);
         pthread_mutex_destroy(&stats_mtx);
     }
 
