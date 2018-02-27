@@ -15,9 +15,9 @@ typedef enum {
     AG_XZ,
 } ag_compression_type;
 
-ag_compression_type is_zipped(const void *buf, const int buf_len);
+ag_compression_type is_zipped(const void *buf, const size_t buf_len);
 
-void *decompress(const ag_compression_type zip_type, const void *buf, const int buf_len, const char *dir_full_path, int *new_buf_len);
+void *decompress(const ag_compression_type zip_type, const void *buf, const size_t buf_len, const char *dir_full_path, size_t *new_buf_len);
 
 #if HAVE_FOPENCOOKIE
 FILE *decompress_open(int fd, const char *mode, ag_compression_type ctype);

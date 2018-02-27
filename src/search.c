@@ -363,7 +363,7 @@ void search_file(const char *file_full_path) {
             search_stream(fp, file_full_path);
             fclose(fp);
 #else
-            int _buf_len = (int)f_len;
+            size_t _buf_len = f_len;
             char *_buf = decompress(zip_type, buf, f_len, file_full_path, &_buf_len);
             if (_buf == NULL || _buf_len == 0) {
                 log_err("Cannot decompress zipped file %s", file_full_path);
