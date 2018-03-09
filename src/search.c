@@ -3,7 +3,7 @@
 #include "scandir.h"
 
 int search_buf(const char *buf, const size_t buf_len,
-                const char *dir_full_path) {
+               const char *dir_full_path) {
     int binary = -1; /* 1 = yes, 0 = no, -1 = don't know */
     size_t buf_offset = 0;
     int continue_search = TRUE;
@@ -254,7 +254,7 @@ void search_stream(FILE *stream, const char *path) {
             line_len--;
         }
         print_trailing_context(path, line, line_len);
-        if (continue_search == FALSE){
+        if (continue_search == FALSE) {
             break;
         };
     }
@@ -423,7 +423,7 @@ cleanup:
     if (fd != -1) {
         close(fd);
     }
-return continue_search;
+    return continue_search;
 }
 
 void *search_file_worker(void *i) {
