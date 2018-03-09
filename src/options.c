@@ -110,6 +110,8 @@ Search Options:\n\
   -w --word-regexp        Only match whole words\n\
   -W --width NUM          Truncate match lines after NUM characters\n\
   -z --search-zip         Search contents of compressed (e.g., gzip) files\n\
+  -1 --single-match       Stops after reporting first match per thread.\n\
+                          This is different from --max-count=1 or -m 1, where only one match per file is shown.\n\
 \n");
     printf("File Types:\n\
 The search can be restricted to certain types of files. Example:\n\
@@ -167,6 +169,7 @@ void init_options(void) {
     opts.color_match = ag_strdup(color_match);
     opts.color_line_number = ag_strdup(color_line_number);
     opts.use_thread_affinity = TRUE;
+    opts.single_match = FALSE;
 }
 
 void cleanup_options(void) {
@@ -315,6 +318,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "search-files", no_argument, &opts.search_stream, 0 },
         { "search-zip", no_argument, &opts.search_zip_files, 1 },
         { "silent", no_argument, NULL, 0 },
+        { "single-match", no_argument, &opts.single_match, 0 },
         { "skip-vcs-ignores", no_argument, NULL, 'U' },
         { "smart-case", no_argument, NULL, 'S' },
         { "stats", no_argument, &opts.stats, 1 },
@@ -372,7 +376,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     char *file_search_regex = NULL;
-    while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:FfHhiLlm:nop:QRrSsvVtuUwW:z0", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:FfHhiLlm:nop:QRrSsvVtuUwW:z01", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 if (optarg) {
@@ -514,6 +518,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             case '0':
                 opts.path_sep = '\0';
                 break;
+            case '1':
+                opts.single_match = TRUE;
+                break;
             case 0: /* Long option */
                 if (strcmp(longopts[opt_index].name, "ackmate-dir-filter") == 0) {
                     compile_study(&opts.ackmate_dir_filter, &opts.ackmate_dir_filter_extra, optarg, 0, 0);
@@ -569,6 +576,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                     opts.print_filename_only = 1;
                     opts.print_path = PATH_PRINT_NOTHING;
                     opts.stats = 1;
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "single-match") == 0) {
+                    opts.single_match = TRUE;
                     break;
                 }
 

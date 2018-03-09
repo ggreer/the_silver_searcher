@@ -216,6 +216,10 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
     this allows `xargs -0 <command>` to correctly process filenames containing
     spaces or newlines.
 
+    * `-1 --single-match`:
+    Stops after reporting first match per thread.
+    This is different from --max-count=1 or -m 1, where only one match per file is shown.
+
 
 ## FILE TYPES
 
