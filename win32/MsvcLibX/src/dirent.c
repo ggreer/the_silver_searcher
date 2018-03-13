@@ -34,6 +34,8 @@
 *		    Added IO_REPARSE_TAG_NFS to known symbolic link types.    *
 *    2017-10-02 JFL Removed dependencies on MAX_PATH or PATH_MAX.	      *
 *		    Fixed support for pathnames >= 260 characters.	      *
+*    2018-02-28 JFL Fixed alphasort() when files differ only by case.	      *
+*    2018-03-06 JFL Fixed a warning with Visual Studio 2015.         	      *
 *		    							      *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -405,9 +407,10 @@ check_attr_again:
 	{ /* We must read the link to distinguish junctions from mount points. */
 	WCHAR *pwszPath = NULL;
 	WCHAR *pwszBuf = NULL;
-	ssize_t n = lstrlenW(pDir->pwszDirName);
-	ssize_t lwPath = n + 1 + lstrlenW(pDir->wfd.cFileName) + 1;
+	ssize_t lwszDirName = lstrlenW(pDir->pwszDirName);
+	ssize_t lwPath = lwszDirName + 1 + lstrlenW(pDir->wfd.cFileName) + 1;
 	ssize_t lwBuf = PATH_MAX; /* This will be sufficient in most cases, If not, the buf will be extended below */
+	ssize_t lLink;
 	pwszPath = malloc(sizeof(WCHAR) * lwPath);
 	if (!pwszPath) {
 return_ENOMEM:
@@ -416,18 +419,18 @@ return_ENOMEM:
 	}
 	bIsMountPoint = TRUE;
 	lstrcpyW(pwszPath, pDir->pwszDirName);
-	if (n && (pwszPath[n-1] != L'\\')) pwszPath[n++] = L'\\';
-	lstrcpyW(pwszPath+n, pDir->wfd.cFileName);
+	if (lwszDirName && (pwszPath[lwszDirName-1] != L'\\')) pwszPath[lwszDirName++] = L'\\';
+	lstrcpyW(pwszPath+lwszDirName, pDir->wfd.cFileName);
 realloc_wBuf:
 	pwszBuf = malloc(sizeof(WCHAR) * lwBuf);
 	if (!pwszBuf) {
 	  free(pwszPath);
 	  goto return_ENOMEM;
 	}
-	n = readlinkW(pwszPath, pwszBuf, lwBuf);
+	lLink = readlinkW(pwszPath, pwszBuf, lwBuf);
 	/* Junction targets are absolute pathnames, starting with a drive letter. Ex: C: */
 	/* readlink() fails if the reparse point does not target a valid pathname */
-	if (n < 0) {
+	if (lLink < 0) {
 	  if (errno == ENAMETOOLONG) { /* The output buffer was too small. Retry with a bigger one */
 	    free(pwszBuf); /* No need to copy the old content */
 	    lwBuf *= 2;
@@ -440,7 +443,8 @@ realloc_wBuf:
 	bIsJunction = TRUE; /* Else this is a junction. Fall through to the symlink case. */
 	free(pwszPath);
 	free(pwszBuf);
-	} 	      
+	}
+	/* Fall through to the symlink case. */
       case IO_REPARSE_TAG_SYMLINK:		/* NTFS symbolic link */
       case IO_REPARSE_TAG_NFS:			/* NFS symbolic link */
       case IO_REPARSE_TAG_LX_SYMLINK:		/* LinuX subsystem symlink */
@@ -737,8 +741,8 @@ int __cdecl alphasort(const _dirent **ppDE1, const _dirent **ppDE2) {
   /* Sort names a-la Windows, that is case insensitive */
   ret = _strnicmp((*ppDE1)->d_name, (*ppDE2)->d_name, NAME_MAX);
   if (ret) return ret;
-  /* For the remote chance that we're accessing a Unix share */
-  ret = _strnicmp((*ppDE1)->d_name, (*ppDE2)->d_name, NAME_MAX);
+  /* For the remote chance that we're accessing a Unix share, with files that differ only by case */
+  ret = strncmp((*ppDE1)->d_name, (*ppDE2)->d_name, NAME_MAX);
   if (ret) return ret;
   return 0;
 }

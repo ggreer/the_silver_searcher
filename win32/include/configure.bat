@@ -172,13 +172,14 @@
 :#   2017-03-10 JFL Added support for Visual Studio 2017.		      *
 :#   2017-03-12 JFL Defining variable OS limits builds to that OS list.       *
 :#   2017-10-27 JFL Changed OUTDIR default to the bin subdirectory.           *
+:#   2018-03-09 JFL Find Windows SDK bin dir when in a %WINSDK_VER% subdir.   *
 :#                                                                            *
-:#      © Copyright 2016-2017 Hewlett Packard Enterprise Development LP       *
+:#      © Copyright 2016-2018 Hewlett Packard Enterprise Development LP       *
 :# Licensed under the Apache 2.0 license  www.apache.org/licenses/LICENSE-2.0 *
 :#*****************************************************************************
 
 setlocal EnableExtensions EnableDelayedExpansion
-set "VERSION=2017-10-27"
+set "VERSION=2018-03-09"
 set "SCRIPT=%~nx0"				&:# Script name
 set "SPATH=%~dp0" & set "SPATH=!SPATH:~0,-1!"	&:# Script path, without the trailing \
 set  "ARG0=%~f0"				&:# Script full pathname
@@ -1722,6 +1723,8 @@ if defined WINSDK_LIB for %%l in ("%WINSDK_LIB%") do (
   set "WINSDK_VER=%%~nxl"
   set "WINSDK_LIBDIR=%%~l\um\!WINSDKPROC!"
   set "WINSDK_BIN=!WINSDK!\Bin\!WINSDKPROC!"
+  :# Some SDKs have their files in a bin subdir, with the SDK version. Ex: bin\10.0.16299.0
+  for /d %%d in ("!WINSDK!\Bin\!WINSDK_VER!\!WINSDKPROC!") do if exist "%%~d\rc.exe" set "WINSDK_BIN=%%~d"
   set "WINSDK_INCDIR="
   set "WINSDK_INCLUDE="
   for /d %%d in ("!WINSDK!\Include" "!WINSDK!\Include\!WINSDK_VER!") do ( :# Pre-release kits have an additional subdir level
@@ -1734,7 +1737,7 @@ if defined WINSDK_LIB for %%l in ("%WINSDK_LIB%") do (
     )
   set "WINSDK_LIB=!WINSDK_LIBDIR!"
   )
-  %ECHOVARS.D% WINSDK WINSDK_SUBDIR WINSDK_INCDIR WINSDK_INCLUDE WINSDK_LIB
+  %ECHOVARS.D% WINSDK WINSDKPROC WINSDK_VER WINSDK_LIBDIR WINSDK_BIN WINSDK_INCDIR WINSDK_INCLUDE WINSDK_LIB
 )
 goto :eof
 

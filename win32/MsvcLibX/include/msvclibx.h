@@ -124,6 +124,10 @@ extern int TrimLongPathPrefix(LPSTR pszName); /* Remove \\?\ and \\?\UNC\ prefix
 #if defined(_UTF8_SOURCE) && !defined(_UTF8_LIB_SOURCE)
 /* Force linking in MsvcLibX' UTF-8 initialization module */
 #pragma comment(linker, "/include:" MSVCLIBX_STRINGIZE(PUBLIC_SYMBOL_NAME(_initU)))
+/* Redefine the main routine for Visual Studio 14 and later */
+#if _MSC_VER >= 1900
+#define main mainU
+#endif /* _MSC_VER >= 1900 */
 #endif /* defined(_UTF8_SOURCE) ... */
 #endif /* defined(_WIN32) */
 

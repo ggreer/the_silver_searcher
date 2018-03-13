@@ -39,6 +39,8 @@
 #		    SOURCES	Source files to compile.		      #
 #		    OBJECTS	Object files to link. Optional.		      #
 #		    PROGRAM	The node name of the program to build. Opt.   #
+#		    EXENAME	The file name of the program to build. Opt.   #
+#		    SKIP_THIS	Message explaining why NOT to build. Opt.     #
 #									      #
 #		    In the absence of a {prog}.mak file, or if one of the     #
 #		    generic targets is used, then the default Files.mak is    #
@@ -75,7 +77,7 @@
 #    2016-09-15 JFL Added WSDKINCLUDE definition.                             #
 #    2016-10-11 JFL Adapted for use in SysToolsLib global C include dir.      #
 #									      #
-#         © Copyright 2016 Hewlett Packard Enterprise Development LP          #
+#      © Copyright 2016-2018 Hewlett Packard Enterprise Development LP        #
 # Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 #
 ###############################################################################
 
@@ -102,6 +104,9 @@ LIB=$(ARM_LIBPATH)		# 32-bits libraries paths
 WINVER=6.2			# Target Windows 8
 MACHINE=ARM			# Target CPU = 32-bits ARM
 USEDOSSTUB=0			# Do not use an MS-DOS stub
+
+# Library SuffiX. For storing multiple versions of the same library in a single directory.
+LSX=a32
 
 !ENDIF # !DEFINED(DISPATCH_OS)
 

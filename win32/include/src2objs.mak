@@ -10,10 +10,13 @@
 #    2017-03-01 JFL Created this make file.       			      #
 #    2017-11-12 JFL Changed the output file name to $(PROGRAM).objects.       #
 #    2018-01-12 JFL Changed the output make file name.			      #
+#    2018-03-01 JFL Added a startup message.          			      #
 #		    							      #
 #         © Copyright 2017 Hewlett Packard Enterprise Development LP          #
 # Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 #
 ###############################################################################
+
+!MESSAGE Started src2objs.mak
 
 # Create the output directory if needed
 !IF !EXIST($(O))

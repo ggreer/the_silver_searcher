@@ -14,13 +14,14 @@
 :#   2017-03-02 JFL Added VERSION and option -V.                              *
 :#   2017-03-03 JFL Output two distinct variables: OBJECTS and PLUSOBJS       *
 :#   2018-01-12 JFL Updated comments.				              *
+:#   2018-03-11 JFL Output a third variable: _OBJECTS = list without paths    *
 :#                                                                            *
 :#      © Copyright 2016-2017 Hewlett Packard Enterprise Development LP       *
 :# Licensed under the Apache 2.0 license  www.apache.org/licenses/LICENSE-2.0 *
 :#*****************************************************************************
 
 setlocal EnableExtensions EnableDelayedExpansion
-set "VERSION=2017-03-03"
+set "VERSION=2018-03-11"
 set ARG0=%0
 goto :main
 
@@ -58,6 +59,7 @@ goto :go
 :go
 set "OBJECTS="
 set "+OBJECTS="
+set "_OBJECTS="
 set "ERR=0"
 
 set "OBJ[.c]=obj"
@@ -77,21 +79,24 @@ for %%s in (%1) do (
     >&2 echo        Please add a conversion rule in %ARG0%
     set ERR=1
   ) else (
-    set "OBJECT=%PLUS%%OBJPATH\%%%~ns.!OBJ!
-    if not defined OBJECTS (
-      set "OBJECTS=!OBJECT!"
-      set "+OBJECTS=+!OBJECT!"
-    ) else (
-      set "OBJECTS=!OBJECTS! !OBJECT!"
-      set "+OBJECTS=!+OBJECTS! +!OBJECT!"
-    )
+    set "_OBJECT=%%~ns.!OBJ!
+    set "OBJECT=%PLUS%%OBJPATH\%!_OBJECT!
+    set "OBJECTS=!OBJECTS! !OBJECT!"
+    set "+OBJECTS=!+OBJECTS! +!OBJECT!"
+    set "_OBJECTS=!_OBJECTS! !_OBJECT!"
   )
 )
 shift
 goto :next
 :done
+if defined OBJECTS (
+  set "OBJECTS=!OBJECTS:~1!"
+  set "+OBJECTS=!+OBJECTS:~1!"
+  set "_OBJECTS=!_OBJECTS:~1!"
+)
 
 :# Output the result
 echo OBJECTS=%OBJECTS%
 echo PLUSOBJS=%+OBJECTS%
+echo _OBJECTS=%_OBJECTS%
 exit /b %ERR%

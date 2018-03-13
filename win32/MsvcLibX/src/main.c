@@ -12,6 +12,7 @@
 *    2017-02-05 JFL Redesigned to override libc's _setargv(). This avoids     *
 *                   having to encapsulate the main() routine with one here.   *
 *    2017-03-12 JFL Restructured the UTF16 writing mechanism.		      *
+*    2018-01-31 JFL Added a main() routine for Visual Studio 14 and later.    *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -225,6 +226,50 @@ int _initU(void) {
 
   return 0;
 }
+
+/*---------------------------------------------------------------------------*\
+*                                                                             *
+|   Function	    main						      |
+|									      |
+|   Description	    main routine					      |
+|									      |
+|   Parameters	    None						      |
+|									      |
+|   Returns	    Whatever the program returns			      |
+|		    							      |
+|   Notes	    Indirectly linked in C programs that define _UTF8_SOURCE, |
+|		    dragged in with _initU() above.			      |
+|		    							      |
+|		    Visual Studio versions up to 12 do not need this.	      |
+|		    For them, defining function _setargv() is enough.	      |
+|		    							      |
+|		    But Visual Studio 14 and later do not use _setargv().     |
+|		    Instead, they use a mechanism allowing to select one of   |
+|		    four pre-defined routines, but not define your own.	      |
+|		    							      |
+|   History								      |
+|    2018-01-31 JFL Created this routine.				      |
+*									      *
+\*---------------------------------------------------------------------------*/
+
+/* Redefine the main routine for Visual Studio 14 and later */
+#if _MSC_VER >= 1900
+
+#undef main
+
+/* The user's main routine will be renamed mainU by msvclibx.h */
+extern int mainU(int argc, char *argv[], char *envp[]);
+
+/* This main routine will be called first by the C runtime library init */
+#pragma warning(disable:4100) /* Ignore the "unreferenced formal parameter" warning */
+int main(int argc, char *argv[], char *envp[]) {
+  argc = _setargv();
+  if (argc < 0) return argc; /* _initU() failed. Return its error code. */
+  return mainU(argc, __argv, envp); /* Call the user's main() routine */
+}
+#pragma warning(default:4100) /* Restore the "unreferenced formal parameter" warning */
+
+#endif /* _MSC_VER >= 1900 */
 
 #endif /* defined(_WIN32) */
 

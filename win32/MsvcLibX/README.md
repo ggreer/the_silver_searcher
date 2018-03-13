@@ -848,4 +848,3 @@ Many significant changes and improvements this year:
   names differ in Windows and Linux.
 - Another simplification: It's possible to make recursive builds by just
   defining a DIRS variable in a Files.mak file.
-

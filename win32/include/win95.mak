@@ -32,6 +32,8 @@
 #		    SOURCES	Source files to compile.		      #
 #		    OBJECTS	Object files to link. Optional.		      #
 #		    PROGRAM	The node name of the program to build. Opt.   #
+#		    EXENAME	The file name of the program to build. Opt.   #
+#		    SKIP_THIS	Message explaining why NOT to build. Opt.     #
 #									      #
 #		    In the absence of a {prog}.mak file, or if one of the     #
 #		    generic targets is used, then the default Files.mak is    #
@@ -68,8 +70,9 @@
 #    2016-09-15 JFL Added WSDKINCLUDE definition.                             #
 #    2016-10-11 JFL Adapted for use in SysToolsLib global C include dir.      #
 #    2016-10-21 JFL Use the more recent WIN32 assembler, w. more instructions.#
+#    2018-02-28 JFL Added $(LSX) Library SuffiX definition.		      #
 #									      #
-#         © Copyright 2016 Hewlett Packard Enterprise Development LP          #
+#      © Copyright 2016-2018 Hewlett Packard Enterprise Development LP        #
 # Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 #
 ###############################################################################
 
@@ -101,6 +104,9 @@ AFLAGS=/Cx /Sn /Zim /D_WIN95 "/D_MODEL=flat,stdcall"	# Contrary to the C compile
 WINVER=4.0			# Target Windows 95 and NT4
 MACHINE=X86			# Target CPU = Intel 32-bits x86
 USEDOSSTUB=1			# Use an MS-DOS stub
+
+# Library SuffiX. For storing multiple versions of the same library in a single directory.
+LSX=w95
 
 !ENDIF # !DEFINED(DISPATCH_OS)
 
