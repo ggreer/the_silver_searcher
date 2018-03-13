@@ -20,6 +20,7 @@ SOURCES=$(ONE_SOURCE)		# The DLL builds much faster when we compile just pthread
 ALIAS_TYPE=dll
 !ELSEIF "$(TYPE)"=="LIB"
 DEFINE_BUILD_TYPE=/DPTW32_STATIC_LIB
+# SOURCES=$(ONE_SOURCE)		# The lib builds much faster with one source. But this puts lots of useless code in your app.
 ALIAS_TYPE=lib
 !ENDIF
 
@@ -39,18 +40,19 @@ CLEANUP = __CLEANUP_SEH
 ALIAS_SUFFIX=VSE
 !ENDIF
 
-!IF !DEFINED(SOURCES)
 !IF EXIST(common.mk)
 OBJEXT = obj
 RESEXT = res
 !INCLUDE common.mk
-SOURCES = $(PTHREAD_SRCS)	# Sources for versions >= 2.10 RC
+SOURCES0 = $(PTHREAD_SRCS)	# Sources for versions >= 2.10 RC
 # OBJECTS = $(STATIC_OBJS)	# src2obj will recreate with the object directory path prefix
 !ELSEIF EXIST(pthread_exit.c)
-SOURCES = $(SOURCES_210_BETA)	# Sources for versions 2.10 beta
-!ELSE
-SOURCES = $(SOURCES_209)	# Sources for versions <= 2.09
-!ENDIF
+SOURCES0 = $(SOURCES_210_BETA)	# Sources for versions 2.10 beta
+!ELSE # !EXIST(common.mk)
+SOURCES0 = $(SOURCES_209)	# Sources for versions <= 2.09
+!ENDIF # EXIST(common.mk)
+!IF !DEFINED(SOURCES)
+SOURCES=$(SOURCES0)
 !ENDIF # !DEFINED(SOURCES)
 
 # Change SysToolsLib's *.mak CFLAGS to match pthread's, but keep all those that define output directories, etc.
@@ -60,7 +62,7 @@ SOURCES = $(SOURCES_209)	# Sources for versions <= 2.09
 #   CFLAGSD = /Z7 $(XCFLAGS)
 # For info about /MT vs /MD, see https://msdn.microsoft.com/en-us/library/abx4dbyh(v=vs.80).aspx
 # It's supposed to be /MT for multithread libs (libcmt.lib), and /MD for DLL libs (msvcrt.lib) */
-CFLAGS=$(CFLAGS:/W4 =) /W3 /MD # Yet ag.exe hangs with pthread.lib if linked with /MT. So use /MD always.
+CFLAGS=$(CFLAGS:/W4 =) /W3 /MT # ag.exe hanged with pthread.lib 2.10 release if compiled with /MT. Use /MD as a workaround.
 CFLAGS=$(CFLAGS:/Zp =)
 !IF DEFINED(_DEBUG) || "$(DEBUG)"=="1"
 CFLAGS=$(CFLAGS:/Zi =) /Z7
@@ -78,4 +80,8 @@ CFLAGS=$(CFLAGS) /DHAVE_STRUCT_TIMESPEC
 #			Include files dependencies			      #
 #-----------------------------------------------------------------------------#
 
-# TBD
+!IF "$(SOURCES)"=="$(ONE_SOURCE)"
+$(ONE_SOURCE): $(SOURCES0)
+  for %%f in ($?) do if exist "$(O)\%%f" del "$(O)\%%f" &:# For all updated C sources, delete the de-BOM-ed copy.
+  touch $@ || copy /b $@+NUL &:# Use touch.exe if available, else use internal DOS commands for doing the same, albeit less efficiently.
+!ENDIF
