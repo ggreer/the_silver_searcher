@@ -33,7 +33,7 @@ set "SDK.PCRE.LIBPATH=$(BR)"      &:# $(BR) = SysToolsLib OS-specific output dir
 set "SDK.PTHREAD.NAME=Posix Threads for Windows"
 set "SDK.PTHREAD.FILE=pthread.h"  &:# A unique file at the base of that library tree
 set "SDK.PTHREAD.INCPATH=."       &:# Include files are in the base directory
-set "SDK.PTHREAD.LIBPATH=$(BR)\LIBs" &:# $(BR) = SysToolsLib OS-specific output directory
+set "SDK.PTHREAD.LIBPATH=VC2_LIB\$(BR)" &:# $(BR) = SysToolsLib OS-specific output directory
 
 set "SDK.ZLIB.NAME=General Purpose Compression Library"
 set "SDK.ZLIB.FILE=zlib.h"        &:# A unique file at the base of that library tree
