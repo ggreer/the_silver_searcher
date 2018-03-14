@@ -62,7 +62,10 @@ SOURCES=$(SOURCES0)
 #   CFLAGSD = /Z7 $(XCFLAGS)
 # For info about /MT vs /MD, see https://msdn.microsoft.com/en-us/library/abx4dbyh(v=vs.80).aspx
 # It's supposed to be /MT for multithread libs (libcmt.lib), and /MD for DLL libs (msvcrt.lib) */
-CFLAGS=$(CFLAGS:/W4 =) /W3 /MT # ag.exe hanged with pthread.lib 2.10 release if compiled with /MT. Use /MD as a workaround.
+CFLAGS=$(CFLAGS:/W4 =) /W3 /MT	# ag.exe hanged with pthread.lib 2.10 release if compiled with /MT. Used /MD as a workaround.
+!IF "$(TYPE)"=="DLL"
+CFLAGS=$(CFLAGS: /MT=) /MD	# DLLs must use /MD anyway
+!ENDIF
 CFLAGS=$(CFLAGS:/Zp =)
 !IF DEFINED(_DEBUG) || "$(DEBUG)"=="1"
 CFLAGS=$(CFLAGS:/Zi =) /Z7
