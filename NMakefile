@@ -8,6 +8,7 @@
 #									      #
 #   History								      #
 #    2017-09-01 JFL jf.larvoire@free.fr created this file.                    #
+#    2018-03-14 JFL Added a source-release target.			      #
 #		    							      #
 ###############################################################################
 
@@ -27,7 +28,8 @@ Targets:
   all                  Build all available sources (default)
   clean                Erase all output files
   distclean            Erase all output files and all configuration files
-  release              Generate a bin/ag.zip release
+  release              Generate a $(OUTDIR)\ag.zip release
+  source-release       Generate a $(OUTDIR)\ag-src.zip release
 <<
 
 # Include common definitions
@@ -94,3 +96,66 @@ release:
 	$(MSG) ... done
 <<
 
+source-release:
+    call <<"$(TMP)\ag-source-release-$(PID).bat"
+	@echo off
+	setlocal EnableExtensions EnableDelayedExpansion
+	goto :main
+	
+	:msg
+	echo %*
+	$(MSG) %*
+	exit /b
+	
+	:main
+	set "MSG=call :msg"
+	
+	:# Select the output directory
+	set "CONFIG.H=config.%COMPUTERNAME%.h"
+	if not exist %CONFIG.H% set "CONFIG.H=config.h"
+	if exist %CONFIG.H% call %CONFIG.H%
+	if not defined OUTDIR (
+	  set "\OUTDIR=\bin"
+	) else if "%OUTDIR%"=="." (
+	  set "\OUTDIR="
+	) else (
+	  set "\OUTDIR=\%OUTDIR%"
+	)
+	
+	:# Set the output file name
+	set "ZIP=!CD!%\OUTDIR%\ag-src.zip"
+	
+	:# Rebuild a new zip file
+	set "PATH=%PATH%;C:\Program Files\7-zip;C:\Program Files\Git\cmd"
+	if exist "%ZIP%" del "%ZIP%"
+	%MSG% Creating "%ZIP%"
+
+	:# Problem: A list size > 8KB confuses the batch parser
+	:# Worse still, commands > 4KB fail. 
+	:# So split large lists into several sub-lists of smaller sizes
+	set "NLIST=0"
+	set "LIST="
+	for /f "delims=" %%f in ('git ls-files') do (
+	  set "FILE=%%f"
+	  set  LIST=!LIST! "!FILE:/=\!"
+	  set "C=!LIST:~3500,1!"
+	  if defined C for %%n in (!NLIST!) do (
+	    set LIST[%%n]=!LIST:~1!
+	    set /A NLIST+=1
+	    set "LIST="
+	  )
+	)
+	if defined LIST for %%n in (!NLIST!) do (
+	  set LIST[%%n]=!LIST:~1!
+	  set /A NLIST+=1
+	  set "LIST="
+	)
+	set /A ILAST=NLIST-1
+	for /l %%i in (0,1,!ILAST!) do (
+	  echo 7z.exe -- a "%ZIP%" !LIST[%%i]!
+	  7z.exe a -- "%ZIP%" !LIST[%%i]!
+	)
+	
+	:# Conclusion
+	%MSG% %ZIP% done
+<<
