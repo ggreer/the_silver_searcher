@@ -1,4 +1,33 @@
-# The Silver Searcher
+# The Silver Searcher for Windows
+
+## Specificities of this fork
+
+This repository is a fork of [Geoff Greer](https://github.com/ggreer)'s [The Silver Searcher](https://github.com/ggreer/the_silver_searcher) for Unix.
+
+It is dedicated to building a well behaved version of ag.exe for Windows.  
+The original version can be built for Windows using MinGW, but it has several shortcomings that limit its usefulness for Windows users world-wide.  
+This version has the following improvements:
+
+* Use and display Windows paths with the \ character.
+* The -? option displays help.
+* Support command line arguments with non-ASCII characters in any console code page. 
+* Correctly display pathnames and matching strings with non-ASCII characters in any console code page, even if they're not part of the code page.
+* Use PCRE UTF8 option, allowing to search for non-ASCII regular expressions. (Like "." matching 1 character = 1 to 4 bytes!)
+* Support the two text files encodings standard in each version of Windows, ANSI and UTF-8, and display matches correctly for both.
+  (Dynamically detects each file encoding.) (The so-called ANSI encoding is Windows-localization-specific. Ex: Code page 1252 for the USA version.)
+* Also support the console encoding for text piped through the standard input.
+  (Which _is_ often different from the above two, and can be changed dynamically. Ex: Code page 437 by default for the USA version.)
+* Support pathnames longer than 260 characters.
+* Support Windows junctions and symbolic links.
+* Support 64-bit statistics even for the 32-bit build. (Allows searching through more than 4GB of files with the x86 build.)
+* The debug version displays the thread number ahead of each debug message.
+
+Thanks to [Krzysztof Kowalczyk](https://github.com/kjk) who did the original [Native Visual Studio Port](https://github.com/kjk/the_silver_searcher).
+I've actually started from his August 2016 code, and kept improving it.
+
+For instructions on how to build this code, see [win32/README.md](win32/README.md).
+
+## Original introduction
 
 A code searching tool similar to `ack`, with a focus on speed.
 
