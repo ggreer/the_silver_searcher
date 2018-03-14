@@ -18,7 +18,9 @@ set "MY_SDKS=..\win32 %MY_SDKS%"
 :# Store output files one level up
 :# set "OUTDIR=..\bin"
 :# We use a junction instead of a symlinkd, because Windows allows creating junctions by default, but not symlinkds.
-set "MD_OUTDIR=mklink /j bin ..\bin >NUL"
+set "JUNCTION=mklink /j" &:# Default command installed on all Vista and later systems
+where junction >NUL 2>NUL && set "JUNCTION=junction" &:# Better command that also works on network drives
+set "MD_OUTDIR=%JUNCTION% %OUTDIR% ..\%OUTDIR% >NUL"
 
 :# Even if the right tools are available, avoid trying to build ag.exe for DOS and WIN95, which are not supported yet.
 if "%OS%"=="Windows_NT" set "OS=" &:# This is the Windows' homonym default, same as undefined for us here.
