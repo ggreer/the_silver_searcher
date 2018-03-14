@@ -20,7 +20,7 @@ SOURCES=$(ONE_SOURCE)		# The DLL builds much faster when we compile just pthread
 ALIAS_TYPE=dll
 !ELSEIF "$(TYPE)"=="LIB"
 DEFINE_BUILD_TYPE=/DPTW32_STATIC_LIB
-# SOURCES=$(ONE_SOURCE)		# The lib builds much faster with one source. But this puts lots of useless code in your app.
+SOURCES=$(ONE_SOURCE)		# The lib builds much faster with one source. But this puts lots of useless code in your app.
 ALIAS_TYPE=lib
 !ENDIF
 
