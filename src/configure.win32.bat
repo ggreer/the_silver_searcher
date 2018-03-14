@@ -1,7 +1,7 @@
 @echo off
 :#*****************************************************************************
 :#                                                                            *
-:#  Filename        configure.msc.bat                                         *
+:#  Filename        configure.msvc.bat                                        *
 :#                                                                            *
 :#  Description     Define ag MSVC-specific configuration settings            *
 :#                                                                            *
@@ -18,6 +18,7 @@ set "MY_SDKS=..\win32 %MY_SDKS%"
 :# Store output files one level up
 :# set "OUTDIR=..\bin"
 :# We use a junction instead of a symlinkd, because Windows allows creating junctions by default, but not symlinkds.
+if not defined OUTDIR set "OUTDIR=bin"
 set "JUNCTION=mklink /j" &:# Default command installed on all Vista and later systems
 where junction >NUL 2>NUL && set "JUNCTION=junction" &:# Better command that also works on network drives
 set "MD_OUTDIR=%JUNCTION% %OUTDIR% ..\%OUTDIR% >NUL"
