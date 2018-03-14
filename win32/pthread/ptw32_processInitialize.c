@@ -43,6 +43,23 @@
 #include "pthread.h"
 #include "implement.h"
 
+  /*  Visual Studio   &&   compiled with /MT, not /MD  */
+#if defined(_MSC_VER) && defined(_MT) && !defined(_DLL)
+  __PTW32_BEGIN_C_DECLS
+#if defined(_UCRT) /* Names changed in VS 14 / 2015 with the new UCRT */
+  #define _crtheap __acrt_heap
+  #define _heap_init __acrt_initialize_heap
+#endif /* defined(_UCRT) */
+  extern HANDLE _crtheap;
+  /*
+   * Visual studio versions up to 9 / 2008 use an argument for their _heap_init() routine, to enable Multi-Treading support.
+   * Versions up to 12 / 2013 have no argument. They'll ignore the one passed. Multi-Threading is not an option anymore.
+   * Versions 14 / 2015 and above use a redesigned CRT, split into a VCRuntime and UCRT. The functions were renamed.
+   */
+  extern int __cdecl _heap_init(int mtflag);
+  __PTW32_END_C_DECLS
+#endif // defined(_MSC_VER) ...
+
 
 int
 ptw32_processInitialize (void)
@@ -143,6 +160,19 @@ ptw32_processInitialize (void)
   #endif
 
   ptw32_processInitialized = PTW32_TRUE;
+
+  /*
+   * Initialize the CRT library memory heap
+   * This routine may run before main().
+   * For fully static builds compiled with MSVC /MT option, it may even run
+   * before the static CRT library is fully initialized.
+   * To make sure that the forthcoming memory allocations succeed, it is
+   * necessary to make sure that the CRT library memory heap is initialized.
+   */
+  /*   Visual Studio  &&  Compiled with /MT, not /MD   */
+#if defined(_MSC_VER) && defined(_MT) && !defined(_DLL)
+  if (_crtheap == 0) _heap_init(_MT);
+#endif // defined(_MSC_VER) ...
 
   /*
    * Initialize Keys
