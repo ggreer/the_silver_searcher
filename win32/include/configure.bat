@@ -1649,7 +1649,7 @@ if /i "!ARG!"=="-max" %POPARG% & set "WINSDKMAX=!ARG!" & goto :next_winsdk_arg
 if /i "!ARG!"=="-platform" %POPARG% & set "WINSDKPROC=!ARG!" & goto :next_winsdk_arg
 :done_sdk_arg
 :# Search new Windows Kits.
-for %%k in (10 8.1) do (
+for %%k in (10 8.1 8.0) do (
   if defined WINSDKMAX if %%k==!WINSDKMAX! set "WINSDKMAX="
   if not defined WINSDKMAX if defined WINSDKMIN for %%p in (%PF64AND32%) do (
     if not defined WINSDK if exist "%%~p\Windows Kits\%%k" call :FindWkIn "%%~p\Windows Kits\%%k"
