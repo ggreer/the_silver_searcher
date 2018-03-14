@@ -28,7 +28,8 @@
 # Invoke lib2libs.bat for doing the conversion
 # Do not name the output file $(PROGRAM).mak, as this triggers unwanted .mak.inc rules.
 LIB2LIBS_MAK=$(O)\$(PROGRAM).libraries.mak
-LIB2LIBS_CMD=cmd /c "set "LIBS=$(LIBS)" & set "LIB=$(LIB)" & set "O=$(O)" & set "_OBJECTS=$(_OBJECTS)" & "$(STINCLUDE)\lib2libs.bat" >$(LIB2LIBS_MAK)"
+# Use %STINCLUDE% instead of $(STINCLUDE). This saves 34 bytes on my system, which is enough to bring pthread4w command line below 4096 bytes!
+LIB2LIBS_CMD=cmd /c "set "LIBS=$(LIBS)" & set "LIB=$(LIB)" & set "O=$(O)" & set "_OBJECTS=$(_OBJECTS)" & "%STINCLUDE%\lib2libs.bat" >$(LIB2LIBS_MAK)"
 !MESSAGE  	$(LIB2LIBS_CMD) # Align this with nmake's own displayed commands. Begin the message with a hard space \xA0, to allow printing the TAB behind it.
 !IF [$(LIB2LIBS_CMD)] == 0
 !  MESSAGE Getting generated LIBRARIES list from $(LIB2LIBS_MAK).
