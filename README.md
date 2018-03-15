@@ -1,8 +1,8 @@
-# The Silver Searcher for Windows
+﻿# The Silver Searcher for Windows
 
 ## Specificities of this fork
 
-This repository is a fork of [Geoff Greer](https://github.com/ggreer)'s [The Silver Searcher](https://github.com/ggreer/the_silver_searcher) for Unix.
+This repository is a fork of [Geoff Greer](https://github.com/ggreer)'s [The Silver Searcher](https://github.com/ggreer/the_silver_searcher) for Unix, also known as 'ag'.
 
 It is dedicated to building a well behaved version of ag.exe for Windows.  
 The original version can be built for Windows using MinGW, but it has several shortcomings that limit its usefulness for Windows users world-wide.  
@@ -21,11 +21,15 @@ This version has the following improvements:
 * Support Windows junctions and symbolic links.
 * Support 64-bit statistics even for the 32-bit build. (Allows searching through more than 4GB of files with the x86 build.)
 * The debug version displays the thread number ahead of each debug message.
+* Last but not least, everything (ag.exe with all its dependant libraries) is built with a single make.bat command.
 
 Thanks to [Krzysztof Kowalczyk](https://github.com/kjk) who did the original [Native Visual Studio Port](https://github.com/kjk/the_silver_searcher).
 I've actually started from his August 2016 code, and kept improving it.
 
-For instructions on how to build this code, see [win32/README.md](win32/README.md).
+For instructions on how to build this code, and with what tools, see [win32/README.md](win32/README.md).
+
+Jean-François Larvoire
+
 
 ## Original introduction
 
