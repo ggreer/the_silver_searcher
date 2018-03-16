@@ -105,6 +105,9 @@ or
 * Chocolatey
 
         choco install ag
+* Scoop
+
+        scoop install ag
 * MSYS2
 
         pacman -S mingw-w64-{i686,x86_64}-ag
