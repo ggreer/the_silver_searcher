@@ -16,6 +16,8 @@
 #include "print.h"
 #include "util.h"
 
+#include <zlib.h>
+
 const char *color_line_number = "\033[1;33m"; /* bold yellow */
 const char *color_match = "\033[30;43m";      /* black with yellow background */
 const char *color_path = "\033[1;32m";        /* bold green */
@@ -181,7 +183,13 @@ void print_version(void) {
 #else
 #define OS_NAME "Win32"
 #endif
-    printf(" " OS_NAME DEBUG_VERSION);
+    printf(" " OS_NAME DEBUG_VERSION
+#include "msvclibx_version.h"
+	  " ; MsvcLibX " MSVCLIBX_VERSION
+	  " ; PCRE " MSVCLIBX_STRINGIZE(PCRE_MAJOR) "." MSVCLIBX_STRINGIZE(PCRE_MINOR) " " MSVCLIBX_STRINGIZE(PCRE_DATE)
+	  " ; pthreads4w " MSVCLIBX_STRINGIZE(PTW32_VERSION_MAJOR) "." MSVCLIBX_STRINGIZE(PTW32_VERSION_MINOR) "." MSVCLIBX_STRINGIZE(PTW32_VERSION_MICRO)
+	  " ; zlib " ZLIB_VERSION
+    );
 #endif /* defined(HAS_MSVCLIBX) */
     printf("\n\n");
     printf("Features:\n");
