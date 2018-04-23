@@ -72,6 +72,9 @@ Language types are output:
     --dot
         .dot  .gv
   
+    --dts
+        .dts  .dtsi
+  
     --ebuild
         .ebuild  .eclass
   
