@@ -93,13 +93,13 @@ None
 
 Home page: http://www.pcre.org/
 
-Using pcre 8.40, which is the latest in the PCRE 1 series as of February 2017.  
+Using pcre 8.42, which is the latest in the PCRE 1 series as of May 2018.  
 Do not use pcre2, which has different APIs.
 
 #### Files added
 Name               | Description
 -------------------|-------------------------------------------------------------------
-config.h.MsvcLibX  | Hand-crafted config.h for pcre, describing MsvcLibX capabilities.
+config.h.MsvcLibX  | Hand-crafted config.h for pcre, based on config.h.generic, describing MsvcLibX capabilities.
 configure.pcre.bat | Tells configure.bat to use the MsvcLibX library.
 Files.mak          | Define input and output files.
 pcre.mak           | Pcre-specific make rules.
@@ -112,9 +112,9 @@ None
 
 Home page: http://sourceforge.net/projects/pthreads4w/
 
-Using the same pthread 2.10 beta used by [KJK](https://github.com/kjk/the_silver_searcher).  
-I tried using the latest 2.10 RC, but it hangs at run time.
-So I reverted to KJK's version, which works fine, until I find the root cause for the hangs in the newer version.
+Using a patched version of pthread 2.10, which is the latest available as of May 2018.  
+Note that the 2.10 beta used by [KJK](https://github.com/kjk/the_silver_searcher) worked with only minimal patches for MsvcLibX compatibility,
+but the 2.10 RC and 2.10 release do not: They hang at run time. The root cause is a memory allocation issue in purely static builds of pthreads.lib
 
 #### Files added
 Name                  | Description
@@ -124,10 +124,13 @@ Files.mak             | Define input and output files.
 pthread.mak           | Pthread-specific make rules.
 
 #### Files modified
-Name        | Description
-------------|----------------------------------------------------------------------------------------------------------
-implement.h | Line 123: Changed '#if defined(PTW32_CONFIG_MINGW)' to '#if defined(PTW32_CONFIG_MINGW) || defined(HAS_MSVCLIBX)', to force including MsvcLibX's stdint.h.
-sched.h     | Line 132: Changed pid_t definition for MSC to int.
+Name                      | Description
+--------------------------|----------------------------------------------------------------------------------------------------------
+_ptw32.h                  | Line 168: Changed "#elif !defined(__MINGW32__)" to "#elif !defined(__MINGW32__) && !defined(HAS_MSVCLIBX)"
+config.h                  | Line 149: Changed "#if defined(_MSC_VER) && _MSC_VER >= 1900" to "#if defined(_MSC_VER) && (_MSC_VER >= 1900 || defined(HAS_MSVCLIBX))"
+dll.c                     | Line 127: Moved four "#pragma comment (linker, ...)" lines to implement.h
+implement.h               | Line 142: Added a "#if defined(PTW32_CONFIG_MINGW) ... #endif" block with the four "#pragma comment (linker, ...)" lines from dll.c. This ensures that purely static builds link with dll.obj.
+ptw32_processInitialize.c | Lines 46 & 146: Added a fix for the bug that caused pthreads.lib 2.10 release to hang in static builds.
 
 Gotcha: pthread has its own Nmakefile file, which we do not want to use.  
 Hence the special IGNORE_NMAKEFILE definition in configure.pthread.bat.
@@ -137,7 +140,7 @@ Hence the special IGNORE_NMAKEFILE definition in configure.pthread.bat.
 
 Home page: http://www.zlib.net/
 
-Using zlib 1.2.11, which is the latest version as of February 2017.
+Using zlib 1.2.11, which is the latest version as of March 2018
 
 #### Files added
 Name               | Description
