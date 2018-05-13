@@ -299,7 +299,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                         UINT cp = CP_UTF8;
                         if (enc == ENC_WIN_CP)
                             cp = CP_ACP;
-                        fprintfM(out_fd, "%s\n", print_context.context_prev_lines[print_context.prev_line], cp);
+                        fprintfM(cp, out_fd, "%s\n", print_context.context_prev_lines[print_context.prev_line]);
 #endif
                     }
                 }
