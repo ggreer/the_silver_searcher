@@ -4249,4 +4249,12 @@ backtracking verbs. --/
 
 /(?=.*[A-Z])/I
 
+"(?<=(a))\1?b"
+    ab
+    aaab 
+
+"(?=(a))\1?b"
+    ab
+    aaab 
+
 /-- End of testinput2 --/

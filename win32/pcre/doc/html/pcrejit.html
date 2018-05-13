@@ -79,9 +79,12 @@ API that is JIT-specific.
 </P>
 <P>
 If your program may sometimes be linked with versions of PCRE that are older
-than 8.20, but you want to use JIT when it is available, you can test
-the values of PCRE_MAJOR and PCRE_MINOR, or the existence of a JIT macro such
-as PCRE_CONFIG_JIT, for compile-time control of your code.
+than 8.20, but you want to use JIT when it is available, you can test the
+values of PCRE_MAJOR and PCRE_MINOR, or the existence of a JIT macro such as
+PCRE_CONFIG_JIT, for compile-time control of your code. Also beware that the
+<b>pcre_jit_exec()</b> function was not available at all before 8.32,
+and may not be available at all if PCRE isn't compiled with
+--enable-jit. See the "JIT FAST PATH API" section below for details.
 </P>
 <br><a name="SEC4" href="#TOC1">SIMPLE USE OF JIT</a><br>
 <P>
@@ -119,6 +122,20 @@ when you call <b>pcre_study()</b>:
   PCRE_STUDY_JIT_PARTIAL_HARD_COMPILE
   PCRE_STUDY_JIT_PARTIAL_SOFT_COMPILE
 </pre>
+If using <b>pcre_jit_exec()</b> and supporting a pre-8.32 version of
+PCRE, you can insert:
+<pre>
+   #if PCRE_MAJOR &#62;= 8 && PCRE_MINOR &#62;= 32
+   pcre_jit_exec(...);
+   #else
+   pcre_exec(...)
+   #endif
+</pre>
+but as described in the "JIT FAST PATH API" section below this assumes
+version 8.32 and later are compiled with --enable-jit, which may
+break.
+<br>
+<br>
 The JIT compiler generates different optimized code for each of the three
 modes (normal, soft partial, hard partial). When <b>pcre_exec()</b> is called,
 the appropriate code is run if it is available. Otherwise, the pattern is
@@ -428,6 +445,36 @@ fast path, and if invalid data is passed, the result is undefined.
 Bypassing the sanity checks and the <b>pcre_exec()</b> wrapping can give
 speedups of more than 10%.
 </P>
+<P>
+Note that the <b>pcre_jit_exec()</b> function is not available in versions of
+PCRE before 8.32 (released in November 2012). If you need to support versions
+that old you must either use the slower <b>pcre_exec()</b>, or switch between
+the two codepaths by checking the values of PCRE_MAJOR and PCRE_MINOR.
+</P>
+<P>
+Due to an unfortunate implementation oversight, even in versions 8.32
+and later there will be no <b>pcre_jit_exec()</b> stub function defined
+when PCRE is compiled with --disable-jit, which is the default, and
+there's no way to detect whether PCRE was compiled with --enable-jit
+via a macro.
+</P>
+<P>
+If you need to support versions older than 8.32, or versions that may
+not build with --enable-jit, you must either use the slower
+<b>pcre_exec()</b>, or switch between the two codepaths by checking the
+values of PCRE_MAJOR and PCRE_MINOR.
+</P>
+<P>
+Switching between the two by checking the version assumes that all the
+versions being targeted are built with --enable-jit. To also support
+builds that may use --disable-jit either <b>pcre_exec()</b> must be
+used, or a compile-time check for JIT via <b>pcre_config()</b> (which
+assumes the runtime environment will be the same), or as the Git
+project decided to do, simply assume that <b>pcre_jit_exec()</b> is
+present in 8.32 or later unless a compile-time flag is provided, see
+the "grep: un-break building with PCRE &#62;= 8.32 without --enable-jit"
+commit in git.git for an example of that.
+</P>
 <br><a name="SEC12" href="#TOC1">SEE ALSO</a><br>
 <P>
 <b>pcreapi</b>(3)
@@ -443,9 +490,9 @@ Cambridge CB2 3QH, England.
 </P>
 <br><a name="SEC14" href="#TOC1">REVISION</a><br>
 <P>
-Last updated: 17 March 2013
+Last updated: 05 July 2017
 <br>
-Copyright &copy; 1997-2013 University of Cambridge.
+Copyright &copy; 1997-2017 University of Cambridge.
 <br>
 <p>
 Return to the <a href="index.html">PCRE index page</a>.

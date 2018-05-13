@@ -1942,4 +1942,12 @@ Need char = 'z'
  0: \x{17f}
  0+ 
 
+/\C[^\v]+\x80/8
+    [AΏBŀC]
+No match
+
+/\C[^\d]+\x80/8
+    [AΏBŀC]
+No match
+
 /-- End of testinput5 --/

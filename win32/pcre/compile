@@ -1,9 +1,9 @@
 #! /bin/sh
 # Wrapper for compilers which do not understand '-c -o'.
 
-scriptversion=2012-10-14.11; # UTC
+scriptversion=2016-01-11.22; # UTC
 
-# Copyright (C) 1999-2014 Free Software Foundation, Inc.
+# Copyright (C) 1999-2017 Free Software Foundation, Inc.
 # Written by Tom Tromey <tromey@cygnus.com>.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -255,7 +255,8 @@ EOF
     echo "compile $scriptversion"
     exit $?
     ;;
-  cl | *[/\\]cl | cl.exe | *[/\\]cl.exe )
+  cl | *[/\\]cl | cl.exe | *[/\\]cl.exe | \
+  icl | *[/\\]icl | icl.exe | *[/\\]icl.exe )
     func_cl_wrapper "$@"      # Doesn't return...
     ;;
 esac
@@ -342,6 +343,6 @@ exit $ret
 # eval: (add-hook 'write-file-hooks 'time-stamp)
 # time-stamp-start: "scriptversion="
 # time-stamp-format: "%:y-%02m-%02d.%02H"
-# time-stamp-time-zone: "UTC"
+# time-stamp-time-zone: "UTC0"
 # time-stamp-end: "; # UTC"
 # End:

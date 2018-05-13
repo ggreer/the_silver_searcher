@@ -74,6 +74,11 @@ newline as data characters. However, in some Windows environments character 26
 maximum portability, therefore, it is safest to use only ASCII characters in
 <b>pcretest</b> input files.
 </P>
+<P>
+The input is processed using using C's string functions, so must not
+contain binary zeroes, even though in Unix-like environments, <b>fgets()</b>
+treats any bytes other than newline as data characters.
+</P>
 <br><a name="SEC3" href="#TOC1">PCRE's 8-BIT, 16-BIT AND 32-BIT LIBRARIES</a><br>
 <P>
 From release 8.30, two separate PCRE libraries can be built. The original one
@@ -1149,9 +1154,9 @@ Cambridge CB2 3QH, England.
 </P>
 <br><a name="SEC17" href="#TOC1">REVISION</a><br>
 <P>
-Last updated: 09 February 2014
+Last updated: 23 February 2017
 <br>
-Copyright &copy; 1997-2014 University of Cambridge.
+Copyright &copy; 1997-2017 University of Cambridge.
 <br>
 <p>
 Return to the <a href="index.html">PCRE index page</a>.

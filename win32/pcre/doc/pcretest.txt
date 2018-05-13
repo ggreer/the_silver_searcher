@@ -39,6 +39,10 @@ INPUT DATA FORMAT
        For  maximum  portability,  therefore,  it  is safest to use only ASCII
        characters in pcretest input files.
 
+       The input is processed using using C's string functions,  so  must  not
+       contain  binary  zeroes, even though in Unix-like environments, fgets()
+       treats any bytes other than newline as data characters.
+
 
 PCRE's 8-BIT, 16-BIT AND 32-BIT LIBRARIES
 
@@ -1083,5 +1087,5 @@ AUTHOR
 
 REVISION
 
-       Last updated: 09 February 2014
-       Copyright (c) 1997-2014 University of Cambridge.
+       Last updated: 23 February 2017
+       Copyright (c) 1997-2017 University of Cambridge.

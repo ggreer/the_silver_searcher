@@ -9,18 +9,18 @@ dnl The PCRE_PRERELEASE feature is for identifying release candidates. It might
 dnl be defined as -RC2, for example. For real releases, it should be empty.
 
 m4_define(pcre_major, [8])
-m4_define(pcre_minor, [40])
+m4_define(pcre_minor, [42])
 m4_define(pcre_prerelease, [])
-m4_define(pcre_date, [2017-01-11])
+m4_define(pcre_date, [2018-03-20])
 
 # NOTE: The CMakeLists.txt file searches for the above variables in the first
 # 50 lines of this file. Please update that if the variables above are moved.
 
 # Libtool shared library interface versions (current:revision:age)
-m4_define(libpcre_version, [3:8:2])
-m4_define(libpcre16_version, [2:8:2])
-m4_define(libpcre32_version, [0:8:0])
-m4_define(libpcreposix_version, [0:4:0])
+m4_define(libpcre_version, [3:10:2])
+m4_define(libpcre16_version, [2:10:2])
+m4_define(libpcre32_version, [0:10:0])
+m4_define(libpcreposix_version, [0:6:0])
 m4_define(libpcrecpp_version, [0:1:0])
 
 AC_PREREQ(2.57)
@@ -154,6 +154,18 @@ AC_ARG_ENABLE(jit,
               AS_HELP_STRING([--enable-jit],
                              [enable Just-In-Time compiling support]),
               , enable_jit=no)
+
+# This code enables JIT if the hardware supports it.
+
+if test "$enable_jit" = "auto"; then
+  AC_LANG(C)
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+  #define SLJIT_CONFIG_AUTO 1
+  #include "sljit/sljitConfigInternal.h"
+  #if (defined SLJIT_CONFIG_UNSUPPORTED && SLJIT_CONFIG_UNSUPPORTED)
+  #error unsupported
+  #endif]])], enable_jit=yes, enable_jit=no)
+fi
 
 # Handle --disable-pcregrep-jit (enabled by default)
 AC_ARG_ENABLE(pcregrep-jit,
@@ -469,7 +481,7 @@ pcre_have_type_traits="0"
 pcre_have_bits_type_traits="0"
 
 if test "x$enable_cpp" = "xyes" -a -z "$CXX"; then
-   AC_MSG_ERROR([You need a C++ compiler for C++ support.])
+   AC_MSG_ERROR([Invalid C++ compiler or C++ compiler flags])
 fi
 
 if test "x$enable_cpp" = "xyes" -a -n "$CXX"
