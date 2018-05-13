@@ -25,6 +25,7 @@
 *		    that our code builds even in XP and older Windows SDKs.   *
 *    2017-10-02 JFL Removed struct _dirhandle dependency on MAX_PATH.	      *
 *		    Renamed it as struct _DIR.				      *
+*    2018-04-24 JFL Use PATH_MAX and NAME_MAX from limits.h.		      *
 *		    							      *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -42,6 +43,7 @@
 #include <sys/types.h>
 #include <stdio.h>
 #include <errno.h>
+#include <limits.h>	/* Defines PATH_MAX and NAME_MAX */
 
 #ifndef ENAMETOOLONG /* Not defined in DOS' errno.h */
 #define ENAMETOOLONG 38
@@ -61,8 +63,6 @@ extern "C" {
 #ifdef _MSDOS	/* Automatically defined when targeting an MS-DOS application */
 
 #include <dos.h>
-
-#define NAME_MAX 12
 
 #pragma pack(1)
 struct _fileinfo { /* MS-DOS structure returning file search results */
@@ -141,8 +141,6 @@ int srchnext(fileinfo *pFI);     /* Search next matching file */
 #define FSCTL_DELETE_REPARSE_POINT  CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 43, METHOD_BUFFERED, FILE_SPECIAL_ACCESS) 
 #endif
 
-#define NAME_MAX (4 * FILENAME_MAX) /* Worst case using UTF-8 encoding: 4 bytes/WCHAR */
-
 struct dirent { /* Structure used to return information about directory entries. */
   /* OS-specific extensions */
   uint32_t d_attribs;
@@ -181,8 +179,6 @@ struct _DIR { /* Private structure, not for use by users */
 #define INCL_DOSMISC
 #define INCL_VIO
 #include "os2.h"
-
-#define NAME_MAX CCHMAXPATHCOMP
 
 struct dirent { /* Structure used to return information about directory entries. */
   _ino_t d_ino;		/* We don't need it, but it's required by the spec */

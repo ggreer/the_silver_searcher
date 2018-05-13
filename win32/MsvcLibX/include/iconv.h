@@ -12,6 +12,7 @@
 *    2017-03-03 JFL Added routine ConvertBuf().				      *
 *    2017-03-12 JFL Restructured the UTF16 writing mechanism.		      *
 *    2017-09-27 JFL Added standard C library routines iconv(), etc.	      *
+*    2018-04-27 JFL Added MultiByteToNewWideString().			      *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -49,6 +50,8 @@ int ConvertBuf(const char *pFromBuf, size_t nFromBufSize, UINT cpFrom, char *pTo
 int ConvertString(char *buf, size_t nBufSize, UINT cpFrom, UINT cpTo, LPCSTR lpDefaultChar);
 int CountCharacters(const char *string, UINT cp);
 char *DupAndConvert(const char *string, UINT cpFrom, UINT cpTo, LPCSTR lpDefaultChar);
+WCHAR *MultiByteToNewWideStringEx(UINT cp, DWORD dwFlags, const char *string);
+#define MultiByteToNewWideString(cp, string) MultiByteToNewWideStringEx(cp, 0, string)
 
 /* MsvcLibX internal routines */
 int initWideFiles(void);	/* Initialize the UTF-8 output handlers */

@@ -17,6 +17,7 @@
 *    2017-03-12 JFL Restructured the UTF16 writing mechanism.		      *
 *    2017-04-12 JFL Added puts(), and ANSI versions of fputc, fputs, fwrite.  *
 *    2017-08-09 JFL Added vfprintfM(), fprintfM() and printfM().              *
+*    2018-04-24 JFL Added fputsW, vfprintfW(), fprintfW() and printfW().      *
 *									      *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -70,11 +71,14 @@ extern "C" {
 #ifdef _WIN32	/* Automatically defined when targeting a Win32 application */
 
 /* UTF-8 output routines defined in iconv.c */
+extern int vfprintfW(FILE *f, const wchar_t *pwszFormat, va_list vl);
 extern int vfprintfM(FILE *f, const char *pszFormat, va_list vl, UINT cp);
+extern int fprintfW(FILE *f, const wchar_t *pwszFormat, ...);
 extern int fprintfM(UINT cp, FILE *f, const char *pszFormat, ...);
 extern int printfM(UINT cp, const char *pszFormat, ...);
 extern int vfprintfU(FILE *f, const char *pszFormat, va_list vl);
 extern int fprintfU(FILE *f, const char *pszFormat, ...);
+extern int printfW(const wchar_t *pwszFormat, ...);
 extern int printfU(const char *pszFormat, ...);
 extern int vfprintfA(FILE *f, const char *pszFormat, va_list vl);
 extern int fprintfA(FILE *f, const char *pszFormat, ...);
@@ -88,6 +92,7 @@ extern int printfA(const char *pszFormat, ...);
 #define fprintf fprintfA	/* For outputing ANSI strings */
 #define printf printfA		/* For outputing ANSI strings */
 #endif
+#define wprintf printfW
 #if _MSC_VER < 1500 /* Up to VS 8/2005, fputws() is broken. It outputs just the 1st character. */
 extern int fputwsW(const wchar_t *pws, FILE *f);
 #define fputws fputwsW		/* Use our workaround routine instead */
@@ -118,6 +123,7 @@ extern int fputcU(int c, FILE *f);
 #endif
 
 /* fputs() alternatives */
+extern int fputsW(const wchar_t *pWBuf, FILE *f);
 extern int fputsM(const char *buf, FILE *f, UINT cp);
 extern int fputsA(const char *buf, FILE *f);
 extern int fputsU(const char *buf, FILE *f);

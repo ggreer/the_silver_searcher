@@ -10,6 +10,7 @@
 *    2017-02-28 JFL Created this file.					      *
 *    2017-03-03 JFL Added the prototype for strndup().			      *
 *    2017-05-31 JFL Added the prototype for strerror().			      *
+*    2018-04-25 JFL Added macro strncmpW().            			      *
 *									      *
 *         © Copyright 2017 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -44,6 +45,8 @@ char *strndup(const char *s, size_t size);
 
 #define strerror strerrorX /* Rename our modified version to avoid conflicts */
 char *strerrorX(int errnum);
+
+#define strncmpW(s1, s2, l) (CompareStringW(LOCALE_INVARIANT, 0, s1, l, s2, l)-2)
 
 #endif /* defined(_WIN32) */
 

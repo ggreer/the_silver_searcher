@@ -21,6 +21,7 @@
 *		    Added routine getpagesize().			      *
 *    2017-03-18 JFL Added rmdir() & unlink().                                 *
 *    2017-03-24 JFL Added ResolveTailLinks*() prototypes.                     *
+*    2018-04-26 JFL Added getcwdW() and ConcatPathW() prototypes.             *
 *									      *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -71,6 +72,7 @@ char *getcwdA(char *buf, size_t bufSize); /* Can't use the getcwd name, as MSVC 
 char *_getdcwdA(int iDrive, char *buf, int iBuflen);
 char *getcwdU(char *buf, size_t bufSize); /* Can't use the getcwd name, as MSVC has an incompatible prototype for it */
 char *_getdcwdU(int iDrive, char *buf, int iBuflen);
+WCHAR *getcwdW(WCHAR *pwBuf, size_t bufSize);
 int rmdirA(const char *path);
 int rmdirU(const char *path);
 int unlinkA(const char *path);
@@ -114,6 +116,7 @@ pid_t getppid(void);	/* Get parent PID */
 #define CompactPath CompactPathA
 #endif
 int CompactPathW(const WCHAR *path, WCHAR *outbuf, size_t bufsize); /* A proprietary subroutine, that cleans up . and .. parts. */
+WCHAR *ConcatPathW(const WCHAR *pwszHead, const WCHAR *pwszTail, WCHAR *pwszBuf, size_t lBuf); /* A proprietary subroutine, that concatenates two paths. */
 #endif /* defined(_WIN32) */
 char *realpath(const char *path, char *buf); /* Posix routine, normally defined in stdlib.h. Output buf must contain PATH_MAX bytes */
 int CompactPath(const char *path, char *outbuf, size_t bufsize); /* A proprietary subroutine, that cleans up . and .. parts. */

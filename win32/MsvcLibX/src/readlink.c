@@ -21,6 +21,7 @@
 *    2017-03-22 JFL Added routines TrimTailSlashesW() and ResolveTailLinks*().*
 *    2017-05-31 JFL Get strerror() prototype from string.h.                   *
 *    2017-06-27 JFL Decode the new reparse point types defined in reparsept.h.*
+*    2018-04-24 JFL Changed PATH_MAX to WIDE_PATH_MAX for wide bufs.	      *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -62,7 +63,7 @@ DWORD GetReparseTagW(const WCHAR *pwszPath) {
 
 /* Get the Reparse Point Tag for a mount point - MultiByte char version */
 DWORD GetReparseTagM(const char *path, UINT cp) {
-  WCHAR wszPath[PATH_MAX];
+  WCHAR wszPath[WIDE_PATH_MAX];
   int n;
   /* Convert the pathname to a unicode string, with the proper extension prefixes if it's longer than 260 bytes */
   n = MultiByteToWidePath(cp,			/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
@@ -325,7 +326,6 @@ ssize_t readlinkW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
   // Other types of junctions/mount points do not continue with a drive letter.
   // For example: '\??\Volume{5e58015c-ba64-4048-928d-06aa03c983f9}\' */
   nRead = lstrlenW(buf);
-#define strncmpW(s1, s2, l) (CompareStringW(LOCALE_INVARIANT, 0, s1, l, s2, l)-2)
   if ((nRead >= 7) && (!strncmpW(buf, L"\\??\\", 4))) {
     if (!strncmpW(buf+5, L":\\", 2)) {
       nRead -= 4;
@@ -347,8 +347,8 @@ ssize_t readlinkW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
      but symlinks and symlinkds on the client side. */
   if (dwTag == IO_REPARSE_TAG_MOUNT_POINT) {
     char szRootDir[4] = "C:\\";
-    WCHAR wszAbsPath[PATH_MAX];
-    WCHAR wszAbsPath2[PATH_MAX];
+    WCHAR wszAbsPath[WIDE_PATH_MAX];
+    WCHAR wszAbsPath2[WIDE_PATH_MAX];
     WCHAR *p1;
     WCHAR *p2;
     WCHAR *pc1 = L"A";
@@ -358,7 +358,7 @@ ssize_t readlinkW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
     XDEBUG_PRINTF(("rawJunctionTarget = \"%s\"\n", pszUtf8));
     DEBUG_FREEUTF8(pszUtf8);
 
-    GetFullPathNameW(path, PATH_MAX, wszAbsPath, NULL); /* Get the drive letter in the full path */
+    GetFullPathNameW(path, WIDE_PATH_MAX, wszAbsPath, NULL); /* Get the drive letter in the full path */
     szRootDir[0] = (char)(wszAbsPath[0]); /* Copy the drive letter */
     drvType = GetDriveType(szRootDir);
     XDEBUG_PRINTF(("GetDriveType(\"%s\") = %d // %s drive\n", szRootDir, drvType, (drvType == DRIVE_REMOTE) ? "Network" : "Local"));
@@ -370,9 +370,9 @@ ssize_t readlinkW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
       int iTargetFound = FALSE;
       if (buf[0] && (buf[1] == L':')) {
 	WCHAR  wszLocalName[] = L"X:";
-	WCHAR wszRemoteName[PATH_MAX];
+	WCHAR wszRemoteName[WIDE_PATH_MAX];
 	DWORD dwErr;
-	DWORD dwLength = PATH_MAX;
+	DWORD dwLength = WIDE_PATH_MAX;
 	wszLocalName[0] = wszAbsPath[0];
 	dwErr = WNetGetConnectionW(wszLocalName, wszRemoteName, &dwLength);
 	if (dwErr == NO_ERROR) {
@@ -456,7 +456,7 @@ ssize_t readlinkW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
           for symlinkds. But Windows always records absolute target paths,
           even when relative paths were used for creating them. */
     TrimTailSlashesW(wszAbsPath);
-    GetFullPathNameW(buf, PATH_MAX, wszAbsPath2, NULL);
+    GetFullPathNameW(buf, WIDE_PATH_MAX, wszAbsPath2, NULL);
     DEBUG_WSTR2NEWUTF8(wszAbsPath, pszUtf8);
     XDEBUG_PRINTF(("szAbsPath = \"%s\"\n", pszUtf8));
     DEBUG_FREEUTF8(pszUtf8);
@@ -499,8 +499,8 @@ ssize_t readlinkW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
 
 /* Posix routine readlink - MultiByte char version */
 ssize_t readlinkM(const char *path, char *buf, size_t bufsize, UINT cp) {
-  WCHAR wszPath[PATH_MAX];
-  WCHAR wszTarget[PATH_MAX];
+  WCHAR wszPath[WIDE_PATH_MAX];
+  WCHAR wszTarget[WIDE_PATH_MAX];
   int n;
   ssize_t nResult;
   char *pszDefaultChar;
@@ -517,7 +517,7 @@ ssize_t readlinkM(const char *path, char *buf, size_t bufsize, UINT cp) {
     return -1;
   }
 
-  nResult = readlinkW(wszPath, wszTarget, PATH_MAX);
+  nResult = readlinkW(wszPath, wszTarget, WIDE_PATH_MAX);
   if (nResult <= 0) return nResult;
 
   pszDefaultChar = (cp == CP_UTF8) ? NULL : "?";
@@ -576,17 +576,17 @@ int ResolveTailLinksW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
   }
 
   if (dwAttr & FILE_ATTRIBUTE_REPARSE_POINT) {
-    WCHAR wszBuf2[PATH_MAX];
-    WCHAR wszBuf3[PATH_MAX];
+    WCHAR wszBuf2[WIDE_PATH_MAX];
+    WCHAR wszBuf3[WIDE_PATH_MAX];
     WCHAR *pwsz = wszBuf2;
     int iCDSize;
     int iRet;
-    ssize_t nLinkSize = readlinkW(path, wszBuf2, PATH_MAX); /* Corrects junction drive letters, etc */
+    ssize_t nLinkSize = readlinkW(path, wszBuf2, WIDE_PATH_MAX); /* Corrects junction drive letters, etc */
     if (nLinkSize < 0) RETURN_INT(-1);
     if (!(   (wszBuf2[0] == L'\\')
           || (wszBuf2[0] && (wszBuf2[1] == L':')))) { /* This is a relative path. We must compose it with the link dirname */
-      lstrcpynW(wszBuf3, path, PATH_MAX); /* May truncate the output string */
-      wszBuf3[PATH_MAX-1] = L'\0'; /* Make sure the string is NUL-terminated */
+      lstrcpynW(wszBuf3, path, WIDE_PATH_MAX); /* May truncate the output string */
+      wszBuf3[WIDE_PATH_MAX-1] = L'\0'; /* Make sure the string is NUL-terminated */
       TrimTailSlashesW(wszBuf3);
       pwsz = PathFindFileNameW(wszBuf3);
       if (!lstrcmpW(pwsz, L"..")) { /* The link dirname is actually one level above */
@@ -597,9 +597,9 @@ int ResolveTailLinksW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
       	*pwsz = L'\0';
       }
       iCDSize = lstrlenW(wszBuf3);
-      lstrcpynW(wszBuf3+iCDSize, wszBuf2, PATH_MAX-iCDSize); /* May truncate the output string */
-      wszBuf3[PATH_MAX-1] = L'\0'; /* Make sure the string is NUL-terminated */
-      /* CompactpathW(wszBuf3, wszBuf2, PATH_MAX); // We don't care as we're only interested in the tail */
+      lstrcpynW(wszBuf3+iCDSize, wszBuf2, WIDE_PATH_MAX-iCDSize); /* May truncate the output string */
+      wszBuf3[WIDE_PATH_MAX-1] = L'\0'; /* Make sure the string is NUL-terminated */
+      /* CompactpathW(wszBuf3, wszBuf2, WIDE_PATH_MAX); // We don't care as we're only interested in the tail */
       pwsz = wszBuf3;
     }
     iRet = ResolveTailLinksW(pwsz, buf, bufsize);
@@ -620,8 +620,8 @@ int ResolveTailLinksW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
 }
 
 int ResolveTailLinksM(const char *path, char *buf, size_t bufsize, UINT cp) {
-  WCHAR wszPath[PATH_MAX];
-  WCHAR wszTarget[PATH_MAX];
+  WCHAR wszPath[WIDE_PATH_MAX];
+  WCHAR wszTarget[WIDE_PATH_MAX];
   int n;
   int iErr;
   char *pszDefaultChar;
@@ -638,7 +638,7 @@ int ResolveTailLinksM(const char *path, char *buf, size_t bufsize, UINT cp) {
     return -1;
   }
 
-  iErr = ResolveTailLinksW(wszPath, wszTarget, PATH_MAX);
+  iErr = ResolveTailLinksW(wszPath, wszTarget, WIDE_PATH_MAX);
   if (iErr < 0) return iErr;
 
   pszDefaultChar = (cp == CP_UTF8) ? NULL : "?";

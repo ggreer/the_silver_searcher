@@ -18,6 +18,7 @@
 *		    new constant _UTF8_LIB_SOURCE instead within MsvcLibX src.*
 *		    (The 2017-02-05 change always dragged in _initU(), even   *
 *		     for ANSI programs.)				      *
+*    2018-04-28 JFL Added CorrectWidePath() and CorrectNewWidePath().	      *
 *									      *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -80,7 +81,10 @@ typedef unsigned short wchar_t; /* Defined in crtdefs.h */
 #define _WCHAR_T_DEFINED
 #endif
 typedef wchar_t* LPWSTR;    /* Defined in winnt.h */
+typedef const wchar_t* LPCWSTR;    /* Defined in winnt.h */
 /* Routines in mb2wpath.c */
+extern int CorrectWidePath(LPWSTR pwszName, LPWSTR pwszBuf, int nWideBufSize);
+extern LPWSTR CorrectNewWidePath(LPWSTR pwszName);
 extern int MultiByteToWidePath(UINT nCodePage, LPCSTR pszName, LPWSTR pwszName, int nWideBufSize);
 extern LPWSTR MultiByteToNewWidePath(UINT nCodePage, LPCSTR pszName);
 extern int TrimLongPathPrefix(LPSTR pszName); /* Remove \\?\ and \\?\UNC\ prefixes */

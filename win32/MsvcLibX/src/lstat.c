@@ -197,10 +197,10 @@ check_attr_again:
     switch (dwTag) {
       case IO_REPARSE_TAG_MOUNT_POINT:	/* NTFS junction or mount point */
 	{ /* We must read the link to distinguish junctions from mount points. */
-	WCHAR wbuf[UNICODE_PATH_MAX];
+	WCHAR wbuf[WIDE_PATH_MAX];
 	ssize_t n;
 	bIsMountPoint = TRUE;
-	n = readlinkW(pwszName, wbuf, UNICODE_PATH_MAX);
+	n = readlinkW(pwszName, wbuf, WIDE_PATH_MAX);
 	/* Junction targets are absolute pathnames, starting with a drive letter. Ex: C: */
 	/* readlink() fails if the reparse point does not target a valid pathname */
 	if (n < 0) goto this_is_not_a_symlink; /* This is not a junction. */

@@ -20,6 +20,8 @@
 *    2017-05-11 JFL Fixed fputc() for files in binary mode.                   *
 *    2017-08-09 JFL Added fprintfM() and printfM().                           *
 *    2017-09-27 JFL Added standard C library routines iconv(), etc.	      *
+*    2018-04-24 JFL Added fputsW, vfprintfW(), fprintfW() and printfW().      *
+*    2018-04-27 JFL Added MultiByteToNewWideString() from iconv.c.            *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -160,6 +162,25 @@ int CountCharacters(const char *string, UINT cp) {
     return -1;
   }
   return n;
+}
+
+/* Allocate a new wide string converted from the input multi-byte string */
+/* In case of failure, sets errno */
+WCHAR *MultiByteToNewWideStringEx(UINT cp, DWORD dwFlags, const char *string) {
+  int l = lstrlen(string);
+  int n = (2*l)+1;	/* Worst case for the number of WCHARs needed */
+  WCHAR *pwBuf = (WCHAR *)malloc(n * sizeof(WCHAR));
+  WCHAR *pwBuf2;
+  if (!pwBuf) return NULL;
+  n = MultiByteToWideChar(cp, dwFlags, string, (int)(l+1), pwBuf, n);
+  if (!n) {
+    errno = Win32ErrorToErrno();
+    free(pwBuf);
+    return NULL;
+  }
+  pwBuf2 = realloc(pwBuf, n * sizeof(WCHAR));
+  if (pwBuf2) pwBuf = pwBuf2;
+  return pwBuf;
 }
 
 /*---------------------------------------------------------------------------*\
@@ -326,7 +347,7 @@ FILE *fdopenX(int iFile, const char *pszMode) {
    Returns, which prevents file I/O functions from crashing when passed invalid file numbers.
    (See https://msdn.microsoft.com/en-us/library/a9yf33zb.aspx)
    The file I/O functions return an error and set errno with EBADF or EINVAL instead */
-#undef wprintf /* In case MsvcLibX eventually redefines it */
+#undef wprintf
 #pragma warning(disable:4100) /* Ignore the "unreferenced formal parameter" warning */
 void voidInvalidParameterHandler(const wchar_t* expression, const wchar_t* function, const wchar_t* file, unsigned int line, uintptr_t pReserved) {
 #if 0  /* The following does not work. All arguments are NULL */
@@ -405,6 +426,7 @@ int isTranslatedFile(int iFile, UINT cp, UINT *pcpOut) {
 #undef printf
 #undef fprintf
 #undef vfprintf
+#undef wprintf
 #undef fputs
 #undef fputc
 #undef fwrite
@@ -494,6 +516,33 @@ int fputcU(int c, FILE *f) {
   return fputcM(c, f, CP_UTF8);
 }
 
+/* fputs a Wide string, converted to the output code page */
+int fputsW(const wchar_t *pWBuf, FILE *f) {
+  int iRet;
+  int iFile = fileno(f);
+
+  if (iFile >= FOPEN_MAX) {
+    DEBUG_PRINTF(("ERROR: File index too high: fputsW(..., %d)\n", iFile));
+  }
+
+  if (isWideFile(iFile)) {
+    iRet = fputws(pWBuf, f);
+  } else { /* Find the output file encoding */
+    UINT cpOut = systemCodePage;
+    size_t l = lstrlenW(pWBuf);
+    int n = (int)((4 * l) + 1);
+    char *pBuf = (char *)malloc(n);
+    if (!pBuf) return -1;
+    isTranslatedFile(iFile, cpOut, &cpOut); /* Change it to the console code page if needed */
+    n = WideCharToMultiByte(cpOut, 0, pWBuf, (int)l, pBuf, n, NULL, NULL);
+    pBuf[n] = '\0';
+    iRet = fputs(pBuf, f);
+    free(pBuf);
+  }
+  if ((iRet >= 0) && DEBUG_IS_ON()) fflush(f); /* Slower, but ensures we get everything before crashes! */
+  return iRet; /* Return the error (n<0) or success (n>=0) */
+}
+
 /* fputs an MBCS string, converted to the output code page */
 int fputsM(const char *buf, FILE *f, UINT cp) {
   int iRet;
@@ -546,9 +595,22 @@ int putsU(const char *buf) {
   return iRet;
 }
 
+int vfprintfW(FILE *f, const wchar_t *pwszFormat, va_list vl) { /* vfprintf Wide strings */
+  int n;
+  wchar_t wbuf[WIDE_PATH_MAX + 4096];
+
+  n = _vsnwprintf(wbuf, sizeof(wbuf)/sizeof(wchar_t), pwszFormat, vl);
+  if (n > 0) { /* If no error (n>=0), and something to output (n>0), do output */
+    int iErr = fputsW(wbuf, f);
+    if (iErr < 0) n = iErr;
+  }
+
+  return n;
+}
+
 int vfprintfM(FILE *f, const char *pszFormat, va_list vl, UINT cp) { /* vfprintf MCBS strings */
   int n;
-  char buf[UNICODE_PATH_MAX + 4096];
+  char buf[WIDE_PATH_MAX + 4096];
 
   n = _vsnprintf(buf, sizeof(buf), pszFormat, vl);
   if (n > 0) { /* If no error (n>=0), and something to output (n>0), do output */
@@ -565,6 +627,17 @@ int vfprintfA(FILE *f, const char *pszFormat, va_list vl) { /* vfprintf ANSI str
 
 int vfprintfU(FILE *f, const char *pszFormat, va_list vl) { /* vfprintf UTF-8 strings */
   return vfprintfM(f, pszFormat, vl, CP_UTF8);
+}
+
+int fprintfW(FILE *f, const wchar_t *pwszFormat, ...) { /* fprintf Wide strings */
+  va_list vl;
+  int n;
+
+  va_start(vl, pwszFormat);
+  n = vfprintfW(f, pwszFormat, vl);
+  va_end(vl);
+
+  return n;
 }
 
 int fprintfM(UINT cp, FILE *f, const char *pszFormat, ...) { /* fprintf UTF-8 strings */
@@ -595,6 +668,17 @@ int fprintfU(FILE *f, const char *pszFormat, ...) { /* fprintf UTF-8 strings */
 
   va_start(vl, pszFormat);
   n = vfprintfM(f, pszFormat, vl, CP_UTF8);
+  va_end(vl);
+
+  return n;
+}
+
+int printfW(const wchar_t *pwszFormat, ...) { /* printf Wide strings */
+  va_list vl;
+  int n;
+
+  va_start(vl, pwszFormat);
+  n = vfprintfW(stdout, pwszFormat, vl);
   va_end(vl);
 
   return n;
