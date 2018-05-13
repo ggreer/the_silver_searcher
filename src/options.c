@@ -1,4 +1,4 @@
-#include <errno.h>
+﻿#include <errno.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -21,6 +21,43 @@
 const char *color_line_number = "\033[1;33m"; /* bold yellow */
 const char *color_match = "\033[30;43m";      /* black with yellow background */
 const char *color_path = "\033[1;32m";        /* bold green */
+
+#if SUPPORT_TWO_ENCODINGS
+/* Get the actual name of a code page */
+char *GetCPName(int iCP, LPCPINFOEX lpCpi) {
+    int i;
+    char *pszName = "";
+    CPINFOEX cpi;
+    if (!lpCpi) {
+        lpCpi = &cpi;
+    }
+    if (GetCPInfoEx(iCP, 0, lpCpi)) { /* Most code pages have a good descrition in the CPINFOEX structure */
+        /* (Including many that are not listed in the static list above) */
+        pszName = lpCpi->CodePageName;
+        /* Make a copy because we can't return the address of this one in the local stack frame */
+        /* Skip the code page number copy at the beginning of the CPINFOEX name */
+        while (strchr("0123456789", *pszName)) {
+            pszName++;
+        }
+        while (isspace(*pszName)) {
+            pszName++; /* Skip spaces after the number */
+        }
+        if (*pszName == '(') {
+            pszName++; /* Remove the leading '(' */
+        }
+        pszName = strdup(pszName);
+        i = (int)strlen(pszName) - 1;
+        if (pszName[i] == ')') {
+            pszName[i] = '\0'; /* Remove the trailing ')' */
+        }
+    }
+    /* But some code pages have a description that's an empty string "" */
+    if (!*pszName) {
+        pszName = "(Unknown name)";
+    }
+    return pszName;
+}
+#endif /* SUPPORT_TWO_ENCODINGS */
 
 /* TODO: try to obey out_fd? */
 void usage(void) {
@@ -119,52 +156,29 @@ The search can be restricted to certain types of files. Example:\n\
   - Searches for 'needle' in files with suffix .htm, .html, .shtml or .xhtml.\n\
 \n\
 For a list of supported file types run:\n\
-  ag --list-file-types\n\n\
+  ag --list-file-types\n");
+#if SUPPORT_TWO_ENCODINGS
+    printf("\nSupported text file encodings:\n");
+    int iACP = GetACP(); /* Get the Windows System Code Page */
+    printf("  Code Page %d = %s\n", iACP, GetCPName(iACP, NULL));
+    printf("  Code Page 65001 = UTF-8\n");
+#endif /* SUPPORT_TWO_ENCODINGS */
+    printf("\n\
 ag was originally created by Geoff Greer. More information (and the latest release)\n\
 can be found at http://geoff.greer.fm/ag\n");
+#if HAS_MSVCLIBX
+    printf("\
+This version was ported to Windows by Krzysztof Kowalczyk, then significantly\n\
+enhanced by Jean-François Larvoire. The latest release can be found at\n\
+https://github.com/JFLarvoire/the_silver_searcher/releases");
+#endif
 }
-
-#if SUPPORT_TWO_ENCODINGS
-/* Get the actual name of a code page */
-char *GetCPName(int iCP, LPCPINFOEX lpCpi) {
-    int i;
-    char *pszName = "";
-    CPINFOEX cpi;
-    if (!lpCpi) {
-        lpCpi = &cpi;
-    }
-    if (GetCPInfoEx(iCP, 0, lpCpi)) { /* Most code pages have a good descrition in the CPINFOEX structure */
-        /* (Including many that are not listed in the static list above) */
-        pszName = lpCpi->CodePageName;
-        /* Make a copy because we can't return the address of this one in the local stack frame */
-        /* Skip the code page number copy at the beginning of the CPINFOEX name */
-        while (strchr("0123456789", *pszName)) {
-            pszName++;
-        }
-        while (isspace(*pszName)) {
-            pszName++; /* Skip spaces after the number */
-        }
-        if (*pszName == '(') {
-            pszName++; /* Remove the leading '(' */
-        }
-        pszName = strdup(pszName);
-        i = (int)strlen(pszName) - 1;
-        if (pszName[i] == ')') {
-            pszName[i] = '\0'; /* Remove the trailing ')' */
-        }
-    }
-    /* But some code pages have a description that's an empty string "" */
-    if (!*pszName) {
-        pszName = "(Unknown name)";
-    }
-    return pszName;
-}
-#endif /* SUPPORT_TWO_ENCODINGS */
 
 void print_version(void) {
     char jit = '-';
     char lzma = '-';
     char zlib = '-';
+    char twoEnc = '-';
 
 #ifdef USE_PCRE_JIT
     jit = '+';
@@ -174,6 +188,9 @@ void print_version(void) {
 #endif
 #ifdef HAVE_ZLIB_H
     zlib = '+';
+#endif
+#if SUPPORT_TWO_ENCODINGS
+    twoEnc = '+';
 #endif
 
     printf("ag version %s", PACKAGE_VERSION);
@@ -193,13 +210,7 @@ void print_version(void) {
 #endif /* defined(HAS_MSVCLIBX) */
     printf("\n\n");
     printf("Features:\n");
-    printf("  %cjit %clzma %czlib\n", jit, lzma, zlib);
-#if SUPPORT_TWO_ENCODINGS
-    printf("\nSupported text file encodings:\n");
-    int iACP = GetACP(); /* Get the Windows System Code Page */
-    printf("  Code Page %d = %s\n", iACP, GetCPName(iACP, NULL));
-    printf("  Code Page 65001 = UTF-8\n");
-#endif /* SUPPORT_TWO_ENCODINGS */
+    printf("  %cjit %clzma %czlib %c2enc\n", jit, lzma, zlib, twoEnc);
 }
 
 void init_options(void) {
