@@ -322,7 +322,7 @@ Language types are output:
         .tcl  .itcl  .itk
   
     --terraform
-        .tf
+        .tf  .tfvars
   
     --tex
         .tex  .cls  .sty
