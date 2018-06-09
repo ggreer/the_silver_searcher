@@ -60,6 +60,7 @@ typedef struct {
     int print_break;
     int print_count;
     int print_filename_only;
+    int print_nonmatching_files;
     int print_path;
     int print_all_paths;
     int print_line_numbers;
