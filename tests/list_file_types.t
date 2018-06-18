@@ -118,7 +118,7 @@ Language types are output:
         .hbs
   
     --haskell
-        .hs  .lhs
+        .hs  .hsig  .lhs
   
     --haxe
         .hx
