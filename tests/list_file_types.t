@@ -317,6 +317,9 @@ Language types are output:
   
     --sql
         .sql  .ctl
+
+    --stata
+        .do  .ado
   
     --stylus
         .styl
