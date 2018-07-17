@@ -3,6 +3,8 @@ Setup:
   $ . $TESTDIR/setup.sh
   $ printf 'Foo\n' >> ./sample
   $ printf 'bar\n' >> ./sample
+  $ printf '\S\n' >> ./sample
+  $ printf '\s\n' >> ./sample
 
 Smart case by default:
 
@@ -15,6 +17,8 @@ Smart case by default:
   $ ag Foo sample
   1:Foo
   $ ag 'F.o' sample
+  1:Foo
+  $ ag 'fo\S' sample
   1:Foo
 
 Case sensitive mode:
@@ -43,3 +47,10 @@ Case insensitive file regex
 
   $ ag -i  -g 'Samp.*'
   sample
+
+Smart case literal mode
+  $ ag -Q "\S" sample
+  3:\S
+  $ ag -Q "\s" sample
+  3:\S
+  4:\s

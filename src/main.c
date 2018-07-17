@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
     }
 
     if (opts.casing == CASE_SMART) {
-        opts.casing = is_lowercase(opts.query) ? CASE_INSENSITIVE : CASE_SENSITIVE;
+        opts.casing = is_lowercase(opts.query, opts.literal) ? CASE_INSENSITIVE : CASE_SENSITIVE;
     }
 
     if (opts.literal) {

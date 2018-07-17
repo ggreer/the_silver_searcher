@@ -447,10 +447,18 @@ int is_wordchar(char ch) {
     return wordchar_table[(unsigned char)ch];
 }
 
-int is_lowercase(const char *s) {
+int is_lowercase(const char *s, _Bool isliteral) {
     int i;
+    _Bool isescaped = FALSE;
+
     for (i = 0; s[i] != '\0'; i++) {
-        if (!isascii(s[i]) || isupper(s[i])) {
+        if (isescaped) {
+            isescaped = FALSE;
+            continue;
+        } else if (s[i] == '\\') {
+            // When isliteral is true, isescaped will never be true
+            isescaped = !isliteral;
+        } else if (!isascii(s[i]) || isupper(s[i])) {
             return FALSE;
         }
     }

@@ -602,7 +602,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 
     if (file_search_regex) {
         int pcre_opts = 0;
-        if (opts.casing == CASE_INSENSITIVE || (opts.casing == CASE_SMART && is_lowercase(file_search_regex))) {
+        if (opts.casing == CASE_INSENSITIVE || (opts.casing == CASE_SMART && is_lowercase(file_search_regex, opts.literal))) {
             pcre_opts |= PCRE_CASELESS;
         }
         if (opts.word_regexp) {
