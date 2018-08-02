@@ -2,8 +2,9 @@
 #include "print.h"
 #include "scandir.h"
 
-void search_buf(const char *buf, const size_t buf_len,
-                const char *dir_full_path) {
+/* Returns: -1 if skipped, otherwise # of matches */
+ssize_t search_buf(const char *buf, const size_t buf_len,
+                   const char *dir_full_path) {
     int binary = -1; /* 1 = yes, 0 = no, -1 = don't know */
     size_t buf_offset = 0;
 
@@ -13,7 +14,7 @@ void search_buf(const char *buf, const size_t buf_len,
         binary = is_binary((const void *)buf, buf_len);
         if (binary) {
             log_debug("File %s is binary. Skipping...", dir_full_path);
-            return;
+            return -1;
         }
     }
 
@@ -214,11 +215,16 @@ multiline_done:
     if (matches_size > 0) {
         free(matches);
     }
+
+    /* FIXME: handle case where matches_len > SSIZE_MAX */
+    return (ssize_t)matches_len;
 }
 
+/* Return value: -1 if skipped, otherwise # of matches */
 /* TODO: this will only match single lines. multi-line regexes silently don't match */
-void search_stream(FILE *stream, const char *path) {
+ssize_t search_stream(FILE *stream, const char *path) {
     char *line = NULL;
+    ssize_t matches_count = 0;
     ssize_t line_len = 0;
     size_t line_cap = 0;
     size_t i;
@@ -226,8 +232,17 @@ void search_stream(FILE *stream, const char *path) {
     print_init_context();
 
     for (i = 1; (line_len = getline(&line, &line_cap, stream)) > 0; i++) {
+        ssize_t result;
         opts.stream_line_num = i;
-        search_buf(line, line_len, path);
+        result = search_buf(line, line_len, path);
+        if (result > 0) {
+            if (matches_count == -1) {
+                matches_count = 0;
+            }
+            matches_count += result;
+        } else if (matches_count <= 0 && result == -1) {
+            matches_count = -1;
+        }
         if (line[line_len - 1] == '\n') {
             line_len--;
         }
@@ -236,6 +251,7 @@ void search_stream(FILE *stream, const char *path) {
 
     free(line);
     print_cleanup_context();
+    return matches_count;
 }
 
 void search_file(const char *file_full_path) {
