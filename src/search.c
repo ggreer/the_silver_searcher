@@ -347,9 +347,13 @@ void search_file(const char *file_full_path) {
 #endif
     } else {
         buf = ag_malloc(f_len);
-        size_t bytes_read = read(fd, buf, f_len);
-        if ((off_t)bytes_read != f_len) {
-            die("expected to read %u bytes but read %u", f_len, bytes_read);
+
+        ssize_t bytes_read = 0;
+        do {
+            bytes_read += read(fd, buf + bytes_read, f_len);
+        } while (bytes_read < f_len);
+        if (bytes_read != f_len) {
+            die("File %s read(): expected to read %u bytes but read %u", file_full_path, f_len, bytes_read);
         }
     }
 #endif
