@@ -61,7 +61,9 @@ struct zfile {
 
     union {
         z_stream gz;
+#ifdef HAVE_LZMA_H
         lzma_stream lzma;
+#endif
     } stream;
 
     uint8_t inbuf[32 * KB];
@@ -69,8 +71,13 @@ struct zfile {
     bool eof;
 };
 
+#ifdef HAVE_LZMA_H
 #define CAVAIL_IN(c) ((c)->ctype == AG_GZIP ? (c)->stream.gz.avail_in : (c)->stream.lzma.avail_in)
 #define CNEXT_OUT(c) ((c)->ctype == AG_GZIP ? (c)->stream.gz.next_out : (c)->stream.lzma.next_out)
+#else
+#define CAVAIL_IN(c) (c)->stream.gz.avail_in
+#define CNEXT_OUT(c) (c)->stream.gz.next_out
+#endif
 
 static int
 zfile_cookie_init(struct zfile *cookie) {
@@ -207,7 +214,9 @@ zfile_read(void *cookie_, char *buf, size_t size) {
     struct zfile *cookie = cookie_;
     size_t nb, ignorebytes;
     ssize_t total = 0;
+#ifdef HAVE_LZMA_H
     lzma_ret lzret;
+#endif
     int ret;
 
     assert(size <= SSIZE_MAX);
@@ -219,7 +228,9 @@ zfile_read(void *cookie_, char *buf, size_t size) {
         return 0;
 
     ret = Z_OK;
+#ifdef HAVE_LZMA_H
     lzret = LZMA_OK;
+#endif
 
     ignorebytes = cookie->logic_offset - cookie->decode_offset;
     assert(ignorebytes == 0);
@@ -272,8 +283,12 @@ zfile_read(void *cookie_, char *buf, size_t size) {
         assert(cookie->stream.gz.next_out ==
                &cookie->outbuf[cookie->outbuf_start]);
 
+#ifdef HAVE_LZMA_H
         if ((cookie->ctype == AG_XZ && lzret == LZMA_STREAM_END) ||
             (cookie->ctype == AG_GZIP && ret == Z_STREAM_END)) {
+#else
+        if (ret == Z_STREAM_END) {
+#endif
             cookie->eof = true;
             break;
         }
@@ -290,31 +305,42 @@ zfile_read(void *cookie_, char *buf, size_t size) {
                 warn("truncated file");
                 exit(1);
             }
+#ifdef HAVE_LZMA_H
             if (cookie->ctype == AG_XZ) {
                 cookie->stream.lzma.avail_in = nb;
                 cookie->stream.lzma.next_in = cookie->inbuf;
             } else {
+#endif
                 cookie->stream.gz.avail_in = nb;
                 cookie->stream.gz.next_in = cookie->inbuf;
+#ifdef HAVE_LZMA_H
             }
+#endif
         }
 
         /* Reset stream state to beginning of output buffer */
+#ifdef HAVE_LZMA_H
         if (cookie->ctype == AG_XZ) {
             cookie->stream.lzma.next_out = cookie->outbuf;
             cookie->stream.lzma.avail_out = sizeof cookie->outbuf;
         } else {
+#endif
             cookie->stream.gz.next_out = cookie->outbuf;
             cookie->stream.gz.avail_out = sizeof cookie->outbuf;
+#ifdef HAVE_LZMA_H
         }
+#endif
         cookie->outbuf_start = 0;
 
+#ifdef HAVE_LZMA_H
         if (cookie->ctype == AG_GZIP) {
+#endif
             ret = inflate(&cookie->stream.gz, Z_NO_FLUSH);
             if (ret != Z_OK && ret != Z_STREAM_END) {
                 log_err("Found mem/data error while decompressing zlib stream: %s", zError(ret));
                 return -1;
             }
+#ifdef HAVE_LZMA_H
         } else {
             lzret = lzma_code(&cookie->stream.lzma, LZMA_RUN);
             if (lzret != LZMA_OK && lzret != LZMA_STREAM_END) {
@@ -322,6 +348,7 @@ zfile_read(void *cookie_, char *buf, size_t size) {
                 return -1;
             }
         }
+#endif
         inflated = CNEXT_OUT(cookie) - &cookie->outbuf[0];
         cookie->actual_len += inflated;
     } while (!ferror(cookie->in) && size > 0);
