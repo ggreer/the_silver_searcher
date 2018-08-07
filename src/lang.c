@@ -109,6 +109,7 @@ lang_spec_t langs[] = {
     { "smalltalk", { "st" } },
     { "sml", { "sml", "fun", "mlb", "sig" } },
     { "sql", { "sql", "ctl" } },
+    { "stata", { "do", "ado" } },
     { "stylus", { "styl" } },
     { "swift", { "swift" } },
     { "tcl", { "tcl", "itcl", "itk" } },
