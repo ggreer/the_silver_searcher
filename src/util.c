@@ -148,6 +148,13 @@ size_t ag_max(size_t a, size_t b) {
     return a;
 }
 
+size_t ag_min(size_t a, size_t b) {
+    if (b < a) {
+        return b;
+    }
+    return a;
+}
+
 void generate_hash(const char *find, const size_t f_len, uint8_t *h_table, const int case_sensitive) {
     int i;
     for (i = f_len - sizeof(uint16_t); i >= 0; i--) {
