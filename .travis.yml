@@ -22,7 +22,7 @@ addons:
 
 env:
   global:
-    - LLVM_VERSION=3.8.0
+    - LLVM_VERSION=6.0.1
     - LLVM_PATH=$HOME/clang+llvm
     - CLANG_FORMAT=$LLVM_PATH/bin/clang-format
 
