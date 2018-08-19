@@ -173,10 +173,7 @@ void cleanup_options(void) {
     free(opts.color_path);
     free(opts.color_match);
     free(opts.color_line_number);
-
-    if (opts.query) {
-        free(opts.query);
-    }
+    free(opts.query);
 
     pcre_free(opts.re);
     if (opts.re_extra) {

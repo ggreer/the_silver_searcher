@@ -57,9 +57,7 @@ void print_cleanup_context(void) {
     }
 
     for (i = 0; i < opts.before; i++) {
-        if (print_context.context_prev_lines[i] != NULL) {
-            free(print_context.context_prev_lines[i]);
-        }
+        free(print_context.context_prev_lines[i]);
     }
     free(print_context.context_prev_lines);
     print_context.context_prev_lines = NULL;
