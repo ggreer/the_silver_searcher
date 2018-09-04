@@ -34,10 +34,19 @@ CFLAGS="$CFLAGS $PTHREAD_CFLAGS $PCRE_CFLAGS -Wall -Wextra -Wformat=2 -Wno-forma
 CFLAGS="$CFLAGS -Wpointer-arith -Wcast-qual -Wmissing-prototypes -Wno-missing-braces -D_GNU_SOURCE"
 LDFLAGS="$LDFLAGS"
 
-case $host in
+AC_CANONICAL_HOST
+is_windows=
+case ${host_os} in
 *mingw*)
     AC_CHECK_LIB(shlwapi, main,, AC_MSG_ERROR(libshlwapi missing))
+    is_windows=yes
+;;
+*cygwin*)
+    is_windows=yes
+;;
 esac
+
+AM_CONDITIONAL([WINDOWS], [test "x$is_windows" = "xyes"])
 
 LIBS="$PTHREAD_LIBS $LIBS"
 
