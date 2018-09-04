@@ -8,6 +8,7 @@ AC_INIT(
 AM_INIT_AUTOMAKE([no-define foreign subdir-objects])
 
 AC_PROG_CC
+AC_PROG_CC_C99
 AM_PROG_CC_C_O
 AC_PREREQ([2.59])
 AC_PROG_GREP
@@ -30,7 +31,7 @@ if ! echo "$CFLAGS" | "$GREP" '\(^\|[[[:space:]]]\)-O' > /dev/null; then
 fi
 
 CFLAGS="$CFLAGS $PTHREAD_CFLAGS $PCRE_CFLAGS -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -Wshadow"
-CFLAGS="$CFLAGS -Wpointer-arith -Wcast-qual -Wmissing-prototypes -Wno-missing-braces -std=gnu89 -D_GNU_SOURCE"
+CFLAGS="$CFLAGS -Wpointer-arith -Wcast-qual -Wmissing-prototypes -Wno-missing-braces -D_GNU_SOURCE"
 LDFLAGS="$LDFLAGS"
 
 case $host in
