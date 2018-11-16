@@ -72,6 +72,9 @@ Language types are output:
     --dot
         .dot  .gv
   
+    --dts
+        .dts  .dtsi
+  
     --ebuild
         .ebuild  .eclass
   
@@ -115,7 +118,7 @@ Language types are output:
         .hbs
   
     --haskell
-        .hs  .lhs
+        .hs  .hsig  .lhs
   
     --haxe
         .hx
@@ -255,6 +258,9 @@ Language types are output:
     --proto
         .proto
   
+    --pug
+        .pug
+  
     --puppet
         .pp
   
@@ -312,6 +318,9 @@ Language types are output:
     --sql
         .sql  .ctl
   
+    --stata
+        .do  .ado
+  
     --stylus
         .styl
   
@@ -320,6 +329,9 @@ Language types are output:
   
     --tcl
         .tcl  .itcl  .itk
+  
+    --terraform
+        .tf  .tfvars
   
     --tex
         .tex  .cls  .sty

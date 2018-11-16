@@ -111,7 +111,7 @@ void search_buf(const char *buf, const size_t buf_len,
 
     if (opts.search_stream) {
         binary = 0;
-    } else if (!opts.search_binary_files) {
+    } else if (!opts.search_binary_files && opts.mmap) { /* if not using mmap, binary files have already been skipped */
         binary = is_binary((const void *)buf, buf_len);
         if (binary) {
             log_debug("File %s is binary. Skipping...", dir_full_path);
@@ -510,9 +510,23 @@ void search_file(const char *file_full_path) {
 #endif
     } else {
         buf = ag_malloc(f_len);
-        size_t bytes_read = read(fd, buf, f_len);
-        if ((off_t)bytes_read != f_len) {
-            die("expected to read %u bytes but read %u", f_len, bytes_read);
+
+        ssize_t bytes_read = 0;
+
+        if (!opts.search_binary_files) {
+            bytes_read += read(fd, buf, ag_min(f_len, 512));
+            // Optimization: If skipping binary files, don't read the whole buffer before checking if binary or not.
+            if (is_binary(buf, f_len)) {
+                log_debug("File %s is binary. Skipping...", file_full_path);
+                goto cleanup;
+            }
+        }
+
+        while (bytes_read < f_len) {
+            bytes_read += read(fd, buf + bytes_read, f_len);
+        }
+        if (bytes_read != f_len) {
+            die("File %s read(): expected to read %u bytes but read %u", file_full_path, f_len, bytes_read);
         }
     }
 #endif

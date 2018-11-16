@@ -207,6 +207,9 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
   * `--workers NUM`:
     Use NUM worker threads. Default is the number of CPU cores, with a max of 8.
 
+  * `-W --width NUM`:
+    Truncate match lines after NUM characters.
+
   * `-z --search-zip`:
     Search contents of compressed files. Currently, gz and xz are supported.
     This option requires that ag is built with lzma and zlib.
