@@ -6,48 +6,40 @@
  *
  * --------------------------------------------------------------------------
  *
- *      Pthreads-win32 - POSIX Threads Library for Win32
- *      Copyright(C) 1998 John E. Bossom
- *      Copyright(C) 1999,2012 Pthreads-win32 contributors
+ *      Pthreads4w - POSIX Threads for Windows
+ *      Copyright 1998 John E. Bossom
+ *      Copyright 1999-2018, Pthreads4w contributors
  *
- *      Homepage1: http://sourceware.org/pthreads-win32/
- *      Homepage2: http://sourceforge.net/projects/pthreads4w/
+ *      Homepage: https://sourceforge.net/projects/pthreads4w/
  *
  *      The current list of contributors is contained
  *      in the file CONTRIBUTORS included with the source
  *      code distribution. The list can also be seen at the
  *      following World Wide Web location:
- *      http://sources.redhat.com/pthreads-win32/contributors.html
  *
- *      This library is free software; you can redistribute it and/or
- *      modify it under the terms of the GNU Lesser General Public
- *      License as published by the Free Software Foundation; either
- *      version 2 of the License, or (at your option) any later version.
+ *      https://sourceforge.net/p/pthreads4w/wiki/Contributors/
  *
- *      This library is distributed in the hope that it will be useful,
- *      but WITHOUT ANY WARRANTY; without even the implied warranty of
- *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *      Lesser General Public License for more details.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *      You should have received a copy of the GNU Lesser General Public
- *      License along with this library in the file COPYING.LIB;
- *      if not, write to the Free Software Foundation, Inc.,
- *      59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
 
-#if defined(PTW32_STATIC_LIB) && defined(_MSC_VER) && _MSC_VER >= 1400
-#  undef PTW32_STATIC_LIB
-#  define PTW32_STATIC_TLSLIB
-#endif
-
 #include "pthread.h"
 #include "implement.h"
 
-#if !defined(PTW32_STATIC_LIB)
+#if !defined (__PTW32_STATIC_LIB)
 
 #if defined(_MSC_VER)
 /*
@@ -63,14 +55,9 @@
  */
 extern "C"
 #endif				/* __cplusplus */
-  BOOL WINAPI
-#if defined(PTW32_STATIC_TLSLIB)
-PTW32_StaticLibMain (HINSTANCE hinstDll, DWORD fdwReason, LPVOID lpvReserved)
-#else
-DllMain (HINSTANCE hinstDll, DWORD fdwReason, LPVOID lpvReserved)
-#endif
+  BOOL WINAPI DllMain (HINSTANCE hinstDll, DWORD fdwReason, LPVOID lpvReserved)
 {
-  BOOL result = PTW32_TRUE;
+  BOOL result =  __PTW32_TRUE;
 
   switch (fdwReason)
     {
@@ -105,37 +92,14 @@ DllMain (HINSTANCE hinstDll, DWORD fdwReason, LPVOID lpvReserved)
 
 #endif /* !PTW32_STATIC_LIB */
 
-#if ! defined(PTW32_BUILD_INLINED)
+#if ! defined (__PTW32_BUILD_INLINED)
 /*
  * Avoid "translation unit is empty" warnings
  */
 typedef int foo;
 #endif
 
-/* Visual Studio 8+ can leverage PIMAGE_TLS_CALLBACK CRT segments, which
- * give a static lib its very own DllMain.
- */
-#ifdef PTW32_STATIC_TLSLIB
-
-static void WINAPI
-TlsMain(PVOID h, DWORD r, PVOID u)
-{
-  (void)PTW32_StaticLibMain((HINSTANCE)h, r, u);
-}
-
-#ifdef _M_X64
-# pragma const_seg(".CRT$XLB")
-EXTERN_C const PIMAGE_TLS_CALLBACK _xl_b = TlsMain;
-# pragma const_seg()
-#else
-# pragma data_seg(".CRT$XLB")
-EXTERN_C PIMAGE_TLS_CALLBACK _xl_b = TlsMain;
-# pragma data_seg()
-#endif /* _M_X64 */
-
-#endif /* PTW32_STATIC_TLSLIB */
-
-#if defined(PTW32_STATIC_LIB)
+#if defined(__PTW32_STATIC_LIB)
 
 /*
  * Note: MSVC 8 and higher use code in dll.c, which enables TLS cleanup
@@ -177,7 +141,7 @@ static int on_process_exit(void)
 __attribute__((section(".ctors"), used)) static int (*gcc_ctor)(void) = on_process_init;
 __attribute__((section(".dtors"), used)) static int (*gcc_dtor)(void) = on_process_exit;
 #elif defined(_MSC_VER)
-#  if _MSC_VER >= 1400 /* MSVC8 */
+#  if _MSC_VER >= 1400 /* MSVC8+ */
 #    pragma section(".CRT$XCU", long, read)
 #    pragma section(".CRT$XPU", long, read)
 __declspec(allocate(".CRT$XCU")) static int (*msc_ctor)(void) = on_process_init;
@@ -197,7 +161,7 @@ static int (*msc_dtor)(void) = on_process_exit;
  * (specifically, in implement.h), so that the linker can't optimize away
  * this module. Don't call it.
  */
-void ptw32_autostatic_anchor(void) { abort(); }
+void __ptw32_autostatic_anchor(void) { abort(); }
 
-#endif /* PTW32_STATIC_LIB */
+#endif /*  __PTW32_STATIC_LIB */
 

@@ -19,7 +19,7 @@ DEFINE_BUILD_TYPE=
 SOURCES=$(ONE_SOURCE)		# The DLL builds much faster when we compile just pthread.c, which includes everything
 ALIAS_TYPE=dll
 !ELSEIF "$(TYPE)"=="LIB"
-DEFINE_BUILD_TYPE=/DPTW32_STATIC_LIB
+DEFINE_BUILD_TYPE=/D__PTW32_STATIC_LIB
 SOURCES=$(ONE_SOURCE)		# The lib builds much faster with one source. But this puts lots of useless code in your app.
 ALIAS_TYPE=lib
 !ENDIF
@@ -72,7 +72,7 @@ CFLAGS=$(CFLAGS:/Zi =) /Z7
 !ELSE
 CFLAGS=$(CFLAGS:/Os =) /O2 /Ob2
 !ENDIF
-CFLAGS=$(CFLAGS) /D_CRT_SECURE_NO_WARNINGS $(EHFLAGS) $(DEFINE_BUILD_TYPE) /DPTW32_BUILD_INLINED /D$(CLEANUP) /DHAVE_CONFIG_H
+CFLAGS=$(CFLAGS) /D_CRT_SECURE_NO_WARNINGS $(EHFLAGS) $(DEFINE_BUILD_TYPE) /D__PTW32_BUILD_INLINED /D$(CLEANUP) /DHAVE_CONFIG_H
 
 # Work around for the conflicting definitions of struct timespec in Visual C++ >= 2015 ucrt\time.h, and that in pthread.h
 !IF "$(WIN32_CRTINC)" != "$(WIN32_VCINC)" # They start differing with the introduction of the UCRT.

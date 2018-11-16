@@ -146,30 +146,30 @@ thread handle with GetCurrentThread() is sufficient, and it seems to work
 perfectly fine, so maybe DuplicateHandle was just plain useless to begin with ?
 
 ------------------------------------
-- In private.c, added some code at the beginning of ptw32_processInitialize
-to detect the case of multiple calls to ptw32_processInitialize.
+- In private.c, added some code at the beginning of __ptw32_processInitialize
+to detect the case of multiple calls to __ptw32_processInitialize.
 
 Rational: In order to debug pthread-win32, it is easier to compile
 it as a regular library (it is not possible to debug DLL's on winCE).
-In that case, the application must call ptw32_rocessInitialize()
+In that case, the application must call __ptw32_rocessInitialize()
 explicitely, to initialize pthread-win32.  It is safer in this circumstance
-to handle the case where ptw32_processInitialize() is called on
+to handle the case where __ptw32_processInitialize() is called on
 an already initialized library:
 
 int
-ptw32_processInitialize (void)
+__ptw32_processInitialize (void)
 {
-	if (ptw32_processInitialized) {
+	if (__ptw32_processInitialized) {
 		/* 
 		 * ignore if already initialized. this is useful for 
 		 * programs that uses a non-dll pthread
-		 * library. such programs must call ptw32_processInitialize() explicitely,
+		 * library. such programs must call __ptw32_processInitialize() explicitely,
 		 * since this initialization routine is automatically called only when
 		 * the dll is loaded.
 		 */
 		return TRUE;
 	}
-    ptw32_processInitialized = TRUE;
+    __ptw32_processInitialized = TRUE;
   	[...]
 }
 

@@ -7,33 +7,30 @@
  *
  * --------------------------------------------------------------------------
  *
- *      Pthreads-win32 - POSIX Threads Library for Win32
- *      Copyright(C) 1998 John E. Bossom
- *      Copyright(C) 1999,2012 Pthreads-win32 contributors
+ *      Pthreads4w - POSIX Threads for Windows
+ *      Copyright 1998 John E. Bossom
+ *      Copyright 1999-2018, Pthreads4w contributors
  *
- *      Homepage1: http://sourceware.org/pthreads-win32/
- *      Homepage2: http://sourceforge.net/projects/pthreads4w/
+ *      Homepage: https://sourceforge.net/projects/pthreads4w/
  *
  *      The current list of contributors is contained
  *      in the file CONTRIBUTORS included with the source
  *      code distribution. The list can also be seen at the
  *      following World Wide Web location:
- *      http://sources.redhat.com/pthreads-win32/contributors.html
  *
- *      This library is free software; you can redistribute it and/or
- *      modify it under the terms of the GNU Lesser General Public
- *      License as published by the Free Software Foundation; either
- *      version 2 of the License, or (at your option) any later version.
+ *      https://sourceforge.net/p/pthreads4w/wiki/Contributors/
  *
- *      This library is distributed in the hope that it will be useful,
- *      but WITHOUT ANY WARRANTY; without even the implied warranty of
- *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *      Lesser General Public License for more details.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *      You should have received a copy of the GNU Lesser General Public
- *      License along with this library in the file COPYING.LIB;
- *      if not, write to the Free Software Foundation, Inc.,
- *      59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -49,7 +46,7 @@
 int
 pthread_create (pthread_t * tid,
     const pthread_attr_t * attr,
-    void *(PTW32_CDECL *start) (void *), void *arg)
+    void * (__PTW32_CDECL *start) (void *), void *arg)
 /*
  * ------------------------------------------------------
  * DOCPUBLIC
@@ -89,12 +86,12 @@ pthread_create (pthread_t * tid,
  */
 {
   pthread_t thread;
-  ptw32_thread_t * tp;
-  ptw32_thread_t * sp;
+  __ptw32_thread_t * tp;
+  __ptw32_thread_t * sp;
   register pthread_attr_t a;
   HANDLE threadH = 0;
   int result = EAGAIN;
-  int run = PTW32_TRUE;
+  int run =  __PTW32_TRUE;
   ThreadParms *parms = NULL;
   unsigned int stackSize;
   int priority;
@@ -107,7 +104,7 @@ pthread_create (pthread_t * tid,
    */
   tid->x = 0;
 
-  if (NULL == (sp = (ptw32_thread_t *)pthread_self().p))
+  if (NULL == (sp = (__ptw32_thread_t *)pthread_self().p))
     {
       goto FAIL0;
     }
@@ -121,13 +118,13 @@ pthread_create (pthread_t * tid,
       a = NULL;
     }
 
-  thread = ptw32_new();
+  thread = __ptw32_new();
   if (thread.p == NULL)
     {
       goto FAIL0;
     }
 
-  tp = (ptw32_thread_t *) thread.p;
+  tp = (__ptw32_thread_t *) thread.p;
 
   priority = tp->sched_priority;
 
@@ -207,7 +204,11 @@ pthread_create (pthread_t * tid,
       stackSize = PTHREAD_STACK_MIN;
     }
 
-  tp->state = run ? PThreadStateInitial : PThreadStateSuspended;
+  /*
+   * State must be >= PThreadStateRunning before we return to the caller.
+   * __ptw32_threadStart will set state to PThreadStateRunning.
+   */
+  tp->state = PThreadStateSuspended;
 
   tp->keys = NULL;
 
@@ -226,7 +227,7 @@ pthread_create (pthread_t * tid,
       threadH =
           (HANDLE) _beginthreadex ((void *) NULL,	/* No security info             */
               stackSize,		/* default stack size   */
-              ptw32_threadStart,
+              __ptw32_threadStart,
               parms,
               (unsigned)
               CREATE_SUSPENDED,
@@ -236,7 +237,7 @@ pthread_create (pthread_t * tid,
     {
       if (a != NULL)
         {
-          (void) ptw32_setthreadpriority (thread, SCHED_OTHER, priority);
+          (void) __ptw32_setthreadpriority (thread, SCHED_OTHER, priority);
         }
 
 #if defined(HAVE_CPU_AFFINITY)
@@ -254,17 +255,17 @@ pthread_create (pthread_t * tid,
 #else
 
   {
-    ptw32_mcs_local_node_t stateLock;
+    __ptw32_mcs_local_node_t stateLock;
 
     /*
      * This lock will force pthread_threadStart() to wait until we have
      * the thread handle and have set the priority.
      */
-    ptw32_mcs_lock_acquire(&tp->stateLock, &stateLock);
+    __ptw32_mcs_lock_acquire(&tp->stateLock, &stateLock);
 
     tp->threadH =
         threadH =
-            (HANDLE) _beginthread (ptw32_threadStart, stackSize,	/* default stack size   */
+            (HANDLE) _beginthread (__ptw32_threadStart, stackSize,	/* default stack size   */
                 parms);
 
     /*
@@ -288,7 +289,7 @@ pthread_create (pthread_t * tid,
 
         if (a != NULL)
           {
-            (void) ptw32_setthreadpriority (thread, SCHED_OTHER, priority);
+            (void) __ptw32_setthreadpriority (thread, SCHED_OTHER, priority);
           }
 
 #if defined(HAVE_CPU_AFFINITY)
@@ -299,7 +300,7 @@ pthread_create (pthread_t * tid,
 
       }
 
-    ptw32_mcs_lock_release (&stateLock);
+    __ptw32_mcs_lock_release (&stateLock);
   }
 #endif
 
@@ -319,7 +320,7 @@ pthread_create (pthread_t * tid,
   if (result != 0)
     {
 
-      ptw32_threadDestroy (thread);
+      __ptw32_threadDestroy (thread);
       tp = NULL;
 
       if (parms != NULL)

@@ -7,14 +7,14 @@
 #
 
 
-DLL_VER	= 2
+PTW32_VER	= 3
 
 DEVROOT	= .
 
 DLLDEST	= $(DEVROOT)\DLL
 LIBDEST	= $(DEVROOT)\DLL
 
-DLLS	= pthreadBC$(DLL_VER).dll
+DLLS	= pthreadBC$(PTW32_VER).dll
 
 OPTIM	= /O2
 
@@ -25,7 +25,7 @@ CFLAGS	= /q /I. /DHAVE_CONFIG_H=1 /4 /tWD /tWM \
 	  /w-aus /w-asc /w-par
 
 #C cleanup code
-BCFLAGS	= $(PTW32_FLAGS) $(CFLAGS)
+BCFLAGS	= $ (__PTW32_FLAGS) $(CFLAGS)
 
 OBJEXT = obj
 RESEXT = res

@@ -119,23 +119,3 @@ Known bugs
    in applications relying on cancellation/cleanup AND using optimisations for
    creation of production code is highly unreliable for the current version of
    the pthreads library.
-
-3. The Borland Builder 5.5 version of the library produces memory read exceptions
-in some tests.
-
-4. pthread_barrier_wait() can deadlock if the number of potential calling
-threads for a particular barrier is greater than the barrier count parameter
-given to pthread_barrier_init() for that barrier.
-
-This is due to the very lightweight implementation of pthread-win32 barriers.
-To cope with more than "count" possible waiters, barriers must effectively
-implement all the same safeguards as condition variables, making them much
-"heavier" than at present.
-
-The workaround is to ensure that no more than "count" threads attempt to wait
-at the barrier.
-
-5. Canceling a thread blocked on pthread_once appears not to work in the MSVC++
-version of the library "pthreadVCE.dll". The test case "once3.c" hangs. I have no
-clues on this at present. All other versions pass this test ok - pthreadsVC.dll,
-pthreadsVSE.dll, pthreadsGC.dll and pthreadsGCE.dll. 

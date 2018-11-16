@@ -239,7 +239,7 @@ pthreadCancelableTimedWait (HANDLE waitHandle, DWORD timeout);
 int
 pthread_getname_np(pthread_t thr, char *name, int len);
 
-If PTW32_COMPATIBILITY_BSD or PTW32_COMPATIBILITY_TRU64 defined
+If  __PTW32_COMPATIBILITY_BSD or  __PTW32_COMPATIBILITY_TRU64 defined
 int
 pthread_setname_np(pthread_t thr, const char *name, void *arg);
 

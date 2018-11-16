@@ -6,33 +6,30 @@
  *
  * --------------------------------------------------------------------------
  *
- *      Pthreads-win32 - POSIX Threads Library for Win32
- *      Copyright(C) 1998 John E. Bossom
- *      Copyright(C) 1999,2012 Pthreads-win32 contributors
+ *      Pthreads4w - POSIX Threads for Windows
+ *      Copyright 1998 John E. Bossom
+ *      Copyright 1999-2018, Pthreads4w contributors
  *
- *      Homepage1: http://sourceware.org/pthreads-win32/
- *      Homepage2: http://sourceforge.net/projects/pthreads4w/
+ *      Homepage: https://sourceforge.net/projects/pthreads4w/
  *
  *      The current list of contributors is contained
  *      in the file CONTRIBUTORS included with the source
  *      code distribution. The list can also be seen at the
  *      following World Wide Web location:
- *      http://sources.redhat.com/pthreads-win32/contributors.html
  *
- *      This library is free software; you can redistribute it and/or
- *      modify it under the terms of the GNU Lesser General Public
- *      License as published by the Free Software Foundation; either
- *      version 2 of the License, or (at your option) any later version.
+ *      https://sourceforge.net/p/pthreads4w/wiki/Contributors/
  *
- *      This library is distributed in the hope that it will be useful,
- *      but WITHOUT ANY WARRANTY; without even the implied warranty of
- *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *      Lesser General Public License for more details.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *      You should have received a copy of the GNU Lesser General Public
- *      License along with this library in the file COPYING.LIB;
- *      if not, write to the Free Software Foundation, Inc.,
- *      59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -44,34 +41,34 @@
 #include "context.h"
 
 static void
-ptw32_cancel_self (void)
+__ptw32_cancel_self (void)
 {
-  ptw32_throw (PTW32_EPS_CANCEL);
+  __ptw32_throw  (__PTW32_EPS_CANCEL);
 
   /* Never reached */
 }
 
 static void CALLBACK
-ptw32_cancel_callback (ULONG_PTR unused)
+__ptw32_cancel_callback (ULONG_PTR unused)
 {
-  ptw32_throw (PTW32_EPS_CANCEL);
+  __ptw32_throw  (__PTW32_EPS_CANCEL);
 
   /* Never reached */
 }
 
 /*
- * ptw32_Registercancellation() -
+ * __ptw32_Registercancellation() -
  * Must have args of same type as QueueUserAPCEx because this function
  * is a substitute for QueueUserAPCEx if it's not available.
  */
 DWORD
-ptw32_Registercancellation (PAPCFUNC unused1, HANDLE threadH, DWORD unused2)
+__ptw32_Registercancellation (PAPCFUNC unused1, HANDLE threadH, DWORD unused2)
 {
   CONTEXT context;
 
   context.ContextFlags = CONTEXT_CONTROL;
   GetThreadContext (threadH, &context);
-  PTW32_PROGCTR (context) = (DWORD_PTR) ptw32_cancel_self;
+   __PTW32_PROGCTR (context) = (DWORD_PTR) __ptw32_cancel_self;
   SetThreadContext (threadH, &context);
   return 0;
 }
@@ -103,8 +100,8 @@ pthread_cancel (pthread_t thread)
   int result;
   int cancel_self;
   pthread_t self;
-  ptw32_thread_t * tp;
-  ptw32_mcs_local_node_t stateLock;
+  __ptw32_thread_t * tp;
+  __ptw32_mcs_local_node_t stateLock;
 
   /*
    * Validate the thread id. This method works for pthreads-win32 because
@@ -130,12 +127,12 @@ pthread_cancel (pthread_t thread)
    */
   cancel_self = pthread_equal (thread, self);
 
-  tp = (ptw32_thread_t *) thread.p;
+  tp = (__ptw32_thread_t *) thread.p;
 
   /*
    * Lock for async-cancel safety.
    */
-  ptw32_mcs_lock_acquire (&tp->stateLock, &stateLock);
+  __ptw32_mcs_lock_acquire (&tp->stateLock, &stateLock);
 
   if (tp->cancelType == PTHREAD_CANCEL_ASYNCHRONOUS
       && tp->cancelState == PTHREAD_CANCEL_ENABLE
@@ -146,8 +143,8 @@ pthread_cancel (pthread_t thread)
 	  tp->state = PThreadStateCanceling;
 	  tp->cancelState = PTHREAD_CANCEL_DISABLE;
 
-	  ptw32_mcs_lock_release (&stateLock);
-	  ptw32_throw (PTW32_EPS_CANCEL);
+	  __ptw32_mcs_lock_release (&stateLock);
+	  __ptw32_throw  (__PTW32_EPS_CANCEL);
 
 	  /* Never reached */
 	}
@@ -164,11 +161,11 @@ pthread_cancel (pthread_t thread)
 	      /*
 	       * If alertdrv and QueueUserAPCEx is available then the following
 	       * will result in a call to QueueUserAPCEx with the args given, otherwise
-	       * this will result in a call to ptw32_Registercancellation and only
+	       * this will result in a call to __ptw32_Registercancellation and only
 	       * the threadH arg will be used.
 	       */
-	      ptw32_register_cancellation ((PAPCFUNC)ptw32_cancel_callback, threadH, 0);
-	      ptw32_mcs_lock_release (&stateLock);
+	      __ptw32_register_cancellation ((PAPCFUNC)__ptw32_cancel_callback, threadH, 0);
+	      __ptw32_mcs_lock_release (&stateLock);
 	      ResumeThread (threadH);
 	    }
 	}
@@ -191,7 +188,7 @@ pthread_cancel (pthread_t thread)
 	  result = ESRCH;
 	}
 
-      ptw32_mcs_lock_release (&stateLock);
+      __ptw32_mcs_lock_release (&stateLock);
     }
 
   return (result);

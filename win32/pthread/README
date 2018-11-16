@@ -1,23 +1,16 @@
-PTHREADS-WIN32 (A.K.A. PTHREADS4W)
+PTHREADS4W (a.k.a. PTHREADS-WIN32)
 ==================================
-
-Pthreads-win32 is free software, distributed under the GNU Lesser
-General Public License (LGPL). See the file 'COPYING.LIB' for terms
-and conditions. Also see the file 'COPYING' for information
-specific to pthreads-win32, copyrights and the LGPL.
-
 
 What is it?
 -----------
 
-Pthreads-win32 (a.k.a. pthreads4w) is an Open Source Software
-implementation of the Threads component of the POSIX 1003.1c 1995
-Standard (or later) for Microsoft's Windows environment. Some functions
-from POSIX 1003.1b are also supported, including semaphores. Other
-related functions include the set of read-write lock functions. The
-library also supports some of the functionality of the Open
-Group's Single Unix specification, namely mutex types, plus some common
-and pthreads-win32 specific non-portable routines (see README.NONPORTABLE).
+Pthreads4w is an Open Source Software implementation of the Threads
+component of the POSIX 1003.1c 1995 Standard (or later) for Microsoft's
+Windows environment. Some functions from POSIX 1003.1b are also supported,
+including semaphores. Other related functions include the set of read-write
+lock functions. The library also supports some of the functionality of the
+Open Group's Single Unix specification, namely mutex types, plus some common
+and pthreads4w specific non-portable routines (see README.NONPORTABLE).
 
 See the file "ANNOUNCE" for more information including standards
 conformance details and the list of supported and unsupported
@@ -37,15 +30,15 @@ QueueUserAPCEx by Panagiotis E. Hadjidoukas
 	For true async cancellation of threads (including blocked threads).
 	This is a DLL and Windows driver that provides pre-emptive APC
 	by forcing threads into an alertable state when the APC is queued.
-	Both the DLL and driver are provided with the pthreads-win32.exe
-	self-unpacking ZIP, and on the pthreads-win32 FTP site  (in source
+	Both the DLL and driver are provided with the pthreads4w.exe
+	self-unpacking ZIP, and on the pthreads4w FTP site  (in source
 	and pre-built forms). Currently this is a separate LGPL package to
-	pthreads-win32. See the README in the QueueUserAPCEx folder for
+	pthreads4w. See the README in the QueueUserAPCEx folder for
 	installation instructions.
 
-	Pthreads-win32 will automatically detect if the QueueUserAPCEx DLL
+	pthreads4w will automatically detect if the QueueUserAPCEx DLL
 	QuserEx.DLL is available and whether the driver AlertDrv.sys is
-	loaded. If it is not available, pthreads-win32 will simulate async
+	loaded. If it is not available, pthreads4w will simulate async
 	cancellation, which means that it can async cancel only threads that
 	are runnable. The simulated async cancellation cannot cancel blocked
 	threads.
@@ -139,7 +132,7 @@ Microsoft version numbers use 4 integers:
 
 	0.0.0.0
 
-Pthreads-win32 uses the first 3 following the standard major.minor.micro
+Pthreads4w uses the first 3 following the standard major.minor.micro
 system. We had claimed to follow the Libtool convention but this has
 not been the case with recent releases. Binary compatibility and
 consequently library file naming has not changed over this time either
@@ -171,14 +164,14 @@ The numbers are changed as follows:
 
 
 DLL compatibility numbering is an attempt to ensure that applications
-always load a compatible pthreads-win32 DLL by using a DLL naming system
+always load a compatible pthreads4w DLL by using a DLL naming system
 that is consistent with the version numbering system. It also allows
 older and newer DLLs to coexist in the same filesystem so that older
 applications can continue to be used. For pre .NET Windows systems,
 this inevitably requires incompatible versions of the same DLLs to have
 different names.
 
-Pthreads-win32 has adopted the Cygwin convention of appending a single
+Pthreads4w has adopted the Cygwin convention of appending a single
 integer number to the DLL name. The number used is simply the library's
 major version number.
 
@@ -212,10 +205,10 @@ If you use either pthreadVCE[2] or pthreadGCE[2]:
 
 If your application contains catch(...) blocks in your POSIX
 threads then you will need to replace the "catch(...)" with the macro
-"PtW32Catch", eg.
+"__PtW32Catch", eg.
 
-	#ifdef PtW32Catch
-		PtW32Catch {
+	#ifdef __PtW32Catch
+		__PtW32Catch {
 			...
 		}
 	#else
@@ -242,15 +235,15 @@ Other name changes
 All snapshots prior to and including snapshot 2000-08-13
 used "_pthread_" as the prefix to library internal
 functions, and "_PTHREAD_" to many library internal
-macros. These have now been changed to "ptw32_" and "PTW32_"
+macros. These have now been changed to "__ptw32_" and "__PTW32_"
 respectively so as to not conflict with the ANSI standard's
 reservation of identifiers beginning with "_" and "__" for
 use by compiler implementations only.
 
 If you have written any applications and you are linking
-statically with the pthreads-win32 library then you may have
+statically with the pthreads4w library then you may have
 included a call to _pthread_processInitialize. You will
-now have to change that to ptw32_processInitialize.
+now have to change that to __ptw32_processInitialize.
 
 
 Cleanup code default style
@@ -259,13 +252,13 @@ Cleanup code default style
 Previously, if not defined, the cleanup style was determined automatically
 from the compiler used, and one of the following was defined accordingly:
 
-	__CLEANUP_SEH	MSVC only
-	__CLEANUP_CXX	C++, including MSVC++, GNU G++
-	__CLEANUP_C	C, including GNU GCC, not MSVC
+	__PTW32_CLEANUP_SEH	MSVC only
+	__PTW32_CLEANUP_CXX	C++, including MSVC++, GNU G++
+	__PTW32_CLEANUP_C	C, including GNU GCC, not MSVC
 
 These defines determine the style of cleanup (see pthread.h) and,
 most importantly, the way that cancellation and thread exit (via
-pthread_exit) is performed (see the routine ptw32_throw()).
+pthread_exit) is performed (see the routine __ptw32_throw()).
 
 In short, the exceptions versions of the library throw an exception
 when a thread is canceled, or exits via pthread_exit(). This exception is
@@ -274,24 +267,24 @@ the correct stack unwinding occurs regardless of where the thread
 is when it's canceled or exits via pthread_exit().
 
 In this snapshot, unless the build explicitly defines (e.g. via a
-compiler option) __CLEANUP_SEH, __CLEANUP_CXX, or __CLEANUP_C, then
-the build NOW always defaults to __CLEANUP_C style cleanup. This style
+compiler option) __PTW32_CLEANUP_SEH, __PTW32_CLEANUP_CXX, or __PTW32_CLEANUP_C, then
+the build NOW always defaults to __PTW32_CLEANUP_C style cleanup. This style
 uses setjmp/longjmp in the cancellation and pthread_exit implementations,
 and therefore won't do stack unwinding even when linked to applications
 that have it (e.g. C++ apps). This is for consistency with most/all
 commercial Unix POSIX threads implementations.
 
 Although it was not clearly documented before, it is still necessary to
-build your application using the same __CLEANUP_* define as was
+build your application using the same __PTW32_CLEANUP_* define as was
 used for the version of the library that you link with, so that the
 correct parts of pthread.h are included. That is, the possible
 defines require the following library versions:
 
-	__CLEANUP_SEH	pthreadVSE.dll
-	__CLEANUP_CXX	pthreadVCE.dll or pthreadGCE.dll
-	__CLEANUP_C	pthreadVC.dll or pthreadGC.dll
+	__PTW32_CLEANUP_SEH	pthreadVSE.dll
+	__PTW32_CLEANUP_CXX	pthreadVCE.dll or pthreadGCE.dll
+	__PTW32_CLEANUP_C	pthreadVC.dll or pthreadGC.dll
 
-It is recommended that you let pthread.h use it's default __CLEANUP_C
+It is recommended that you let pthread.h use it's default __PTW32_CLEANUP_C
 for both library and application builds. That is, don't define any of
 the above, and then link with pthreadVC.lib (MSVC or MSVC++) and
 libpthreadGC.a (MinGW GCC or G++). The reason is explained below, but
@@ -516,7 +509,7 @@ at the URL above).
 Building the library as a statically linkable library
 -----------------------------------------------------
 
-General: PTW32_STATIC_LIB must be defined for both the library build and the
+General:  __PTW32_STATIC_LIB must be defined for both the library build and the
 application build. The makefiles supplied and used by the following 'make'
 command lines will define this for you.
 
@@ -529,7 +522,7 @@ MinGW32 (creates libpthreadGCn.a as a static link lib):
 
 make clean GC-static
 
-Define PTW32_STATIC_LIB also when building your application.
+Define  __PTW32_STATIC_LIB also when building your application.
 
 Building the library under Cygwin
 ---------------------------------

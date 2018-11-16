@@ -6,21 +6,4 @@
    
    IMO, to do this in a source code compatible way requires implementation of
    POSIX shared memory functions, etc.
-
-2. For version 3 onwards: the following types need to change, resulting in an ABI
-   change. These have been written conditional on PTW32_VERSION_MAJOR > 2
-
-   a) ptw32_handle_t (a.k.a. pthread_t)
-   Change the reuse counter from unsigned int to size_t. Type "int" on 32 bit
-   and 64 bit Windows is 32 bits wide.
-   
-   To give an indication of relative effectiveness of the current "unsigned int",
-   consider an application that creates and detaches a single thread every 
-   millisecond. At this rate the reuse counter will max out after 49 days.
-
-   After changing to "size_t" an application compiled for x64 and creating and
-   detaching a single thread every nanosecond would max out after 584 years.
-
-   b) pthread_once_t
-   Remove elements no longer required after switching to use of MCS lock.
    

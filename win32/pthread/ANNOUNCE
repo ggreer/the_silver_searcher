@@ -1,37 +1,49 @@
-PTHREADS4W RELEASE 2.10.0 (2016-09-18)
+PTHREADS4W RELEASE 3.0.0 (2017-01-01)
 --------------------------------------
-Web Site:	http://sourceforge.net/projects/pthreads4w/
-			http://sourceware.org/pthreads-win32/
-Repository:	http://sourceforge.net/p/pthreads4w/code
-			https://sourceware.org/cgi-bin/cvsweb.cgi/pthreads/?cvsroot=pthreads-win32
-Releases:	http://sourceforge.net/projects/pthreads4w/files
-			ftp://sourceware.org/pub/pthreads-win32
+Web Site:	https://sourceforge.net/projects/pthreads4w/
+Repository:	https://sourceforge.net/p/pthreads4w/code
+Releases:	https://sourceforge.net/projects/pthreads4w/files
 Maintainer: Ross Johnson <firstname dot lastname at loungebythelake dot net>
 
 
-We are pleased to announce the availability of a new release of
-Pthreads4w (a.k.a. Pthreads-win32), an Open Source Software implementation of the
-Threads component of the SUSV3 Standard for Microsoft's
-Windows (x86 and x64). Some relevant functions from other sections
-of SUSV3 are also supported including semaphores and scheduling
-functions. See the Conformance section below for details.
+We are pleased to announce the availability of a new release of Pthreads4w
+(a.k.a. Pthreads-win32), an Open Source Software implementation of
+the Threads component of the SUSV3 Standard for Microsoft's Windows
+(x86 and x64). Some relevant functions from other sections of SUSV3 are
+also supported including semaphores and scheduling functions. See the
+Conformance section below for details.
 
 Some common non-portable functions are also implemented for
 additional compatibility, as are a few functions specific
 to pthreads4w for easier integration with Windows applications.
 
-Pthreads4w is free software, distributed under the GNU Lesser
-General Public License (LGPL).
+Pthreads4w is free software. With the exception of four files noted later,
+Version 3.0.0 is distributed under the Apache License version 2.0 (APLv2).
+The APLv2 is compatible with the GPLv3 and LGPLv3 licenses and therefore
+this code may continue to be legally included within GPLv3 and LGPLv3
+projects.
 
-For those who want to try the most recent changes, the SourceForge Git repository
-is the one to use. The Sourceware CVS repository is synchronised much less often
-and may be abandoned altogether.
+All version 1 and 2 releases will remain LGPL but version 2.11 will be
+released under v3 of that license so that any modifications to pthreads4w
+version 3 code that we backport to v2 will not pollute that code.
 
-Release 2.9.1 was probably the last to provide pre-built libraries. The supported
-compilers are now all available free for personal use. The MSVS version should
-build out of the box using nmake. The GCC versions now make use of GNU autoconf
-to generate a configure script which in turn creates a custom config.h for the
-environment you use: MinGW or MinGW64, etc.
+The four files that will remain LGPL but change to v3 are files used to
+configure the GNU environment builds:
+
+	aclocal.m4
+	configure.ac
+	GNUmakefile.in
+	tests/GNUmakefile.in
+
+For those who want to try the most recent changes, the SourceForge Git
+repository is the one to use. The Sourceware CVS repository is synchronised
+much less often and may be abandoned altogether.
+
+Release 2.9.1 was probably the last to provide pre-built libraries. The
+supported compilers are now all available free for personal use. The MSVS
+version should build out of the box using nmake. The GCC versions now make
+use of GNU autoconf to generate a configure script which in turn creates a
+custom config.h for the environment you use: MinGW or MinGW64, etc.
 
 
 Acknowledgements
@@ -67,7 +79,7 @@ were extracted from it.
 There is also a separate CONTRIBUTORS file. This file and others are
 on the web site:
 
-	http://sourceware.org/pthreads-win32
+	https://sourceforge.net/p/pthreads4w/wiki/Contributors/
 
 As much as possible, the ChangeLog file acknowledges contributions to the
 code base in more detail.
@@ -304,13 +316,9 @@ The following functions are implemented:
 						PTHREAD_MUTEX_TIMED_NP)
       pthread_num_processors_np
       pthread_win32_getabstime_np
-      (The following four routines may be required when linking statically.
-       The process_* routines should not be needed for MSVC or GCC.)
+      (The following four routines should no longer be required.)
       pthread_win32_process_attach_np
       pthread_win32_process_detach_np
-      (The following routines should only be needed to manage implicit
-       POSIX handles i.e. when Win native threads call POSIX thread routines
-       (other than pthread_create))
       pthread_win32_thread_attach_np
       pthread_win32_thread_detach_np
 
@@ -408,89 +416,10 @@ The following functions are not implemented:
       rand_r
 
 
-Availability
------------- 
-
-The prebuilt DLL, export libs (for both MSVC and Mingw32), and the header
-files (pthread.h, semaphore.h, sched.h) are available along with the
-complete source code.
-
-The source code can be found at:
-
-	ftp://sources.redhat.com/pub/pthreads-win32
-
-and as individual source code files at
-
-	ftp://sources.redhat.com/pub/pthreads-win32/source
-
-The pre-built DLL, export libraries and include files can be found at:
-
-	ftp://sources.redhat.com/pub/pthreads-win32/dll-latest
-
-
-      
-Mailing List 
-------------  
-      
-There is a mailing list for discussing pthreads on Win32. To join,
-send email to:
-
-	pthreads-win32-subscribe@sourceware.cygnus.com
-      
-
 Application Development Environments
 ------------------------------------
 
 See the README file for more information.
-      
-MSVC:
-MSVC using SEH works. Distribute pthreadVSE.dll with your application.
-MSVC using C++ EH works. Distribute pthreadVCE.dll with your application.
-MSVC using C setjmp/longjmp works. Distribute pthreadVC.dll with your application.
-
-
-Mingw32:
-See the FAQ, Questions 6 and 10.
-
-Mingw using C++ EH works. Distribute pthreadGCE.dll with your application.
-Mingw using C setjmp/longjmp works. Distribute pthreadGC.dll with your application.
-
-
-Cygwin: (http://sourceware.cygnus.com/cygwin/)
-Developers using Cygwin do not need pthreads-win32 since it has POSIX threads
-support. Refer to its documentation for details and extent.
-
-
-UWIN:
-UWIN is a complete Unix-like environment for Windows from AT&T. Pthreads-win32
-doesn't currently support UWIN (and vice versa), but that may change in the
-future.
-
-Generally:
-For convenience, the following pre-built files are available on the FTP site
-(see Availability above):
-
-	pthread.h	- for POSIX threads
-	semaphore.h	- for POSIX semaphores
-	sched.h 	- for POSIX scheduling
-	pthreadVCE.dll	- built with MSVC++ compiler using C++ EH
-	pthreadVCE.lib
-	pthreadVC.dll	- built with MSVC compiler using C setjmp/longjmp
-	pthreadVC.lib
-	pthreadVSE.dll	- built with MSVC compiler using SEH
-	pthreadVSE.lib
-	pthreadGCE.dll	- built with Mingw32 G++ 2.95.2-1
-	pthreadGC.dll	- built with Mingw32 GCC 2.95.2-1 using setjmp/longjmp
-	libpthreadGCE.a - derived from pthreadGCE.dll
-	libpthreadGC.a	- derived from pthreadGC.dll
-	gcc.dll 	- needed if distributing applications that use
-			  pthreadGCE.dll (but see the FAQ Q 10 for the latest
-			  related information)
-
-These are the only files you need in order to build POSIX threads
-applications for Win32 using either MSVC or Mingw32.
-
-See the FAQ file in the source tree for additional information.
 
 
 Documentation
@@ -511,15 +440,6 @@ available:
        Pthreads Programming
        By Bradford Nichols, Dick Buttlar & Jacqueline Proulx Farrell
        O'Reilly (pub)
-
-On the web: see the links at the bottom of the pthreads-win32 site:
-
-       http://sources.redhat.com/pthreads-win32/
-
-       Currently, there is no documentation included in the package apart
-       from the copious comments in the source code.
-
-
 
 Enjoy!
 

@@ -1,20 +1,23 @@
 # @configure_input@
 # --------------------------------------------------------------------------
 #
-#      Pthreads-win32 - POSIX Threads Library for Win32
-#      Copyright(C) 1998 John E. Bossom
-#      Copyright(C) 1999,2012 Pthreads-win32 contributors
-# 
+#      Pthreads4w - POSIX Threads for Windows
+#      Copyright 1998 John E. Bossom
+#      Copyright 1999-2018, Pthreads4w contributors
+#
+#      Homepage: https://sourceforge.net/projects/pthreads4w/
+#
 #      The current list of contributors is contained
 #      in the file CONTRIBUTORS included with the source
 #      code distribution. The list can also be seen at the
 #      following World Wide Web location:
-#      http://sources.redhat.com/pthreads-win32/contributors.html
-# 
+#
+#      https://sourceforge.net/p/pthreads4w/wiki/Contributors/
+#
 #      This library is free software; you can redistribute it and/or
 #      modify it under the terms of the GNU Lesser General Public
 #      License as published by the Free Software Foundation; either
-#      version 2 of the License, or (at your option) any later version.
+#      version 3 of the License, or (at your option) any later version.
 # 
 #      This library is distributed in the hope that it will be useful,
 #      but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -29,10 +32,10 @@
 PACKAGE = @PACKAGE_TARNAME@
 VERSION = @PACKAGE_VERSION@
 
-DLL_VER	= 2$(EXTRAVERSION)
+PTW32_VER	= 3$(EXTRAVERSION)
 
 # See pthread.h and README for the description of version numbering.
-DLL_VERD = $(DLL_VER)d
+PTW32_VERD = $(PTW32_VER)d
 
 srcdir = @srcdir@
 builddir = @builddir@
@@ -127,7 +130,7 @@ LFLAGS	= $(ARCH)
 # relies on C++ class destructors being called when leaving scope.
 #
 # NOTE 2: If you do this DO NOT distribute your pthreads DLLs with
-# the official filenaming, i.e. pthreadVC2.dll, etc. Instead, change DLL_VER
+# the official filenaming, i.e. pthreadVC2.dll, etc. Instead, change PTW32_VER
 # above to "2slgcc" for example, to build "pthreadGC2slgcc.dll", etc.
 #
 # FIXME: in this case, convention would have us use LDFLAGS; once again, if
@@ -158,43 +161,45 @@ LFLAGS	= $(ARCH)
 # Set to some other +ve value to emulate smaller word size types
 # (i.e. will wrap sooner).
 #
-#PTW32_FLAGS	= "-DPTW32_THREAD_ID_REUSE_INCREMENT=0"
+#__PTW32_FLAGS	= "-D__PTW32_THREAD_ID_REUSE_INCREMENT=0"
 #
 # ----------------------------------------------------------------------
 
-GC_CFLAGS	= $(PTW32_FLAGS) 
-GCE_CFLAGS	= $(PTW32_FLAGS) -mthreads
+GC_CFLAGS	= $(__PTW32_FLAGS) 
+GCE_CFLAGS	= $(__PTW32_FLAGS) -mthreads
 
 ## Mingw
 #MAKE		?= make
-DEFS = @DEFS@ -DPTW32_BUILD
+DEFS = @DEFS@ -D__PTW32_BUILD
 CFLAGS	= $(OPT) $(XOPT) $(ARCH) -I. -I${srcdir} $(DEFS) -Wall
 
-OBJEXT = @OBJEXT@
-RESEXT = @OBJEXT@
+OBJEXT	= @OBJEXT@
+OEXT	= @OBJEXT@
+RESEXT	= @OBJEXT@
  
 include ${srcdir}/common.mk
 
 DLL_OBJS += $(RESOURCE_OBJS)
 STATIC_OBJS += $(RESOURCE_OBJS)
+STATIC_OBJS_SMALL += $(RESOURCE_OBJS)
 
-GCE_DLL	= pthreadGCE$(DLL_VER).dll
-GCED_DLL= pthreadGCE$(DLL_VERD).dll
-GCE_LIB	= libpthreadGCE$(DLL_VER).a
-GCED_LIB= libpthreadGCE$(DLL_VERD).a
+GCE_DLL	= pthreadGCE$(PTW32_VER).dll
+GCED_DLL= pthreadGCE$(PTW32_VERD).dll
+GCE_LIB	= libpthreadGCE$(PTW32_VER).a
+GCED_LIB= libpthreadGCE$(PTW32_VERD).a
 
-GC_DLL 	= pthreadGC$(DLL_VER).dll
-GCD_DLL	= pthreadGC$(DLL_VERD).dll
-GC_LIB	= libpthreadGC$(DLL_VER).a
-GCD_LIB	= libpthreadGC$(DLL_VERD).a
-GC_INLINED_STATIC_STAMP = libpthreadGC$(DLL_VER).inlined_static_stamp
-GCD_INLINED_STATIC_STAMP = libpthreadGC$(DLL_VERD).inlined_static_stamp
-GCE_INLINED_STATIC_STAMP = libpthreadGCE$(DLL_VER).inlined_static_stamp
-GCED_INLINED_STATIC_STAMP = libpthreadGCE$(DLL_VERD).inlined_static_stamp
-GC_SMALL_STATIC_STAMP = libpthreadGC$(DLL_VER).small_static_stamp
-GCD_SMALL_STATIC_STAMP = libpthreadGC$(DLL_VERD).small_static_stamp
-GCE_SMALL_STATIC_STAMP = libpthreadGCE$(DLL_VER).small_static_stamp
-GCED_SMALL_STATIC_STAMP = libpthreadGCE$(DLL_VERD).small_static_stamp
+GC_DLL 	= pthreadGC$(PTW32_VER).dll
+GCD_DLL	= pthreadGC$(PTW32_VERD).dll
+GC_LIB	= libpthreadGC$(PTW32_VER).a
+GCD_LIB	= libpthreadGC$(PTW32_VERD).a
+GC_INLINED_STATIC_STAMP = libpthreadGC$(PTW32_VER).inlined_static_stamp
+GCD_INLINED_STATIC_STAMP = libpthreadGC$(PTW32_VERD).inlined_static_stamp
+GCE_INLINED_STATIC_STAMP = libpthreadGCE$(PTW32_VER).inlined_static_stamp
+GCED_INLINED_STATIC_STAMP = libpthreadGCE$(PTW32_VERD).inlined_static_stamp
+GC_SMALL_STATIC_STAMP = libpthreadGC$(PTW32_VER).small_static_stamp
+GCD_SMALL_STATIC_STAMP = libpthreadGC$(PTW32_VERD).small_static_stamp
+GCE_SMALL_STATIC_STAMP = libpthreadGCE$(PTW32_VER).small_static_stamp
+GCED_SMALL_STATIC_STAMP = libpthreadGCE$(PTW32_VERD).small_static_stamp
 
 PTHREAD_DEF = pthread.def
 
@@ -221,14 +226,9 @@ all:
 	@ $(MAKE) clean GC-static
 	@ $(MAKE) clean GCE-static
 
-TEST_ENV = __PTW32_FLAGS="$(PTW32_FLAGS) -DNO_ERROR_DIALOGS" DLL_VER=$(DLL_VER) ARCH="$(ARCH)"
+TEST_ENV = __PTW32_FLAGS="$(__PTW32_FLAGS) -DNO_ERROR_DIALOGS" PTW32_VER=$(PTW32_VER) ARCH="$(ARCH)"
 
 all-tests:
-	$(MAKE) realclean GC-small-static
-	cd tests && $(MAKE) clean GC-small-static $(TEST_ENV) && $(MAKE) clean GCX-small-static $(TEST_ENV)
-	$(MAKE) realclean GCE-small-static
-	cd tests && $(MAKE) clean GCE-small-static $(TEST_ENV)
-	@ $(ECHO) "$@ completed successfully."
 	$(MAKE) realclean GC
 	cd tests && $(MAKE) clean GC $(TEST_ENV) && $(MAKE) clean GCX $(TEST_ENV)
 	$(MAKE) realclean GCE
@@ -237,6 +237,10 @@ all-tests:
 	cd tests && $(MAKE) clean GC-static $(TEST_ENV) && $(MAKE) clean GCX-static $(TEST_ENV)
 	$(MAKE) realclean GCE-static
 	cd tests && $(MAKE) clean GCE-static $(TEST_ENV)
+	$(MAKE) realclean GC-small-static
+	cd tests && $(MAKE) clean GC-small-static $(TEST_ENV) && $(MAKE) clean GCX-small-static $(TEST_ENV)
+	$(MAKE) realclean GCE-small-static
+	cd tests && $(MAKE) clean GCE-small-static $(TEST_ENV)
 	$(MAKE) realclean
 	@ - $(GREP) Passed *.log | $(COUNT_UNIQ)
 	@ - $(GREP) FAILED *.log
@@ -246,47 +250,46 @@ all-tests-cflags:
 	@ $(ECHO) "$@ completed."
 
 GC:
-	$(MAKE) XOPT="-DPTW32_BUILD_INLINED" CLEANUP=-D__CLEANUP_C XC_FLAGS="$(GC_CFLAGS)" OBJ="$(DLL_OBJS)" $(GC_DLL)
+	$(MAKE) XOPT="-D__PTW32_BUILD_INLINED" CLEANUP=-D__PTW32_CLEANUP_C XC_FLAGS="$(GC_CFLAGS)" OBJ="$(DLL_OBJS)" $(GC_DLL)
 
 GC-debug:
-	$(MAKE) XOPT="-DPTW32_BUILD_INLINED" CLEANUP=-D__CLEANUP_C XC_FLAGS="$(GC_CFLAGS)" OBJ="$(DLL_OBJS)" DLL_VER=$(DLL_VERD) OPT="-D__CLEANUP_C -g -O0" $(GCD_DLL)
+	$(MAKE) XOPT="-D__PTW32_BUILD_INLINED" CLEANUP=-D__PTW32_CLEANUP_C XC_FLAGS="$(GC_CFLAGS)" OBJ="$(DLL_OBJS)" PTW32_VER=$(PTW32_VERD) OPT="-D__PTW32_CLEANUP_C -g -O0" $(GCD_DLL)
 
 GCE:
-	$(MAKE) XOPT="-DPTW32_BUILD_INLINED" CC=$(CXX) CLEANUP=-D__CLEANUP_CXX XC_FLAGS="$(GCE_CFLAGS)" OBJ="$(DLL_OBJS)" $(GCE_DLL)
+	$(MAKE) XOPT="-D__PTW32_BUILD_INLINED" CC=$(CXX) CLEANUP=-D__PTW32_CLEANUP_CXX XC_FLAGS="$(GCE_CFLAGS)" OBJ="$(DLL_OBJS)" $(GCE_DLL)
 
 GCE-debug:
-	$(MAKE) XOPT="-DPTW32_BUILD_INLINED" CC=$(CXX) CLEANUP=-D__CLEANUP_CXX XC_FLAGS="$(GCE_CFLAGS)" OBJ="$(DLL_OBJS)" DLL_VER=$(DLL_VERD) OPT="-D__CLEANUP_CXX -g -O0" $(GCED_DLL)
+	$(MAKE) XOPT="-D__PTW32_BUILD_INLINED" CC=$(CXX) CLEANUP=-D__PTW32_CLEANUP_CXX XC_FLAGS="$(GCE_CFLAGS)" OBJ="$(DLL_OBJS)" PTW32_VER=$(PTW32_VERD) OPT="-D__PTW32_CLEANUP_CXX -g -O0" $(GCED_DLL)
 
 GC-static:
-	$(MAKE) XOPT="-DPTW32_BUILD_INLINED -DPTW32_STATIC_LIB" CLEANUP=-D__CLEANUP_C XC_FLAGS="$(GC_CFLAGS)" OBJ="$(DLL_OBJS)" $(GC_INLINED_STATIC_STAMP)
+	$(MAKE) XOPT="-D__PTW32_BUILD_INLINED -D__PTW32_STATIC_LIB" CLEANUP=-D__PTW32_CLEANUP_C XC_FLAGS="$(GC_CFLAGS)" OBJ="$(STATIC_OBJS)" $(GC_INLINED_STATIC_STAMP)
 
 GC-static-debug:
-	$(MAKE) XOPT="-DPTW32_BUILD_INLINED -DPTW32_STATIC_LIB" CLEANUP=-D__CLEANUP_C XC_FLAGS="$(GC_CFLAGS)" OBJ="$(DLL_OBJS)" DLL_VER=$(DLL_VERD) OPT="-D__CLEANUP_C -g -O0" $(GCD_INLINED_STATIC_STAMP)
+	$(MAKE) XOPT="-D__PTW32_BUILD_INLINED -D__PTW32_STATIC_LIB" CLEANUP=-D__PTW32_CLEANUP_C XC_FLAGS="$(GC_CFLAGS)" OBJ="$(STATIC_OBJS)" PTW32_VER=$(PTW32_VERD) OPT="-D__PTW32_CLEANUP_C -g -O0" $(GCD_INLINED_STATIC_STAMP)
 
 GC-small-static:
-	$(MAKE) XOPT="-DPTW32_STATIC_LIB" CLEANUP=-D__CLEANUP_C XC_FLAGS="$(GC_CFLAGS)" OBJ="$(STATIC_OBJS)" $(GC_SMALL_STATIC_STAMP)
+	$(MAKE) XOPT="-D__PTW32_STATIC_LIB" CLEANUP=-D__PTW32_CLEANUP_C XC_FLAGS="$(GC_CFLAGS)" OBJ="$(STATIC_OBJS_SMALL)" $(GC_SMALL_STATIC_STAMP)
 
 GC-small-static-debug:
-	$(MAKE) XOPT="-DPTW32_STATIC_LIB" CLEANUP=-D__CLEANUP_C XC_FLAGS="$(GC_CFLAGS)" OBJ="$(STATIC_OBJS)" DLL_VER=$(DLL_VERD) OPT="-D__CLEANUP_C -g -O0" $(GCD_SMALL_STATIC_STAMP)
+	$(MAKE) XOPT="-D__PTW32_STATIC_LIB" CLEANUP=-D__PTW32_CLEANUP_C XC_FLAGS="$(GC_CFLAGS)" OBJ="$(STATIC_OBJS_SMALL)" PTW32_VER=$(PTW32_VERD) OPT="-D__PTW32_CLEANUP_C -g -O0" $(GCD_SMALL_STATIC_STAMP)
 
 GCE-static:
-	$(MAKE) XOPT="-DPTW32_BUILD_INLINED -DPTW32_STATIC_LIB" CC=$(CXX) CLEANUP=-D__CLEANUP_CXX XC_FLAGS="$(GCE_CFLAGS)" OBJ="$(DLL_OBJS)" $(GCE_INLINED_STATIC_STAMP)
+	$(MAKE) XOPT="-D__PTW32_BUILD_INLINED -D__PTW32_STATIC_LIB" CC=$(CXX) CLEANUP=-D__PTW32_CLEANUP_CXX XC_FLAGS="$(GCE_CFLAGS)" OBJ="$(STATIC_OBJS)" $(GCE_INLINED_STATIC_STAMP)
 
 GCE-static-debug:
-	$(MAKE) XOPT="-DPTW32_BUILD_INLINED -DPTW32_STATIC_LIB" CC=$(CXX) CLEANUP=-D__CLEANUP_CXX XC_FLAGS="$(GCE_CFLAGS)" OBJ="$(DLL_OBJS)" DLL_VER=$(DLL_VERD) OPT="-D__CLEANUP_C -g -O0" $(GCED_INLINED_STATIC_STAMP)
+	$(MAKE) XOPT="-D__PTW32_BUILD_INLINED -D__PTW32_STATIC_LIB" CC=$(CXX) CLEANUP=-D__PTW32_CLEANUP_CXX XC_FLAGS="$(GCE_CFLAGS)" OBJ="$(STATIC_OBJS)" PTW32_VER=$(PTW32_VERD) OPT="-D__PTW32_CLEANUP_C -g -O0" $(GCED_INLINED_STATIC_STAMP)
 
 GCE-small-static:
-	$(MAKE) XOPT="-DPTW32_STATIC_LIB" CC=$(CXX) CLEANUP=-D__CLEANUP_CXX XC_FLAGS="$(GCE_CFLAGS)" OBJ="$(STATIC_OBJS)" $(GCE_SMALL_STATIC_STAMP)
+	$(MAKE) XOPT="-D__PTW32_STATIC_LIB" CC=$(CXX) CLEANUP=-D__PTW32_CLEANUP_CXX XC_FLAGS="$(GCE_CFLAGS)" OBJ="$(STATIC_OBJS_SMALL)" $(GCE_SMALL_STATIC_STAMP)
 
 GCE-small-static-debug:
-	$(MAKE) XOPT="-DPTW32_STATIC_LIB" CC=$(CXX) CLEANUP=-D__CLEANUP_CXX XC_FLAGS="$(GCE_CFLAGS)" OBJ="$(STATIC_OBJS)" DLL_VER=$(DLL_VERD) OPT="-D__CLEANUP_C -g -O0" $(GCED_SMALL_STATIC_STAMP)
+	$(MAKE) XOPT="-D__PTW32_STATIC_LIB" CC=$(CXX) CLEANUP=-D__PTW32_CLEANUP_CXX XC_FLAGS="$(GCE_CFLAGS)" OBJ="$(STATIC_OBJS_SMALL)" PTW32_VER=$(PTW32_VERD) OPT="-D__PTW32_CLEANUP_C -g -O0" $(GCED_SMALL_STATIC_STAMP)
 
 tests:
 	@ cd tests
 	@ $(MAKE) auto
 
-# Very basic install. It assumes "realclean" was done just prior to build target if
-# you want the installed $(DEVDEST_LIB_NAME) to match that build.
+# Very basic install.
 
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
@@ -307,11 +310,11 @@ install-libs: install-libs-specific
 install-libs-specific: $(wildcard ${builddir}/libpthreadGC*.a)
 	$(INSTALL_DATA) $^ ${libdir}
 
-default_libs = $(wildcard $(addprefix $1,$(DLL_VER)$2 $(DLL_VERD)$2))
+default_libs = $(wildcard $(addprefix $1,$(PTW32_VER)$2 $(PTW32_VERD)$2))
 
 # FIXME: this is a ghastly, utterly non-deterministic hack; who knows
 # what it's going to install as the default libpthread.a?  Better to
-# just explicitly make it a copy of libpthreadGC$(DLL_VER).a
+# just explicitly make it a copy of libpthreadGC$(PTW32_VER).a
 install-libs: install-lib-default
 install-lib-default: $(call default_libs,libpthreadGC,.a)
 install-lib-default: $(call default_libs,libpthreadGCE,.a)
@@ -319,7 +322,7 @@ install-lib-default: $(call default_libs,libpthreadGCE,.a)
 
 # FIXME: similarly, who knows what this will install?  Once again, it
 # would be better to explicitly install libpthread.dll.a as a copy of
-# libpthreadGC$(DLL_VER).dll.a
+# libpthreadGC$(PTW32_VER).dll.a
 install-libs: install-implib-default
 install-implib-default: $(call default_libs,libpthreadGC,.dll.a)
 install-implib-default: $(call default_libs,libpthreadGCE,.dll.a)
@@ -332,14 +335,15 @@ install-headers: pthread.h sched.h semaphore.h _ptw32.h
 	$(CC) -E -o $@ $(CFLAGS) $^
 
 %.s: %.c
-	$(CC) -c $(CFLAGS) -DPTW32_BUILD_INLINED -Wa,-ahl $^ > $@
+	$(CC) -c $(CFLAGS) -D__PTW32_BUILD_INLINED -Wa,-ahl $^ > $@
 
 %.o: %.rc
 	$(RC) $(RC_TARGET) $(RCFLAGS) $(CLEANUP) -o $@ -i $<
 
 .SUFFIXES: .dll .rc .c .o
 
-.c.o:;	$(CC) -c -o $@ $(CFLAGS) $(XC_FLAGS) $<
+.c.o:
+	$(CC) -c -o $@ $(CFLAGS) $(XC_FLAGS) $<
 
 
 $(GC_DLL) $(GCD_DLL): $(DLL_OBJS)
@@ -352,12 +356,12 @@ $(GCE_DLL) $(GCED_DLL): $(DLL_OBJS)
 	$(DLLTOOL) -z pthread.def $^
 	$(DLLTOOL) -k --dllname $@ --output-lib lib$@.a --def $(PTHREAD_DEF)
 
-$(GC_INLINED_STATIC_STAMP) $(GCE_INLINED_STATIC_STAMP) $(GCD_INLINED_STATIC_STAMP) $(GCED_INLINED_STATIC_STAMP): $(DLL_OBJS)
+$(GC_INLINED_STATIC_STAMP) $(GCE_INLINED_STATIC_STAMP) $(GCD_INLINED_STATIC_STAMP) $(GCED_INLINED_STATIC_STAMP): $(STATIC_OBJS)
 	$(RM) $(basename $@).a
 	$(AR) -rsv $(basename $@).a $^
 	$(ECHO) touched > $@
 
-$(GC_SMALL_STATIC_STAMP) $(GCE_SMALL_STATIC_STAMP) $(GCD_SMALL_STATIC_STAMP) $(GCED_SMALL_STATIC_STAMP): $(STATIC_OBJS)
+$(GC_SMALL_STATIC_STAMP) $(GCE_SMALL_STATIC_STAMP) $(GCD_SMALL_STATIC_STAMP) $(GCED_SMALL_STATIC_STAMP): $(STATIC_OBJS_SMALL)
 	$(RM) $(basename $@).a
 	$(AR) -rsv $(basename $@).a $^
 	$(ECHO) touched > $@
@@ -371,6 +375,7 @@ clean:
 	-$(RM) *.exe
 	-$(RM) *.manifest
 	-$(RM) $(PTHREAD_DEF)
+	-cd tests && $(MAKE) clean
 
 realclean: clean
 	-$(RM) lib*.a

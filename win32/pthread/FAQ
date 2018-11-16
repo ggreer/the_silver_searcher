@@ -156,13 +156,13 @@ Up to and including snapshot 2001-07-12, if not defined, the cleanup
 style was determined automatically from the compiler used, and one
 of the following was defined accordingly:
 
-	__CLEANUP_SEH	MSVC only
-	__CLEANUP_CXX	C++, including MSVC++, GNU G++
-	__CLEANUP_C		C, including GNU GCC, not MSVC
+	__PTW32_CLEANUP_SEH	MSVC only
+	__PTW32_CLEANUP_CXX	C++, including MSVC++, GNU G++
+	__PTW32_CLEANUP_C		C, including GNU GCC, not MSVC
 
 These defines determine the style of cleanup (see pthread.h) and,
 most importantly, the way that cancellation and thread exit (via
-pthread_exit) is performed (see the routine ptw32_throw() in private.c).
+pthread_exit) is performed (see the routine __ptw32_throw() in private.c).
 
 In short, the exceptions versions of the library throw an exception
 when a thread is canceled or exits (via pthread_exit()), which is
@@ -171,22 +171,22 @@ the correct stack unwinding occurs regardless of where the thread
 is when it's canceled or exits via pthread_exit().
 
 After snapshot 2001-07-12, unless your build explicitly defines (e.g.
-via a compiler option) __CLEANUP_SEH, __CLEANUP_CXX, or __CLEANUP_C, then
-the build now ALWAYS defaults to __CLEANUP_C style cleanup. This style
+via a compiler option) __PTW32_CLEANUP_SEH, __PTW32_CLEANUP_CXX, or __PTW32_CLEANUP_C, then
+the build now ALWAYS defaults to __PTW32_CLEANUP_C style cleanup. This style
 uses setjmp/longjmp in the cancellation and pthread_exit implementations,
 and therefore won't do stack unwinding even when linked to applications
 that have it (e.g. C++ apps). This is for consistency with most/all
 commercial Unix POSIX threads implementations.
 
 Although it was not clearly documented before, it is still necessary to
-build your application using the same __CLEANUP_* define as was
+build your application using the same __PTW32_CLEANUP_* define as was
 used for the version of the library that you link with, so that the
 correct parts of pthread.h are included. That is, the possible
 defines require the following library versions:
 
-	__CLEANUP_SEH	pthreadVSE.dll
-	__CLEANUP_CXX	pthreadVCE.dll or pthreadGCE.dll
-	__CLEANUP_C		pthreadVC.dll or pthreadGC.dll
+	__PTW32_CLEANUP_SEH	pthreadVSE.dll
+	__PTW32_CLEANUP_CXX	pthreadVCE.dll or pthreadGCE.dll
+	__PTW32_CLEANUP_C		pthreadVC.dll or pthreadGC.dll
 
 THE POINT OF ALL THIS IS: if you have not been defining one of these
 explicitly, then the defaults have been set according to the compiler
@@ -197,12 +197,12 @@ THIS NOW CHANGES, as has been explained above. For example:
 
 If you were building your application with MSVC++ i.e. using C++
 exceptions (rather than SEH) and not explicitly defining one of
-__CLEANUP_*, then __CLEANUP_C++ was defined for you in pthread.h.
+__PTW32_CLEANUP_*, then __PTW32_CLEANUP_C++ was defined for you in pthread.h.
 You should have been linking with pthreadVCE.dll, which does
 stack unwinding.
 
 If you now build your application as you had before, pthread.h will now
-set __CLEANUP_C as the default style, and you will need to link
+set __PTW32_CLEANUP_C as the default style, and you will need to link
 with pthreadVC.dll. Stack unwinding will now NOT occur when a
 thread is canceled, nor when the thread calls pthread_exit().
 
@@ -212,7 +212,7 @@ objects may not be destroyed or cleaned up after a thread
 is canceled.
 
 If you want the same behaviour as before, then you must now define
-__CLEANUP_C++ explicitly using a compiler option and link with
+__PTW32_CLEANUP_C++ explicitly using a compiler option and link with
 pthreadVCE.dll as you did before.
 
 
@@ -408,18 +408,35 @@ Q 11    Why isn't pthread_t defined as a scalar (e.g. pointer or int)
         like it is for other POSIX threads implementations?
 ----
 
-Originally pthread_t was defined as a pointer (to the opaque pthread_t_
-struct) and later it was changed to a struct containing the original
-pointer plus a sequence counter. This is allowed under both the original
-POSIX Threads Standard and the current Single Unix Specification.
+The change from scalar to vector was made in response to the numerous
+queries we received at that time either requesting assistance to debug
+applications or reporting problems with the library that turned out to be
+application bugs. Since the change we have only received requests that
+we change back to scalar in order to support applications that are not
+compliant with POSIX.
 
-When pthread_t is a simple pointer to a struct some very difficult to
-debug problems arise from the process of freeing and later allocing
-thread structs because new pthread_t handles can acquire the identity of
-previously detached threads. The change to a struct was made, along with
-some changes to their internal managment, in order to guarantee (for
-practical applications) that the pthread_t handle will be unique over the
-life of the running process.
+Originally we defined pthread_t as a pointer (to the opaque pthread_t_
+struct) and later we changed it to a struct containing the original
+pointer plus a sequence counter. This is not only allowed under both
+the original POSIX Threads Standard and the current Single Unix
+Specification, it is expected if the implemented chooses and is why
+the standard requires pthread_t to be an opaque type.
+
+When pthread_t is a simple pointer some very difficult thread management
+problems arise because the process of freeing and later allocing
+thread structs means that new pthread_t handles can acquire the identity of
+previously detached threads. There are solutions to manage this risk but
+they can easily introduce their own bugs and require all developers to
+spend significant time solving a problem that is not "core" to their work
+and that others have already solved. The problem is rarely solved in
+a portable and POSIX compliant way. It can't be because pthread_t is opaque,
+i.e. a developer is not supposed to assume anything about pthread_t. Several
+pthreads implmentations do provide non-portable aids, such as API calls to
+return unique sequence numbers etc.
+
+The change to a struct was made, along with some changes to their internal
+managment, in order to guarantee (for practical applications) that the
+pthread_t handle will be unique over the life of the running process.
 
 Where application code attempts to compare one pthread_t against another
 directly, a compiler error will be emitted because structs can't be
@@ -446,6 +463,6 @@ handles will remain at the peak level until the process exits.
 While it may be inconvenient for developers to be forced away from making
 assumptions about the internals of pthread_t, the advantage for the
 future development of pthread-win32, as well as those applications that
-use it and other pthread implementations, is that the library is free to
-change pthread_t internals and management as better methods arise.
+use it, is that the library is free to change pthread_t internals and
+management as better methods arise.
 

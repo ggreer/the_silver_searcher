@@ -672,7 +672,7 @@ x-cvsweb-markup&cvsroot=pthreads-win32
   cleanup_args.cv = cv;
   cleanup_args.resultPtr = &result;
 
-  pthread_cleanup_push (ptw32_cond_wait_cleanup, (void *)
+  pthread_cleanup_push (__ptw32_cond_wait_cleanup, (void *)
 &cleanup_args);
 
   if ((result = pthread_mutex_unlock (mutex)) == 0)
@@ -686,15 +686,15 @@ Sleep( 1 ); // @AT
       *              a timeout
       *
       * Note:
-      *      ptw32_sem_timedwait is a cancellation point,
+      *      __ptw32_sem_timedwait is a cancellation point,
       *      hence providing the
       *      mechanism for making pthread_cond_wait a cancellation
       *      point. We use the cleanup mechanism to ensure we
       *      re-lock the mutex and decrement the waiters count
       *      if we are canceled.
       */
-      if (ptw32_sem_timedwait (&(cv->sema), abstime) == -1)         {
-          result = PTW32_GET_ERRNO();
+      if (__ptw32_sem_timedwait (&(cv->sema), abstime) == -1)         {
+          result =  __PTW32_GET_ERRNO();
         }
     }
 
@@ -976,7 +976,7 @@ Sleep( 1 ); //@AT
 
 #ifdef NEED_SEM
 
-      result = (ptw32_increase_semaphore( &cv->sema, cv->waiters )
+      result = (__ptw32_increase_semaphore( &cv->sema, cv->waiters )
                  ? 0
                 : EINVAL);
 
@@ -1137,7 +1137,7 @@ pthread_cond_destroy (pthread_cond_t * cond)
       return EINVAL;
     }
 
-  if (*cond != (pthread_cond_t) PTW32_OBJECT_AUTO_INIT)
+  if (*cond != (pthread_cond_t)  __PTW32_OBJECT_AUTO_INIT)
     {(*cond
       cv = *cond;
 
@@ -1182,14 +1182,14 @@ pthread_cond_destroy (pthread_cond_t * cond)
   else
     {
       /*
-       * See notes in ptw32_cond_check_need_init() above also.
+       * See notes in __ptw32_cond_check_need_init() above also.
        */
-      EnterCriticalSection(&ptw32_cond_test_init_lock);
+      EnterCriticalSection(&__ptw32_cond_test_init_lock);
 
       /*
        * Check again.
        */
-      if (*cond == (pthread_cond_t) PTW32_OBJECT_AUTO_INIT)
+      if (*cond == (pthread_cond_t)  __PTW32_OBJECT_AUTO_INIT)
         {(*cond
           /*
            * This is all we need to do to destroy a statically
@@ -1208,7 +1208,7 @@ pthread_cond_destroy (pthread_cond_t * cond)
           result = EBUSY;
         }
 
-      LeaveCriticalSection(&ptw32_cond_test_init_lock);
+      LeaveCriticalSection(&__ptw32_cond_test_init_lock);
     }
 
   return (result);
@@ -1222,13 +1222,13 @@ typedef struct {
   pthread_mutex_t * mutexPtr;
   pthread_cond_t cv;
   int * resultPtr;
-} ptw32_cond_wait_cleanup_args_t;
+} __ptw32_cond_wait_cleanup_args_t;
 
 static void
-ptw32_cond_wait_cleanup(void * args)
+__ptw32_cond_wait_cleanup(void * args)
 {
-  ptw32_cond_wait_cleanup_args_t * cleanup_args =
-(ptw32_cond_wait_cleanup_args_t *) args;
+  __ptw32_cond_wait_cleanup_args_t * cleanup_args =
+(__ptw32_cond_wait_cleanup_args_t *) args;
   pthread_cond_t cv = cleanup_args->cv;
   int * resultPtr = cleanup_args->resultPtr;
   int eLastSignal; /* enum: 1=yes 0=no -1=cancelled/timedout w/o signal(s)
@@ -1272,7 +1272,7 @@ ptw32_cond_wait_cleanup(void * args)
       */
       if (sem_post(&(cv->semBlockLock)) != 0)
         {(sem_post(&(cv->semBlockLock))
-          *resultPtr = PTW32_GET_ERRNO();
+          *resultPtr =  __PTW32_GET_ERRNO();
           return;
         }
     }
@@ -1286,7 +1286,7 @@ ptw32_cond_wait_cleanup(void * args)
       */
       if (sem_post(&(cv->semBlockQueue)) != 0)
         {(sem_post(&(cv->semBlockQueue))
-          *resultPtr = PTW32_GET_ERRNO();
+          *resultPtr =  __PTW32_GET_ERRNO();
           return;
         }
     }
@@ -1300,16 +1300,16 @@ ptw32_cond_wait_cleanup(void * args)
       *resultPtr = result;
     }
 
-}                               /* ptw32_cond_wait_cleanup */
+}                               /* __ptw32_cond_wait_cleanup */
 
 static int
-ptw32_cond_timedwait (pthread_cond_t * cond,
+__ptw32_cond_timedwait (pthread_cond_t * cond,
                       pthread_mutex_t * mutex,
                       const struct timespec *abstime)
 {
   int result = 0;
   pthread_cond_t cv;
-  ptw32_cond_wait_cleanup_args_t cleanup_args;
+  __ptw32_cond_wait_cleanup_args_t cleanup_args;
 
   if (cond == NULL || *cond == NULL)
     {(cond
@@ -1319,12 +1319,12 @@ ptw32_cond_timedwait (pthread_cond_t * cond,
   /*
    * We do a quick check to see if we need to do more work
    * to initialise a static condition variable. We check
-   * again inside the guarded section of ptw32_cond_check_need_init()
+   * again inside the guarded section of __ptw32_cond_check_need_init()
    * to avoid race conditions.
    */
-  if (*cond == (pthread_cond_t) PTW32_OBJECT_AUTO_INIT)
+  if (*cond == (pthread_cond_t)  __PTW32_OBJECT_AUTO_INIT)
     {(*cond
-      result = ptw32_cond_check_need_init(cond);
+      result = __ptw32_cond_check_need_init(cond);
     }
 
   if (result != 0 && result != EBUSY)
@@ -1359,7 +1359,7 @@ ptw32_cond_timedwait (pthread_cond_t * cond,
   cleanup_args.cv = cv;
   cleanup_args.resultPtr = &result;
 
-  pthread_cleanup_push (ptw32_cond_wait_cleanup, (void *) &cleanup_args);
+  pthread_cleanup_push (__ptw32_cond_wait_cleanup, (void *) &cleanup_args);
 
   /*
    * Now we can release 'mutex' and...
@@ -1376,16 +1376,16 @@ ptw32_cond_timedwait (pthread_cond_t * cond,
        *
        * Note:
        *
-       *      ptw32_sem_timedwait is a cancellation point,
+       *      __ptw32_sem_timedwait is a cancellation point,
        *      hence providing the mechanism for making
        *      pthread_cond_wait a cancellation point.
        *      We use the cleanup mechanism to ensure we
        *      re-lock the mutex and adjust (to)unblock(ed) waiters
        *      counts if we are cancelled, timed out or signalled.
        */
-      if (ptw32_sem_timedwait (&(cv->semBlockQueue), abstime) != 0)
-        {(ptw32_sem_timedwait
-          result = PTW32_GET_ERRNO();
+      if (__ptw32_sem_timedwait (&(cv->semBlockQueue), abstime) != 0)
+        {(__ptw32_sem_timedwait
+          result =  __PTW32_GET_ERRNO();
         }
     }
 
@@ -1400,11 +1400,11 @@ ptw32_cond_timedwait (pthread_cond_t * cond,
    */
   return (result);
 
-}                               /* ptw32_cond_timedwait */
+}                               /* __ptw32_cond_timedwait */
 
 
 static int
-ptw32_cond_unblock (pthread_cond_t * cond,
+__ptw32_cond_unblock (pthread_cond_t * cond,
                     int unblockAll)
 {
   int result;
@@ -1421,7 +1421,7 @@ ptw32_cond_unblock (pthread_cond_t * cond,
    * No-op if the CV is static and hasn't been initialised yet.
    * Assuming that any race condition is harmless.
    */
-  if (cv == (pthread_cond_t) PTW32_OBJECT_AUTO_INIT)
+  if (cv == (pthread_cond_t)  __PTW32_OBJECT_AUTO_INIT)
     {(cv
       return 0;
     }
@@ -1502,14 +1502,14 @@ too
 
   return(result);
 
-}                               /* ptw32_cond_unblock */
+}                               /* __ptw32_cond_unblock */
 
 int
 pthread_cond_wait (pthread_cond_t * cond,
                    pthread_mutex_t * mutex)
 {
   /* The NULL abstime arg means INFINITE waiting. */
-  return(ptw32_cond_timedwait(cond, mutex, NULL));
+  return(__ptw32_cond_timedwait(cond, mutex, NULL));
 }                               /* pthread_cond_wait */
 
 
@@ -1523,7 +1523,7 @@ pthread_cond_timedwait (pthread_cond_t * cond,
       return EINVAL;
     }
 
-  return(ptw32_cond_timedwait(cond, mutex, abstime));
+  return(__ptw32_cond_timedwait(cond, mutex, abstime));
 }                               /* pthread_cond_timedwait */
 
 
@@ -1531,14 +1531,14 @@ int
 pthread_cond_signal (pthread_cond_t * cond)
 {
   /* The '0'(FALSE) unblockAll arg means unblock ONE waiter. */
-  return(ptw32_cond_unblock(cond, 0));
+  return(__ptw32_cond_unblock(cond, 0));
 }                               /* pthread_cond_signal */
 
 int
 pthread_cond_broadcast (pthread_cond_t * cond)
 {
   /* The '1'(TRUE) unblockAll arg means unblock ALL waiters. */
-  return(ptw32_cond_unblock(cond, 1));
+  return(__ptw32_cond_unblock(cond, 1));
 }                               /* pthread_cond_broadcast */
 
 

@@ -2,113 +2,110 @@
  *
  * --------------------------------------------------------------------------
  *
- *      Pthreads-win32 - POSIX Threads Library for Win32
- *      Copyright(C) 1998 John E. Bossom
- *      Copyright(C) 1999,2012 Pthreads-win32 contributors
+ *      Pthreads4w - POSIX Threads for Windows
+ *      Copyright 1998 John E. Bossom
+ *      Copyright 1999-2018, Pthreads4w contributors
  *
- *      Homepage1: http://sourceware.org/pthreads-win32/
- *      Homepage2: http://sourceforge.net/projects/pthreads4w/
+ *      Homepage: https://sourceforge.net/projects/pthreads4w/
  *
  *      The current list of contributors is contained
  *      in the file CONTRIBUTORS included with the source
  *      code distribution. The list can also be seen at the
  *      following World Wide Web location:
- *      http://sources.redhat.com/pthreads-win32/contributors.html
- * 
- *      This library is free software; you can redistribute it and/or
- *      modify it under the terms of the GNU Lesser General Public
- *      License as published by the Free Software Foundation; either
- *      version 2 of the License, or (at your option) any later version.
- * 
- *      This library is distributed in the hope that it will be useful,
- *      but WITHOUT ANY WARRANTY; without even the implied warranty of
- *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *      Lesser General Public License for more details.
- * 
- *      You should have received a copy of the GNU Lesser General Public
- *      License along with this library in the file COPYING.LIB;
- *      if not, write to the Free Software Foundation, Inc.,
- *      59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *
+ *      https://sourceforge.net/p/pthreads4w/wiki/Contributors/
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <winver.h>
 #include "pthread.h"
 
 /*
- * Note: the correct __CLEANUP_* macro must be defined corresponding to
+ * Note: the correct __PTW32_CLEANUP_* macro must be defined corresponding to
  * the definition used for the object file builds. This is done in the
  * relevent makefiles for the command line builds, but users should ensure
  * that their resource compiler knows what it is too.
- * If using the default (no __CLEANUP_* defined), pthread.h will define it
- * as __CLEANUP_C.
+ * If using the default (no __PTW32_CLEANUP_* defined), pthread.h will define it
+ * as __PTW32_CLEANUP_C.
  */
 
-#if defined(PTW32_RC_MSC)
-#  if defined(PTW32_ARCHx64) || defined(PTW32_ARCHX64) || defined(PTW32_ARCHAMD64)
-#    if defined(__CLEANUP_C)
-#      define PTW32_VERSIONINFO_NAME "pthreadVC2.DLL\0"
-#      define PTW32_VERSIONINFO_DESCRIPTION "MS C x64\0"
-#    elif defined(__CLEANUP_CXX)
-#      define PTW32_VERSIONINFO_NAME "pthreadVCE2.DLL\0"
-#      define PTW32_VERSIONINFO_DESCRIPTION "MS C++ x64\0"
-#    elif defined(__CLEANUP_SEH)
-#      define PTW32_VERSIONINFO_NAME "pthreadVSE2.DLL\0"
-#      define PTW32_VERSIONINFO_DESCRIPTION "MS C SEH x64\0"
+#if defined (__PTW32_RC_MSC)
+#  if defined (__PTW32_ARCHx64) || defined (__PTW32_ARCHX64) || defined (__PTW32_ARCHAMD64)
+#    if defined(__PTW32_CLEANUP_C)
+#      define  __PTW32_VERSIONINFO_NAME "pthreadVC2.DLL\0"
+#      define  __PTW32_VERSIONINFO_DESCRIPTION "MS C x64\0"
+#    elif defined(__PTW32_CLEANUP_CXX)
+#      define  __PTW32_VERSIONINFO_NAME "pthreadVCE2.DLL\0"
+#      define  __PTW32_VERSIONINFO_DESCRIPTION "MS C++ x64\0"
+#    elif defined(__PTW32_CLEANUP_SEH)
+#      define  __PTW32_VERSIONINFO_NAME "pthreadVSE2.DLL\0"
+#      define  __PTW32_VERSIONINFO_DESCRIPTION "MS C SEH x64\0"
 #    endif
-#  elif defined(PTW32_ARCHx86) || defined(PTW32_ARCHX86)
-#    if defined(__CLEANUP_C)
-#      define PTW32_VERSIONINFO_NAME "pthreadVC2.DLL\0"
-#      define PTW32_VERSIONINFO_DESCRIPTION "MS C x86\0"
-#    elif defined(__CLEANUP_CXX)
-#      define PTW32_VERSIONINFO_NAME "pthreadVCE2.DLL\0"
-#      define PTW32_VERSIONINFO_DESCRIPTION "MS C++ x86\0"
-#    elif defined(__CLEANUP_SEH)
-#      define PTW32_VERSIONINFO_NAME "pthreadVSE2.DLL\0"
-#      define PTW32_VERSIONINFO_DESCRIPTION "MS C SEH x86\0"
+#  elif defined (__PTW32_ARCHx86) || defined (__PTW32_ARCHX86)
+#    if defined(__PTW32_CLEANUP_C)
+#      define  __PTW32_VERSIONINFO_NAME "pthreadVC2.DLL\0"
+#      define  __PTW32_VERSIONINFO_DESCRIPTION "MS C x86\0"
+#    elif defined(__PTW32_CLEANUP_CXX)
+#      define  __PTW32_VERSIONINFO_NAME "pthreadVCE2.DLL\0"
+#      define  __PTW32_VERSIONINFO_DESCRIPTION "MS C++ x86\0"
+#    elif defined(__PTW32_CLEANUP_SEH)
+#      define  __PTW32_VERSIONINFO_NAME "pthreadVSE2.DLL\0"
+#      define  __PTW32_VERSIONINFO_DESCRIPTION "MS C SEH x86\0"
 #    endif
 #  endif
 #elif defined(__GNUC__)
 #  if defined(_M_X64)
-#    define PTW32_ARCH "x64 (mingw64)"
+#    define  __PTW32_ARCH "x64 (mingw64)"
 #  else
-#    define PTW32_ARCH "x86 (mingw32)"
+#    define  __PTW32_ARCH "x86 (mingw32)"
 #  endif
-#  if defined(__CLEANUP_C)
-#    define PTW32_VERSIONINFO_NAME "pthreadGC2.DLL\0"
-#    define PTW32_VERSIONINFO_DESCRIPTION "GNU C " PTW32_ARCH "\0"
-#  elif defined(__CLEANUP_CXX)
-#    define PTW32_VERSIONINFO_NAME "pthreadGCE2.DLL\0"
-#    define PTW32_VERSIONINFO_DESCRIPTION "GNU C++ " PTW32_ARCH "\0"
+#  if defined(__PTW32_CLEANUP_C)
+#    define  __PTW32_VERSIONINFO_NAME "pthreadGC2.DLL\0"
+#    define  __PTW32_VERSIONINFO_DESCRIPTION "GNU C "  __PTW32_ARCH "\0"
+#  elif defined(__PTW32_CLEANUP_CXX)
+#    define  __PTW32_VERSIONINFO_NAME "pthreadGCE2.DLL\0"
+#    define  __PTW32_VERSIONINFO_DESCRIPTION "GNU C++ "  __PTW32_ARCH "\0"
 #  else
 #    error Resource compiler doesn't know which cleanup style you're using - see version.rc
 #  endif
 #elif defined(__BORLANDC__)
 #  if defined(_M_X64)
-#    define PTW32_ARCH "x64 (Borland)"
+#    define  __PTW32_ARCH "x64 (Borland)"
 #  else
-#    define PTW32_ARCH "x86 (Borland)"
+#    define  __PTW32_ARCH "x86 (Borland)"
 #  endif
-#  if defined(__CLEANUP_C)
-#    define PTW32_VERSIONINFO_NAME "pthreadBC2.DLL\0"
-#    define PTW32_VERSIONINFO_DESCRIPTION "BORLAND C " PTW32_ARCH "\0"
-#  elif defined(__CLEANUP_CXX)
-#    define PTW32_VERSIONINFO_NAME "pthreadBCE2.DLL\0"
-#    define PTW32_VERSIONINFO_DESCRIPTION "BORLAND C++ " PTW32_ARCH "\0"
+#  if defined(__PTW32_CLEANUP_C)
+#    define  __PTW32_VERSIONINFO_NAME "pthreadBC2.DLL\0"
+#    define  __PTW32_VERSIONINFO_DESCRIPTION "BORLAND C "  __PTW32_ARCH "\0"
+#  elif defined(__PTW32_CLEANUP_CXX)
+#    define  __PTW32_VERSIONINFO_NAME "pthreadBCE2.DLL\0"
+#    define  __PTW32_VERSIONINFO_DESCRIPTION "BORLAND C++ "  __PTW32_ARCH "\0"
 #  else
 #    error Resource compiler doesn't know which cleanup style you're using - see version.rc
 #  endif
 #elif defined(__WATCOMC__)
 #  if defined(_M_X64)
-#    define PTW32_ARCH "x64 (Watcom)"
+#    define  __PTW32_ARCH "x64 (Watcom)"
 #  else
-#    define PTW32_ARCH "x86 (Watcom)"
+#    define  __PTW32_ARCH "x86 (Watcom)"
 #  endif
-#  if defined(__CLEANUP_C)
-#    define PTW32_VERSIONINFO_NAME "pthreadWC2.DLL\0"
-#    define PTW32_VERSIONINFO_DESCRIPTION "WATCOM C " PTW32_ARCH "\0"
-#  elif defined(__CLEANUP_CXX)
-#    define PTW32_VERSIONINFO_NAME "pthreadWCE2.DLL\0"
-#    define PTW32_VERSIONINFO_DESCRIPTION "WATCOM C++ " PTW32_ARCH "\0"
+#  if defined(__PTW32_CLEANUP_C)
+#    define  __PTW32_VERSIONINFO_NAME "pthreadWC2.DLL\0"
+#    define  __PTW32_VERSIONINFO_DESCRIPTION "WATCOM C "  __PTW32_ARCH "\0"
+#  elif defined(__PTW32_CLEANUP_CXX)
+#    define  __PTW32_VERSIONINFO_NAME "pthreadWCE2.DLL\0"
+#    define  __PTW32_VERSIONINFO_DESCRIPTION "WATCOM C++ "  __PTW32_ARCH "\0"
 #  else
 #    error Resource compiler doesn't know which cleanup style you're using - see version.rc
 #  endif
@@ -118,8 +115,8 @@
 
 
 VS_VERSION_INFO VERSIONINFO
-  FILEVERSION    PTW32_VERSION
-  PRODUCTVERSION PTW32_VERSION
+  FILEVERSION     __PTW32_VERSION
+  PRODUCTVERSION  __PTW32_VERSION
   FILEFLAGSMASK  VS_FFI_FILEFLAGSMASK
   FILEFLAGS      0
   FILEOS         VOS__WINDOWS32
@@ -129,15 +126,15 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "ProductName", "POSIX Threads for Windows LPGL\0"
-            VALUE "ProductVersion", PTW32_VERSION_STRING
-            VALUE "FileVersion", PTW32_VERSION_STRING
-            VALUE "FileDescription", PTW32_VERSIONINFO_DESCRIPTION
-            VALUE "InternalName", PTW32_VERSIONINFO_NAME
-            VALUE "OriginalFilename", PTW32_VERSIONINFO_NAME
-            VALUE "CompanyName", "Open Source Software community LGPL\0"
-            VALUE "LegalCopyright", "Copyright (C) Project contributors 2012\0"
-            VALUE "Comments", "http://sourceware.org/pthreads-win32/\0"
+            VALUE "ProductName", "POSIX Threads for Windows\0"
+            VALUE "ProductVersion",  __PTW32_VERSION_STRING
+            VALUE "FileVersion",  __PTW32_VERSION_STRING
+            VALUE "FileDescription",  __PTW32_VERSIONINFO_DESCRIPTION
+            VALUE "InternalName",  __PTW32_VERSIONINFO_NAME
+            VALUE "OriginalFilename",  __PTW32_VERSIONINFO_NAME
+            VALUE "CompanyName", "Open Source Software community\0"
+            VALUE "LegalCopyright", "Copyright - Project contributors 1999-2016\0"
+            VALUE "Comments", "https://sourceforge.net/p/pthreads4w/wiki/Contributors/\0"
         END
     END
     BLOCK "VarFileInfo"

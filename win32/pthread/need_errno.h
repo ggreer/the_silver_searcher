@@ -59,23 +59,22 @@ extern "C" {
 #endif
 #endif
 
-#if defined(PTW32_STATIC_LIB) && defined(_MSC_VER) && _MSC_VER >= 1400
-#  undef PTW32_STATIC_LIB
-#  define PTW32_STATIC_TLSLIB
+#if defined(__PTW32_STATIC_LIB) && defined(_MSC_VER) && _MSC_VER >= 1400
+#  define __PTW32_STATIC_TLSLIB
 #endif
 
-#if defined(PTW32_STATIC_LIB) || defined(PTW32_STATIC_TLSLIB)
-#  define PTW32_DLLPORT
-#elif defined(PTW32_BUILD)
-#    define PTW32_DLLPORT __declspec (dllexport)
+#if defined (__PTW32_STATIC_LIB) || defined (__PTW32_STATIC_TLSLIB)
+#  define  __PTW32_DLLPORT
+#elif defined (__PTW32_BUILD)
+#    define  __PTW32_DLLPORT __declspec (dllexport)
 #  else
-#    define PTW32_DLLPORT __declspec (dllimport)
+#    define  __PTW32_DLLPORT __declspec (dllimport)
 #  endif
 
 /* declare reference to errno */
 
 #if (defined(_MT) || defined(_MD) || defined(_DLL)) && !defined(_MAC)
-PTW32_DLLPORT int * __cdecl _errno(void);
+__PTW32_DLLPORT int * __cdecl _errno(void);
 #define errno   (*_errno())
 #else   /* ndef _MT && ndef _MD && ndef _DLL */
 _CRTIMP extern int errno;
@@ -139,7 +138,7 @@ _CRTIMP extern int errno;
 /*
  * POSIX 2008 - robust mutexes.
  */
-#if PTW32_VERSION_MAJOR > 2
+#if  __PTW32_VERSION_MAJOR > 2
 #  if !defined(EOWNERDEAD)
 #    define EOWNERDEAD 1000
 #  endif
