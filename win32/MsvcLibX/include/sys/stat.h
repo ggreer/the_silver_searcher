@@ -21,6 +21,7 @@
 *    2017-03-20 JFL Moved unlink & rmdir definitions for unistd.h.	      *
 *    2017-09-01 JFL Bug fix: Sockets and Fifos ARE supported in WIN32. Enable *
 *		    macros S_ISSOCK and S_ISFIFO.			      *
+*    2018-05-31 JFL Changed dirent2stat() first arg to (const _dirent *).     *
 *									      *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -70,7 +71,7 @@ extern "C" {
 #endif
 
 /* Proprietary function for recovering available infos without calling stat */
-extern int dirent2stat(struct dirent *pDE, struct _stat *pStat);
+extern int dirent2stat(const struct dirent *pDE, struct _stat *pStat);
 #define dirent2stat64 dirent2stat /* The current versions are the same */
 #define _DIRENT2STAT_DEFINED 1
 
@@ -238,14 +239,14 @@ extern int lstat(const char *path, struct stat *buf);
 /* Note: MSDOS has a single stat version, and its dirent2stat implementation is in dirent.c */
 #ifdef _USE_32BIT_TIME_T
 #if (_STAT_FILE_SIZE != 64) /* Else if _STAT_FILE_SIZE=64, then struct _stat32_ns isn't defined */
-extern int _CONCAT(_dirent2_stat32,_NS_SUFFIX)(struct dirent *pDE, struct _CONCAT(_stat32,_NS_SUFFIX) *pStat);
+extern int _CONCAT(_dirent2_stat32,_NS_SUFFIX)(const struct dirent *pDE, struct _CONCAT(_stat32,_NS_SUFFIX) *pStat);
 #endif
-extern int _CONCAT(_dirent2_stat32i64,_NS_SUFFIX)(struct dirent *pDE, struct _CONCAT(_stat32i64,_NS_SUFFIX) *pStat);
+extern int _CONCAT(_dirent2_stat32i64,_NS_SUFFIX)(const struct dirent *pDE, struct _CONCAT(_stat32i64,_NS_SUFFIX) *pStat);
 #else
 #if (_STAT_FILE_SIZE != 64) /* Else if _STAT_FILE_SIZE=64, then struct _stat64i32_ns isn't defined */
-extern int _CONCAT(_dirent2_stat64i32,_NS_SUFFIX)(struct dirent *pDE, struct _CONCAT(_stat64i32,_NS_SUFFIX) *pStat);
+extern int _CONCAT(_dirent2_stat64i32,_NS_SUFFIX)(const struct dirent *pDE, struct _CONCAT(_stat64i32,_NS_SUFFIX) *pStat);
 #endif
-extern int _CONCAT(_dirent2_stat64,_NS_SUFFIX)(struct dirent *pDE, struct _CONCAT(_stat64,_NS_SUFFIX) *pStat);
+extern int _CONCAT(_dirent2_stat64,_NS_SUFFIX)(const struct dirent *pDE, struct _CONCAT(_stat64,_NS_SUFFIX) *pStat);
 #endif
 #define dirent2stat _CONCAT(_dirent2,stat)
 #define _DIRENT2STAT_DEFINED 1

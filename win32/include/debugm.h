@@ -128,7 +128,8 @@
 *    2017-10-30 JFL Added macro DEBUG_QUIET_LEAVE().			      *
 *    2018-02-02 JFL Added several missing DEBUG_xxx_COMMENT() macros.         *
 *    2018-04-25 JFL Added macro DEBUG_WPRINTF().                              *
-*    2018-04-25 JFL Added macros DEBUG_WENTER() and DEBUG_WLEAVE().           *
+*                   Added macros DEBUG_WENTER() and DEBUG_WLEAVE().           *
+*    2018-10-01 JFL DEBUG_FREEUTF8() now clears the buffer pointer.           *
 *		    							      *
 *        (C) Copyright 2016 Hewlett Packard Enterprise Development LP         *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -429,7 +430,8 @@ extern DEBUG_TLS int iIndent;	/* Debug messages indentation. Thread local. */
     } while (0);				\
   ) /* DEBUG_FREE(pUtf8) MUST be used to free the UTF-8 string after use, else there will be a memory leak */
 
-#define DEBUG_FREEUTF8(pUtf8) DEBUG_CODE(free(pUtf8))
+/* Clear the pointer, so that DEBUG_FREEUTF8() can safely be called again */
+#define DEBUG_FREEUTF8(pUtf8) DEBUG_CODE(do {free(pUtf8); pUtf8 = NULL;} while (0))
 
 #endif /* defined(_WIN32) */
 

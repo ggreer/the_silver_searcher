@@ -17,6 +17,7 @@
 *    2014-06-30 JFL Added support for 32K Unicode paths.           	      *
 *    2017-03-18 JFL Moved unlink() and rmdir() to their own source files.     *
 *    2017-10-05 JFL Removed one huge buffer on stack, to lower stack usage.   *
+*    2018-05-31 JFL Changed dirent2stat() first arg to (const _dirent *).     *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -42,7 +43,7 @@
 /* Make sure it's only defined it in one of the lstatxxx versions */
 #if !defined(_USE_32BIT_TIME_T) && (_FILE_OFFSET_BITS == 32)
 
-int dirent2stat(_dirent *pDirent, struct _stat *pStat) {
+int dirent2stat(const _dirent *pDirent, struct _stat *pStat) {
   memset(pStat, 0, sizeof(struct stat));
 
   /* Set times */
@@ -295,7 +296,7 @@ int stat(const char *path, struct stat *pStat) {
 }
 #endif /* !USE_MSVC_STAT */
 
-int dirent2stat(_dirent *pDirent, struct stat *pStat) {
+int dirent2stat(const _dirent *pDirent, struct stat *pStat) {
   memset(pStat, 0, sizeof(struct stat));
 
   /* Set times */
