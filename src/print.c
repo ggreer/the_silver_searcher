@@ -220,6 +220,11 @@ void print_line(const char *buf, size_t buf_pos, size_t prev_line_offset) {
     if (opts.width > 0 && opts.width < write_chars) {
         write_chars = opts.width;
     }
+    
+    /* Remove trailing \r, if any. Another one will be generated along with the \n */
+    int hasLF = FALSE;
+    if (buf[prev_line_offset + write_chars - 1] == '\n') { hasLF = TRUE; write_chars -= 1; }
+    if (buf[prev_line_offset + write_chars - 1] == '\r') write_chars -= 1;
 
 #if !SUPPORT_TWO_ENCODINGS
     fwrite(buf + prev_line_offset, 1, write_chars, out_fd);
@@ -229,6 +234,8 @@ void print_line(const char *buf, size_t buf_pos, size_t prev_line_offset) {
         cp = CP_ACP;
     fwriteM(buf + prev_line_offset, 1, write_chars, out_fd, cp);
 #endif
+
+    if (hasLF) fputc('\n', out_fd);
 }
 
 void print_binary_file_matches(const char *path) {
@@ -393,8 +400,8 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                             }
                             print_context.printing_a_match = TRUE;
                         }
-                        /* Don't print the null terminator */
-                        if (j < buf_len) {
+                        /* Don't print the null terminator, nor \r characters which will be regenerated along with the \n */
+                        if (j < buf_len && buf[j] != '\r') {
                             /* if only_matching is set, print only matches and newlines */
                             if (!opts.only_matching || print_context.printing_a_match) {
                                 if (opts.width == 0 || j - print_context.prev_line_offset < opts.width) {
