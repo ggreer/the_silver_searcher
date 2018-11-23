@@ -132,7 +132,7 @@ or
     * CentOS:
 
             yum -y groupinstall "Development Tools"
-            yum -y install pcre-devel xz-devel
+            yum -y install pcre-devel xz-devel zlib-devel
     * openSUSE:
 
             zypper source-install --build-deps-only the_silver_searcher
