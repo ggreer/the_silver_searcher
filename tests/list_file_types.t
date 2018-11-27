@@ -93,6 +93,9 @@ Language types are output:
     --factor
         .factor
   
+    --freepascal
+        .pas  .pp  .inc  .lpr  .dpr
+  
     --fortran
         .f  .f77  .f90  .f95  .f03  .for  .ftn  .fpp
   
