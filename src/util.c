@@ -516,7 +516,7 @@ int is_symlink(const char *path, const struct dirent *d) {
 
 int is_named_pipe(const char *path, const struct dirent *d) {
 #ifdef HAVE_DIRENT_DTYPE
-    if (d->d_type != DT_UNKNOWN) {
+    if (d->d_type != DT_UNKNOWN && d->d_type != DT_LNK) {
         return d->d_type == DT_FIFO || d->d_type == DT_SOCK;
     }
 #endif
