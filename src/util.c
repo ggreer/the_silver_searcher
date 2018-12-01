@@ -353,20 +353,44 @@ int is_binary(const void *buf, const size_t buf_len) {
         if (buf_c[i] == '\0') {
             /* NULL char. It's binary */
             return 1;
-        } else if ((buf_c[i] < 7 || buf_c[i] > 14) && (buf_c[i] < 32 || buf_c[i] > 127)) {
+        } else if ((buf_c[i] < 0x7 || buf_c[i] > 0xE) && (buf_c[i] < 0x20 || buf_c[i] > 0x7F)) {
             /* UTF-8 detection */
-            if (buf_c[i] > 193 && buf_c[i] < 224 && i + 1 < total_bytes) {
+            if (buf_c[i] > 0xC1 && buf_c[i] < 0xE0 && i + 1 < total_bytes) {
                 i++;
-                if (buf_c[i] > 127 && buf_c[i] < 192) {
+                if (buf_c[i] > 0x7F && buf_c[i] < 0xC0) {
                     continue;
                 }
-            } else if (buf_c[i] > 223 && buf_c[i] < 240 && i + 2 < total_bytes) {
+            } else if (buf_c[i] > 0xDF && buf_c[i] < 0xF0 && i + 2 < total_bytes) {
                 i++;
-                if (buf_c[i] > 127 && buf_c[i] < 192 && buf_c[i + 1] > 127 && buf_c[i + 1] < 192) {
+                if (buf_c[i] > 0x7F && buf_c[i] < 0xC0 && buf_c[i + 1] > 0x7F && buf_c[i + 1] < 0xC0) {
                     i++;
                     continue;
                 }
             }
+
+            /* EUC-JP detection */
+            if (buf_c[i] == 0x8E && i + 1 < total_bytes) {
+                i++;
+                if (buf_c[i] > 0xA0 && buf_c[i] < 0xE0) {
+                    continue;
+                }
+            } else if (buf_c[i] > 0xA0 && buf_c[i] < 0xFF && i + 1 < total_bytes) {
+                i++;
+                if (buf_c[i] > 0xA0 && buf_c[i] < 0xFF) {
+                    continue;
+                }
+            }
+
+            /* Shift-JIS detection */
+            if (buf_c[i] > 0xA0 && buf_c[i] < 0xE0) {
+                continue;
+            } else if (((buf_c[i] > 0x80 && buf_c[i] < 0xA0) || (buf_c[i] > 0xDF && buf_c[i] < 0xF0)) && i + 1 < total_bytes) {
+                i++;
+                if ((buf_c[i] > 0x3F && buf_c[i] < 0x7F) || (buf_c[i] > 0x7F && buf_c[i] < 0xFD)) {
+                    continue;
+                }
+            }
+
             suspicious_bytes++;
             /* Disk IO is so slow that it's worthwhile to do this calculation after every suspicious byte. */
             /* This is true even on a 1.6Ghz Atom with an Intel 320 SSD. */
