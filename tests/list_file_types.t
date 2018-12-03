@@ -94,7 +94,7 @@ Language types are output:
         .factor
   
     --fortran
-        .f  .f77  .f90  .f95  .f03  .for  .ftn  .fpp
+        .f  .F  .f77  .f90  .F90  .f95  .F95  .f03  .F03  .for  .FOR  .ftn  .FTN  .fpp  .FPP
   
     --fsharp
         .fs  .fsi  .fsx
