@@ -45,6 +45,9 @@ Language types are output:
     --coffee
         .coffee  .cjsx
   
+    --conf
+        .config
+  
     --coq
         .coq  .g  .v
   
