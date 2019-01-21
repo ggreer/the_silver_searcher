@@ -2,6 +2,8 @@
 #include "print.h"
 #include "scandir.h"
 
+#define UNUSED(var) (void)(var)
+
 void search_buf(const char *buf, const size_t buf_len,
                 const char *dir_full_path) {
     int binary = -1; /* 1 = yes, 0 = no, -1 = don't know */
@@ -371,7 +373,7 @@ void search_file(const char *file_full_path) {
     if (opts.search_zip_files) {
         ag_compression_type zip_type = is_zipped(buf, f_len);
         if (zip_type != AG_NO_COMPRESSION) {
-#if HAVE_FOPENCOOKIE
+#if HAVE_FOPENCOOKIE && HAVE_LZMA_H && HAVE_ZLIB_H
             log_debug("%s is a compressed file. stream searching", file_full_path);
             fp = decompress_open(fd, "r", zip_type);
             search_stream(fp, file_full_path);
@@ -443,6 +445,8 @@ void *search_file_worker(void *i) {
 
 static int check_symloop_enter(const char *path, dirkey_t *outkey) {
 #ifdef _WIN32
+    UNUSED(path);
+    UNUSED(outkey);
     return SYMLOOP_OK;
 #else
     struct stat buf;
@@ -476,6 +480,7 @@ static int check_symloop_enter(const char *path, dirkey_t *outkey) {
 
 static int check_symloop_leave(dirkey_t *dirkey) {
 #ifdef _WIN32
+    UNUSED(dirkey);
     return SYMLOOP_OK;
 #else
     symdir_t *item_found = NULL;

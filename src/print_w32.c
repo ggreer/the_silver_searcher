@@ -1,10 +1,47 @@
 #ifdef _WIN32
 
+#if !defined(NO_CYGTTY) && WINVER < 0x0600 /* mingw defaults to 0x502 */
+#define WINVER 0x0600
+#define _WIN32_WINNT 0x0600
+#endif
+
 #include "print.h"
 #include <io.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <windows.h>
+
+// Cygwin/msys2 pty is a pipe with the following format (H: hex-digit, N: 0-9):
+// '\{cygwin,msys}-HHHHHHHHHHHHHHHH-ptyN-{from,to}-master'
+int cyg_isatty(int fd) {
+// The API here needs Vista or later SDK (WINVER 0x0600 or higher), and the
+// binary won't run on XP - unless NO_CYGTTY is defined (which disables it).
+// It's not impossible to make it work on XP, but not worth jumping through
+// the hoops, especially after msys2 and Cygwin dropped XP support in 2016.
+#ifdef NO_CYGTTY
+    (void)fd;
+    return 0;
+#else
+
+    HANDLE h = (HANDLE)_get_osfhandle(fd);
+    if ((h == INVALID_HANDLE_VALUE) || (GetFileType(h) != FILE_TYPE_PIPE))
+        return 0;
+
+#define INFOSIZE (sizeof(FILE_NAME_INFO) + sizeof(WCHAR) * MAX_PATH)
+    char buf[INFOSIZE + sizeof(WCHAR)]; // +1 WCHAR for our '\0'
+    if (!GetFileInformationByHandleEx(h, FileNameInfo, buf, INFOSIZE))
+        return 0;
+
+    FILE_NAME_INFO *info = (FILE_NAME_INFO *)buf;
+    WCHAR *n = info->FileName; // no \0 from the API. We reserved extra char.
+    n[info->FileNameLength / sizeof(WCHAR)] = 0;
+    return ((wcsstr(n, L"\\msys-") == n) || (wcsstr(n, L"\\cygwin-") == n)) &&
+           wcsstr(n, L"-pty") &&
+           (wcsstr(n, L"-from-master") || wcsstr(n, L"-to-master"));
+
+#endif /* NO_CYGTTY */
+}
+
 
 #ifndef FOREGROUND_MASK
 #define FOREGROUND_MASK (FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY)

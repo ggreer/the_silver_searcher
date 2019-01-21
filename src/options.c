@@ -348,10 +348,12 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         exit(1);
     }
 
-    rv = fstat(fileno(stdin), &statbuf);
-    if (rv == 0) {
-        if (S_ISFIFO(statbuf.st_mode) || S_ISREG(statbuf.st_mode)) {
-            opts.search_stream = 1;
+    if (!ag_isatty(fileno(stdin))) {
+        rv = fstat(fileno(stdin), &statbuf);
+        if (rv == 0) {
+            if (S_ISFIFO(statbuf.st_mode) || S_ISREG(statbuf.st_mode)) {
+                opts.search_stream = 1;
+            }
         }
     }
 
@@ -359,7 +361,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         * turn off colors
         * print filenames on every line
      */
-    if (!isatty(fileno(stdout))) {
+    if (!ag_isatty(fileno(stdout))) {
         opts.color = 0;
         group = 0;
 
@@ -632,14 +634,6 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     argc -= optind;
     argv += optind;
 
-    if (opts.pager) {
-        out_fd = popen(opts.pager, "w");
-        if (!out_fd) {
-            perror("Failed to run pager");
-            exit(1);
-        }
-    }
-
 #ifdef HAVE_PLEDGE
     if (opts.skip_vcs_ignores) {
         if (pledge("stdio rpath proc", NULL) == -1) {
@@ -786,6 +780,14 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         exit(1);
     }
 
+    if (opts.pager) {
+        out_fd = popen(opts.pager, "w");
+        if (!out_fd) {
+            perror("Failed to run pager");
+            exit(1);
+        }
+    }
+
     if (!is_regex(opts.query)) {
         opts.literal = 1;
     }
@@ -843,6 +845,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     (*base_paths)[i] = NULL;
 
 #ifdef _WIN32
-    windows_use_ansi(opts.color_win_ansi);
+    // fprintf_win32 already passthrough ansi on cyg-tty (it translates only if
+    // win console), but let's be explicit and save it repeating runtime tests.
+    windows_use_ansi(opts.color_win_ansi || cyg_isatty(fileno(stdout)));
 #endif
 }

@@ -21,6 +21,10 @@ const char *normalize_path(const char *path);
 #ifdef _WIN32
 void windows_use_ansi(int use_ansi);
 int fprintf_w32(FILE *fp, const char *format, ...);
+int cyg_isatty(int fd);
+#define ag_isatty(fd) (isatty(fd) || cyg_isatty(fd))
+#else
+#define ag_isatty isatty
 #endif
 
 #endif
