@@ -2,10 +2,11 @@
 #include "print.h"
 #include "scandir.h"
 
-void search_buf(const char *buf, const size_t buf_len,
-                const char *dir_full_path) {
+int search_buf(const char *buf, const size_t buf_len,
+               const char *dir_full_path) {
     int binary = -1; /* 1 = yes, 0 = no, -1 = don't know */
     size_t buf_offset = 0;
+    int continue_search = TRUE;
 
     if (opts.search_stream) {
         binary = 0;
@@ -13,7 +14,7 @@ void search_buf(const char *buf, const size_t buf_len,
         binary = is_binary((const void *)buf, buf_len);
         if (binary) {
             log_debug("File %s is binary. Skipping...", dir_full_path);
-            return;
+            return continue_search;
         }
     }
 
@@ -92,6 +93,12 @@ void search_buf(const char *buf, const size_t buf_len,
             matches_len++;
             match_ptr += opts.query_len;
 
+            if (opts.single_match == TRUE) {
+                log_debug("Match found. Ending search (1).");
+                continue_search = FALSE;
+                break;
+            }
+
             if (opts.max_matches_per_file > 0 && matches_len >= opts.max_matches_per_file) {
                 log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
                 break;
@@ -114,6 +121,12 @@ void search_buf(const char *buf, const size_t buf_len,
                 matches[matches_len].start = offset_vector[0];
                 matches[matches_len].end = offset_vector[1];
                 matches_len++;
+
+                if (opts.single_match == TRUE) {
+                    log_debug("Match found. Ending search (2).");
+                    continue_search = FALSE;
+                    break;
+                }
 
                 if (opts.max_matches_per_file > 0 && matches_len >= opts.max_matches_per_file) {
                     log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
@@ -146,6 +159,12 @@ void search_buf(const char *buf, const size_t buf_len,
                     matches[matches_len].start = offset_vector[0] + line_to_buf;
                     matches[matches_len].end = offset_vector[1] + line_to_buf;
                     matches_len++;
+
+                    if (opts.single_match == TRUE) {
+                        log_debug("Match found. Ending search (multiline).");
+                        continue_search = FALSE;
+                        goto multiline_done;
+                    }
 
                     if (opts.max_matches_per_file > 0 && matches_len >= opts.max_matches_per_file) {
                         log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
@@ -214,6 +233,8 @@ multiline_done:
     if (matches_size > 0) {
         free(matches);
     }
+
+    return continue_search;
 }
 
 /* TODO: this will only match single lines. multi-line regexes silently don't match */
@@ -222,29 +243,34 @@ void search_stream(FILE *stream, const char *path) {
     ssize_t line_len = 0;
     size_t line_cap = 0;
     size_t i;
+    int continue_search = TRUE;
 
     print_init_context();
 
     for (i = 1; (line_len = getline(&line, &line_cap, stream)) > 0; i++) {
         opts.stream_line_num = i;
-        search_buf(line, line_len, path);
+        continue_search = search_buf(line, line_len, path);
         if (line[line_len - 1] == '\n') {
             line_len--;
         }
         print_trailing_context(path, line, line_len);
+        if (continue_search == FALSE) {
+            break;
+        };
     }
 
     free(line);
     print_cleanup_context();
 }
 
-void search_file(const char *file_full_path) {
+int search_file(const char *file_full_path) {
     int fd = -1;
     off_t f_len = 0;
     char *buf = NULL;
     struct stat statbuf;
     int rv = 0;
     FILE *fp = NULL;
+    int continue_search = TRUE;
 
     rv = stat(file_full_path, &statbuf);
     if (rv != 0) {
@@ -302,7 +328,7 @@ void search_file(const char *file_full_path) {
 
     if (f_len == 0) {
         if (opts.query[0] == '.' && opts.query_len == 1 && !opts.literal && opts.search_all_files) {
-            search_buf(buf, f_len, file_full_path);
+            continue_search = search_buf(buf, f_len, file_full_path);
         } else {
             log_debug("Skipping %s: file is empty.", file_full_path);
         }
@@ -383,14 +409,14 @@ void search_file(const char *file_full_path) {
                 log_err("Cannot decompress zipped file %s", file_full_path);
                 goto cleanup;
             }
-            search_buf(_buf, _buf_len, file_full_path);
+            continue_search = search_buf(_buf, _buf_len, file_full_path);
             free(_buf);
 #endif
             goto cleanup;
         }
     }
 
-    search_buf(buf, f_len, file_full_path);
+    continue_search = search_buf(buf, f_len, file_full_path);
 
 cleanup:
 
@@ -411,6 +437,7 @@ cleanup:
     if (fd != -1) {
         close(fd);
     }
+    return continue_search;
 }
 
 void *search_file_worker(void *i) {
@@ -435,7 +462,10 @@ void *search_file_worker(void *i) {
         }
         pthread_mutex_unlock(&work_queue_mtx);
 
-        search_file(queue_item->path);
+        if (search_file(queue_item->path) == FALSE) {
+            done_adding_files = TRUE;
+            work_queue = NULL;
+        }
         free(queue_item->path);
         free(queue_item);
     }

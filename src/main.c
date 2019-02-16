@@ -196,6 +196,9 @@ int main(int argc, char **argv) {
 #endif
             search_dir(ig, base_paths[i], paths[i], 0, s.st_dev);
             cleanup_ignore(ig);
+            if (done_adding_files) {
+                break;
+            }
         }
         pthread_mutex_lock(&work_queue_mtx);
         done_adding_files = TRUE;
