@@ -22,10 +22,10 @@ Language types are output:
         .asm  .s
   
     --asp
-        .asp  .asa  .aspx  .asax  .ashx  .ascx  .asmx 
+        .asp  .asa  .aspx  .asax  .ashx  .ascx  .asmx
   
     --aspx
-        .asp  .asa  .aspx  .asax  .ashx  .ascx  .asmx 
+        .asp  .asa  .aspx  .asax  .ashx  .ascx  .asmx
   
     --batch
         .bat  .cmd
