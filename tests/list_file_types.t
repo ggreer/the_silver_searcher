@@ -364,7 +364,7 @@ Language types are output:
         .vm  .vtl  .vsl
   
     --verilog
-        .v  .vh  .sv
+        .v  .vh  .sv  .svh
   
     --vhdl
         .vhd  .vhdl
