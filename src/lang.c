@@ -115,6 +115,7 @@ lang_spec_t langs[] = {
     { "tcl", { "tcl", "itcl", "itk" } },
     { "terraform", { "tf", "tfvars" } },
     { "tex", { "tex", "cls", "sty" } },
+    { "txt", { "txt" } },
     { "thrift", { "thrift" } },
     { "tla", { "tla" } },
     { "tt", { "tt", "tt2", "ttml" } },
