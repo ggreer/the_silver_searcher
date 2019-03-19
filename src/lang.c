@@ -124,7 +124,7 @@ lang_spec_t langs[] = {
     { "vala", { "vala", "vapi" } },
     { "vb", { "bas", "cls", "frm", "ctl", "vb", "resx" } },
     { "velocity", { "vm", "vtl", "vsl" } },
-    { "verilog", { "v", "vh", "sv" } },
+    { "verilog", { "v", "vh", "sv", "svh" } },
     { "vhdl", { "vhd", "vhdl" } },
     { "vim", { "vim" } },
     { "wix", { "wxi", "wxs" } },
