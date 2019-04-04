@@ -192,6 +192,9 @@ Language types are output:
     --log
         .log
   
+    --ls
+        .ls
+  
     --lua
         .lua
   
