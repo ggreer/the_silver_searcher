@@ -271,8 +271,24 @@ void cleanup_options(void) {
 }
 
 #ifdef HAS_MSVCLIBX
-int ag_debug_puts(const char *msg) {
-    log_debug("%s", msg);
+// Output MsvcLibX debug messages using Ag's log_debug(). This is necessary to
+// avoid having mixed message pieces due to Ag's multithreading.
+// Problem: Most MsvcLibX messages end with an \n, whereas log_debug() adds one anyway.
+//          So remove the final \n, if any, in the MsvcLibX debug messages.
+//	    But since the original message is a const string, we need to duplicate it.
+int ag_debug_put(const char *msg) {
+    char *msg2 = (char *)msg;
+    size_t l = strlen(msg);
+    if (l && msg[l-1] == '\n') {
+      msg2 = strdup(msg);
+      if (msg2) {	// String duplication succeeded
+      	msg2[l-1] = '\0';	// Remove the final \n
+      } else {		// Out of memory?
+      	msg2 = (char *)msg;	// Use the original message
+      }
+    }
+    log_debug("%s", msg2);
+    if (msg2 != (char *)msg) free(msg2);
     return 0;
 }
 #endif
@@ -500,8 +516,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             case 'D':
                 set_log_level(LOG_LEVEL_DEBUG);
 #ifdef HAS_MSVCLIBX
-                SET_DEBUG_PUTS(ag_debug_puts); /* MsvcLibX debug output now goes though ag_debug_puts -> log_debug */
-                DEBUG_ON();                    /* Enable MsvcLibX debug output in the DEBUG version of the program */
+                SET_DEBUG_PUT(ag_debug_put); /* MsvcLibX debug output now goes though ag_debug_puts -> log_debug */
+                DEBUG_ON();                  /* Enable MsvcLibX debug output in the DEBUG version of the program */
 #endif
                 break;
             case 'f':
@@ -530,8 +546,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.casing = CASE_INSENSITIVE;
                 break;
             case 'L':
-                opts.invert_match = 1;
-            /* fall through */
+                opts.print_nonmatching_files = 1;
+                opts.print_path = PATH_PRINT_TOP;
+                break;
             case 'l':
                 needs_query = 0;
                 opts.print_filename_only = 1;

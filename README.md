@@ -175,7 +175,7 @@ or
     * CentOS:
 
             yum -y groupinstall "Development Tools"
-            yum -y install pcre-devel xz-devel  
+            yum -y install pcre-devel xz-devel zlib-devel
 
     * openSUSE:
 

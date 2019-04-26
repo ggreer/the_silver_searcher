@@ -21,6 +21,12 @@ Language types are output:
     --asm
         .asm  .s
   
+    --asp
+        .asp  .asa  .aspx  .asax  .ashx  .ascx  .asmx
+  
+    --aspx
+        .asp  .asa  .aspx  .asax  .ashx  .ascx  .asmx
+  
     --batch
         .bat  .cmd
   
@@ -45,6 +51,9 @@ Language types are output:
     --coffee
         .coffee  .cjsx
   
+    --config
+        .config
+  
     --coq
         .coq  .g  .v
   
@@ -56,6 +65,9 @@ Language types are output:
   
     --csharp
         .cs
+  
+    --cshtml
+        .cshtml
   
     --css
         .css
@@ -94,7 +106,7 @@ Language types are output:
         .factor
   
     --fortran
-        .f  .f77  .f90  .f95  .f03  .for  .ftn  .fpp
+        .f  .F  .f77  .f90  .F90  .f95  .f03  .for  .ftn  .fpp  .FPP
   
     --fsharp
         .fs  .fsi  .fsx
@@ -255,8 +267,14 @@ Language types are output:
     --plone
         .pt  .cpt  .metadata  .cpy  .py  .xml  .zcml
   
+    --powershell
+        .ps1
+  
     --proto
         .proto
+  
+    --ps1
+        .ps1
   
     --pug
         .pug
@@ -275,6 +293,9 @@ Language types are output:
   
     --rake
         .Rakefile
+  
+    --razor
+        .cshtml
   
     --restructuredtext
         .rst
@@ -364,7 +385,7 @@ Language types are output:
         .vm  .vtl  .vsl
   
     --verilog
-        .v  .vh  .sv
+        .v  .vh  .sv  .svh
   
     --vhdl
         .vhd  .vhdl
@@ -382,7 +403,7 @@ Language types are output:
         .wadl
   
     --xml
-        .xml  .dtd  .xsl  .xslt  .ent  .tld  .plist
+        .xml  .dtd  .xsl  .xslt  .xsd  .ent  .tld  .plist  .wsdl
   
     --yaml
         .yaml  .yml
