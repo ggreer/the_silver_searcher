@@ -4,15 +4,7 @@
 #									      #
 #   Description:    A NMake makefile to build ARM programs.		      #
 #									      #
-#   Notes:	    Warning:						      #
-#		    This is an experimental make file for building ARM	      #
-#		    applications. Currently this does not work, as the	      #
-#		    compiler fails with the error message: "Compiling Desktop # 
-#		    applications for the ARM platform is not supported."      #
-#		    Apparently this requires an "ARM Desktop SDK", which      #
-#		    (As of fall 2015) Microsoft never publicly released.      #
-#		    							      #
-#		    Use with make.bat, which defines the necessary variables. #
+#   Notes:	    Use with make.bat, which defines the necessary variables. #
 #		    Usage: make -f arm.mak [definitions] [targets]	      #
 #		    							      #
 #		    Targets:						      #
@@ -51,7 +43,7 @@
 #		    the same program under Unix/Linux too. So for example,    #
 #		    all paths must contain forward slashes.		      #
 #									      #
-#		    Another design goal is to use that same win95.mak	      #
+#		    Another design goal is to use that same arm.mak	      #
 #		    in complex 1-project environments (One Files.mak defines  #
 #		    all project components); And in simple multiple-project   #
 #		    environments (No Files.mak; Most programs have a single   #
@@ -61,13 +53,13 @@
 #		    predefined. This allows to use the same makefile on       #
 #		    machines with various locations for the build tools.      #
 #									      #
-#		    ARM_AS	    	32-bits Assembler		      #
-#		    ARM_CC    		32-bits C compiler		      #
-#		    ARM_INCPATH  	32-bits include files paths	      #
-#		    ARM_LK	  	32-bits Linker			      #
-#		    ARM_LIBPATH		32-bits libraries paths		      #
-#		    ARM_LB	   	32-bits librarian     		      #
-#		    ARM_PATH  		32-bits programs paths		      #
+#		    ARM_AS	    	32-bits ARM Assembler		      #
+#		    ARM_CC    		32-bits ARM C compiler		      #
+#		    ARM_INCPATH  	32-bits ARM include files paths	      #
+#		    ARM_LK	  	32-bits ARM Linker		      #
+#		    ARM_LIBPATH		32-bits ARM libraries paths	      #
+#		    ARM_LB	   	32-bits ARM librarian     	      #
+#		    ARM_PATH  		32-bits ARM programs paths	      #
 #		    ARM_RC    		32-bits Resource compiler	      #
 #		    ARM_MT    		32-bits Manifest Tool		      #
 #		    TMP		    	Temporary directory	 	      #
@@ -76,6 +68,7 @@
 #    2015-11-13 JFL Created this file.					      #
 #    2016-09-15 JFL Added WSDKINCLUDE definition.                             #
 #    2016-10-11 JFL Adapted for use in SysToolsLib global C include dir.      #
+#    2019-02-10 JFL Verified to work with Visual studio 2019 Preview.	      #
 #									      #
 #      © Copyright 2016-2018 Hewlett Packard Enterprise Development LP        #
 # Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 #

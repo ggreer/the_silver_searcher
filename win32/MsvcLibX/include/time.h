@@ -42,5 +42,9 @@ int clock_gettime(clockid_t clock_id, struct timespec *tp);
 
 #endif /* defined(_WIN32) */
 
+
+/* Defined in strptime.c */
+char *strptime(const char *buf, const char *fmt, struct tm *tm);
+
 #endif /* defined(_MSVCLIBX_TIME_H)  */
 

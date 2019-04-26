@@ -19,6 +19,7 @@
 *		    (The 2017-02-05 change always dragged in _initU(), even   *
 *		     for ANSI programs.)				      *
 *    2018-04-28 JFL Added CorrectWidePath() and CorrectNewWidePath().	      *
+*    2019-02-10 JFL Added support for ARM and ARM64 libraries.		      *
 *									      *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -35,11 +36,29 @@
 
 /* Compute the OS-specific suffix */
 #if defined(_WIN64)
-#  define _MSVCLIBX_LIB_OS_SUFFIX "w64"
+#  if defined(_M_X64) || defined(_M_AMD64)
+#    define _MSVCLIBX_LIB_OS_SUFFIX "w64"
+#  elif defined(_M_ARM64)
+#    define _MSVCLIBX_LIB_OS_SUFFIX "a64"
+#  elif defined(_M_IA64)
+#    define _MSVCLIBX_LIB_OS_SUFFIX "ia64"
+#  elif defined(RC_INVOKED)
+#    define _MSVCLIBX_LIB_OS_SUFFIX "" /* Dummy definition, to avoid an error when using RC.EXE */
+#  else
+#    error No msvclibx.lib version for this 64-bits OS.
+#  endif
 #elif defined(_WIN95)
 #  define _MSVCLIBX_LIB_OS_SUFFIX "w95"
 #elif defined(_WIN32)
-#  define _MSVCLIBX_LIB_OS_SUFFIX "w32"
+#  if defined(_M_IX86)
+#    define _MSVCLIBX_LIB_OS_SUFFIX "w32"
+#  elif defined(_M_ARM)
+#    define _MSVCLIBX_LIB_OS_SUFFIX "a32"
+#  elif defined(RC_INVOKED)
+#    define _MSVCLIBX_LIB_OS_SUFFIX "" /* Dummy definition, to avoid an error when using RC.EXE */
+#  else
+#    error No msvclibx.lib version for this 32-bits OS.
+#  endif
 #elif defined(_MSDOS)
 #  if defined(_M_I86TM)
 #    define _MSVCLIBX_LIB_OS_SUFFIX "dt"
@@ -51,7 +70,7 @@
 #    error No msvclibx.lib version yet for this DOS memory model.
 #  endif
 #else
-#  error No msvclibx.lib version for this target OS.
+#  error No msvclibx.lib version for this OS.
 #endif
 
 /* Compute the debug-mode-specific suffix */
@@ -108,10 +127,10 @@ extern int TrimLongPathPrefix(LPSTR pszName); /* Remove \\?\ and \\?\UNC\ prefix
 #define WINSDK_INCLUDE_FILE(relpath) MSVCLIBX_STRINGIZE(MSVCLIBX_CONCAT(WSDKINCLUDE,MSVCLIBX_CONCAT(/,relpath))) /* Windows SDK include files */
 
 /* Support for external linker symbols */
-#if defined(_WIN64)
-#define PUBLIC_SYMBOL_NAME(s) s
-#else /* _MSDOS or _WIN32 */
+#if defined(_MSDOS) || defined(_WIN95) || defined(_M_IX86)
 #define PUBLIC_SYMBOL_NAME(s) _##s
+#else /* AMD64 or ARM or ARM64 */
+#define PUBLIC_SYMBOL_NAME(s) s
 #endif
 
 /* Support for UTF-8 programs */

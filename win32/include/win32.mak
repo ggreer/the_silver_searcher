@@ -129,6 +129,7 @@
 #    2018-03-01 JFL Always define OBJECTS before invoking lib2libs.mak.       #
 #    2018-03-02 JFL Added variable SKIP_THIS, to prevent building specific    #
 #		    versions.						      #
+#    2019-03-18 JFL Fixed the DOS stub location, based on OUTDIR.	      #
 #		    							      #
 #      © Copyright 2016-2018 Hewlett Packard Enterprise Development LP        #
 # Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 #
@@ -565,8 +566,8 @@ SUBMAKE=$(MAKE) $(MAKEFLAGS_) /F "$(MAKEFILE)" $(MAKEDEFS) # Recursive call to t
     $(MSG) ... done.
 
 # Inference rule to link a program
-!IF $(USEDOSSTUB) && EXIST(DOS$(DS)/$(PROGRAM).EXE)
-STUB=/STUB:DOS$(DS)\$(PROGRAM).EXE
+!IF $(USEDOSSTUB) && EXIST($(OUTDIR)/DOS$(DS)/$(PROGRAM).EXE)
+STUB=/STUB:$(OUTDIR)\DOS$(DS)\$(PROGRAM).EXE
 !ELSE
 STUB=
 !ENDIF
@@ -634,12 +635,17 @@ $(OBJECTS:+=)
 # $(PROGRAM).mak and/or Files.mak may define macros SOURCES, OBJECTS, LIBRARIES, and PROGRAM.
 # These make files are intended to be OS-independant, and be used in both Windows and Unix build environments. 
 # These macros in turn allow the following rules to work, and build more complex programs with more than one source.
+TMPMAK=$(TMP)\$(T)_vars.$(PID).mak # Using the shell PID to generate a unique name, to avoid conflicts in case of // builds.
 !IF DEFINED(PROGRAM) && EXIST("$(PROGRAM).mak")
 !  MESSAGE Getting specific rules from $(PROGRAM).mak.
 !  INCLUDE $(PROGRAM).mak
 !ELSE IF EXIST("Files.mak")
 !  MESSAGE Getting specific rules from Files.mak.
 !  INCLUDE Files.mak
+!  IF DEFINED(PROGRAM) && ![$(STINCLUDE)\GetDefs.bat Files.mak $(PROGRAM) >"$(TMPMAK)" 2>NUL]
+!    MESSAGE Getting specific definitions for $(PROGRAM) from Files.mak.
+!    INCLUDE $(TMPMAK)
+!  ENDIF
 !ELSE
 !  MESSAGE There are no specific rules.
 EXENAME=_-_-_-_.exe	# An unlikely name, to prevent the $(EXENAME) dependency rule below from firing.

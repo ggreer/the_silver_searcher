@@ -31,6 +31,7 @@
 #		    corresponding make file.				      #
 #    2017-02-24 JFL The clean target now also cleans the central $(LIBDIR).   #
 #    2017-03-20 JFL Variable OS defines which OS versions need to be built.   #
+#    2019-02-08 JFL Fixed the support for ARM & added support for ARM64.      #
 #		    							      #
 #         © Copyright 2016 Hewlett Packard Enterprise Development LP          #
 # Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 #
@@ -99,6 +100,9 @@ OS=$(OS) WIN64
 !IF DEFINED(ARM_CC) && EXIST("$(MAKEPATH)\ARM.mak") && DEFINED(OS_ALL)
 OS=$(OS) ARM
 !ENDIF
+!IF DEFINED(ARM64_CC) && EXIST("$(MAKEPATH)\ARM64.mak") && DEFINED(OS_ALL)
+OS=$(OS) ARM64
+!ENDIF
 OS=$(OS:/ =)	# Remove the initial / and the first following space
 OS=$(OS:/=)	# Again, in the unlikely case that none of the default OSs matched
 !ENDIF
@@ -110,6 +114,7 @@ DOWIN32=0
 DOIA64=0
 DOWIN64=0
 DOARM=0
+DOARM64=0
 !IF [for %o in ($(OS)) do @if /i "%o"=="DOS" exit 1]
 DODOS=1
 !ENDIF
@@ -127,6 +132,9 @@ DOWIN64=1
 !ENDIF
 !IF [for %o in ($(OS)) do @if /i "%o"=="ARM" exit 1]
 DOARM=1
+!ENDIF
+!IF [for %o in ($(OS)) do @if /i "%o"=="ARM64" exit 1]
+DOARM64=1
 !ENDIF
 
 # Default goal: Generate all versions
@@ -149,6 +157,9 @@ all: headline \
 !IF $(DOARM)
      $(OD)ARM\MsvcLibX.lib \
 !ENDIF
+!IF $(DOARM64)
+     $(OD)ARM64\MsvcLibX.lib \
+!ENDIF
 !IF $(DODOS)
      $(OD)DOS\DEBUG\MsvcLibX.lib \
 !ENDIF
@@ -166,6 +177,9 @@ all: headline \
 !ENDIF
 !IF $(DOARM)
      $(OD)ARM\DEBUG\MsvcLibX.lib \
+!ENDIF
+!IF $(DOARM64)
+     $(OD)ARM64\DEBUG\MsvcLibX.lib \
 !ENDIF
 
 headline:
@@ -221,7 +235,7 @@ $(OD)IA64\MsvcLibX.lib: $(LIBDIR) NUL
     $(HEADLINE) Building MsvcLibX library IA64 release version
     set OBJECTS=$(OBJECTS) $(WIN32_OBJECTS)
     $(MAKE) $(MAKEFLAGS_) /f $(STINCLUDE)\IA64.mak "DEBUG=0" "PROGRAM=MsvcLibX" "OBJECTS=%OBJECTS:+=+$(OD)IA64\OBJ\%" dirs $@
-    if exist $@ copy $@ $(LIBDIR)\MsvcLibXw64.lib
+    if exist $@ copy $@ $(LIBDIR)\MsvcLibXia64.lib
 
 $(OD)WIN64\MsvcLibX.lib: $(LIBDIR) NUL
     $(HEADLINE) Building MsvcLibX library WIN64 release version
@@ -233,7 +247,13 @@ $(OD)ARM\MsvcLibX.lib: $(LIBDIR) NUL
     $(HEADLINE) Building MsvcLibX library ARM release version
     set OBJECTS=$(OBJECTS) $(WIN32_OBJECTS)
     $(MAKE) $(MAKEFLAGS_) /f $(STINCLUDE)\ARM.mak "DEBUG=0" "PROGRAM=MsvcLibX" "OBJECTS=%OBJECTS:+=+$(OD)ARM\OBJ\%" dirs $@
-    if exist $@ copy $@ $(LIBDIR)\MsvcLibXw64.lib
+    if exist $@ copy $@ $(LIBDIR)\MsvcLibXa32.lib
+
+$(OD)ARM64\MsvcLibX.lib: $(LIBDIR) NUL
+    $(HEADLINE) Building MsvcLibX library ARM64 release version
+    set OBJECTS=$(OBJECTS) $(WIN32_OBJECTS)
+    $(MAKE) $(MAKEFLAGS_) /f $(STINCLUDE)\ARM64.mak "DEBUG=0" "PROGRAM=MsvcLibX" "OBJECTS=%OBJECTS:+=+$(OD)ARM64\OBJ\%" dirs $@
+    if exist $@ copy $@ $(LIBDIR)\MsvcLibXa64.lib
 
 $(OD)DOS\DEBUG\BIN\T\MsvcLibX.lib: $(LIBDIR) NUL
     $(HEADLINE) Building MsvcLibX library DOS tiny debug version
@@ -269,7 +289,7 @@ $(OD)IA64\DEBUG\MsvcLibX.lib: $(LIBDIR) NUL
     $(HEADLINE) Building MsvcLibX library IA64 debug version
     set OBJECTS=$(OBJECTS) $(WIN32_OBJECTS)
     $(MAKE) $(MAKEFLAGS_) /f $(STINCLUDE)\IA64.mak "DEBUG=1" "PROGRAM=MsvcLibX" "OBJECTS=%OBJECTS:+=+$(OD)IA64\DEBUG\OBJ\%" dirs $@
-    if exist $@ copy $@ $(LIBDIR)\MsvcLibXw64d.lib
+    if exist $@ copy $@ $(LIBDIR)\MsvcLibXia64d.lib
 
 $(OD)WIN64\DEBUG\MsvcLibX.lib: $(LIBDIR) NUL
     $(HEADLINE) Building MsvcLibX library WIN64 debug version
@@ -281,7 +301,13 @@ $(OD)ARM\DEBUG\MsvcLibX.lib: $(LIBDIR) NUL
     $(HEADLINE) Building MsvcLibX library ARM debug version
     set OBJECTS=$(OBJECTS) $(WIN32_OBJECTS)
     $(MAKE) $(MAKEFLAGS_) /f $(STINCLUDE)\ARM.mak "DEBUG=1" "PROGRAM=MsvcLibX" "OBJECTS=%OBJECTS:+=+$(OD)ARM\DEBUG\OBJ\%" dirs $@
-    if exist $@ copy $@ $(LIBDIR)\MsvcLibXw64d.lib
+    if exist $@ copy $@ $(LIBDIR)\MsvcLibXa32d.lib
+
+$(OD)ARM64\DEBUG\MsvcLibX.lib: $(LIBDIR) NUL
+    $(HEADLINE) Building MsvcLibX library ARM64 debug version
+    set OBJECTS=$(OBJECTS) $(WIN32_OBJECTS)
+    $(MAKE) $(MAKEFLAGS_) /f $(STINCLUDE)\ARM64.mak "DEBUG=1" "PROGRAM=MsvcLibX" "OBJECTS=%OBJECTS:+=+$(OD)ARM64\DEBUG\OBJ\%" dirs $@
+    if exist $@ copy $@ $(LIBDIR)\MsvcLibXa64d.lib
 
 # Erase all global environment variables created by this build
 VARS=MSVCLIBX		# Global environment variables generated here
@@ -323,6 +349,8 @@ clean mostlyclean distclean:
     if exist $(OD)WIN64 rd /s /q $(OD)WIN64
     -if exist $(STINCLUDE)\ARM.mak   $(MAKE) $(MAKEFLAGS_) /f $(STINCLUDE)\ARM.mak clean
     if exist $(OD)ARM rd /s /q $(OD)ARM
+    -if exist $(STINCLUDE)\ARM64.mak $(MAKE) $(MAKEFLAGS_) /f $(STINCLUDE)\ARM64.mak clean
+    if exist $(OD)ARM64 rd /s /q $(OD)ARM64
 !IF DEFINED(OUTDIR) && "$(OUTDIR)" != "" && "$(OUTDIR)" != "." && "$(OUTDIR)" != ".."
     -rd /S /Q $(OUTDIR) >NUL 2>&1
 !ENDIF

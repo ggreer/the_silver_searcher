@@ -173,13 +173,21 @@
 :#   2017-03-12 JFL Defining variable OS limits builds to that OS list.       *
 :#   2017-10-27 JFL Changed OUTDIR default to the bin subdirectory.           *
 :#   2018-03-09 JFL Find Windows SDK bin dir when in a %WINSDK_VER% subdir.   *
+:#   2019-01-20 JFL Create local configure.bat and make.bat proxies.          *
+:#   2019-02-08 JFL Added support for Visual Studio 2017 and 2019 previews.   *
+:#                  Fixed the detection of ARM & added that of ARM64 tools.   *
+:#   2019-02-10 JFL It's not worth searching the WINSDK if the CC is missing. *
+:#   2019-04-03 JFL Added the ability to disable MASM and MSVC search.        *
+:#   2019-04-15 JFL Added option -nodos.                                      *
+:#                  Fixed option -vs, and split it into options -vsp and -vsn.*
+:#   2019-04-16 JFL Merged in the 2019-01-20 change made for Ag.              *
 :#                                                                            *
-:#      © Copyright 2016-2018 Hewlett Packard Enterprise Development LP       *
+:#      © Copyright 2016-2019 Hewlett Packard Enterprise Development LP       *
 :# Licensed under the Apache 2.0 license  www.apache.org/licenses/LICENSE-2.0 *
 :#*****************************************************************************
 
 setlocal EnableExtensions EnableDelayedExpansion
-set "VERSION=2018-03-09"
+set "VERSION=2019-04-16"
 set "SCRIPT=%~nx0"				&:# Script name
 set "SPATH=%~dp0" & set "SPATH=!SPATH:~0,-1!"	&:# Script path, without the trailing \
 set  "ARG0=%~f0"				&:# Script full pathname
@@ -1379,12 +1387,15 @@ endlocal & set "%~2=%SHORT%" & goto :eof
 :find16
 %FUNCTION0%
 :# Microsoft assembler
+:# If disabled on the command line, then skip it.
+if "%MASM%" == "-" goto :find16.no_masm
 :# If specified on the command line, and looking reasonably valid, then use it.
 if not "%MASM%" == "" if exist "%MASM%\BIN\ML.EXE" goto :find16.found_masm
 :# Else try the default MASM installation path, and a few likely alternatives
 for /d %%p in (C:\MASM* \MASM* "%PF32%\MASM*" "%PF64%\MASM*") do (
   if exist "%%~p\BIN\ML.EXE" pushd "%%~p" & set "MASM=!CD!" & popd & goto :find16.found_masm
 )
+:find16.no_masm
 set "MASM=" & set "VC16.AS=" & goto :find16.done_masm
 :find16.found_masm
 set "VC16.MASM=%MASM%"
@@ -1393,12 +1404,15 @@ echo DOS	AS	x86	!VC16.AS!
 :find16.done_masm
 
 :# 16-bits Microsoft Visual C++ tools
+:# If disabled on the command line, then skip it.
+if "%MSVC%" == "-" goto :find16.no_msvc
 :# If specified on the command line, and looking reasonably valid, then use it.
 if not "%MSVC%" == "" if exist "%MSVC%\BIN\CL.EXE" set "VC16=%MSVC%" & goto :find16.found_msvc
 :# Else try the default MSVC 1.x installation path, and a few likely alternatives
 for /d %%p in (C:\MSVC* \MSVC* "%PF32%\MSVC*" "%PF64%\MSVC*") do (
   if exist "%%~p\BIN\CL.EXE" pushd "%%~p" & set "VC16=!CD!" & popd & goto :find16.found_msvc
 )
+:find16.no_msvc
 set "VC16=" & set "VC16.CC=" & goto :find16.done_msvc
 :find16.found_msvc
 call :long2short VC16 VC16~S
@@ -1474,6 +1488,7 @@ C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Tools\MSVC\14.
 set "BIN[x86,x86]=bin"
 set "BIN[x86,amd64]=bin\x86_amd64"
 set "BIN[x86,arm]=bin\x86_arm"
+set "BIN[x86,arm64]=bin\x86_arm64"
 set "BIN[x86,mips]=bin\x86_mips"
 set "BIN[x86,sh]=bin\x86_sh"
 set "BIN[x86,ia64]=bin\x86_ia64"
@@ -1481,18 +1496,25 @@ set "BIN[x86,ia64]=bin\x86_ia64"
 set "BIN[amd64,x86]=bin\amd64_x86 bin"
 set "BIN[amd64,amd64]=bin\amd64 bin\x86_amd64"
 set "BIN[amd64,arm]=bin\amd64_arm bin\x86_arm"
+set "BIN[amd64,arm64]=bin\amd64_arm64 bin\x86_arm64"
 
 :# VS 15 era: More regular naming system, but much deeper
 set "BIN15[x86,x86]=bin\HostX86\x86"
 set "BIN15[x86,amd64]=bin\HostX86\x64"
+set "BIN15[x86,arm]=bin\HostX86\arm"
+set "BIN15[x86,arm64]=bin\HostX86\arm64"
 set "BIN15[amd64,x86]=bin\HostX64\x86"
 set "BIN15[amd64,amd64]=bin\HostX64\x64"
+set "BIN15[amd64,arm]=bin\HostX64\arm"
+set "BIN15[amd64,arm64]=bin\HostX64\arm64"
 
 :# Idem for native builds (There must be just one value here)
 set "BIN[x86]=bin"
 set "BIN[amd64]=bin\amd64"
+set "BIN[arm]=bin\arm"
 set "BIN15[x86]=bin\HostX86\x86"
 set "BIN15[amd64]=bin\HostX64\x64"
+set "BIN15[arm]=bin\HostArm\arm"
 
 :# Convert SysToolsLib's OS name to MSVC processor name
 set "PROC[WIN32]=x86"	&:# SysToolsLib name
@@ -1501,11 +1523,26 @@ set "PROC[WIN64]=amd64"	&:# SysToolsLib name
 set "PROC[amd64]=amd64"	&:# VC 6 to 14 name
 set "PROC[x64]=amd64"	&:# VC 15+ name
 set "PROC[ARM]=arm"	&:# SysToolsLib and VC 8+ name
+set "PROC[ARM64]=arm64"	&:# SysToolsLib and VC 8+ name
 set "PROC[SH]=sh"	&:# SysToolsLib and VC 8 name
 set "PROC[MIPS]=mips"	&:# SysToolsLib and VC 8 name
 set "PROC[IA64]=ia64"	&:# SysToolsLib and VC 8 name
 
-set "VC15S=Enterprise\VC Professional\VC Community\VC"
+:# List of Visual Studio aliases and paths
+set "VSN[2019]=16"  & set "VSA[16]=16/2019"   & set "VSP[16]=Microsoft Visual Studio\2019"		
+set "VSN[2017]=15"  & set "VSA[15]=15/2017"   & set "VSP[15]=Microsoft Visual Studio\2017"		
+set "VSN[2015]=14"  & set "VSA[14]=14/2015"   & set "VSP[14]=Microsoft Visual Studio 14.0"		
+set "VSN[2013]=12"  & set "VSA[12]=12/2013"   & set "VSP[12]=Microsoft Visual Studio 12.0"		
+set "VSN[2012]=11"  & set "VSA[11]=11/2012"   & set "VSP[11]=Microsoft Visual Studio 11.0"		
+set "VSN[2010]=10"  & set "VSA[10]=10/2010"   & set "VSP[10]=Microsoft Visual Studio 10.0"		
+set "VSN[2008]=9"   & set "VSA[9]=9/2008"     & set "VSP[9]=Microsoft Visual Studio 9.0"		
+set "VSN[2005]=8"   & set "VSA[8]=8/2005"     & set "VSP[8]=Microsoft Visual Studio 8"		
+set "VSN[2003]=7.1" & set "VSA[7.1]=7.1/2003" & set "VSP[7.1]=Microsoft Visual Studio .NET 2003"	
+set "VSN[.NET]=7"   & set "VSA[7]=7/.NET"     & set "VSP[7]=Microsoft Visual Studio .NET"		
+set "VSN[Studio]=6" & set "VSA[6]=6/"         & set "VSP[6]=Microsoft Visual Studio"			
+
+:# Space-separated list of VC subdirectories to search
+set "VC15S=Enterprise\VC Professional\VC Community\VC Preview\VC"
 exit /b
 
 :# Find the latest Visual Studio version supporting the specified OS & architecture
@@ -1515,12 +1552,29 @@ set "VS=%~3"
 set "VC=%~4"
 call :findvs.init
 set "SEARCH_IN=call :FindVsIn !PROC[%~1]!"
+:# Generate VSALIAS and VSTUDIO, based on the -vsn and -vsp options.
+if defined VSNAME if defined VSN[%VSNAME%] set "VSNAME=!VSN[%VSNAME%]!"
+if defined VSNAME if defined VSA[%VSNAME%] ( :# Convert a VS name to a VS alias & path
+  set "VSALIAS=!VSA[%VSNAME%]!"
+  if not defined VSPATH set "VSTUDIO=!VSP[%VSNAME%]!"
+)
+if defined VSPATH ( :# Convert a VS path to a VS alias & path
+  set "VSTUDIO=%VSPATH%"
+  if not defined VSNAME (
+    :# Get the last token in the path
+    for %%t in (%VSPATH:\= %) do set "VSNAME=%%t"
+    :# Remove the trailing .0 if present
+    set "VSNAME=!VSNAME:.0=!"
+    if defined VSN[!VSNAME!] for %%n in (!VSNAME!) do set "VSNAME=!VSN[%%n]!"
+    for %%n in (!VSNAME!) do set "VSALIAS=!VSA[%%n]!"
+  )
+)
 :# If specified on the command line, and looking reasonably valid, then use it.
-if defined VSTUDIO call :FindVsIn %2 "%VSTUDIO%" "%VC15S%" BIN15 && goto :foundvs
-if defined VSTUDIO call :FindVsIn %2 "%VSTUDIO%" "VC VC7 VC98" BIN && goto :foundvs
+if defined VSTUDIO call :FindVsIn %2 %VSALIAS% "%VSTUDIO%" "%VC15S%" BIN15 && goto :foundvs
+if defined VSTUDIO call :FindVsIn %2 %VSALIAS% "%VSTUDIO%" "VC VC7 VC98" BIN && goto :foundvs
 :# If VS' vcvars*.bat has already been run manually, then use it.
-if defined VSINSTALLDIR call :FindVsIn %2 "%VSINSTALLDIR%" "%VC15S%" BIN15 && goto :foundvs
-if defined VSINSTALLDIR call :FindVsIn %2 "%VSINSTALLDIR%" "VC VC7 VC98" BIN && goto :foundvs
+if defined VSINSTALLDIR call :FindVsIn %2 %VSALIAS% "%VSINSTALLDIR%" "%VC15S%" BIN15 && goto :foundvs
+if defined VSINSTALLDIR call :FindVsIn %2 %VSALIAS% "%VSINSTALLDIR%" "VC VC7 VC98" BIN && goto :foundvs
 :# Else scan all Visual Studio versions, starting from the newest ones.
 goto :lastvs &:# Scan all Visual Studio versions
 
@@ -1552,30 +1606,60 @@ set "BINSELF=!%~5[%ARCH%]!"
 :# set "BINSELF=!%~5[x86]!"
 :# %ECHOVARS.D% \* BINDIRS
 :# Scan the Program Files tree, looking for cl.exe instances
-for %%p in ("%PF32%") do ( :# All versions of VS up to VS15 are installed in PF32, even on 64-bits machines
+for %%p in ("%PF32%") do ( :# All versions of VS up to VS16 are installed in PF32, even on 64-bits machines
   %ECHO.D% :# Searching VS in "%%~p\%~3"
   for %%v in ("%~3") do (    :# Visual Studio directory
     if exist "%%~p\%%~v" for %%c in (%~4) do (    :# VC subdirectories
       %ECHO.D% :# Searching VC in "%%~p\%%~v\%%~c"
-      if exist "%%~p\%%~v\%%~c" for /d %%s in ("%%~p\%%~v\%%~c%\*%") do (
-	%ECHO.D% :# Searching BIN in "%%~s"
-	for %%b in (%BINDIRS%) do (
-	  %ECHO.D% :# Searching CL in "%%~s\%%b"
-	  if exist "%%~s\%%b\cl.exe" (
-	    for %%z in ("%%~p\%%~v\%%~c") do set "%VS%=%%~dpz" &rem :# Remove the VC* subdir name
-	    set "%VS%=!%VS%:~0,-1!" &:# Remove the trailing '\'.
-	    set "%VC%=%%~s" &:# Do not set to "%%~p\%%~v\%%~c", which is wrong for VS15+
-	    set "%VC%.BIN=%%~s\%%b"
-	    set "%VC%.BIN2=%%~s\!BINSELF!"
-	    set "%VC%.CC="%%~s\%%b\cl.exe""
-	    %ECHOVARS.D% %VS% %VC% %VC%.BIN %VC%.CC
-	    exit /b 0
+      if exist "%%~p\%%~v\%%~c" (
+      	set "VCDIRS="
+      	:# Infos from https://github.com/Microsoft/vswhere/wiki/Find-VC
+	if exist "%%~p\%%~v\%%~c\Auxiliary\Build\Microsoft.VCToolsVersion.default.txt" (
+	  %ECHO.D% :# Reading version in "%%~p\%%~v\%%~c\Auxiliary\Build\Microsoft.VCToolsVersion.default.txt"
+	  set /p VCVER=<"%%~p\%%~v\%%~c\Auxiliary\Build\Microsoft.VCToolsVersion.default.txt"
+	  set "VCDIRS=%%~p\%%~v\%%~c\Tools\MSVC\!VCVER: =!"
+	)
+	if not defined VCDIRS if exist "%%~p\%%~v\%%~c\Auxiliary\Build\Microsoft.VCRedistVersion.default.txt" (
+	  :# Preview versions have a Microsoft.VCToolsVersion.v142.default.txt, that's not detected above.
+	  :# Try using the Microsoft.VCRedistVersion.default.txt, which seems to contain the same version.
+	  %ECHO.D% :# Reading version in "%%~p\%%~v\%%~c\Auxiliary\Build\Microsoft.VCRedistVersion.default.txt"
+	  set /p VCVER=<"%%~p\%%~v\%%~c\Auxiliary\Build\Microsoft.VCRedistVersion.default.txt"
+	  set "VCDIRS=%%~p\%%~v\%%~c\Tools\MSVC\!VCVER: =!"
+	  if not exist "!VCDIRS!\%BINDIRS%\cl.exe" set "VCDIRS="
+	  set "VCVER="
+	)
+	if not defined VCDIRS if exist "%%~p\%%~v\%%~c\Common7\Tools\vsdevcmd.bat" (
+	  setlocal
+	  %ECHO.D% :# Locating VC using "%%~p\%%~v\%%~c\Common7\Tools\vsdevcmd.bat"
+	  set "VCToolsInstallDir="
+	  call "%%~p\%%~v\%%~c\Common7\Tools\vsdevcmd.bat" >NUL 2>&1
+	  for %%z in ("!VCToolsInstallDir!") do endlocal & set "VCDIRS=%%~z"
+	  if defined VCDIRS set "VCDIRS=!VCDIRS:~0,-1!"
+	  set "VCVER="
+	)
+	if not defined VCDIRS set "VCDIRS=%%~p\%%~v\%%~c%\*%"
+	for /d %%s in ("!VCDIRS!") do (
+	  %ECHO.D% :# Searching BIN in "%%~s"
+	  for %%b in (%BINDIRS%) do (
+	    %ECHO.D% :# Searching CL in "%%~s\%%b"
+	    if exist "%%~s\%%b\cl.exe" (
+	      for %%z in ("%%~p\%%~v\%%~c") do set "%VS%=%%~dpz" &rem :# Remove the VC* subdir name
+	      set "%VS%=!%VS%:~0,-1!" &:# Remove the trailing '\'.
+	      set "%VC%=%%~s" &:# Do not set to "%%~p\%%~v\%%~c", which is wrong for VS15+
+	      set "%VC%.BIN=%%~s\%%b"
+	      set "%VC%.BIN2=%%~s\!BINSELF!"
+	      set "%VC%.CC="%%~s\%%b\cl.exe""
+	      %ECHOVARS.D% %VS% %VC% %VC%.BIN %VC%.CC
+	      set "VCDIRS="
+	      exit /b 0
+	    )
 	  )
 	)
       )
     )
   )
 )
+set "VCDIRS="
 exit /b 1
 
 :# SUBSYSTEM version limits can be tested by running:
@@ -1587,7 +1671,8 @@ pedump WIN32\winver.exe | findstr subsystem	&:# 4.00 if supported, else the defa
 ...
 												     :#        Link SUBSYSTEM (Not the same as windows.h WINVER, which is set in the WINSDK)
 :lastvs	&:#  VS Alias	VS Installation directory	     VC subdirs	  BIN database		      _MSC_VER	Min   Default	Notes
-%SEARCH_IN%  15/2017	"Microsoft Visual Studio\2017"		"%VC15S%" BIN15	&& goto :foundvs    &:# 2000	5.01	5.01	Surprisingly, the default is back to XP!
+%SEARCH_IN%  16/2019	"Microsoft Visual Studio\2019"		"%VC15S%" BIN15	&& goto :foundvs    &:# 1920	5.01	6.00	Preview tested and known to work fine
+%SEARCH_IN%  15/2017	"Microsoft Visual Studio\2017"		"%VC15S%" BIN15	&& goto :foundvs    &:# 1910	5.01	6.00	Tested and known to work fine
 %SEARCH_IN%  14/2015	"Microsoft Visual Studio 14.0"		VC	  BIN	&& goto :foundvs    &:# 1900	5.01	6.00	Tested and known to work fine
 :# %SEARCH_IN%  13/?	"Microsoft Visual Studio 13.0"		VC	  BIN	&& goto :foundvs    &:# 
 :lastvsXP                                               	                                        
@@ -1722,9 +1807,12 @@ if defined WINSDK_LIB for %%l in ("%WINSDK_LIB%") do (
   set "WINSDK=%~1"
   set "WINSDK_VER=%%~nxl"
   set "WINSDK_LIBDIR=%%~l\um\!WINSDKPROC!"
-  set "WINSDK_BIN=!WINSDK!\Bin\!WINSDKPROC!"
-  :# Some SDKs have their files in a bin subdir, with the SDK version. Ex: bin\10.0.16299.0
-  for /d %%d in ("!WINSDK!\Bin\!WINSDK_VER!\!WINSDKPROC!") do if exist "%%~d\rc.exe" set "WINSDK_BIN=%%~d"
+  :# WINSDK executables are host-specific, not target-specific.
+  set "SUBDIR=%PROCESSOR_ARCHITECTURE%" &:# So look for the host-specific subdirectory
+  if /i "!SUBDIR!"=="AMD64" set "SUBDIR=x64"
+  set "WINSDK_BIN=!WINSDK!\Bin\!SUBDIR!"
+  :# Some SDKs have their files in a bin subdir, with the SDK version. Ex: bin\10.0.16299.0\arm64
+  for /d %%d in ("!WINSDK!\Bin\!WINSDK_VER!\!SUBDIR!") do if exist "%%~d\rc.exe" set "WINSDK_BIN=%%~d"
   set "WINSDK_INCDIR="
   set "WINSDK_INCLUDE="
   for /d %%d in ("!WINSDK!\Include" "!WINSDK!\Include\!WINSDK_VER!") do ( :# Pre-release kits have an additional subdir level
@@ -1772,43 +1860,43 @@ goto :findvc32.common
 :find32
 %FUNCTION0%
 call :findvc32 WIN32 x86 VS32 VC32
-call :findsdk -Platform %PROC%
 if not defined VC32 %RETURN0%
+call :findsdk -Platform %PROC%
 goto :find32.common
 
 :find95
 %FUNCTION0%
 call :findvc95 WIN95 x86 VS95 VC95
-call :findsdk -Platform %PROC% -Max 7.1a
 if not defined VC95 %RETURN0%
+call :findsdk -Platform %PROC% -Max 7.1a
 goto :find32.common
 
 :findia64
 %FUNCTION0%
 call :findvc32 IA64 IA64 VSIA64 VCIA64
-call :findsdk -Platform %PROC%
 if not defined VCIA64 %RETURN0%
+call :findsdk -Platform %PROC%
 goto :find32.common
 
 :find64
 %FUNCTION0%
 call :findvc32 WIN64 amd64 VS64 VC64
-call :findsdk -Platform x64 &:# Unfortunately this one is named differently in VC and WinSDK
 if not defined VC64 %RETURN0%
+call :findsdk -Platform x64 &:# Unfortunately this one is named differently in VC and WinSDK
 goto :find32.common
 
 :findarm
 %FUNCTION0%
 call :findvc32 ARM arm VSARM VCARM
-call :findsdk -Platform %PROC%
 if not defined VCARM %RETURN0%
+call :findsdk -Platform %PROC%
 goto :find32.common
 
 :findarm64
 %FUNCTION0%
 call :findvc32 ARM64 arm64 VSARM64 VCARM64
-call :findsdk -Platform %PROC%
 if not defined VCARM64 %RETURN0%
+call :findsdk -Platform %PROC%
 goto :find32.common
 
 :FindUCRT
@@ -1839,7 +1927,7 @@ set %VC%.CC="!%VC%.BIN!\CL.EXE"
 set %VC%.LK="!%VC%.BIN!\LINK.EXE"
 set %VC%.LB="!%VC%.BIN!\LIB.EXE"
 set "%VC%.AS=" &:# The assembler name varies, depending on the processor
-for %%a in (ML ML64 ARMASM IA64ASM) do if not defined %VC%.AS (
+for %%a in (ML ML64 ARMASM ARMASM64 IA64ASM) do if not defined %VC%.AS (
   if exist "!%VC%.BIN!\%%a.EXE" set %VC%.AS="!%VC%.BIN!\%%a.EXE"
 )
 
@@ -1851,6 +1939,8 @@ SET "%VC%.LIBPATH=!%VC%!\lib\%PROC%"
 if /i %PROC%==x86 if not exist "!%VC%.LIBPATH!\libcmt.lib" SET "%VC%.LIBPATH=!%VC%!\lib"
 if /i %PROC%==x86 if not exist "!%VC%.LIBPATH!\libcmt.lib" SET "%VC%.LIBPATH=!%VC%!\lib\x86" &:# VC 15 changed to subdir x86
 if /i %PROC%==amd64 if not exist "!%VC%.LIBPATH!\libcmt.lib" SET "%VC%.LIBPATH=!%VC%!\lib\x64" &:# VC 15 changed from amd64 to x64
+if /i %PROC%==arm if not exist "!%VC%.LIBPATH!\libcmt.lib" SET "%VC%.LIBPATH=!%VC%!\lib\arm"
+if /i %PROC%==arm64 if not exist "!%VC%.LIBPATH!\libcmt.lib" SET "%VC%.LIBPATH=!%VC%!\lib\arm64"
 
 :# Windows SDK tools
 set TRYDIRS="!%VS%.IDE!" &:# Tools location for Visual Studio 6
@@ -1861,6 +1951,9 @@ if defined WINSDK (
   set "%VC%.LIBPATH=!%VC%.LIBPATH!;!WINSDK_LIB!"
   set TRYDIRS=!TRYDIRS! "%WINSDK_BIN%"
   if /i not %PROC%==x86 (
+    if /i not %PROC%==amd64 if /i %PROCESSOR_ARCHITECTURE%==amd64 (
+      for %%b in ("%WINSDK_BIN%") do set TRYDIRS=!TRYDIRS! "%%~dpbx64"
+    )
     for %%b in ("%WINSDK_BIN%") do set TRYDIRS=!TRYDIRS! "%%~dpbx86"
     set TRYDIRS=!TRYDIRS! "%WINSDK%\Bin%"
   )
@@ -1936,14 +2029,16 @@ echo   -d            Debug mode. Display internal variables and function calls
 echo   -E            Ignore environment variable STINCLUDE, and redefine it
 echo   -l LOGFILE    Log output into a file. Default: Don't
 echo   -L            Disable logging. Default: Use the parent script log file, if any
-echo   -masm PATH    Path to MASM install dir. Default: C:\MASM
-echo   -msvc PATH    Path to MSVC 16-bits tools install dir. Default: C:\MSVC
+echo   -masm PATH    Path to MASM install dir, or - to disable. Default: C:\MASM
+echo   -msvc PATH    Path to MSVC 16-bits tools install dir, or -. Default: C:\MSVC
+echo   -nodos        Same as -masm - -msvc -
 echo   -o OUTDIR     Output base directory. Default: bin
 echo   -p            Set persistent project path variables in HKCU\Environment
 echo   -r            Recursively configure all subprojects. Default
 echo   -R            Do not recursively configure all subprojects
 echo   -v            Verbose mode. Display what this script does
-echo   -vs PATH      Path to Visual Studio install dir. Default: Latest avail
+echo   -vsp PATH     Visual Studio path in %%ProgramFiles%%. Default: Latest avail
+echo   -vsn NAME     Visual Studio name. Ex: 15 or 2017. Default: Latest avail
 echo   -V            Display %SCRIPT% version
 echo.
 exit /b 0
@@ -1956,6 +2051,8 @@ set "CONFIG=>>%CONFIG.BAT% echo"
 set "MASM="
 set "MSVC="
 set "VSTUDIO="
+set "VSPATH="
+set "VSNAME="
 set "RECURSE=1"
 
 :next_arg
@@ -1971,12 +2068,14 @@ if "!ARG!"=="-l" %POPARG% & call :Debug.SetLog !"ARG"! & goto next_arg
 if "!ARG!"=="-L" call :Debug.SetLog & goto next_arg
 if "!ARG!"=="-masm" %POPARG% & set "MASM=!ARG!" & goto next_arg
 if "!ARG!"=="-msvc" %POPARG% & set "MSVC=!ARG!" & goto next_arg
+if "!ARG!"=="-nodos" set "MASM=-" & set "MSVC=-" & goto next_arg
 if "!ARG!"=="-o" %POPARG% & set "OUTDIR=!ARG!" & goto next_arg
 if "!ARG!"=="-p" set "PERSISTENT_VARS=1" & goto next_arg
 if "!ARG!"=="-r" set "RECURSE=1" & goto next_arg
 if "!ARG!"=="-R" set "RECURSE=0" & goto next_arg
 if "!ARG!"=="-v" call :Verbose.On & goto next_arg
-if "!ARG!"=="-vs" %POPARG% & set "VSTUDIO=!ARG!" & goto next_arg
+if "!ARG!"=="-vsp" %POPARG% & set "VSPATH=!ARG!" & goto next_arg
+if "!ARG!"=="-vsn" %POPARG% & set "VSNAME=!ARG!" & goto next_arg
 if "!ARG!"=="-V" (echo %VERSION%) & goto :eof
 >&2 echo Unexpected argument ignored: !"ARG"!
 goto next_arg
@@ -2480,6 +2579,15 @@ if defined POST_MAKE_ACTIONS (
 %CONFIG%.
 %CONFIG% exit /b 0 ^&:# Configuration done successfully
 
+:# Create local configure.bat and make.bat proxies
+for %%f in (configure make) do (
+  if not exist %%f.bat (
+    %EXEC% copy %STINCLUDE%\BatProxy.bat %%f.bat ">"NUL 2">"NUL
+  ) else (
+    %EXEC% xcopy /d /y %STINCLUDE%\BatProxy.bat %%f.bat ">"NUL 2">"NUL
+  )
+)
+
 set _DO.XVD=%MACRO% ( %ECHO.XVD% %!%MACRO.ARGS:~1%!% %&% %!%MACRO.ARGS:~1%!% ) %/MACRO%
 
 :# Optionally repeat the configuration recursively using the makefile's config pseudo target
@@ -2487,6 +2595,7 @@ if "%RECURSE%"=="1" (
   set CMD=call "%ARG0:configure.bat=make.bat%" list_dirs
   %ECHOVARS.D% CMD
   set ">DEBUGOUT=>&2"
+  set "DIRS=" &:# Make sure variable DIRS isn't defined, else the list_dirs goal fails
   %FOREACHLINE% %%d in ('%XCALL% :Do -V !CMD! 2^>NUL') do if exist "%%d" (
     %ECHO.V% :# Configuring %%d
     %_DO.XD% pushd "%%d"

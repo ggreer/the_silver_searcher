@@ -43,7 +43,7 @@
 *				macros below. Don't use the variables directly.
 *    int iDebug = FALSE;        Global variable enabling debug output if TRUE.*
 *    int iIndent = 0;           Global variable controlling debug indentation.*
-*    int (*pdputs)(const char *)Pointer to the puts() routine for debug output.
+*    int (*pdput)(const char *) Pointer to the put() routine for debug output.*
 *                                                                             *
 *    DEBUG_ON()			Turn the debug mode on (Enables debug output) *
 *    DEBUG_MORE()		Increase the debug level                      *
@@ -58,8 +58,8 @@
 *    DEBUG_CODE_IF_ON(code)	Debug code executed if debug mode is on       *
 *    XDEBUG_CODE_IF_ON(code)	Debug code executed if eXtra debug mode is on *
 *                                                                             *
-*    SET_DEBUG_PUTS(pFunc)	Set the puts routine to use for debug output. *
-*                               Useful to replace the default puts() with a   *
+*    SET_DEBUG_PUT(pFunc)	Set the routine to use for debug output.      *
+*                               Useful to replace the default routine with a  *
 *                               thread-safe routine in multi-threaded programs.
 *                                                                             *
 *    DEBUG_PRINTF((format, ...))	Print a debug string if debug is on.  *
@@ -130,6 +130,9 @@
 *    2018-04-25 JFL Added macro DEBUG_WPRINTF().                              *
 *                   Added macros DEBUG_WENTER() and DEBUG_WLEAVE().           *
 *    2018-10-01 JFL DEBUG_FREEUTF8() now clears the buffer pointer.           *
+*    2019-04-15 JFL Changed the debug puts() routine to an fputs-based routine*
+*		    which does not implicitely outputs an \n in the end.      *
+*		    Likewise, renamed SET_DEBUG_PUTS() as SET_DEBUG_PUT().    *
 *		    							      *
 *        (C) Copyright 2016 Hewlett Packard Enterprise Development LP         *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -182,7 +185,8 @@ int _vsnprintf(char *pBuf, int iBufSize, const char *pszFormat, va_list vl) {  \
 #define DEBUG_GLOBAL_VARS \
 int iDebug = 0;		/* Global variable enabling debug output if TRUE. */   \
 int DEBUG_TLS iIndent = 0; /* Global variable controlling debug indentation. */\
-int (*pdputs)(const char *) = puts; /* Debug output routine. Default: puts */  \
+int debug_put(const char *str) { return fputs(str, stdout); }		       \
+int (*pdput)(const char *) = debug_put; /* Debug output routine. Default: debug_put */
 
 #if defined(_MSDOS)
 #define DEBUG_GLOBALS DEBUG_GLOBAL_VARS
@@ -197,7 +201,7 @@ char *debug_vsprintf(char *pszFormat, va_list vl) {                            \
     pszBuf && ((n = _vsnprintf(pszBuf, nBufSize, pszFormat, vl)) == -1)        \
   );		                                                               \
   if (!pszBuf) return NULL;						       \
-  if (n && (pszBuf[n-1] == '\n')) pszBuf[--n] = '\0';                          \
+  /* if (n && (pszBuf[n-1] == '\n')) pszBuf[--n] = '\0'; */                    \
   return (char *)realloc(pszBuf, n+1);	                                       \
 }									       \
 char *debug_sprintf(char *pszFormat, ...) {                                    \
@@ -218,7 +222,7 @@ int debug_printf(char *pszFormat, ...) {                                       \
   if (!pszBuf1) return 0;		                                       \
   pszBuf2 = debug_sprintf("%*s%s", iIndent, "", pszBuf1);                      \
   if (pszBuf2) n = (int)strlen(pszBuf2);                                       \
-  pdputs(pszBuf2);	                                                       \
+  pdput(pszBuf2);	                                                       \
   fflush(stdout);	                                                       \
   free(pszBuf1); free(pszBuf2);                                                \
   return n;                                                                    \
@@ -226,7 +230,7 @@ int debug_printf(char *pszFormat, ...) {                                       \
 #endif /* defined(_MSDOS) */
 
 extern int iDebug;	/* Global variable enabling of disabling debug messages */
-extern int (*pdputs)(const char *);	/* Pointer to the debug puts routine */
+extern int (*pdput)(const char *);	/* Pointer to the debug puts routine */
 #if !defined(_MSDOS)
 extern int debug_printf(char *fmt,...);	/* Print debug messages */
 extern char *debug_sprintf(char *fmt,...); /* Print debug messages to a new buffer */
@@ -335,7 +339,7 @@ extern DEBUG_TLS int iIndent;	/* Debug messages indentation. Thread local. */
   if (DEBUG_IS_ON()) DEBUG_buf = debug_sprintf args; DEBUG_LEAVE(("return %p; // %s", DEBUG_p, DEBUG_buf)); free(DEBUG_buf); return DEBUG_p;)
 #endif /* defined(_MSDOS) */
 
-#define SET_DEBUG_PUTS(pFunc) pdputs = pFunc /* Set the debug puts routine */
+#define SET_DEBUG_PUT(pFunc) pdput = pFunc /* Set the debug put routine */
 
 #else /* !defined(_DEBUG) */
 
@@ -390,7 +394,7 @@ extern DEBUG_TLS int iIndent;	/* Debug messages indentation. Thread local. */
 #define RETURN_CSTRING_COMMENT(s, args) return(s)
 #define RETURN_CPTR_COMMENT(p, args) return(p)
 
-#define SET_DEBUG_PUTS(pFunc) DEBUG_DO_NOTHING() /* Set the debug puts routine */
+#define SET_DEBUG_PUT(pFunc) DEBUG_DO_NOTHING() /* Set the debug put routine */
 
 #endif /* defined(_DEBUG) */
 
@@ -434,44 +438,6 @@ extern DEBUG_TLS int iIndent;	/* Debug messages indentation. Thread local. */
 #define DEBUG_FREEUTF8(pUtf8) DEBUG_CODE(do {free(pUtf8); pUtf8 = NULL;} while (0))
 
 #endif /* defined(_WIN32) */
-
-/******************** OS identification string definition ********************/
-
-#ifdef _MSDOS		/* Automatically defined when targeting an MS-DOS app. */
-#  define EXE_OS_NAME "DOS"
-#endif /* _MSDOS */
-
-#ifdef _OS2		/* To be defined on the command line for the OS/2 version */
-#  define EXE_OS_NAME "OS/2"
-#endif /* _OS2 */
-
-#ifdef _WIN32		/* Automatically defined when targeting a Win32 app. */
-#  if defined(__MINGW64__)
-#    define EXE_OS_NAME "MinGW64"
-#  elif defined(__MINGW32__)
-#    define EXE_OS_NAME "MinGW32"
-#  elif defined(_WIN64)
-#    define EXE_OS_NAME "Win64"
-#  else
-#    define EXE_OS_NAME "Win32"
-#  endif
-#endif /* _WIN32 */
-
-#ifdef __unix__		/* Automatically defined when targeting a Unix app. */
-#  if defined(__CYGWIN64__)
-#    define EXE_OS_NAME "Cygwin64"
-#  elif defined(__CYGWIN32__)
-#    define EXE_OS_NAME "Cygwin"
-#  elif defined(_TRU64)
-#    define EXE_OS_NAME "Tru64"	/* 64-bits Alpha Tru64 */
-#  elif defined(__linux__)
-#    define EXE_OS_NAME "Linux"
-#  else
-#    define EXE_OS_NAME "Unix"
-#  endif
-#endif /* __unix__ */
-
-/**************** End of OS identification string definition *****************/
 
 #ifdef __cplusplus
 }

@@ -1020,12 +1020,17 @@ $(L)\$(@B).lst
 #		 as the definition of the memory model may have changed the $(B) and $(O) definitions.
 # 2016-09-21 JFL Actually we must only do the full make files inclusion here, else we get warnings
 #		 about goals defined twice.
+TMPMAK=$(TMP)\$(T)_vars.$(PID).mak # Using the shell PID to generate a unique name, to avoid conflicts in case of // builds.
 !IF DEFINED(PROGRAM) && EXIST("$(PROGRAM).mak")
 !  MESSAGE Getting specific rules from $(PROGRAM).mak.
 !  INCLUDE $(PROGRAM).mak
 !ELSE IF EXIST("Files.mak")
 !  MESSAGE Getting specific rules from Files.mak.
 !  INCLUDE Files.mak
+!  IF DEFINED(PROGRAM) && ![$(STINCLUDE)\GetDefs.bat Files.mak $(PROGRAM) >"$(TMPMAK)" 2>NUL]
+!    MESSAGE Getting specific definitions for $(PROGRAM) from Files.mak.
+!    INCLUDE $(TMPMAK)
+!  ENDIF
 !ELSE
 !  MESSAGE There are no specific rules.
 EXENAME=_-_-_-_.exe	# An unlikely name, to prevent the $(EXENAME) dependency rule below from firing.

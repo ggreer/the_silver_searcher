@@ -8,6 +8,7 @@
 *                                                                             *
 *   History:								      *
 *    2017-02-28 JFL Created this file.					      *
+*    2019-02-17 JFL Actually there's no MS equivalent to include.	      *
 *									      *
 *         © Copyright 2017 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -18,13 +19,15 @@
 
 #include "msvclibx.h"
 
-#include UCRT_INCLUDE_FILE(strings.h) /* Include MSVC's own <strings.h> file */
+/* 2019-02-17 JFL Actually, the MS libraries do not contain an equivalent file */
+/* #include UCRT_INCLUDE_FILE(strings.h) // Include MSVC's own <strings.h> file */
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* Standard routines that have a Microsoft-specific equivalent */
+#include <string.h>
 #define strcasecmp _stricmp
 
 /* These are standard routines, but Microsoft thinks not */
