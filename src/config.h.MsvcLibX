@@ -94,6 +94,10 @@
 /* Define to the version of this package. */
 #define PACKAGE_VERSION "2.2.0"
 
+/* MsvcLibX/Windows port version and date */
+#define PROGRAM_VERSION PACKAGE_VERSION
+#define PROGRAM_DATE "2019-04-27"
+
 /* Define to the full name and version of this package. */
 #define PACKAGE_STRING "the_silver_searcher " PACKAGE_VERSION
 
