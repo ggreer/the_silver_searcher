@@ -69,8 +69,17 @@ void vplog(const unsigned int level, const char *fmt, va_list args) {
             break;
     }
 
+#ifdef _WIN32 /* Convert paths back to a Windows format */
+    char *msg;
+    vasprintf(&msg, fmt, args);
+    char *pc;
+    for (pc = msg; *pc; pc++) if (*pc == '/') *pc = '\\';
+    fprintf(stream, "%s\n", msg);
+    free(msg);
+#else
     vfprintf(stream, fmt, args);
     fprintf(stream, "\n");
+#endif
     pthread_mutex_unlock(&print_mtx);
 }
 
