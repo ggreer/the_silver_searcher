@@ -9,7 +9,9 @@ The original version can be built for Windows using MinGW, but it has several sh
 This version has the following improvements:
 
 * Use and display Windows paths with the \ character.
+* Expand pathnames with wildcards. (As, contrary to Unix shells, cmd.exe and PowerShell don't expand them.) 
 * The -? option displays help.
+* The -V/--version option displays details about this port, and every library used.
 * Support command line arguments with non-ASCII characters in any console code page. 
 * Correctly display pathnames and matching strings with non-ASCII characters in any console code page, even if they're not part of the code page.
 * Use PCRE UTF8 option, allowing to search for non-ASCII regular expressions. (Like "." matching 1 character = 1 to 4 bytes!)
@@ -21,7 +23,8 @@ This version has the following improvements:
 * Support Windows junctions and symbolic links.
 * Support 64-bit statistics even for the 32-bit build. (Allows searching through more than 4GB of files with the x86 build.)
 * The debug version displays the thread number ahead of each debug message.
-* Last but not least, everything (ag.exe with all its dependant libraries) is built with a single make.bat command.
+* Can be built with Microsoft Visual Studio versions 2013 to 2019, without any dependency on outside libraries.
+* Last but not least, everything (ag.exe with all its provided dependent libraries) is built with a single make.bat command.
 
 Thanks to [Krzysztof Kowalczyk](https://github.com/kjk) who did the original [Native Visual Studio Port](https://github.com/kjk/the_silver_searcher).
 I've actually started from his August 2016 code, and kept improving it.
