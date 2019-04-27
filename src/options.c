@@ -8,6 +8,12 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#ifdef _WIN32
+#include <libgen.h>	/* Used for expanding wild cards */
+#include <dirent.h>	/* Used for expanding wild cards */
+#include <fnmatch.h>	/* Used for expanding wild cards */
+#endif
+
 #include "config.h"
 #include "ignore.h"
 #include "lang.h"
@@ -195,17 +201,17 @@ void print_version(void) {
 
     printf("ag version %s", PACKAGE_VERSION);
 #if defined(HAS_MSVCLIBX)
-#if defined(_WIN64)
-#define OS_NAME "Win64"
-#else
-#define OS_NAME "Win32"
-#endif
-    printf(" " OS_NAME DEBUG_VERSION
-#include "msvclibx_version.h"
-	  " ; MsvcLibX " MSVCLIBX_VERSION
-	  " ; PCRE " MSVCLIBX_STRINGIZE(PCRE_MAJOR) "." MSVCLIBX_STRINGIZE(PCRE_MINOR) " " MSVCLIBX_STRINGIZE(PCRE_DATE)
-	  " ; pthreads4w " MSVCLIBX_STRINGIZE(__PTW32_VERSION_MAJOR) "." MSVCLIBX_STRINGIZE(__PTW32_VERSION_MINOR) "." MSVCLIBX_STRINGIZE(__PTW32_VERSION_MICRO)
-	  " ; zlib " ZLIB_VERSION
+#include "stversion.h"
+    printf(" ; Windows port"
+      	   AND_PROGRAM_DATE
+           AND_EXE_OS_NAME
+           AND_MIN_OS_NAME
+           AND_EXE_PROC_NAME
+           DEBUG_VERSION
+	   "\nMsvcLibX " MSVCLIBX_VERSION
+	   " ; PCRE " MSVCLIBX_STRINGIZE(PCRE_MAJOR) "." MSVCLIBX_STRINGIZE(PCRE_MINOR) " " MSVCLIBX_STRINGIZE(PCRE_DATE)
+	   " ; pthreads4w " MSVCLIBX_STRINGIZE(__PTW32_VERSION_MAJOR) "." MSVCLIBX_STRINGIZE(__PTW32_VERSION_MINOR) "." MSVCLIBX_STRINGIZE(__PTW32_VERSION_MICRO)
+	   " ; zlib " ZLIB_VERSION
     );
 #endif /* defined(HAS_MSVCLIBX) */
     printf("\n\n");
@@ -900,15 +906,45 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     if (argc > 0) {
         *paths = ag_calloc(sizeof(char *), argc + 1);
         *base_paths = ag_calloc(sizeof(char *), argc + 1);
-        for (i = 0; i < (size_t)argc; i++) {
-            path = ag_strdup(argv[i]);
-#ifdef _WIN32 /* Convert Windows path separators to Unix path separators */
-            {
-                char *pc;
-                for (pc = path; *pc; pc++)
-                    if (*pc == '\\')
-                        *pc = '/';
-            }
+        int iArg;
+        for (i = iArg = 0; iArg < argc; iArg++) {
+            path = ag_strdup(argv[iArg]);
+#ifdef _WIN32
+	    /* Begin wildcards expansion block for Windows */
+	    char *pszWild = strpbrk(path, "?*");
+	    if (pszWild && strpbrk(pszWild, "\\/")) {
+		log_err("Error: Wildcards not supported in paths: %s", path);
+		exit(1);
+	    }
+	    if (pszWild) opts.paths_len += 1; // Force displaying file names, even if only one file matches
+	    /* Split the directory name and file name */
+	    char *pattern = basename(ag_strdup(path));
+	    char *basedir = dirname(ag_strdup(path));
+	    /* Scan the requested directory */
+	    DIR *pDir = NULL;
+	    struct dirent *pDE = NULL;
+	    if (pszWild) {
+		pDir = opendir(basedir);
+		if (!pDir) {
+		    log_err("Error opening directory \"%s\": %s", basedir, strerror(errno));
+		    exit(1);
+		}
+	    }
+	    while ((!pszWild) || ((pDE = readdir(pDir)) != NULL)) {
+		if (pDE) {
+		    if (fnmatch(pattern, pDE->d_name, FNM_CASEFOLD) == FNM_NOMATCH) continue;
+		    char *name = pszWild ? pDE->d_name : pattern;
+		    ag_asprintf(&path, "%s\\%s", basedir, name); /* Compute source path */
+		    /* Extend the paths and base_paths lists if needed */
+		    if ((int)i >= argc) {
+			size_t new_size = sizeof(char *) * (i + 2);
+			*paths = ag_realloc(*paths, new_size);
+			*base_paths = ag_realloc(*base_paths, new_size);
+		    }
+		}
+		/* Convert Windows path separators to Unix path separators */
+		char *pc;
+		for (pc = path; *pc; pc++) if (*pc == '\\') *pc = '/';
 #endif
             path_len = strlen(path);
             /* kill trailing slash */
@@ -932,6 +968,14 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 }
             }
             (*base_paths)[i] = base_path;
+            i += 1;
+#ifdef _WIN32
+		/* If no wildcards, leave the readdir() loop immediately */
+		if (!pszWild) break;
+	    } /* End while (readdir()) */
+	    if (pDir) closedir(pDir);
+	    /* End wildcards expansion block for Windows */
+#endif
         }
         /* Make sure we search these paths instead of stdin. */
         opts.search_stream = 0;
