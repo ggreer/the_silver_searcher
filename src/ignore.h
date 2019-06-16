@@ -29,7 +29,7 @@ struct ignores {
 };
 typedef struct ignores ignores;
 
-ignores *root_ignores;
+extern ignores *root_ignores;
 
 extern const char *evil_hardcoded_ignore_files[];
 extern const char *ignore_pattern_files[];
