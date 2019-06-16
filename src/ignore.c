@@ -39,7 +39,7 @@ const char *ignore_pattern_files[] = {
 
 int is_empty(ignores *ig) {
     return (ig->extensions_len + ig->names_len + ig->slash_names_len + ig->regexes_len + ig->slash_regexes_len == 0);
-};
+}
 
 ignores *init_ignore(ignores *parent, const char *dirname, const size_t dirname_len) {
     ignores *ig = ag_malloc(sizeof(ignores));
