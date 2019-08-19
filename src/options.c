@@ -143,9 +143,14 @@ void print_version(void) {
 }
 
 void init_options(void) {
+    char *term = getenv("TERM");
+
     memset(&opts, 0, sizeof(opts));
     opts.casing = CASE_DEFAULT;
     opts.color = TRUE;
+    if (strcmp(term, "dumb") == 0) {
+        opts.color = FALSE;
+    }
     opts.color_win_ansi = FALSE;
     opts.max_matches_per_file = 0;
     opts.max_search_depth = DEFAULT_MAX_SEARCH_DEPTH;
