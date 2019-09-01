@@ -10,8 +10,6 @@
 typedef enum {
     AG_NO_COMPRESSION,
     AG_GZIP,
-    AG_COMPRESS,
-    AG_ZIP,
     AG_XZ,
 } ag_compression_type;
 

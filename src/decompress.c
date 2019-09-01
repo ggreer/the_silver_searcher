@@ -11,7 +11,6 @@ const uint8_t XZ_HEADER_MAGIC[6] = { 0xFD, '7', 'z', 'X', 'Z', 0x00 };
 const uint8_t LZMA_HEADER_SOMETIMES[3] = { 0x5D, 0x00, 0x00 };
 #endif
 
-
 #ifdef HAVE_ZLIB_H
 #define ZLIB_CONST 1
 #include <zlib.h>
@@ -101,26 +100,6 @@ error_out:
 #endif
 
 
-static void *decompress_lzw(const void *buf, const int buf_len,
-                            const char *dir_full_path, int *new_buf_len) {
-    (void)buf;
-    (void)buf_len;
-    log_err("LZW (UNIX compress) files not yet supported: %s", dir_full_path);
-    *new_buf_len = 0;
-    return NULL;
-}
-
-
-static void *decompress_zip(const void *buf, const int buf_len,
-                            const char *dir_full_path, int *new_buf_len) {
-    (void)buf;
-    (void)buf_len;
-    log_err("Zip files not yet supported: %s", dir_full_path);
-    *new_buf_len = 0;
-    return NULL;
-}
-
-
 #ifdef HAVE_LZMA_H
 static void *decompress_lzma(const void *buf, const int buf_len,
                              const char *dir_full_path, int *new_buf_len) {
@@ -187,7 +166,6 @@ error_out:
 }
 #endif
 
-
 /* This function is very hot. It's called on every file when zip is enabled. */
 void *decompress(const ag_compression_type zip_type, const void *buf, const int buf_len,
                  const char *dir_full_path, int *new_buf_len) {
@@ -196,10 +174,6 @@ void *decompress(const ag_compression_type zip_type, const void *buf, const int 
         case AG_GZIP:
             return decompress_zlib(buf, buf_len, dir_full_path, new_buf_len);
 #endif
-        case AG_COMPRESS:
-            return decompress_lzw(buf, buf_len, dir_full_path, new_buf_len);
-        case AG_ZIP:
-            return decompress_zip(buf, buf_len, dir_full_path, new_buf_len);
 #ifdef HAVE_LZMA_H
         case AG_XZ:
             return decompress_lzma(buf, buf_len, dir_full_path, new_buf_len);
@@ -218,44 +192,23 @@ void *decompress(const ag_compression_type zip_type, const void *buf, const int 
 
 /* This function is very hot. It's called on every file. */
 ag_compression_type is_zipped(const void *buf, const int buf_len) {
-    /* Zip magic numbers
-     * compressed file: { 0x1F, 0x9B }
-     * http://en.wikipedia.org/wiki/Compress
-     * 
-     * gzip file:       { 0x1F, 0x8B }
-     * http://www.gzip.org/zlib/rfc-gzip.html#file-format
-     *
-     * zip file:        { 0x50, 0x4B, 0x03, 0x04 }
-     * http://www.pkware.com/documents/casestudies/APPNOTE.TXT (Section 4.3)
-     */
-
     const unsigned char *buf_c = buf;
 
     if (buf_len == 0)
         return AG_NO_COMPRESSION;
 
-    /* Check for gzip & compress */
+#ifdef HAVE_ZLIB_H
+    /* Check for gzip */
     if (buf_len >= 2) {
+        /* http://www.gzip.org/zlib/rfc-gzip.html#file-format */
         if (buf_c[0] == 0x1F) {
             if (buf_c[1] == 0x8B) {
-#ifdef HAVE_ZLIB_H
                 log_debug("Found gzip-based stream");
                 return AG_GZIP;
-#endif
-            } else if (buf_c[1] == 0x9B) {
-                log_debug("Found compress-based stream");
-                return AG_COMPRESS;
             }
         }
     }
-
-    /* Check for zip */
-    if (buf_len >= 4) {
-        if (buf_c[0] == 0x50 && buf_c[1] == 0x4B && buf_c[2] == 0x03 && buf_c[3] == 0x04) {
-            log_debug("Found zip-based stream");
-            return AG_ZIP;
-        }
-    }
+#endif
 
 #ifdef HAVE_LZMA_H
     if (buf_len >= 6) {
