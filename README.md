@@ -96,9 +96,21 @@ or
 
         pkg_add the_silver_searcher
 
-### Cygwin
+### Windows
 
-Run the relevant [`setup-*.exe`](https://cygwin.com/install.html), and select "the\_silver\_searcher" in the "Utils" category.
+* Win32/64
+
+  Unofficial daily builds are [available](https://github.com/k-takata/the_silver_searcher-win32).
+  
+* Chocolatey
+
+        choco install ag
+* MSYS2
+
+        pacman -S mingw-w64-{i686,x86_64}-ag
+* Cygwin
+
+  Run the relevant [`setup-*.exe`](https://cygwin.com/install.html), and select "the\_silver\_searcher" in the "Utils" category.
 
 ## Building from source
 
@@ -120,7 +132,7 @@ Run the relevant [`setup-*.exe`](https://cygwin.com/install.html), and select "t
     * CentOS:
 
             yum -y groupinstall "Development Tools"
-            yum -y install pcre-devel xz-devel
+            yum -y install pcre-devel xz-devel zlib-devel
     * openSUSE:
 
             zypper source-install --build-deps-only the_silver_searcher
@@ -130,7 +142,7 @@ Run the relevant [`setup-*.exe`](https://cygwin.com/install.html), and select "t
 
         ./build.sh
 
-  On Windows (inside an msys/MinGW shell):
+   On Windows (inside an msys/MinGW shell):
 
         make -f Makefile.w32
 3. Make install:
@@ -155,7 +167,7 @@ You may need to use `sudo` or run as root for the make install.
 
 ### Vim
 
-You can use Ag with [ack.vim][] by adding the following line to your `.vimrc`:
+You can use Ag with [ack.vim](https://github.com/mileszs/ack.vim) by adding the following line to your `.vimrc`:
 
     let g:ackprg = 'ag --nogroup --nocolor --column'
 

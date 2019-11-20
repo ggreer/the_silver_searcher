@@ -2,18 +2,19 @@
 #include "print.h"
 #include "scandir.h"
 
-void search_buf(const char *buf, const size_t buf_len,
-                const char *dir_full_path) {
+/* Returns: -1 if skipped, otherwise # of matches */
+ssize_t search_buf(const char *buf, const size_t buf_len,
+                   const char *dir_full_path) {
     int binary = -1; /* 1 = yes, 0 = no, -1 = don't know */
     size_t buf_offset = 0;
 
     if (opts.search_stream) {
         binary = 0;
-    } else if (!opts.search_binary_files) {
+    } else if (!opts.search_binary_files && opts.mmap) { /* if not using mmap, binary files have already been skipped */
         binary = is_binary((const void *)buf, buf_len);
         if (binary) {
             log_debug("File %s is binary. Skipping...", dir_full_path);
-            return;
+            return -1;
         }
     }
 
@@ -174,25 +175,16 @@ multiline_done:
         pthread_mutex_unlock(&stats_mtx);
     }
 
-    if (matches_len > 0 || opts.print_all_paths) {
+    if (!opts.print_nonmatching_files && (matches_len > 0 || opts.print_all_paths)) {
         if (binary == -1 && !opts.print_filename_only) {
             binary = is_binary((const void *)buf, buf_len);
         }
         pthread_mutex_lock(&print_mtx);
         if (opts.print_filename_only) {
-            /* If the --files-without-matches or -L option is passed we should
-             * not print a matching line. This option currently sets
-             * opts.print_filename_only and opts.invert_match. Unfortunately
-             * setting the latter has the side effect of making matches.len = 1
-             * on a file-without-matches which is not desired behaviour. See
-             * GitHub issue 206 for the consequences if this behaviour is not
-             * checked. */
-            if (!opts.invert_match || matches_len < 2) {
-                if (opts.print_count) {
-                    print_path_count(dir_full_path, opts.path_sep, (size_t)matches_len);
-                } else {
-                    print_path(dir_full_path, opts.path_sep);
-                }
+            if (opts.print_count) {
+                print_path_count(dir_full_path, opts.path_sep, (size_t)matches_len);
+            } else {
+                print_path(dir_full_path, opts.path_sep);
             }
         } else if (binary) {
             print_binary_file_matches(dir_full_path);
@@ -214,11 +206,16 @@ multiline_done:
     if (matches_size > 0) {
         free(matches);
     }
+
+    /* FIXME: handle case where matches_len > SSIZE_MAX */
+    return (ssize_t)matches_len;
 }
 
+/* Return value: -1 if skipped, otherwise # of matches */
 /* TODO: this will only match single lines. multi-line regexes silently don't match */
-void search_stream(FILE *stream, const char *path) {
+ssize_t search_stream(FILE *stream, const char *path) {
     char *line = NULL;
+    ssize_t matches_count = 0;
     ssize_t line_len = 0;
     size_t line_cap = 0;
     size_t i;
@@ -226,8 +223,17 @@ void search_stream(FILE *stream, const char *path) {
     print_init_context();
 
     for (i = 1; (line_len = getline(&line, &line_cap, stream)) > 0; i++) {
+        ssize_t result;
         opts.stream_line_num = i;
-        search_buf(line, line_len, path);
+        result = search_buf(line, line_len, path);
+        if (result > 0) {
+            if (matches_count == -1) {
+                matches_count = 0;
+            }
+            matches_count += result;
+        } else if (matches_count <= 0 && result == -1) {
+            matches_count = -1;
+        }
         if (line[line_len - 1] == '\n') {
             line_len--;
         }
@@ -236,6 +242,7 @@ void search_stream(FILE *stream, const char *path) {
 
     free(line);
     print_cleanup_context();
+    return matches_count;
 }
 
 void search_file(const char *file_full_path) {
@@ -244,6 +251,7 @@ void search_file(const char *file_full_path) {
     char *buf = NULL;
     struct stat statbuf;
     int rv = 0;
+    int matches_count = -1;
     FILE *fp = NULL;
 
     rv = stat(file_full_path, &statbuf);
@@ -293,7 +301,7 @@ void search_file(const char *file_full_path) {
     if (statbuf.st_mode & S_IFIFO) {
         log_debug("%s is a named pipe. stream searching", file_full_path);
         fp = fdopen(fd, "r");
-        search_stream(fp, file_full_path);
+        matches_count = search_stream(fp, file_full_path);
         fclose(fp);
         goto cleanup;
     }
@@ -302,7 +310,7 @@ void search_file(const char *file_full_path) {
 
     if (f_len == 0) {
         if (opts.query[0] == '.' && opts.query_len == 1 && !opts.literal && opts.search_all_files) {
-            search_buf(buf, f_len, file_full_path);
+            matches_count = search_buf(buf, f_len, file_full_path);
         } else {
             log_debug("Skipping %s: file is empty.", file_full_path);
         }
@@ -347,9 +355,23 @@ void search_file(const char *file_full_path) {
 #endif
     } else {
         buf = ag_malloc(f_len);
-        size_t bytes_read = read(fd, buf, f_len);
-        if ((off_t)bytes_read != f_len) {
-            die("expected to read %u bytes but read %u", f_len, bytes_read);
+
+        ssize_t bytes_read = 0;
+
+        if (!opts.search_binary_files) {
+            bytes_read += read(fd, buf, ag_min(f_len, 512));
+            // Optimization: If skipping binary files, don't read the whole buffer before checking if binary or not.
+            if (is_binary(buf, f_len)) {
+                log_debug("File %s is binary. Skipping...", file_full_path);
+                goto cleanup;
+            }
+        }
+
+        while (bytes_read < f_len) {
+            bytes_read += read(fd, buf + bytes_read, f_len);
+        }
+        if (bytes_read != f_len) {
+            die("File %s read(): expected to read %u bytes but read %u", file_full_path, f_len, bytes_read);
         }
     }
 #endif
@@ -360,7 +382,7 @@ void search_file(const char *file_full_path) {
 #if HAVE_FOPENCOOKIE
             log_debug("%s is a compressed file. stream searching", file_full_path);
             fp = decompress_open(fd, "r", zip_type);
-            search_stream(fp, file_full_path);
+            matches_count = search_stream(fp, file_full_path);
             fclose(fp);
 #else
             int _buf_len = (int)f_len;
@@ -369,16 +391,23 @@ void search_file(const char *file_full_path) {
                 log_err("Cannot decompress zipped file %s", file_full_path);
                 goto cleanup;
             }
-            search_buf(_buf, _buf_len, file_full_path);
+            matches_count = search_buf(_buf, _buf_len, file_full_path);
             free(_buf);
 #endif
             goto cleanup;
         }
     }
 
-    search_buf(buf, f_len, file_full_path);
+    matches_count = search_buf(buf, f_len, file_full_path);
 
 cleanup:
+
+    if (opts.print_nonmatching_files && matches_count == 0) {
+        pthread_mutex_lock(&print_mtx);
+        print_path(file_full_path, opts.path_sep);
+        pthread_mutex_unlock(&print_mtx);
+        opts.match_found = 1;
+    }
 
     print_cleanup_context();
     if (buf != NULL) {

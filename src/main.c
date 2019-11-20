@@ -185,7 +185,7 @@ int main(int argc, char **argv) {
             log_debug("searching path %s for %s", paths[i], opts.query);
             symhash = NULL;
             ignores *ig = init_ignore(root_ignores, "", 0);
-            struct stat s = {.st_dev = 0 };
+            struct stat s = { .st_dev = 0 };
 #ifndef _WIN32
             /* The device is ignored if opts.one_dev is false, so it's fine
              * to leave it at the default 0
@@ -213,7 +213,7 @@ int main(int argc, char **argv) {
         double time_diff = ((long)stats.time_end.tv_sec * 1000000 + stats.time_end.tv_usec) -
                            ((long)stats.time_start.tv_sec * 1000000 + stats.time_start.tv_usec);
         time_diff /= 1000000;
-        printf("%ld matches\n%ld files contained matches\n%ld files searched\n%ld bytes searched\n%f seconds\n",
+        printf("%zu matches\n%zu files contained matches\n%zu files searched\n%zu bytes searched\n%f seconds\n",
                stats.total_matches, stats.total_file_matches, stats.total_files, stats.total_bytes, time_diff);
         pthread_mutex_destroy(&stats_mtx);
     }

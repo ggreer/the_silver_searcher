@@ -12,8 +12,20 @@ Language types are output:
     --ada
         .ada  .adb  .ads
   
+    --asciidoc
+        .adoc  .ad  .asc  .asciidoc
+  
+    --apl
+        .apl
+  
     --asm
         .asm  .s
+  
+    --asp
+        .asp  .asa  .aspx  .asax  .ashx  .ascx  .asmx
+  
+    --aspx
+        .asp  .asa  .aspx  .asax  .ashx  .ascx  .asmx
   
     --batch
         .bat  .cmd
@@ -39,6 +51,12 @@ Language types are output:
     --coffee
         .coffee  .cjsx
   
+    --config
+        .config
+  
+    --coq
+        .coq  .g  .v
+  
     --cpp
         .cpp  .cc  .C  .cxx  .m  .hpp  .hh  .h  .H  .hxx  .tpp
   
@@ -48,6 +66,9 @@ Language types are output:
     --csharp
         .cs
   
+    --cshtml
+        .cshtml
+  
     --css
         .css
   
@@ -56,6 +77,15 @@ Language types are output:
   
     --delphi
         .pas  .int  .dfm  .nfm  .dof  .dpk  .dpr  .dproj  .groupproj  .bdsgroup  .bdsproj
+  
+    --dlang
+        .d  .di
+  
+    --dot
+        .dot  .gv
+  
+    --dts
+        .dts  .dtsi
   
     --ebuild
         .ebuild  .eclass
@@ -76,7 +106,7 @@ Language types are output:
         .factor
   
     --fortran
-        .f  .f77  .f90  .f95  .f03  .for  .ftn  .fpp
+        .f  .F  .f77  .f90  .F90  .f95  .f03  .for  .ftn  .fpp  .FPP
   
     --fsharp
         .fs  .fsi  .fsx
@@ -96,8 +126,11 @@ Language types are output:
     --haml
         .haml
   
+    --handlebars
+        .hbs
+  
     --haskell
-        .hs  .lhs
+        .hs  .hsig  .lhs
   
     --haxe
         .hx
@@ -108,14 +141,29 @@ Language types are output:
     --html
         .htm  .html  .shtml  .xhtml
   
+    --idris
+        .idr  .ipkg  .lidr
+  
     --ini
         .ini
+  
+    --ipython
+        .ipynb
+  
+    --isabelle
+        .thy
+  
+    --j
+        .ijs
   
     --jade
         .jade
   
     --java
         .java  .properties
+  
+    --jinja2
+        .j2
   
     --js
         .es6  .js  .jsx  .vue
@@ -174,8 +222,14 @@ Language types are output:
     --mercury
         .m  .moo
   
+    --naccess
+        .asa  .rsa
+  
     --nim
         .nim
+  
+    --nix
+        .nix
   
     --objc
         .m  .h
@@ -189,8 +243,14 @@ Language types are output:
     --octave
         .m
   
+    --org
+        .org
+  
     --parrot
         .pir  .pasm  .pmc  .ops  .pod  .pg  .tg
+  
+    --pdb
+        .pdb
   
     --perl
         .pl  .pm  .pm6  .pod  .t
@@ -207,8 +267,17 @@ Language types are output:
     --plone
         .pt  .cpt  .metadata  .cpy  .py  .xml  .zcml
   
+    --powershell
+        .ps1
+  
     --proto
         .proto
+  
+    --ps1
+        .ps1
+  
+    --pug
+        .pug
   
     --puppet
         .pp
@@ -225,6 +294,9 @@ Language types are output:
     --rake
         .Rakefile
   
+    --razor
+        .cshtml
+  
     --restructuredtext
         .rst
   
@@ -232,7 +304,7 @@ Language types are output:
         .rs
   
     --r
-        .R  .Rmd  .Rnw  .Rtex  .Rrst
+        .r  .R  .Rmd  .Rnw  .Rtex  .Rrst
   
     --rdoc
         .rdoc
@@ -267,6 +339,9 @@ Language types are output:
     --sql
         .sql  .ctl
   
+    --stata
+        .do  .ado
+  
     --stylus
         .styl
   
@@ -276,8 +351,17 @@ Language types are output:
     --tcl
         .tcl  .itcl  .itk
   
+    --terraform
+        .tf  .tfvars
+  
     --tex
         .tex  .cls  .sty
+  
+    --thrift
+        .thrift
+  
+    --tla
+        .tla
   
     --tt
         .tt  .tt2  .ttml
@@ -301,7 +385,7 @@ Language types are output:
         .vm  .vtl  .vsl
   
     --verilog
-        .v  .vh  .sv
+        .v  .vh  .sv  .svh
   
     --vhdl
         .vhd  .vhdl
@@ -319,7 +403,7 @@ Language types are output:
         .wadl
   
     --xml
-        .xml  .dtd  .xsl  .xslt  .ent  .tld  .plist
+        .xml  .dtd  .xsl  .xslt  .xsd  .ent  .tld  .plist  .wsdl
   
     --yaml
         .yaml  .yml

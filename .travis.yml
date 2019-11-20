@@ -22,7 +22,7 @@ addons:
 
 env:
   global:
-    - LLVM_VERSION=3.8.0
+    - LLVM_VERSION=6.0.1
     - LLVM_PATH=$HOME/clang+llvm
     - CLANG_FORMAT=$LLVM_PATH/bin/clang-format
 
@@ -37,3 +37,9 @@ install:
 
 script:
   - ./build.sh && make test
+
+notifications:
+  irc: 'chat.freenode.net#ag'
+  on_success: change
+  on_failure: always
+  use_notice: true

@@ -66,9 +66,9 @@ typedef struct {
 
 symdir_t *symhash;
 
-void search_buf(const char *buf, const size_t buf_len,
-                const char *dir_full_path);
-void search_stream(FILE *stream, const char *path);
+ssize_t search_buf(const char *buf, const size_t buf_len,
+                   const char *dir_full_path);
+ssize_t search_stream(FILE *stream, const char *path);
 void search_file(const char *file_full_path);
 
 void *search_file_worker(void *i);

@@ -1,5 +1,5 @@
 %define _bashcompdir %_sysconfdir/bash_completion.d
-
+%define _zshcompdir %{_datadir}/zsh/site-functions
 
 Name:		the_silver_searcher
 Version:	@VERSION@
@@ -62,7 +62,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_mandir}/*
 %config %{_bashcompdir}/ag.bashcomp.sh
 %config %{_datadir}/%{name}/completions/ag.bashcomp.sh
-
+%config %{_datadir}/zsh/site-functions/_the_silver_searcher
 
 %changelog
 * Thu Dec 5 2013 Emily Strickland <code@emily.st> - 0.18.1-1

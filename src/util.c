@@ -148,6 +148,13 @@ size_t ag_max(size_t a, size_t b) {
     return a;
 }
 
+size_t ag_min(size_t a, size_t b) {
+    if (b < a) {
+        return b;
+    }
+    return a;
+}
+
 void generate_hash(const char *find, const size_t f_len, uint8_t *h_table, const int case_sensitive) {
     int i;
     for (i = f_len - sizeof(uint16_t); i >= 0; i--) {
@@ -509,7 +516,7 @@ int is_symlink(const char *path, const struct dirent *d) {
 
 int is_named_pipe(const char *path, const struct dirent *d) {
 #ifdef HAVE_DIRENT_DTYPE
-    if (d->d_type != DT_UNKNOWN) {
+    if (d->d_type != DT_UNKNOWN && d->d_type != DT_LNK) {
         return d->d_type == DT_FIFO || d->d_type == DT_SOCK;
     }
 #endif
@@ -617,7 +624,7 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
 ssize_t buf_getline(const char **line, const char *buf, const size_t buf_len, const size_t buf_offset) {
     const char *cur = buf + buf_offset;
     ssize_t i;
-    for (i = 0; cur[i] != '\n' && (buf_offset + i < buf_len); i++) {
+    for (i = 0; (buf_offset + i < buf_len) && cur[i] != '\n'; i++) {
     }
     *line = cur;
     return i;
