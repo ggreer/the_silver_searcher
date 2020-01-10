@@ -221,7 +221,7 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
     //of temp as well
     temp_start_pos = (temp[0] == '/') ? 1 : 0;
 
-    if (strncmp(temp+temp_start_pos, ig->abs_path, ig->abs_path_len) == 0) {
+    if (strncmp(temp + temp_start_pos, ig->abs_path, ig->abs_path_len) == 0) {
         char *slash_filename = temp + temp_start_pos + ig->abs_path_len;
         if (slash_filename[0] == '/') {
             slash_filename++;
