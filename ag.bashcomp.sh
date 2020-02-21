@@ -67,7 +67,7 @@ _ag() {
     --parallel
     --passthrough
     --passthru
-    --path-to-agignore
+    --path-to-ignore
     --print-long-lines
     --print0
     --recurse
@@ -106,7 +106,7 @@ _ag() {
     --ignore-dir) # directory completion
               _filedir -d
               return 0;;
-    --path-to-agignore) # file completion
+    --path-to-ignore) # file completion
               _filedir
               return 0;;
     --pager) # command completion
