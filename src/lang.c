@@ -145,6 +145,8 @@ size_t get_lang_count() {
     return sizeof(langs) / sizeof(lang_spec_t);
 }
 
+#define MAK_STR "|[Mm]akefile\\.?)"
+
 char *make_lang_regex(char *ext_array, size_t num_exts) {
     int regex_capacity = 100;
     char *regex = ag_malloc(regex_capacity);
@@ -152,6 +154,10 @@ char *make_lang_regex(char *ext_array, size_t num_exts) {
     int subsequent = 0;
     char *extension;
     size_t i;
+    int add_makefile = 0;
+    static const char *mak_str = MAK_STR;
+    static const size_t mak_strlen = sizeof(MAK_STR);
+    char *mak_regex;
 
     strcpy(regex, "\\.(");
 
@@ -169,12 +175,23 @@ char *make_lang_regex(char *ext_array, size_t num_exts) {
         }
         strcpy(regex + regex_length, extension);
         regex_length += extension_length;
+        if (strncmp(extension, "Makefiles", extension_length) == 0) {
+            add_makefile = 1;
+        }
     }
 
     regex[regex_length++] = ')';
     regex[regex_length++] = '$';
     regex[regex_length++] = 0;
-    return regex;
+    if( add_makefile ) {
+        mak_regex = ag_malloc(regex_length + mak_strlen + 2);
+        strcpy(mak_regex, "(");
+        strcpy(mak_regex + strlen(mak_regex), regex);
+        strcpy(mak_regex + strlen(mak_regex), mak_str);
+        return mak_regex;
+    } else {
+        return regex;
+    }
 }
 
 size_t combine_file_extensions(size_t *extension_index, size_t len, char **exts) {
