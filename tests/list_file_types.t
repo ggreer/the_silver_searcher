@@ -45,6 +45,9 @@ Language types are output:
     --chpl
         .chpl
   
+    --clean
+        .icl  .dcl
+  
     --clojure
         .clj  .cljs  .cljc  .cljx
   
