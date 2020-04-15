@@ -2,6 +2,19 @@
 #include "print.h"
 #include "scandir.h"
 
+size_t alpha_skip_lookup[256];
+size_t *find_skip_lookup;
+uint8_t h_table[H_SIZE] __attribute__((aligned(64)));
+
+work_queue_t *work_queue = NULL;
+work_queue_t *work_queue_tail = NULL;
+int done_adding_files = 0;
+pthread_cond_t files_ready = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t stats_mtx = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t work_queue_mtx = PTHREAD_MUTEX_INITIALIZER;
+
+symdir_t *symhash = NULL;
+
 /* Returns: -1 if skipped, otherwise # of matches */
 ssize_t search_buf(const char *buf, const size_t buf_len,
                    const char *dir_full_path) {

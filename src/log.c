@@ -4,6 +4,7 @@
 #include "log.h"
 #include "util.h"
 
+pthread_mutex_t print_mtx = PTHREAD_MUTEX_INITIALIZER;
 static enum log_level log_threshold = LOG_LEVEL_ERR;
 
 void set_log_level(enum log_level threshold) {
