@@ -13,6 +13,7 @@ lang_spec_t langs[] = {
     { "asp", { "asp", "asa", "aspx", "asax", "ashx", "ascx", "asmx" } },
     { "aspx", { "asp", "asa", "aspx", "asax", "ashx", "ascx", "asmx" } },
     { "batch", { "bat", "cmd" } },
+    { "bazel", { "bazel" } },
     { "bitbake", { "bb", "bbappend", "bbclass", "inc" } },
     { "bro", { "bro", "bif" } },
     { "cc", { "c", "h", "xs" } },
