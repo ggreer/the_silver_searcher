@@ -134,6 +134,7 @@ lang_spec_t langs[] = {
     { "verilog", { "v", "vh", "sv", "svh" } },
     { "vhdl", { "vhd", "vhdl" } },
     { "vim", { "vim" } },
+    { "vue", { "vue" } },
     { "wix", { "wxi", "wxs" } },
     { "wsdl", { "wsdl" } },
     { "wadl", { "wadl" } },

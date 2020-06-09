@@ -393,6 +393,9 @@ Language types are output:
     --vim
         .vim
   
+    --vue
+        .vue
+  
     --wix
         .wxi  .wxs
   
