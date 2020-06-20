@@ -46,7 +46,7 @@ Language types are output:
         .chpl
   
     --clojure
-        .clj  .cljs  .cljc  .cljx
+        .clj  .cljs  .cljc  .cljx  .edn
   
     --coffee
         .coffee  .cjsx
