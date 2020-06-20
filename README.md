@@ -76,13 +76,17 @@ or
 
         sbopkg -i the_silver_searcher
 
-* openSUSE:
+* openSUSE
 
         zypper install the_silver_searcher
 
-* CentOS:
-        
+* CentOS
+
         yum install the_silver_searcher
+
+* NixOS/Nix/Nixpkgs
+
+        nix-env -iA silver-searcher
 
 * SUSE Linux Enterprise: Follow [these simple instructions](https://software.opensuse.org/download.html?project=utilities&package=the_silver_searcher).
 
