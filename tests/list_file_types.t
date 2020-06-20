@@ -120,6 +120,9 @@ Language types are output:
     --go
         .go
   
+    --gradle
+        .gradle
+  
     --groovy
         .groovy  .gtmpl  .gpp  .grunit  .gradle
   

@@ -43,6 +43,7 @@ lang_spec_t langs[] = {
     { "gettext", { "po", "pot", "mo" } },
     { "glsl", { "vert", "tesc", "tese", "geom", "frag", "comp" } },
     { "go", { "go" } },
+    { "gradle", { "gradle" } },
     { "groovy", { "groovy", "gtmpl", "gpp", "grunit", "gradle" } },
     { "haml", { "haml" } },
     { "handlebars", { "hbs" } },
