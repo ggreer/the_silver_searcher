@@ -20,6 +20,8 @@ const char *color_line_number = "\033[1;33m"; /* bold yellow */
 const char *color_match = "\033[30;43m";      /* black with yellow background */
 const char *color_path = "\033[1;32m";        /* bold green */
 
+cli_options opts;
+
 /* TODO: try to obey out_fd? */
 void usage(void) {
     printf("\n");
