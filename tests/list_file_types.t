@@ -417,3 +417,6 @@ Language types are output:
     --yaml
         .yaml  .yml
   
+    --zephir
+        .zep
+  

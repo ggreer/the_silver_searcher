@@ -141,7 +141,8 @@ lang_spec_t langs[] = {
     { "wsdl", { "wsdl" } },
     { "wadl", { "wadl" } },
     { "xml", { "xml", "dtd", "xsl", "xslt", "xsd", "ent", "tld", "plist", "wsdl" } },
-    { "yaml", { "yaml", "yml" } }
+    { "yaml", { "yaml", "yml" } },
+    { "zephir", { "zep" } }
 };
 
 size_t get_lang_count() {
