@@ -29,6 +29,9 @@ Language types are output:
   
     --batch
         .bat  .cmd
+
+    --bazel
+        .bazel
   
     --bitbake
         .bb  .bbappend  .bbclass  .inc
