@@ -21,6 +21,9 @@
     }                                     \
     return ptr;
 
+FILE *out_fd;
+ag_stats stats;
+
 void *ag_malloc(size_t size) {
     void *ptr = malloc(size);
     CHECK_AND_RETURN(ptr)

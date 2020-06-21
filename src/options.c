@@ -16,6 +16,8 @@
 #include "print.h"
 #include "util.h"
 
+cli_options opts;
+
 const char *color_line_number = "\033[1;33m"; /* bold yellow */
 const char *color_match = "\033[30;43m";      /* black with yellow background */
 const char *color_path = "\033[1;32m";        /* bold green */

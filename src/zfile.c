@@ -33,10 +33,10 @@ typedef _off64_t off64_t;
 
 #if HAVE_FOPENCOOKIE
 
-#define min(a, b) ({				\
-	__typeof (a) _a = (a);			\
-	__typeof (b) _b = (b);			\
-	_a < _b ? _a : _b; })
+static inline size_t
+min(size_t a, size_t b) {
+	return a < b ? a : b;
+}
 
 static cookie_read_function_t zfile_read;
 static cookie_seek_function_t zfile_seek;
