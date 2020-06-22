@@ -150,7 +150,7 @@ void init_options(void) {
     memset(&opts, 0, sizeof(opts));
     opts.casing = CASE_DEFAULT;
     opts.color = TRUE;
-    if (strcmp(term, "dumb") == 0) {
+    if (term && !strcmp(term, "dumb")) {
         opts.color = FALSE;
     }
     opts.color_win_ansi = FALSE;
@@ -713,8 +713,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 const char *config_home = getenv("XDG_CONFIG_HOME");
                 if (config_home) {
                     ag_asprintf(&gitconfig_res, "%s/%s", config_home, "git/ignore");
-                } else {
+                } else if (home_dir) {
                     ag_asprintf(&gitconfig_res, "%s/%s", home_dir, ".config/git/ignore");
+                } else {
+                    gitconfig_res = ag_strdup("");
                 }
             }
             log_debug("global core.excludesfile: %s", gitconfig_res);
