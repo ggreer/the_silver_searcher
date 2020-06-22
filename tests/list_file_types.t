@@ -29,7 +29,7 @@ Language types are output:
   
     --batch
         .bat  .cmd
-
+  
     --bazel
         .bazel
   
