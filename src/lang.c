@@ -15,7 +15,6 @@ lang_spec_t langs[] = {
     { "batch", { "bat", "cmd" } },
     { "bazel", { "bazel" } },
     { "bitbake", { "bb", "bbappend", "bbclass", "inc" } },
-    { "bro", { "bro", "bif" } },
     { "cc", { "c", "h", "xs" } },
     { "cfmx", { "cfc", "cfm", "cfml" } },
     { "chpl", { "chpl" } },
@@ -142,6 +141,7 @@ lang_spec_t langs[] = {
     { "wadl", { "wadl" } },
     { "xml", { "xml", "dtd", "xsl", "xslt", "xsd", "ent", "tld", "plist", "wsdl" } },
     { "yaml", { "yaml", "yml" } },
+    { "zeek", { "zeek", "bro", "bif" } },
     { "zephir", { "zep" } }
 };
 
