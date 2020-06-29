@@ -106,6 +106,20 @@ or
 
   Unofficial daily builds are [available](https://github.com/k-takata/the_silver_searcher-win32).
   
+* winget
+
+        winget install "The Silver Searcher"
+  
+  Notes:
+  - This installs a [release](https://github.com/JFLarvoire/the_silver_searcher/releases) of ag.exe optimized for Windows.
+  - winget is intended to become the default package manager client for Windows.  
+    As of June 2020, it's still in beta, and can be installed using instructions [there](https://github.com/microsoft/winget-cli).
+  - The setup script in the Ag's winget package installs ag.exe in the first directory that matches one of these criteria:
+     1. Over a previous instance of ag.exe *from the same [origin](https://github.com/JFLarvoire/the_silver_searcher)* found in the PATH
+     2. In the directory defined in environment variable bindir_%PROCESSOR_ARCHITECTURE%
+     3. In the directory defined in environment variable bindir
+     4. In the directory defined in environment variable windir
+  
 * Chocolatey
 
         choco install ag
