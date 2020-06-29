@@ -104,7 +104,7 @@ typedef struct {
 } cli_options;
 
 /* global options. parse_options gives it sane values, everything else reads from it */
-cli_options opts;
+extern cli_options opts;
 
 typedef struct option option_t;
 

@@ -2,7 +2,6 @@
 #include "print.h"
 #include "scandir.h"
 
-/* Global search variables */
 size_t alpha_skip_lookup[256];
 size_t *find_skip_lookup;
 #ifdef _MSC_VER /* MS Visual C++ */
@@ -12,14 +11,14 @@ size_t *find_skip_lookup;
 #endif
 uint8_t ALIGNAS(64) h_table[H_SIZE];
 
-work_queue_t *work_queue;
-work_queue_t *work_queue_tail;
-int done_adding_files;
-pthread_cond_t files_ready;
-pthread_mutex_t stats_mtx;
-pthread_mutex_t work_queue_mtx;
+work_queue_t *work_queue = NULL;
+work_queue_t *work_queue_tail = NULL;
+int done_adding_files = 0;
+pthread_cond_t files_ready = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t stats_mtx = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t work_queue_mtx = PTHREAD_MUTEX_INITIALIZER;
 
-symdir_t *symhash;
+symdir_t *symhash = NULL;
 
 #if SUPPORT_TWO_ENCODINGS
 /* Names of the encodings. Must match enum in search.h. */

@@ -28,6 +28,8 @@ const char *color_line_number = "\033[1;33m"; /* bold yellow */
 const char *color_match = "\033[30;43m";      /* black with yellow background */
 const char *color_path = "\033[1;32m";        /* bold green */
 
+cli_options opts;
+
 #if SUPPORT_TWO_ENCODINGS
 /* Get the actual name of a code page */
 char *GetCPName(int iCP, LPCPINFOEX lpCpi) {
@@ -220,9 +222,14 @@ void print_version(void) {
 }
 
 void init_options(void) {
+    char *term = getenv("TERM");
+
     memset(&opts, 0, sizeof(opts));
     opts.casing = CASE_DEFAULT;
     opts.color = TRUE;
+    if (term && !strcmp(term, "dumb")) {
+        opts.color = FALSE;
+    }
     opts.color_win_ansi = FALSE;
     opts.max_matches_per_file = 0;
     opts.max_search_depth = DEFAULT_MAX_SEARCH_DEPTH;
@@ -812,8 +819,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 const char *config_home = getenv("XDG_CONFIG_HOME");
                 if (config_home) {
                     ag_asprintf(&gitconfig_res, "%s/%s", config_home, "git/ignore");
-                } else {
+                } else if (home_dir) {
                     ag_asprintf(&gitconfig_res, "%s/%s", home_dir, ".config/git/ignore");
+                } else {
+                    gitconfig_res = ag_strdup("");
                 }
             }
             log_debug("global core.excludesfile: %s", gitconfig_res);

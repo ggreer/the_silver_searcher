@@ -112,13 +112,17 @@ or
 
         sbopkg -i the_silver_searcher
 
-* openSUSE:
+* openSUSE
 
         zypper install the_silver_searcher
 
-* CentOS:
-        
+* CentOS
+
         yum install the_silver_searcher
+
+* NixOS/Nix/Nixpkgs
+
+        nix-env -iA silver-searcher
 
 * SUSE Linux Enterprise: Follow [these simple instructions](https://software.opensuse.org/download.html?project=utilities&package=the_silver_searcher).
 
@@ -255,9 +259,10 @@ TextMate users can use Ag with [my fork](https://github.com/ggreer/AckMate) of t
 
 ## Other stuff you might like
 
-* [Ack](https://github.com/petdance/ack2) - Better than grep. Without Ack, Ag would not exist.
+* [Ack](https://github.com/petdance/ack3) - Better than grep. Without Ack, Ag would not exist.
 * [ack.vim](https://github.com/mileszs/ack.vim)
 * [Exuberant Ctags](http://ctags.sourceforge.net/) - Faster than Ag, but it builds an index beforehand. Good for *really* big codebases.
 * [Git-grep](http://git-scm.com/docs/git-grep) - As fast as Ag but only works on git repos.
+* [fzf](https://github.com/junegunn/fzf) - A command-line fuzzy finder 
 * [ripgrep](https://github.com/BurntSushi/ripgrep)
 * [Sack](https://github.com/sampson-chen/sack) - A utility that wraps Ack and Ag. It removes a lot of repetition from searching and opening matching files.

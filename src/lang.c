@@ -13,12 +13,12 @@ lang_spec_t langs[] = {
     { "asp", { "asp", "asa", "aspx", "asax", "ashx", "ascx", "asmx" } },
     { "aspx", { "asp", "asa", "aspx", "asax", "ashx", "ascx", "asmx" } },
     { "batch", { "bat", "cmd" } },
+    { "bazel", { "bazel" } },
     { "bitbake", { "bb", "bbappend", "bbclass", "inc" } },
-    { "bro", { "bro", "bif" } },
     { "cc", { "c", "h", "xs" } },
     { "cfmx", { "cfc", "cfm", "cfml" } },
     { "chpl", { "chpl" } },
-    { "clojure", { "clj", "cljs", "cljc", "cljx" } },
+    { "clojure", { "clj", "cljs", "cljc", "cljx", "edn" } },
     { "coffee", { "coffee", "cjsx" } },
     { "config", { "config" } },
     { "coq", { "coq", "g", "v" } },
@@ -43,6 +43,7 @@ lang_spec_t langs[] = {
     { "gettext", { "po", "pot", "mo" } },
     { "glsl", { "vert", "tesc", "tese", "geom", "frag", "comp" } },
     { "go", { "go" } },
+    { "gradle", { "gradle" } },
     { "groovy", { "groovy", "gtmpl", "gpp", "grunit", "gradle" } },
     { "haml", { "haml" } },
     { "handlebars", { "hbs" } },
@@ -134,11 +135,14 @@ lang_spec_t langs[] = {
     { "verilog", { "v", "vh", "sv", "svh" } },
     { "vhdl", { "vhd", "vhdl" } },
     { "vim", { "vim" } },
+    { "vue", { "vue" } },
     { "wix", { "wxi", "wxs" } },
     { "wsdl", { "wsdl" } },
     { "wadl", { "wadl" } },
     { "xml", { "xml", "dtd", "xsl", "xslt", "xsd", "ent", "tld", "plist", "wsdl" } },
-    { "yaml", { "yaml", "yml" } }
+    { "yaml", { "yaml", "yml" } },
+    { "zeek", { "zeek", "bro", "bif" } },
+    { "zephir", { "zep" } }
 };
 
 size_t get_lang_count() {

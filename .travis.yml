@@ -1,4 +1,5 @@
 language: c
+dist: xenial
 sudo: false
 
 branches:
@@ -27,7 +28,7 @@ env:
     - CLANG_FORMAT=$LLVM_PATH/bin/clang-format
 
 before_install:
-  - wget http://llvm.org/releases/$LLVM_VERSION/clang+llvm-$LLVM_VERSION-x86_64-linux-gnu-ubuntu-14.04.tar.xz -O $LLVM_PATH.tar.xz
+  - wget http://llvm.org/releases/$LLVM_VERSION/clang+llvm-$LLVM_VERSION-x86_64-linux-gnu-ubuntu-16.04.tar.xz -O $LLVM_PATH.tar.xz
   - mkdir $LLVM_PATH
   - tar xf $LLVM_PATH.tar.xz -C $LLVM_PATH --strip-components=1
   - export PATH=$HOME/.local/bin:$PATH

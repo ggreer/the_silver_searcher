@@ -20,6 +20,8 @@
 const int fnmatch_flags = FNM_PATHNAME;
 #endif
 
+ignores *root_ignores;
+
 /* TODO: build a huge-ass list of files we want to ignore by default (build cache stuff, pyc files, etc) */
 
 const char *evil_hardcoded_ignore_files[] = {
@@ -206,6 +208,7 @@ static int ackmate_dir_match(const char *dir_name) {
 /* This is the hottest code in Ag. 10-15% of all execution time is spent here */
 static int path_ignore_search(const ignores *ig, const char *path, const char *filename) {
     char *temp;
+    int temp_start_pos;
     size_t i;
     int match_pos;
 
@@ -216,9 +219,12 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
     }
 
     ag_asprintf(&temp, "%s/%s", path[0] == '.' ? path + 1 : path, filename);
+    //ig->abs_path has its leading slash stripped, so we have to strip the leading slash
+    //of temp as well
+    temp_start_pos = (temp[0] == '/') ? 1 : 0;
 
-    if (strncmp(temp, ig->abs_path, ig->abs_path_len) == 0) {
-        char *slash_filename = temp + ig->abs_path_len;
+    if (strncmp(temp + temp_start_pos, ig->abs_path, ig->abs_path_len) == 0) {
+        char *slash_filename = temp + temp_start_pos + ig->abs_path_len;
         if ((slash_filename[0] == '/')
 #ifdef _WIN32
             || (slash_filename[0] == '\\')
