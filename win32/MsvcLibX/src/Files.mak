@@ -45,6 +45,7 @@
 #                 store its specific source file dependancies below.
 OBJECTS = \
     +access.obj			\
+    +asprintf.obj		\
     +basename.obj		\
     +chdir.obj			\
     +clock_gettime.obj		\
@@ -167,6 +168,8 @@ $(I)\sys\types.h: $(I)\msvclibx.h
 ###############################################################################
 
 access.c: $(CI)\debugm.h $(I)\io.h $(I)\msvclibx.h $(I)\stdio.h $(I)\windows.h
+
+asprintf.c: $(I)\msvclibx.h $(I)\stdio.h $(I)\stdlib.h $(I)\stdarg.h
 
 basename.c: $(I)\libgen.h $(I)\limits.h $(I)\msvclibx.h $(I)\stdlib.h $(I)\string.h
 

@@ -403,9 +403,10 @@ extern char *Filetime2String(const FILETIME *pFT, char *pBuf, size_t nBufSize);
 #else /* _ANSI_SOURCE */
 #define _mkdirx(path, mode) mkdirA(path, mode)
 #endif /* defined(_UTF8_SOURCE) */
+extern int mkdirM(const char *path, mode_t mode, UINT cp);
 extern int mkdirU(const char *path, mode_t mode);
 extern int mkdirA(const char *path, mode_t mode);
-#endif /* defined(_MSDOS) */
+#endif /* defined(_WIN32) */
 #define mkdir(path, mode) _mkdirx(path, mode)
 
 /* Special values for futimens() and utimensat(). Must not be in [0...((10^9)-1)] */

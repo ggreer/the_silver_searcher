@@ -43,6 +43,10 @@ extern "C" {
 #define snprintf _snprintf
 #define tempnam _tempnam
 
+/* GNU extensions: asprintf(), etc */
+extern int vasprintf(char **ppszBuf, const char *pszFormat, va_list vl);
+extern int asprintf(char **ppszBuf, const char *pszFormat, ...);
+
 /************************ MS-DOS-specific definitions ************************/
 
 #ifdef _MSDOS	/* Automatically defined when targeting an MS-DOS application */

@@ -59,6 +59,7 @@
 |                   Removed the limitation on the # of arguments.             |
 |                   Made the code compatible with ANSI and UTF-8 encodings.   |
 |    2017-02-05 JFL Check memory allocation errors, and if so return -1.      |
+|    2020-02-06 JFL Don't escape the final " in a last arg like: "C:\"        |
 *                                                                             *
 \*---------------------------------------------------------------------------*/
 
@@ -83,6 +84,7 @@ int BreakArgLine(LPSTR pszCmdLine, char ***pppszArg) {
   /* Copy the string, managing quoted characters */
   for (i=0, j=0, c0='\0'; ; i++) {
     c = pszCmdLine[i];
+    /* printf("i=%d n=%d c0=%c c=%c\n", i, nBackslash, c0 ? c0 : ' ', c ? c : ' '); */
     if (!c) {		    /* End of argument line */
       for ( ; nBackslash; nBackslash--) pszCopy[j++] = '\\'; /* Output pending \s */
       pszCopy[j++] = c;
@@ -100,6 +102,7 @@ int BreakArgLine(LPSTR pszCmdLine, char ***pppszArg) {
       continue;
     }
     if (c == '"') {
+      if (nBackslash && iString && !pszCmdLine[i+1]) continue; /* This really is the end of string, not an escaped " */
       if (nBackslash & 1) { /* Output N/2 \ and a literal " */
       	for (nBackslash >>= 1; nBackslash; nBackslash--) pszCopy[j++] = '\\';
 	pszCopy[j++] = c0 = c;
@@ -121,6 +124,8 @@ int BreakArgLine(LPSTR pszCmdLine, char ***pppszArg) {
 
   ppszArg[argc] = NULL;
   *pppszArg = ppszArg;
+
+  /* for (i=0; i<argc; i++) printf("BAL: arg=\"%s\"\n", ppszArg[i]); */
 
   return argc;
 }

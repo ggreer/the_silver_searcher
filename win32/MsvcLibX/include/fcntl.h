@@ -8,6 +8,7 @@
 *                                                                             *
 *   History:								      *
 *    2017-02-16 JFL Created this file.                                        *
+*    2020-03-29 JFL Added prototype for openM().                              *
 *									      *
 *         © Copyright 2017 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -28,6 +29,7 @@
 #endif
 
 #if defined(_WIN32)
+extern int openM(UINT cp, const char *pszName, int iFlags, int iPerm); /* MsvcLibX Multi-encoding version of open */
 extern int openA(const char *, int, ...); /* MsvcLibX ANSI version of open */
 extern int openU(const char *, int, ...); /* MsvcLibX UTF-8 version of open */
 #if defined(_UTF8_SOURCE)
