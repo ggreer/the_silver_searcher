@@ -132,6 +132,7 @@ or
 * FreeBSD
 
         pkg install the_silver_searcher
+
 * OpenBSD/NetBSD
 
         pkg_add the_silver_searcher
@@ -142,19 +143,38 @@ or
 
   Unofficial daily builds are [available](https://github.com/k-takata/the_silver_searcher-win32).
   
-  Another version with additional features is available [there](https://github.com/JFLarvoire/the_silver_searcher/releases).
+  Another version with additional features optimized for Windows is available [there](https://github.com/JFLarvoire/the_silver_searcher/releases).
 
   * Supports text files encoded in both Windows System code page (Ex: CP 1252) and UTF-8.
   * Supports unicode search strings, and outputs Unicode results.
   * Supports unicode pathname > 260 characters, junctions, and symbolic links.
   
+* winget
+
+        winget install "The Silver Searcher"
+  
+  Notes:
+  - This installs the [release](https://github.com/JFLarvoire/the_silver_searcher/releases) of ag.exe optimized for Windows.
+  - winget is intended to become the default package manager client for Windows.  
+    As of June 2020, it's still in beta, and can be installed using instructions [there](https://github.com/microsoft/winget-cli).
+  - The setup script in the Ag's winget package installs ag.exe in the first directory that matches one of these criteria:
+     1. Over a previous instance of ag.exe *from the same [origin](https://github.com/JFLarvoire/the_silver_searcher)* found in the PATH
+     2. In the directory defined in environment variable bindir_%PROCESSOR_ARCHITECTURE%
+     3. In the directory defined in environment variable bindir
+     4. In the directory defined in environment variable windir
+  
 * Chocolatey
 
         choco install ag
 
+  Notes:
+  - This installs the [default build](https://github.com/ggreer/the_silver_searcher/releases) of ag.exe,
+    without the bug fixes present in the [optimized build](https://github.com/JFLarvoire/the_silver_searcher/releases).
+
 * MSYS2
 
         pacman -S mingw-w64-{i686,x86_64}-ag
+
 * Cygwin
 
   Run the relevant [`setup-*.exe`](https://cygwin.com/install.html), and select "the\_silver\_searcher" in the "Utils" category.
