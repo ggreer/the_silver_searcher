@@ -181,13 +181,14 @@
 :#   2019-04-15 JFL Added option -nodos.                                      *
 :#                  Fixed option -vs, and split it into options -vsp and -vsn.*
 :#   2019-04-16 JFL Merged in the 2019-01-20 change made for Ag.              *
+:#   2020-06-30 JFL Added the 7-Zip LZMA SDK to the list of known SDKs.       *
 :#                                                                            *
-:#      © Copyright 2016-2019 Hewlett Packard Enterprise Development LP       *
+:#      © Copyright 2016-2020 Hewlett Packard Enterprise Development LP       *
 :# Licensed under the Apache 2.0 license  www.apache.org/licenses/LICENSE-2.0 *
 :#*****************************************************************************
 
 setlocal EnableExtensions EnableDelayedExpansion
-set "VERSION=2019-04-16"
+set "VERSION=2020-06-30"
 set "SCRIPT=%~nx0"				&:# Script name
 set "SPATH=%~dp0" & set "SPATH=!SPATH:~0,-1!"	&:# Script path, without the trailing \
 set  "ARG0=%~f0"				&:# Script full pathname
@@ -2226,6 +2227,9 @@ set "SDK.PTHREADS2.FILE=include\pthread.h"
 
 set "SDK.BOOST.NAME=Boost C++ libraries"
 set "SDK.BOOST.FILE=boost\preprocessor.hpp"
+
+set "SDK.LZMA.NAME=7-Zip LZMA SDK"
+set "SDK.LZMA.FILE=bin\7zS2con.sfx"
 
 :# At this stage, we have all configure.bat mechanics ready, and compilers identified
 :Configure_init_done
