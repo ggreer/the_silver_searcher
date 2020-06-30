@@ -9,6 +9,7 @@
 #   History								      #
 #    2017-09-01 JFL jf.larvoire@free.fr created this file.                    #
 #    2018-03-14 JFL Added a source-release target.			      #
+#    2020-06-30 JFL Added the generation of ag_setup.exe and winget manifest. #
 #		    							      #
 ###############################################################################
 
@@ -47,7 +48,7 @@ exes src:
 release:
     call <<"$(TMP)\ag-release-$(PID).bat"
 	setlocal EnableExtensions EnableDelayedExpansion
-
+	
 	:# Prepare running 7-zip
 	if not defined ProgramFiles set "ProgramFiles=C:\Program Files"
 	if not exist "%ProgramFiles%\7-zip\7z.exe" (
@@ -64,19 +65,31 @@ release:
 	if errorlevel 1 exit 1
 	exit /b 0
 
+	:# Subroutine that adds files to both !ZIP! and !7Z!
+	:AddToZips %*=file_to_add
+	!7ZIP! -- a "!ZIP!" %*
+	if errorlevel 1 exit /b
+	:AddTo7Z %*=file_to_add
+	if defined 7Z !7ZIP! -t7z -- a "!7Z!" %*
+	exit /b
+
 	:# Recreate the zip from scratch
 	:start
 	cd bin
-	set "ZIP=!CD!\ag.zip"		&:# Output file name
-	$(MSG) Creating !ZIP! ...
-	if exist "!ZIP!" del "!ZIP!"
+	set "bindir=!CD!"
+	set "ZIP=!bindir!\ag.zip"			&:# Output ZIP file name
+	set "7Z="
+	if defined HAS_LZMA  set "7Z=!bindir!\ag.7z"	&:# Output 7Z file name
+	set "EXE=!bindir!\ag_setup.exe"			&:# Output EXE file name
+	for %%f in ("!ZIP!" "!7Z!" "!EXE!") do if exist %%f del %%f
 	
 	:# Add the various versions of ag.exe
+	$(HEADLINE) Creating !ZIP! ...
 	for %%d in (DOS WIN95 WINXP WIN32 IA64 WIN64 ARM ARM64) do (
 	  if exist "%%d\ag.exe" (
 	    set "AG=%%d\ag.exe"
 	    $(MSG) Adding !AG!
-	    !7ZIP! -- a "!ZIP!" "!AG!"
+	    call :AddToZips "!AG!"
 	  )
 	)
 	
@@ -84,16 +97,42 @@ release:
 	cd ..
 	$(MSG) Adding README
 	type README.md | FIND "" /V > README.txt	&:# Converts LF to CRLF
-	dump README.txt | head -10
-	!7ZIP! -- a "!ZIP!" README.txt
+	call :AddToZips README.txt
 	del README.txt
 	$(MSG) Adding LICENSE
 	type LICENSE | FIND "" /V > LICENSE.txt		&:# Converts LF to CRLF
-	dump LICENSE.txt | head -10
-	!7ZIP! -- a "!ZIP!" LICENSE.txt
+	call :AddToZips LICENSE.txt
 	del LICENSE.txt
-	
+
 	$(MSG) ... done
+	
+	if defined HAS_LZMA ( :# Skip this if the user does not have the 7-Zip LZMA SDK configured
+	  :# Build ag_setup.exe
+	  $(HEADLINE) Building !EXE! ...
+	  pushd win32\winget
+	  call :AddTo7Z setup.bat
+	  copy /b /y "%LZMA%\bin\7zS2con.sfx" + "!7Z!" "!EXE!"
+	  popd
+	  
+	  :# Get the ag.exe version
+	  set "VERSION="
+	  for /f "tokens=3" %%v in ('findstr /C:"#define PACKAGE_VERSION" src\config.h') do set "VERSION=%%~v"
+	  $(MSG) Indirectly from src\config.h.MsvcLibX: VERSION=!VERSION!
+	  :# Get the ag_setup.exe file hash
+	  set "HASH="
+	  for /f "tokens=3" %%v in ('winget hash "!EXE!"') do set "HASH=%%~v"
+	  $(MSG) bin\ag_setup.exe HASH=!HASH!
+
+	  :# Build the winget manifest YAML file
+	  set "YAML=!bindir!\!VERSION!.yaml"		&:# Output YAML file name
+	  $(MSG) Generating !YAML!
+	  if exist "!YAML!" del "!YAML!"
+	  :# Copy every line from ag.yaml, expanding !variables! in the process
+	  for /f "tokens=* delims=0123456789" %%l in ('findstr /n /r "^" win32\winget\ag.yaml') do >> "!YAML!" echo%%l
+
+	  del "!7Z!"
+	  $(MSG) ... done
+	)
 <<
 
 source-release:
