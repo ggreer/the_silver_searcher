@@ -11,11 +11,12 @@
 :#                                                                            #
 :#  History                                                                   #
 :#   2020-06-03 JFL Created this script.                                      #
+:#   2020-07-01 JFL Added support for versions with 4 parts: X.Y.Z.T          #
 :#                                                                            #
 :##############################################################################
 
 setlocal EnableExtensions DisableDelayedExpansion &:# Make sure ! characters are preserved
-set "VERSION=2020-06-04"
+set "VERSION=2020-07-01"
 set "SCRIPT=%~nx0"		&:# Script name
 set "SNAME=%~n0"		&:# Script name, without its extension
 set "SPATH=%~dp0"		&:# Script path
@@ -168,16 +169,18 @@ if exist %1 (
 )
 exit /b
 
-:SplitVer %1=X.Y.Z %2=XVAR %3=YVAR %4=ZVAR
-for /f "tokens=1-3 delims=-." %%x in ("%~1") do (
-  set "%2=%%x"
-  set "%3=%%y"
-  set "%4=%%z"
+:SplitVer %1=X.Y.Z.T %2=XVAR %3=YVAR %4=ZVAR %5=TVAR
+for /f "tokens=1-4 delims=-." %%a in ("%~1") do (
+  set "%2=%%a"
+  set "%3=%%b"
+  set "%4=%%c"
+  set "%5=%%d"
 )
 exit /b
 
 :CompareInteger %1=Integer1 %2=Integer2
 setlocal
+%ECHO.D% call %0 %*
 if "%1%2"=="" exit /b 0				&:# They're both empty, thus equal
 if "%2"=="" exit /b 1				&:# Integer1 > nothing
 if "%1"=="" exit /b -1				&:# nothing < Integer2
@@ -187,15 +190,18 @@ if "%DIFF:-=%"=="%DIFF%" endlocal & exit /b 1	&:# Integer1 > Integer2
 endlocal & exit /b -1				&:# Integer1 < Integer2
 
 :CompareVersions %1=Version1 %2=Version2
+setlocal
 %ECHO.D% call %0 %*
-call :SplitVer %1 V1MAJOR V1MINOR V1PATCH
-call :SplitVer %2 V2MAJOR V2MINOR V2PATCH
+call :SplitVer %1 V1MAJOR V1MINOR V1PATCH V1BUILD
+call :SplitVer %2 V2MAJOR V2MINOR V2PATCH V2BUILD
 call :CompareInteger %V1MAJOR% %V2MAJOR%
-if not %ERRORLEVEL%==0 %RETURN% %ERRORLEVEL%
+if not %ERRORLEVEL%==0 endlocal & %RETURN% %ERRORLEVEL%
 call :CompareInteger %V1MINOR% %V2MINOR%
-if not %ERRORLEVEL%==0 %RETURN% %ERRORLEVEL%
+if not %ERRORLEVEL%==0 endlocal & %RETURN% %ERRORLEVEL%
 call :CompareInteger %V1PATCH% %V2PATCH%
-%RETURN% %ERRORLEVEL%
+if not %ERRORLEVEL%==0 endlocal & %RETURN% %ERRORLEVEL%
+call :CompareInteger %V1BUILD% %V2BUILD%
+endlocal & %RETURN% %ERRORLEVEL%
 
 :#----------------------------------------------------------------------------#
 
@@ -272,7 +278,7 @@ set "COMMENT=call :Comment"
 set "ECHO=call :Echo"
 set "EXEC=call :Exec"
 set "RETURN=exit /b"
-set "ECHO.D=call :nop"
+set "ECHO.D=call :Log"
 set "ECHOVARS.D=call :LogVars"
 
 set "LOG=call :Log"
@@ -292,7 +298,7 @@ shift
 if [%1]==[] goto :start
 if [%1]==[/?] goto :help
 if [%1]==[-?] goto :help
-if [%1]==[-d] set "ECHO.D=echo" & set "ECHOVARS.D=call :EchoVars.d" & set "RETURN=call :Return" & goto :next_arg
+if [%1]==[-d] set "ECHO.D=call :Echo" & set "ECHOVARS.D=call :EchoVars.d" & set "RETURN=call :Return" & goto :next_arg
 if [%1]==[-V] (echo %VERSION%) & exit /b 0
 if [%1]==[-X] set "EXEC=echo" & goto :next_arg
 if [%1]==[-y] set "QUIET=1" & goto :next_arg
