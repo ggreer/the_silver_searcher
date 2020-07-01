@@ -5,6 +5,78 @@ Note that the PCRE 8.xx series (PCRE1) is now in a bugfix-only state. All
 development is happening in the PCRE2 10.xx series.
 
 
+Version 8.44 12 February-2020
+-----------------------------
+
+1. Setting --enable-jit=auto for an out-of-tree build failed because the
+source directory wasn't in the search path for AC_TRY_COMPILE always. Patch
+from Ross Burton.
+
+2. Applied a patch from Michael Shigorin to fix 8.43 build on e2k arch
+with lcc compiler (EDG frontend based); the problem it fixes is:
+
+  lcc: "pcrecpp.cc", line 74: error: declaration aliased to undefined entity
+       "_ZN7pcrecpp2RE6no_argE" [-Werror]
+
+3. Change 2 for 8.43 omitted (*LF) from the list of start-of-pattern items. Now
+added.
+
+4. Fix ARMv5 JIT improper handling of labels right after a constant pool.
+
+5. Small patch to pcreposix.c to set the erroroffset field to -1 immediately
+after a successful compile, instead of at the start of matching to avoid a
+sanitizer complaint (regexec is supposed to be thread safe).
+
+6. Check the size of the number after (?C as it is read, in order to avoid
+integer overflow.
+
+7. Tidy up left shifts to avoid sanitize warnings; also fix one NULL deference
+in pcretest.
+
+
+Version 8.43 23-February-2019
+-----------------------------
+
+1. Some time ago the config macro SUPPORT_UTF8 was changed to SUPPORT_UTF
+because it also applies to UTF-16 and UTF-32. However, this change was not made
+in the pcre2cpp files; consequently the C++ wrapper has from then been compiled
+with a bug in it, which would have been picked up by the unit test except that
+it also had its UTF8 code cut out. The bug was in a global replace when moving
+forward after matching an empty string.
+
+2. The C++ wrapper got broken a long time ago (version 7.3, August 2007) when
+(*CR) was invented (assuming it was the first such start-of-pattern option).
+The wrapper could never handle such patterns because it wraps patterns in
+(?:...)\z in order to support end anchoring. I have hacked in some code to fix
+this, that is, move the wrapping till after any existing start-of-pattern
+special settings.
+
+3. "pcre2grep" (sic) was accidentally mentioned in an error message (fix was
+ported from PCRE2).
+
+4. Typo LCC_ALL for LC_ALL fixed in pcregrep.
+
+5. In a pattern such as /[^\x{100}-\x{ffff}]*[\x80-\xff]/ which has a repeated
+negative class with no characters less than 0x100 followed by a positive class
+with only characters less than 0x100, the first class was incorrectly being
+auto-possessified, causing incorrect match failures.
+
+6. If the only branch in a conditional subpattern was anchored, the whole
+subpattern was treated as anchored, when it should not have been, since the
+assumed empty second branch cannot be anchored. Demonstrated by test patterns
+such as /(?(1)^())b/ or /(?(?=^))b/.
+
+7. Fix subject buffer overread in JIT when UTF is disabled and \X or \R has
+a greater than 1 fixed quantifier. This issue was found by Yunho Kim.
+
+8. If a pattern started with a subroutine call that had a quantifier with a
+minimum of zero, an incorrect "match must start with this character" could be
+recorded. Example: /(?&xxx)*ABC(?<xxx>XYZ)/ would (incorrectly) expect 'A' to
+be the first character of a match.
+
+9. Improve MAP_JIT flag usage on MacOS. Patch by Rich Siegel.
+
+
 Version 8.42 20-March-2018
 --------------------------
 

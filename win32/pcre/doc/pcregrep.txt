@@ -26,8 +26,8 @@ DESCRIPTION
        If you attempt to use delimiters (for example, by surrounding a pattern
        with slashes, as is common in Perl scripts), they  are  interpreted  as
        part  of  the pattern. Quotes can of course be used to delimit patterns
-       on the command line because they are  interpreted  by  the  shell,  and
-       indeed  quotes  are required if a pattern contains white space or shell
+       on the command line because they are interpreted by the shell, and  in-
+       deed  quotes  are  required  if a pattern contains white space or shell
        metacharacters.
 
        The first argument that follows any option settings is treated  as  the
@@ -37,8 +37,8 @@ DESCRIPTION
        or an argument pattern must be provided.
 
        If no files are specified, pcregrep reads the standard input. The stan-
-       dard  input  can  also  be  referenced by a name consisting of a single
-       hyphen.  For example:
+       dard  input can also be referenced by a name consisting of a single hy-
+       phen.  For example:
 
          pcregrep some-pattern /file1 - /file3
 
@@ -47,8 +47,8 @@ DESCRIPTION
        the start of each line, followed by a colon. However, there are options
        that  can  change  how  pcregrep  behaves. In particular, the -M option
        makes it possible to search for patterns  that  span  line  boundaries.
-       What  defines  a  line  boundary  is  controlled  by the -N (--newline)
-       option.
+       What  defines  a  line boundary is controlled by the -N (--newline) op-
+       tion.
 
        The amount of memory used for buffering files that are being scanned is
        controlled  by a parameter that can be set by the --buffer-size option.
@@ -66,12 +66,12 @@ DESCRIPTION
        By  default, as soon as one pattern matches a line, no further patterns
        are considered. However, if --colour (or --color) is used to colour the
        matching  substrings, or if --only-matching, --file-offsets, or --line-
-       offsets is used to output only  the  part  of  the  line  that  matched
-       (either shown literally, or as an offset), scanning resumes immediately
+       offsets is used to output only the part of the line that  matched  (ei-
+       ther  shown  literally,  or as an offset), scanning resumes immediately
        following the match, so that further matches on the same  line  can  be
-       found.  If  there  are  multiple  patterns,  they  are all tried on the
-       remainder of the line, but patterns that follow the  one  that  matched
-       are not tried on the earlier part of the line.
+       found.  If  there  are multiple patterns, they are all tried on the re-
+       mainder of the line, but patterns that follow the one that matched  are
+       not tried on the earlier part of the line.
 
        This  behaviour  means  that  the  order in which multiple patterns are
        specified can affect the output when one of the above options is  used.
@@ -80,11 +80,11 @@ DESCRIPTION
        overlap).
 
        Patterns  that can match an empty string are accepted, but empty string
-       matches   are   never   recognized.   An   example   is   the   pattern
-       "(super)?(man)?",  in  which  all components are optional. This pattern
-       finds all occurrences of both "super" and  "man";  the  output  differs
-       from  matching  with  "super|man" when only the matching substrings are
-       being shown.
+       matches  are  never  recognized.  An  example  is  the  pattern   "(su-
+       per)?(man)?",  in which all components are optional. This pattern finds
+       all occurrences of both "super" and  "man";  the  output  differs  from
+       matching  with  "super|man" when only the matching substrings are being
+       shown.
 
        If the LC_ALL or LC_CTYPE environment variable is  set,  pcregrep  uses
        the  value to set a locale when calling the PCRE library.  The --locale
@@ -105,9 +105,9 @@ BINARY FILES
 
        By  default,  a  file that contains a binary zero byte within the first
        1024 bytes is identified as a binary file, and is processed  specially.
-       (GNU  grep  also  identifies  binary  files  in  this  manner.) See the
-       --binary-files option for a means of changing the way binary files  are
-       handled.
+       (GNU  grep  also identifies binary files in this manner.) See the --bi-
+       nary-files option for a means of changing the way binary files are han-
+       dled.
 
 
 OPTIONS
@@ -151,16 +151,16 @@ OPTIONS
 
        --binary-files=word
                  Specify  how binary files are to be processed. If the word is
-                 "binary" (the default),  pattern  matching  is  performed  on
-                 binary  files,  but  the  only  output is "Binary file <name>
+                 "binary" (the default), pattern matching is performed on  bi-
+                 nary  files,  but  the  only  output  is  "Binary file <name>
                  matches" when a match succeeds. If the word is "text",  which
                  is  equivalent  to  the -a or --text option, binary files are
                  processed in the same way as any other file.  In  this  case,
                  when  a  match  succeeds,  the  output may be binary garbage,
                  which can have nasty effects if sent to a  terminal.  If  the
-                 word  is  "without-match",  which  is  equivalent  to  the -I
-                 option, binary files are  not  processed  at  all;  they  are
-                 assumed not to be of interest.
+                 word  is  "without-match",  which is equivalent to the -I op-
+                 tion, binary files are not processed at all; they are assumed
+                 not to be of interest.
 
        --buffer-size=number
                  Set  the  parameter that controls how much memory is used for
@@ -201,15 +201,15 @@ OPTIONS
                  ronment variable PCREGREP_COLOUR or PCREGREP_COLOR. The value
                  of this variable should be a string of two numbers, separated
                  by a semicolon. They are copied  directly  into  the  control
-                 string  for  setting  colour  on  a  terminal,  so it is your
-                 responsibility to ensure that they make sense. If neither  of
+                 string  for  setting  colour on a terminal, so it is your re-
+                 sponsibility to ensure that they make sense.  If  neither  of
                  the  environment  variables  is  set,  the default is "1;31",
                  which gives red.
 
        -D action, --devices=action
-                 If an input path is  not  a  regular  file  or  a  directory,
-                 "action"  specifies  how  it is to be processed. Valid values
-                 are "read" (the default) or "skip" (silently skip the path).
+                 If an input path is not a regular file or a  directory,  "ac-
+                 tion"  specifies  how it is to be processed. Valid values are
+                 "read" (the default) or "skip" (silently skip the path).
 
        -d action, --directories=action
                  If an input path is a directory, "action" specifies how it is
@@ -218,8 +218,8 @@ OPTIONS
                  "recurse"  (equivalent to the -r option), or "skip" (silently
                  skip the path, the default in Windows environments).  In  the
                  "read"  case,  directories  are read as if they were ordinary
-                 files. In some operating systems  the  effect  of  reading  a
-                 directory like this is an immediate end-of-file; in others it
+                 files. In some operating systems the effect of reading a  di-
+                 rectory  like  this is an immediate end-of-file; in others it
                  may provoke an error.
 
        -e pattern, --regex=pattern, --regexp=pattern
@@ -249,8 +249,8 @@ OPTIONS
                  whether listed on the command  line,  obtained  from  --file-
                  list, or by scanning a directory. The pattern is a PCRE regu-
                  lar expression, and is matched against the final component of
-                 the  file  name,  not  the  entire  path.  The -F, -w, and -x
-                 options do not apply to this pattern. The option may be given
+                 the  file  name,  not the entire path. The -F, -w, and -x op-
+                 tions do not apply to this pattern. The option may  be  given
                  any number of times in order to specify multiple patterns. If
                  a file name matches both an --include and an  --exclude  pat-
                  tern, it is excluded. There is no short form for this option.
@@ -264,29 +264,29 @@ OPTIONS
 
        --exclude-dir=pattern
                  Directories whose names match the pattern are skipped without
-                 being processed, whatever  the  setting  of  the  --recursive
-                 option.  This  applies  to all directories, whether listed on
-                 the command line, obtained from --file-list, or by scanning a
+                 being processed, whatever the setting of the --recursive  op-
+                 tion.  This applies to all directories, whether listed on the
+                 command line, obtained from --file-list,  or  by  scanning  a
                  parent  directory.  The pattern is a PCRE regular expression,
                  and is matched against the final component of  the  directory
                  name,  not the entire path. The -F, -w, and -x options do not
                  apply to this pattern. The option may be given any number  of
                  times  in order to specify more than one pattern. If a direc-
-                 tory matches both  --include-dir  and  --exclude-dir,  it  is
-                 excluded. There is no short form for this option.
+                 tory matches both --include-dir and --exclude-dir, it is  ex-
+                 cluded. There is no short form for this option.
 
        -F, --fixed-strings
                  Interpret  each  data-matching  pattern  as  a  list of fixed
-                 strings, separated by  newlines,  instead  of  as  a  regular
-                 expression.  What  constitutes  a newline for this purpose is
-                 controlled by the --newline option. The -w (match as a  word)
-                 and  -x (match whole line) options can be used with -F.  They
-                 apply to each of the fixed strings. A line is selected if any
+                 strings, separated by newlines, instead of as a  regular  ex-
+                 pression. What constitutes a newline for this purpose is con-
+                 trolled by the --newline option. The -w (match as a word) and
+                 -x  (match whole line) options can be used with -F.  They ap-
+                 ply to each of the fixed strings. A line is selected  if  any
                  of the fixed strings are found in it (subject to -w or -x, if
                  present). This option applies only to the patterns  that  are
                  matched  against  the contents of files; it does not apply to
-                 patterns specified by  any  of  the  --include  or  --exclude
-                 options.
+                 patterns specified by any of the --include or  --exclude  op-
+                 tions.
 
        -f filename, --file=filename
                  Read  patterns  from  the  file, one per line, and match them
@@ -358,16 +358,16 @@ OPTIONS
        --include=pattern
                  If any --include patterns are specified, the only files  that
                  are  processed  are those that match one of the patterns (and
-                 do not match an --exclude  pattern).  This  option  does  not
-                 affect  directories,  but  it  applies  to all files, whether
-                 listed on the command line, obtained from --file-list, or  by
-                 scanning  a  directory. The pattern is a PCRE regular expres-
-                 sion, and is matched against the final component of the  file
-                 name,  not the entire path. The -F, -w, and -x options do not
-                 apply to this pattern. The option may be given any number  of
-                 times.  If  a  file  name  matches  both  an --include and an
-                 --exclude pattern, it is excluded.  There is  no  short  form
-                 for this option.
+                 do not match an --exclude pattern). This option does not  af-
+                 fect directories, but it applies to all files, whether listed
+                 on the command line, obtained from --file-list, or  by  scan-
+                 ning  a  directory. The pattern is a PCRE regular expression,
+                 and is matched against the final component of the file  name,
+                 not  the entire path. The -F, -w, and -x options do not apply
+                 to this pattern. The option may be given any number of times.
+                 If  a  file  name  matches both an --include and an --exclude
+                 pattern, it is excluded.  There is no short form for this op-
+                 tion.
 
        --include-from=filename
                  Treat  each  non-empty  line  of  the file as the data for an
@@ -381,8 +381,8 @@ OPTIONS
                  tories that are processed are those that  match  one  of  the
                  patterns  (and  do  not match an --exclude-dir pattern). This
                  applies to all directories, whether  listed  on  the  command
-                 line,  obtained  from  --file-list,  or  by scanning a parent
-                 directory. The pattern is a PCRE regular expression,  and  is
+                 line,  obtained from --file-list, or by scanning a parent di-
+                 rectory. The pattern is a PCRE  regular  expression,  and  is
                  matched  against  the  final component of the directory name,
                  not the entire path. The -F, -w, and -x options do not  apply
                  to this pattern. The option may be given any number of times.
@@ -413,9 +413,9 @@ OPTIONS
 
        --line-buffered
                  When this option is given, input is read and  processed  line
-                 by  line,  and  the  output  is  flushed after each write. By
-                 default, input is read in large chunks, unless  pcregrep  can
-                 determine  that  it is reading from a terminal (which is cur-
+                 by  line,  and the output is flushed after each write. By de-
+                 fault, input is read in large chunks, unless pcregrep can de-
+                 termine  that  it  is  reading from a terminal (which is cur-
                  rently possible only in Unix-like  environments).  Output  to
                  terminal  is  normally automatically flushed by the operating
                  system. This option can be useful when the input or output is
@@ -437,9 +437,9 @@ OPTIONS
        --locale=locale-name
                  This  option specifies a locale to be used for pattern match-
                  ing. It overrides the value in the LC_ALL or  LC_CTYPE  envi-
-                 ronment  variables.  If  no  locale  is  specified,  the PCRE
-                 library's default (usually the "C" locale) is used. There  is
-                 no short form for this option.
+                 ronment  variables.  If  no locale is specified, the PCRE li-
+                 brary's default (usually the "C" locale) is used. There is no
+                 short form for this option.
 
        --match-limit=number
                  Processing  some  regular  expression  patterns can require a
@@ -447,26 +447,26 @@ OPTIONS
                  gram  crash  if  not enough is available.  Other patterns may
                  take a very long time to search  for  all  possible  matching
                  strings.  The pcre_exec() function that is called by pcregrep
-                 to do the matching has two  parameters  that  can  limit  the
-                 resources that it uses.
+                 to do the matching has two parameters that can limit the  re-
+                 sources that it uses.
 
-                 The   --match-limit  option  provides  a  means  of  limiting
-                 resource usage when processing patterns that are not going to
+                 The  --match-limit  option  provides  a means of limiting re-
+                 source usage when processing patterns that are not  going  to
                  match, but which have a very large number of possibilities in
                  their search trees. The classic example  is  a  pattern  that
                  uses  nested unlimited repeats. Internally, PCRE uses a func-
-                 tion called match()  which  it  calls  repeatedly  (sometimes
-                 recursively).  The  limit  set by --match-limit is imposed on
-                 the number of times this function is called during  a  match,
-                 which  has  the effect of limiting the amount of backtracking
-                 that can take place.
+                 tion called match() which it calls repeatedly (sometimes  re-
+                 cursively).  The limit set by --match-limit is imposed on the
+                 number of times this function is called during a match, which
+                 has  the  effect  of limiting the amount of backtracking that
+                 can take place.
 
                  The --recursion-limit option is similar to --match-limit, but
                  instead of limiting the total number of times that match() is
                  called, it limits the depth of recursive calls, which in turn
                  limits  the  amount of memory that can be used. The recursion
-                 depth is a smaller number than the  total  number  of  calls,
-                 because not all calls to match() are recursive. This limit is
+                 depth is a smaller number than the total number of calls, be-
+                 cause  not  all calls to match() are recursive. This limit is
                  of use only if it is set smaller than --match-limit.
 
                  There are no short forms for these options. The default  set-
@@ -494,30 +494,30 @@ OPTIONS
                  is read line by line (see --line-buffered.)
 
        -N newline-type, --newline=newline-type
-                 The  PCRE  library  supports  five  different conventions for
-                 indicating the ends of lines. They are  the  single-character
-                 sequences  CR  (carriage  return) and LF (linefeed), the two-
-                 character sequence CRLF, an "anycrlf" convention, which  rec-
-                 ognizes  any  of the preceding three types, and an "any" con-
-                 vention, in which any Unicode line ending sequence is assumed
-                 to  end a line. The Unicode sequences are the three just men-
+                 The  PCRE library supports five different conventions for in-
+                 dicating the ends of lines. They are the single-character se-
+                 quences CR (carriage return) and LF (linefeed), the two-char-
+                 acter sequence CRLF, an "anycrlf"  convention,  which  recog-
+                 nizes  any of the preceding three types, and an "any" conven-
+                 tion, in which any Unicode line ending sequence is assumed to
+                 end  a  line.  The  Unicode sequences are the three just men-
                  tioned, plus  VT  (vertical  tab,  U+000B),  FF  (form  feed,
                  U+000C),   NEL  (next  line,  U+0085),  LS  (line  separator,
                  U+2028), and PS (paragraph separator, U+2029).
 
-                 When  the  PCRE  library  is  built,  a  default  line-ending
-                 sequence   is  specified.   This  is  normally  the  standard
-                 sequence for the operating system. Unless otherwise specified
-                 by  this  option,  pcregrep  uses the library's default.  The
-                 possible values for this option are CR, LF, CRLF, ANYCRLF, or
-                 ANY.  This  makes  it  possible to use pcregrep to scan files
-                 that have come from other environments without having to mod-
-                 ify  their  line  endings.  If the data that is being scanned
-                 does not agree with the convention set by this option,  pcre-
-                 grep  may  behave in strange ways. Note that this option does
-                 not apply to files specified by the  -f,  --exclude-from,  or
-                 --include-from options, which are expected to use the operat-
-                 ing system's standard newline sequence.
+                 When the PCRE library is built,  a  default  line-ending  se-
+                 quence  is specified.  This is normally the standard sequence
+                 for the operating system. Unless otherwise specified by  this
+                 option,  pcregrep  uses  the library's default.  The possible
+                 values for this option are CR, LF,  CRLF,  ANYCRLF,  or  ANY.
+                 This  makes  it  possible  to use pcregrep to scan files that
+                 have come from other environments without  having  to  modify
+                 their  line  endings.  If the data that is being scanned does
+                 not agree with the convention set by  this  option,  pcregrep
+                 may  behave  in  strange ways. Note that this option does not
+                 apply to files specified by the -f, --exclude-from, or  --in-
+                 clude-from  options,  which are expected to use the operating
+                 system's standard newline sequence.
 
        -n, --line-number
                  Precede each output line by its line number in the file, fol-
@@ -538,12 +538,12 @@ OPTIONS
                  is, the -A, -B, and -C options are ignored. If there is  more
                  than  one  match in a line, each of them is shown separately.
                  If -o is combined with -v (invert the sense of the  match  to
-                 find  non-matching  lines),  no  output is generated, but the
-                 return code is set appropriately. If the matched  portion  of
-                 the  line is empty, nothing is output unless the file name or
-                 line number are being printed, in which case they  are  shown
-                 on an otherwise empty line. This option is mutually exclusive
-                 with --file-offsets and --line-offsets.
+                 find non-matching lines), no output is generated, but the re-
+                 turn code is set appropriately. If the matched portion of the
+                 line is empty, nothing is output unless the file name or line
+                 number are being printed, in which case they are shown on  an
+                 otherwise  empty line. This option is mutually exclusive with
+                 --file-offsets and --line-offsets.
 
        -onumber, --only-matching=number
                  Show only the part of the line  that  matched  the  capturing
@@ -579,8 +579,8 @@ OPTIONS
                  it  contains, taking note of any --include and --exclude set-
                  tings. By default, a directory is read as a normal  file;  in
                  some  operating  systems this gives an immediate end-of-file.
-                 This option is a shorthand  for  setting  the  -d  option  to
-                 "recurse".
+                 This option is a shorthand for setting the -d option to  "re-
+                 curse".
 
        --recursion-limit=number
                  See --match-limit above.
@@ -626,10 +626,10 @@ OPTIONS
 
 ENVIRONMENT VARIABLES
 
-       The  environment  variables  LC_ALL  and LC_CTYPE are examined, in that
-       order, for a locale. The first one that is set is  used.  This  can  be
-       overridden  by  the  --locale  option.  If  no  locale is set, the PCRE
-       library's default (usually the "C" locale) is used.
+       The environment variables LC_ALL and LC_CTYPE are examined, in that or-
+       der, for a locale. The first one that is set is used. This can be over-
+       ridden  by the --locale option. If no locale is set, the PCRE library's
+       default (usually the "C" locale) is used.
 
 
 NEWLINES
@@ -640,8 +640,8 @@ NEWLINES
        ever  newline sequences they have in the input. However, the setting of
        this option does not affect the interpretation of  files  specified  by
        the -f, --exclude-from, or --include-from options, which are assumed to
-       use the operating system's  standard  newline  sequence,  nor  does  it
-       affect  the  way in which pcregrep writes informational messages to the
+       use the operating system's standard newline sequence, nor does  it  af-
+       fect  the  way  in  which pcregrep writes informational messages to the
        standard error and output streams. For these it uses the string "\n" to
        indicate  newlines,  relying on the C I/O library to convert this to an
        appropriate sequence.
@@ -687,13 +687,13 @@ OPTIONS WITH DATA
          --file /some/file
 
        Note, however, that if you want to supply a file name beginning with  ~
-       as  data  in  a  shell  command,  and have the shell expand ~ to a home
-       directory, you must separate the file name from the option, because the
+       as  data  in a shell command, and have the shell expand ~ to a home di-
+       rectory, you must separate the file name from the option,  because  the
        shell does not treat ~ specially unless it is at the start of an item.
 
        The  exceptions  to the above are the --colour (or --color) and --only-
-       matching options, for which the data  is  optional.  If  one  of  these
-       options  does  have  data, it must be given in the first form, using an
+       matching options, for which the data is optional. If one of  these  op-
+       tions  does  have  data,  it  must be given in the first form, using an
        equals character. Otherwise pcregrep will assume that it has no data.
 
 
@@ -702,14 +702,14 @@ MATCHING ERRORS
        It is possible to supply a regular expression that takes  a  very  long
        time  to  fail  to  match certain lines. Such patterns normally involve
        nested indefinite repeats, for example: (a+)*\d when matched against  a
-       line  of  a's  with  no  final  digit. The PCRE matching function has a
-       resource limit that causes it to abort in these circumstances. If  this
+       line  of  a's with no final digit. The PCRE matching function has a re-
+       source limit that causes it to abort in these  circumstances.  If  this
        happens, pcregrep outputs an error message and the line that caused the
        problem to the standard error stream. If there are more  than  20  such
        errors, pcregrep gives up.
 
-       The  --match-limit  option  of  pcregrep can be used to set the overall
-       resource limit; there is a second option called --recursion-limit  that
+       The --match-limit option of pcregrep can be used to set the overall re-
+       source limit; there is a second option  called  --recursion-limit  that
        sets  a limit on the amount of memory (usually stack) that is used (see
        the discussion of these options above).
 

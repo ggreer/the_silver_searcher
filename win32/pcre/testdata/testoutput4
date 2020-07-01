@@ -1277,4 +1277,8 @@ No match
     \\C(\\W?ſ)'?{{
 No match
 
+/[^\x{100}-\x{ffff}]*[\x80-\xff]/8
+    \x{99}\x{99}\x{99}
+ 0: \x{99}\x{99}\x{99}
+
 /-- End of testinput4 --/

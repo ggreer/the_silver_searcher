@@ -2252,7 +2252,7 @@ if (isdirectory(pathname))
       int fnlength = strlen(pathname) + strlen(nextfile) + 2;
       if (fnlength > 2048)
         {
-        fprintf(stderr, "pcre2grep: recursive filename is too long\n");
+        fprintf(stderr, "pcregrep: recursive filename is too long\n");
         rc = 2;
         break;
         }
@@ -3034,7 +3034,7 @@ LC_ALL environment variable is set, and if so, use it. */
 if (locale == NULL)
   {
   locale = getenv("LC_ALL");
-  locale_from = "LCC_ALL";
+  locale_from = "LC_ALL";
   }
 
 if (locale == NULL)

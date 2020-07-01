@@ -13,9 +13,10 @@ libraries.
 The latest release of PCRE1 is always available in three alternative formats
 from:
 
-  ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-xxx.tar.gz
-  ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-xxx.tar.bz2
-  ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-xxx.zip
+  https://ftp.pcre.org/pub/pcre/pcre-x.xx.tar.gz
+  https://ftp.pcre.org/pub/pcre/pcre-x.xx.tar.bz2
+  https://ftp.pcre.org/pub/pcre/pcre-x.xx.tar.zip
+
 
 There is a mailing list for discussion about the development of PCRE at
 pcre-dev@exim.org. You can access the archives and subscribe or manage your
@@ -999,4 +1000,4 @@ pcre_xxx, one with the name pcre16_xx, and a third with the name pcre32_xxx.
 Philip Hazel
 Email local part: ph10
 Email domain: cam.ac.uk
-Last updated: 10 February 2015
+Last updated: 12 February 2020

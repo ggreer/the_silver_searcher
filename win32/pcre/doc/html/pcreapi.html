@@ -1246,7 +1246,7 @@ the following negative numbers:
   PCRE_ERROR_BADOPTION      the value of <i>what</i> was invalid
   PCRE_ERROR_UNSET          the requested field is not set
 </pre>
-The "magic number" is placed at the start of each compiled pattern as an simple
+The "magic number" is placed at the start of each compiled pattern as a simple
 check against passing an arbitrary memory pointer. The endianness error can
 occur if a compiled pattern is saved and reloaded on a different host. Here is
 a typical call of <b>pcre_fullinfo()</b>, to obtain the length of the compiled
@@ -1318,7 +1318,7 @@ returned. For anchored patterns, -2 is returned.
 </pre>
 Return the value of the first data unit (non-UTF character) of any matched
 string in the situation where PCRE_INFO_FIRSTCHARACTERFLAGS returns 1;
-otherwise return 0. The fourth argument should point to an <b>uint_t</b>
+otherwise return 0. The fourth argument should point to a <b>uint_t</b>
 variable.
 </P>
 <P>
@@ -1577,7 +1577,7 @@ returned value 1 (with "z" returned from PCRE_INFO_REQUIREDCHAR), but for
 </pre>
 Return the value of the rightmost literal data unit that must exist in any
 matched string, other than at its start, if such a value has been recorded. The
-fourth argument should point to an <b>uint32_t</b> variable. If there is no such
+fourth argument should point to a <b>uint32_t</b> variable. If there is no such
 value, 0 is returned.
 </P>
 <br><a name="SEC16" href="#TOC1">REFERENCE COUNTS</a><br>

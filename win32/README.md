@@ -94,7 +94,7 @@ None
 
 Home page: http://www.pcre.org/
 
-Using pcre 8.42, which is the latest in the PCRE 1 series as of November 2018.  
+Using pcre 8.44, which is the latest in the PCRE 1 series as of June 2020.  
 Do not use pcre2, which has different APIs.
 
 #### Files added
@@ -107,6 +107,9 @@ pcre.mak           | Pcre-specific make rules.
 
 #### Files modified
 None
+
+When upgrading pcre, check changes in config.h.generic, and port them into config.h.MsvcLibX.  
+This typically includes the 3 version strings.
 
 
 ## pthreads - Posix Threads for Windows library

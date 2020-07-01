@@ -1,4 +1,4 @@
-.TH PCRETEST 1 "09 February 2014" "PCRE 8.35"
+.TH PCRETEST 1 "10 February 2020" "PCRE 8.44"
 .SH NAME
 pcretest - a program for testing Perl-compatible regular expressions.
 .SH SYNOPSIS
@@ -50,6 +50,10 @@ newline as data characters. However, in some Windows environments character 26
 (hex 1A) causes an immediate end of file, and no further data is read. For
 maximum portability, therefore, it is safest to use only ASCII characters in
 \fBpcretest\fP input files.
+.P
+The input is processed using using C's string functions, so must not
+contain binary zeroes, even though in Unix-like environments, \fBfgets()\fP
+treats any bytes other than newline as data characters.
 .
 .
 .SH "PCRE's 8-BIT, 16-BIT AND 32-BIT LIBRARIES"
@@ -74,21 +78,19 @@ the 16-bit library, or \fBpcre32_xx\fP when using the 32-bit library".
 .rs
 .TP 10
 \fB-8\fP
-If both the 8-bit library has been built, this option causes the 8-bit library
-to be used (which is the default); if the 8-bit library has not been built,
-this option causes an error.
+If the 8-bit library has been built, this option causes it to be used (this is
+the default). If the 8-bit library has not been built, this option causes an
+error.
 .TP 10
 \fB-16\fP
-If both the 8-bit or the 32-bit, and the 16-bit libraries have been built, this
-option causes the 16-bit library to be used. If only the 16-bit library has been
-built, this is the default (so has no effect). If only the 8-bit or the 32-bit
-library has been built, this option causes an error.
+If the 16-bit library has been built, this option causes it to be used. If only
+the 16-bit library has been built, this is the default. If the 16-bit library
+has not been built, this option causes an error.
 .TP 10
 \fB-32\fP
-If both the 8-bit or the 16-bit, and the 32-bit libraries have been built, this
-option causes the 32-bit library to be used. If only the 32-bit library has been
-built, this is the default (so has no effect). If only the 8-bit or the 16-bit
-library has been built, this option causes an error.
+If the 32-bit library has been built, this option causes it to be used. If only
+the 32-bit library has been built, this is the default. If the 32-bit library
+has not been built, this option causes an error.
 .TP 10
 \fB-b\fP
 Behave as if each pattern has the \fB/B\fP (show byte code) modifier; the
@@ -1151,6 +1153,6 @@ Cambridge CB2 3QH, England.
 .rs
 .sp
 .nf
-Last updated: 09 February 2014
-Copyright (c) 1997-2014 University of Cambridge.
+Last updated: 10 February 2020
+Copyright (c) 1997-2020 University of Cambridge.
 .fi

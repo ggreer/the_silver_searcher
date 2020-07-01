@@ -1,7 +1,7 @@
 /*
  *    Stack-less Just-In-Time compiler
  *
- *    Copyright 2009-2012 Zoltan Herczeg (hzmester@freemail.hu). All rights reserved.
+ *    Copyright Zoltan Herczeg (hzmester@freemail.hu). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
@@ -86,7 +86,7 @@ static SLJIT_INLINE void* alloc_chunk(sljit_uw size)
 	return VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 }
 
-static SLJIT_INLINE void free_chunk(void* chunk, sljit_uw size)
+static SLJIT_INLINE void free_chunk(void *chunk, sljit_uw size)
 {
 	SLJIT_UNUSED_ARG(size);
 	VirtualFree(chunk, 0, MEM_RELEASE);
@@ -94,24 +94,91 @@ static SLJIT_INLINE void free_chunk(void* chunk, sljit_uw size)
 
 #else
 
+#ifdef __APPLE__
+/* Configures TARGET_OS_OSX when appropriate */
+#include <TargetConditionals.h>
+
+#if TARGET_OS_OSX && defined(MAP_JIT)
+#include <sys/utsname.h>
+#endif /* TARGET_OS_OSX && MAP_JIT */
+
+#ifdef MAP_JIT
+
+static SLJIT_INLINE int get_map_jit_flag()
+{
+#if TARGET_OS_OSX
+	/* On macOS systems, returns MAP_JIT if it is defined _and_ we're running on a version
+	   of macOS where it's OK to have more than one JIT block. On non-macOS systems, returns
+	   MAP_JIT if it is defined. */
+	static int map_jit_flag = -1;
+
+	/* The following code is thread safe because multiple initialization
+	   sets map_jit_flag to the same value and the code has no side-effects.
+	   Changing the kernel version witout system restart is (very) unlikely. */
+	if (map_jit_flag == -1) {
+		struct utsname name;
+
+		map_jit_flag = 0;
+		uname(&name);
+
+		/* Kernel version for 10.14.0 (Mojave) */
+		if (atoi(name.release) >= 18) {
+			/* Only use MAP_JIT if a hardened runtime is used, because MAP_JIT is incompatible with fork(). */
+			void *ptr = mmap(NULL, getpagesize(), PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+
+			if (ptr == MAP_FAILED) {
+				map_jit_flag = MAP_JIT;
+			} else {
+				munmap(ptr, getpagesize());
+			}
+		}
+	}
+
+	return map_jit_flag;
+#else /* !TARGET_OS_OSX */
+	return MAP_JIT;
+#endif /* TARGET_OS_OSX */
+}
+
+#endif /* MAP_JIT */
+
+#endif /* __APPLE__ */
+
 static SLJIT_INLINE void* alloc_chunk(sljit_uw size)
 {
-	void* retval;
+	void *retval;
+	const int prot = PROT_READ | PROT_WRITE | PROT_EXEC;
 
 #ifdef MAP_ANON
-	retval = mmap(NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANON, -1, 0);
-#else
+
+	int flags = MAP_PRIVATE | MAP_ANON;
+
+#ifdef MAP_JIT
+	flags |= get_map_jit_flag();
+#endif
+
+	retval = mmap(NULL, size, prot, flags, -1, 0);
+#else /* !MAP_ANON */
 	if (dev_zero < 0) {
 		if (open_dev_zero())
 			return NULL;
 	}
-	retval = mmap(NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE, dev_zero, 0);
-#endif
+	retval = mmap(NULL, size, prot, MAP_PRIVATE, dev_zero, 0);
+#endif /* MAP_ANON */
 
-	return (retval != MAP_FAILED) ? retval : NULL;
+	if (retval == MAP_FAILED)
+		retval = NULL;
+	else {
+		if (mprotect(retval, size, prot) < 0) {
+			munmap(retval, size);
+			retval = NULL;
+		}
+	}
+
+	return retval;
 }
 
-static SLJIT_INLINE void free_chunk(void* chunk, sljit_uw size)
+static SLJIT_INLINE void free_chunk(void *chunk, sljit_uw size)
 {
 	munmap(chunk, size);
 }
@@ -180,8 +247,8 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_malloc_exec(sljit_uw size)
 	sljit_uw chunk_size;
 
 	allocator_grab_lock();
-	if (size < sizeof(struct free_block))
-		size = sizeof(struct free_block);
+	if (size < (64 - sizeof(struct block_header)))
+		size = (64 - sizeof(struct block_header));
 	size = ALIGN_SIZE(size);
 
 	free_block = free_blocks;

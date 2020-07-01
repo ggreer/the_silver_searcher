@@ -1,4 +1,4 @@
-.TH PCREJIT 3 "17 March 2013" "PCRE 8.33"
+.TH PCREJIT 3 "05 July 2017" "PCRE 8.41"
 .SH NAME
 PCRE - Perl-compatible regular expressions
 .SH "PCRE JUST-IN-TIME COMPILER SUPPORT"
@@ -54,9 +54,12 @@ programs that need the best possible performance, there is also a "fast path"
 API that is JIT-specific.
 .P
 If your program may sometimes be linked with versions of PCRE that are older
-than 8.20, but you want to use JIT when it is available, you can test
-the values of PCRE_MAJOR and PCRE_MINOR, or the existence of a JIT macro such
-as PCRE_CONFIG_JIT, for compile-time control of your code.
+than 8.20, but you want to use JIT when it is available, you can test the
+values of PCRE_MAJOR and PCRE_MINOR, or the existence of a JIT macro such as
+PCRE_CONFIG_JIT, for compile-time control of your code. Also beware that the
+\fBpcre_jit_exec()\fP function was not available at all before 8.32,
+and may not be available at all if PCRE isn't compiled with
+--enable-jit. See the "JIT FAST PATH API" section below for details.
 .
 .
 .SH "SIMPLE USE OF JIT"
@@ -95,6 +98,19 @@ when you call \fBpcre_study()\fP:
 .sp
   PCRE_STUDY_JIT_PARTIAL_HARD_COMPILE
   PCRE_STUDY_JIT_PARTIAL_SOFT_COMPILE
+.sp
+If using \fBpcre_jit_exec()\fP and supporting a pre-8.32 version of
+PCRE, you can insert:
+.sp
+   #if PCRE_MAJOR >= 8 && PCRE_MINOR >= 32
+   pcre_jit_exec(...);
+   #else
+   pcre_exec(...)
+   #endif
+.sp
+but as described in the "JIT FAST PATH API" section below this assumes
+version 8.32 and later are compiled with --enable-jit, which may
+break.
 .sp
 The JIT compiler generates different optimized code for each of the three
 modes (normal, soft partial, hard partial). When \fBpcre_exec()\fP is called,
@@ -404,6 +420,32 @@ fast path, and if invalid data is passed, the result is undefined.
 .P
 Bypassing the sanity checks and the \fBpcre_exec()\fP wrapping can give
 speedups of more than 10%.
+.P
+Note that the \fBpcre_jit_exec()\fP function is not available in versions of
+PCRE before 8.32 (released in November 2012). If you need to support versions
+that old you must either use the slower \fBpcre_exec()\fP, or switch between
+the two codepaths by checking the values of PCRE_MAJOR and PCRE_MINOR.
+.P
+Due to an unfortunate implementation oversight, even in versions 8.32
+and later there will be no \fBpcre_jit_exec()\fP stub function defined
+when PCRE is compiled with --disable-jit, which is the default, and
+there's no way to detect whether PCRE was compiled with --enable-jit
+via a macro.
+.P
+If you need to support versions older than 8.32, or versions that may
+not build with --enable-jit, you must either use the slower
+\fBpcre_exec()\fP, or switch between the two codepaths by checking the
+values of PCRE_MAJOR and PCRE_MINOR.
+.P
+Switching between the two by checking the version assumes that all the
+versions being targeted are built with --enable-jit. To also support
+builds that may use --disable-jit either \fBpcre_exec()\fP must be
+used, or a compile-time check for JIT via \fBpcre_config()\fP (which
+assumes the runtime environment will be the same), or as the Git
+project decided to do, simply assume that \fBpcre_jit_exec()\fP is
+present in 8.32 or later unless a compile-time flag is provided, see
+the "grep: un-break building with PCRE >= 8.32 without --enable-jit"
+commit in git.git for an example of that.
 .
 .
 .SH "SEE ALSO"
@@ -426,6 +468,6 @@ Cambridge CB2 3QH, England.
 .rs
 .sp
 .nf
-Last updated: 17 March 2013
-Copyright (c) 1997-2013 University of Cambridge.
+Last updated: 05 July 2017
+Copyright (c) 1997-2017 University of Cambridge.
 .fi

@@ -1,7 +1,7 @@
 /*
  *    Stack-less Just-In-Time compiler
  *
- *    Copyright 2009-2012 Zoltan Herczeg (hzmester@freemail.hu). All rights reserved.
+ *    Copyright Zoltan Herczeg (hzmester@freemail.hu). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
@@ -88,77 +88,86 @@ static SLJIT_INLINE sljit_s32 emit_single_op(struct sljit_compiler *compiler, sl
 
 	case SLJIT_NEG:
 		SLJIT_ASSERT(src1 == TMP_REG1);
-		return push_inst(compiler, NEG | OERC(flags) | D(dst) | A(src2));
+		/* Setting XER SO is not enough, CR SO is also needed. */
+		return push_inst(compiler, NEG | OE((flags & ALT_FORM1) ? ALT_SET_FLAGS : 0) | RC(flags) | D(dst) | A(src2));
 
 	case SLJIT_CLZ:
 		SLJIT_ASSERT(src1 == TMP_REG1);
-		return push_inst(compiler, CNTLZW | RC(flags) | S(src2) | A(dst));
+		return push_inst(compiler, CNTLZW | S(src2) | A(dst));
 
 	case SLJIT_ADD:
 		if (flags & ALT_FORM1) {
-			/* Flags does not set: BIN_IMM_EXTS unnecessary. */
-			SLJIT_ASSERT(src2 == TMP_REG2);
-			return push_inst(compiler, ADDI | D(dst) | A(src1) | compiler->imm);
+			/* Setting XER SO is not enough, CR SO is also needed. */
+			return push_inst(compiler, ADD | OE(ALT_SET_FLAGS) | RC(ALT_SET_FLAGS) | D(dst) | A(src1) | B(src2));
 		}
+
 		if (flags & ALT_FORM2) {
 			/* Flags does not set: BIN_IMM_EXTS unnecessary. */
 			SLJIT_ASSERT(src2 == TMP_REG2);
-			return push_inst(compiler, ADDIS | D(dst) | A(src1) | compiler->imm);
+
+			if (flags & ALT_FORM3)
+				return push_inst(compiler, ADDIS | D(dst) | A(src1) | compiler->imm);
+
+			if (flags & ALT_FORM4) {
+				FAIL_IF(push_inst(compiler, ADDIS | D(dst) | A(src1) | (((compiler->imm >> 16) & 0xffff) + ((compiler->imm >> 15) & 0x1))));
+				src1 = dst;
+			}
+
+			return push_inst(compiler, ADDI | D(dst) | A(src1) | (compiler->imm & 0xffff));
 		}
 		if (flags & ALT_FORM3) {
 			SLJIT_ASSERT(src2 == TMP_REG2);
 			return push_inst(compiler, ADDIC | D(dst) | A(src1) | compiler->imm);
 		}
-		if (flags & ALT_FORM4) {
-			/* Flags does not set: BIN_IMM_EXTS unnecessary. */
-			FAIL_IF(push_inst(compiler, ADDI | D(dst) | A(src1) | (compiler->imm & 0xffff)));
-			return push_inst(compiler, ADDIS | D(dst) | A(dst) | (((compiler->imm >> 16) & 0xffff) + ((compiler->imm >> 15) & 0x1)));
-		}
 		if (!(flags & ALT_SET_FLAGS))
 			return push_inst(compiler, ADD | D(dst) | A(src1) | B(src2));
-		return push_inst(compiler, ADDC | OERC(ALT_SET_FLAGS) | D(dst) | A(src1) | B(src2));
+		if (flags & ALT_FORM4)
+			return push_inst(compiler, ADDC | RC(ALT_SET_FLAGS) | D(dst) | A(src1) | B(src2));
+		return push_inst(compiler, ADD | RC(flags) | D(dst) | A(src1) | B(src2));
 
 	case SLJIT_ADDC:
-		if (flags & ALT_FORM1) {
-			FAIL_IF(push_inst(compiler, MFXER | D(0)));
-			FAIL_IF(push_inst(compiler, ADDE | D(dst) | A(src1) | B(src2)));
-			return push_inst(compiler, MTXER | S(0));
-		}
 		return push_inst(compiler, ADDE | D(dst) | A(src1) | B(src2));
 
 	case SLJIT_SUB:
 		if (flags & ALT_FORM1) {
+			if (flags & ALT_FORM2) {
+				FAIL_IF(push_inst(compiler, CMPLI | CRD(0) | A(src1) | compiler->imm));
+				if (!(flags & ALT_FORM3))
+					return SLJIT_SUCCESS;
+				return push_inst(compiler, ADDI | D(dst) | A(src1) | (-compiler->imm & 0xffff));
+			}
+			FAIL_IF(push_inst(compiler, CMPL | CRD(0) | A(src1) | B(src2)));
+			if (!(flags & ALT_FORM3))
+				return SLJIT_SUCCESS;
+			return push_inst(compiler, SUBF | D(dst) | A(src2) | B(src1));
+		}
+
+		if (flags & ALT_FORM2) {
+			/* Setting XER SO is not enough, CR SO is also needed. */
+			return push_inst(compiler, SUBF | OE(ALT_SET_FLAGS) | RC(ALT_SET_FLAGS) | D(dst) | A(src2) | B(src1));
+		}
+
+		if (flags & ALT_FORM3) {
 			/* Flags does not set: BIN_IMM_EXTS unnecessary. */
 			SLJIT_ASSERT(src2 == TMP_REG2);
 			return push_inst(compiler, SUBFIC | D(dst) | A(src1) | compiler->imm);
 		}
-		if (flags & (ALT_FORM2 | ALT_FORM3)) {
-			SLJIT_ASSERT(src2 == TMP_REG2);
-			if (flags & ALT_FORM2)
-				FAIL_IF(push_inst(compiler, CMPI | CRD(0) | A(src1) | compiler->imm));
-			if (flags & ALT_FORM3)
-				return push_inst(compiler, CMPLI | CRD(4) | A(src1) | compiler->imm);
-			return SLJIT_SUCCESS;
+
+		if (flags & ALT_FORM4) {
+			if (flags & ALT_FORM5) {
+				SLJIT_ASSERT(src2 == TMP_REG2);
+				return push_inst(compiler, CMPI | CRD(0) | A(src1) | compiler->imm);
+			}
+			return push_inst(compiler, CMP | CRD(0) | A(src1) | B(src2));
 		}
-		if (flags & (ALT_FORM4 | ALT_FORM5)) {
-			if (flags & ALT_FORM4)
-				FAIL_IF(push_inst(compiler, CMPL | CRD(4) | A(src1) | B(src2)));
-			if (flags & ALT_FORM5)
-				FAIL_IF(push_inst(compiler, CMP | CRD(0) | A(src1) | B(src2)));
-			return SLJIT_SUCCESS;
-		}
+
 		if (!(flags & ALT_SET_FLAGS))
 			return push_inst(compiler, SUBF | D(dst) | A(src2) | B(src1));
-		if (flags & ALT_FORM6)
-			FAIL_IF(push_inst(compiler, CMPL | CRD(4) | A(src1) | B(src2)));
-		return push_inst(compiler, SUBFC | OERC(ALT_SET_FLAGS) | D(dst) | A(src2) | B(src1));
+		if (flags & ALT_FORM5)
+			return push_inst(compiler, SUBFC | RC(ALT_SET_FLAGS) | D(dst) | A(src2) | B(src1));
+		return push_inst(compiler, SUBF | RC(flags) | D(dst) | A(src2) | B(src1));
 
 	case SLJIT_SUBC:
-		if (flags & ALT_FORM1) {
-			FAIL_IF(push_inst(compiler, MFXER | D(0)));
-			FAIL_IF(push_inst(compiler, SUBFE | D(dst) | A(src2) | B(src1)));
-			return push_inst(compiler, MTXER | S(0));
-		}
 		return push_inst(compiler, SUBFE | D(dst) | A(src2) | B(src1));
 
 	case SLJIT_MUL:
@@ -166,7 +175,7 @@ static SLJIT_INLINE sljit_s32 emit_single_op(struct sljit_compiler *compiler, sl
 			SLJIT_ASSERT(src2 == TMP_REG2);
 			return push_inst(compiler, MULLI | D(dst) | A(src1) | compiler->imm);
 		}
-		return push_inst(compiler, MULLW | OERC(flags) | D(dst) | A(src2) | B(src1));
+		return push_inst(compiler, MULLW | OE(flags) | RC(flags) | D(dst) | A(src2) | B(src1));
 
 	case SLJIT_AND:
 		if (flags & ALT_FORM1) {
@@ -228,19 +237,15 @@ static SLJIT_INLINE sljit_s32 emit_single_op(struct sljit_compiler *compiler, sl
 		return push_inst(compiler, SRW | RC(flags) | S(src1) | A(dst) | B(src2));
 
 	case SLJIT_ASHR:
-		if (flags & ALT_FORM3)
-			FAIL_IF(push_inst(compiler, MFXER | D(0)));
 		if (flags & ALT_FORM1) {
 			SLJIT_ASSERT(src2 == TMP_REG2);
 			compiler->imm &= 0x1f;
-			FAIL_IF(push_inst(compiler, SRAWI | RC(flags) | S(src1) | A(dst) | (compiler->imm << 11)));
+			return push_inst(compiler, SRAWI | RC(flags) | S(src1) | A(dst) | (compiler->imm << 11));
 		}
-		else
-			FAIL_IF(push_inst(compiler, SRAW | RC(flags) | S(src1) | A(dst) | B(src2)));
-		return (flags & ALT_FORM3) ? push_inst(compiler, MTXER | S(0)) : SLJIT_SUCCESS;
+		return push_inst(compiler, SRAW | RC(flags) | S(src1) | A(dst) | B(src2));
 	}
 
-	SLJIT_ASSERT_STOP();
+	SLJIT_UNREACHABLE();
 	return SLJIT_SUCCESS;
 }
 
@@ -250,20 +255,24 @@ static SLJIT_INLINE sljit_s32 emit_const(struct sljit_compiler *compiler, sljit_
 	return push_inst(compiler, ORI | S(reg) | A(reg) | IMM(init_value));
 }
 
-SLJIT_API_FUNC_ATTRIBUTE void sljit_set_jump_addr(sljit_uw addr, sljit_uw new_addr)
+SLJIT_API_FUNC_ATTRIBUTE void sljit_set_jump_addr(sljit_uw addr, sljit_uw new_target, sljit_sw executable_offset)
 {
-	sljit_ins *inst = (sljit_ins*)addr;
+	sljit_ins *inst = (sljit_ins *)addr;
 
-	inst[0] = (inst[0] & 0xffff0000) | ((new_addr >> 16) & 0xffff);
-	inst[1] = (inst[1] & 0xffff0000) | (new_addr & 0xffff);
+	SLJIT_ASSERT((inst[0] & 0xfc1f0000) == ADDIS && (inst[1] & 0xfc000000) == ORI);
+	inst[0] = (inst[0] & 0xffff0000) | ((new_target >> 16) & 0xffff);
+	inst[1] = (inst[1] & 0xffff0000) | (new_target & 0xffff);
+	inst = (sljit_ins *)SLJIT_ADD_EXEC_OFFSET(inst, executable_offset);
 	SLJIT_CACHE_FLUSH(inst, inst + 2);
 }
 
-SLJIT_API_FUNC_ATTRIBUTE void sljit_set_const(sljit_uw addr, sljit_sw new_constant)
+SLJIT_API_FUNC_ATTRIBUTE void sljit_set_const(sljit_uw addr, sljit_sw new_constant, sljit_sw executable_offset)
 {
-	sljit_ins *inst = (sljit_ins*)addr;
+	sljit_ins *inst = (sljit_ins *)addr;
 
+	SLJIT_ASSERT((inst[0] & 0xfc1f0000) == ADDIS && (inst[1] & 0xfc000000) == ORI);
 	inst[0] = (inst[0] & 0xffff0000) | ((new_constant >> 16) & 0xffff);
 	inst[1] = (inst[1] & 0xffff0000) | (new_constant & 0xffff);
+	inst = (sljit_ins *)SLJIT_ADD_EXEC_OFFSET(inst, executable_offset);
 	SLJIT_CACHE_FLUSH(inst, inst + 2);
 }

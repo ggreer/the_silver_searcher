@@ -1,12 +1,12 @@
 #! /bin/sh
 ## DO NOT EDIT - This file generated from ./build-aux/ltmain.in
-##               by inline-source v2016-02-21.11
+##               by inline-source v2018-07-24.06
 
-# libtool (GNU libtool) 2.4.6.40-6ca5-dirty
+# libtool (GNU libtool) 2.4.6.42-b88ce
 # Provide generalized library-building support services.
 # Written by Gordon Matzigkeit <gord@gnu.ai.mit.edu>, 1996
 
-# Copyright (C) 1996-2017 Free Software Foundation, Inc.
+# Copyright (C) 1996-2018 Free Software Foundation, Inc.
 # This is free software; see the source for copying conditions.  There is NO
 # warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
@@ -31,8 +31,8 @@
 
 PROGRAM=libtool
 PACKAGE=libtool
-VERSION=2.4.6.40-6ca5-dirty
-package_revision=2.4.6.40
+VERSION=2.4.6.42-b88ce
+package_revision=2.4.6.42
 
 
 ## ------ ##
@@ -64,7 +64,7 @@ package_revision=2.4.6.40
 # libraries, which are installed to $pkgauxdir.
 
 # Set a version string for this script.
-scriptversion=2017-04-19.12; # UTC
+scriptversion=2018-07-24.06; # UTC
 
 # General shell script boiler plate, and helper functions.
 # Written by Gary V. Vaughan, 2004
@@ -72,7 +72,7 @@ scriptversion=2017-04-19.12; # UTC
 # This is free software.  There is NO warranty; not even for
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# Copyright (C) 2004-2017 Bootstrap Authors
+# Copyright (C) 2004-2018 Bootstrap Authors
 #
 # This file is dual licensed under the terms of the MIT license
 # <https://opensource.org/license/MIT>, and GPL version 3 or later
@@ -1497,7 +1497,7 @@ func_lt_ver ()
 # This is free software.  There is NO warranty; not even for
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# Copyright (C) 2010-2017 Bootstrap Authors
+# Copyright (C) 2010-2018 Bootstrap Authors
 #
 # This file is dual licensed under the terms of the MIT license
 # <https://opensource.org/license/MIT>, and GPL version 3 or later
@@ -1510,7 +1510,7 @@ func_lt_ver ()
 # <https://github.com/gnulib-modules/bootstrap/issues>
 
 # Set a version string for this script.
-scriptversion=2016-03-06.01; # UTC
+scriptversion=2018-07-24.06; # UTC
 
 
 ## ------ ##
@@ -2171,12 +2171,12 @@ func_version ()
 # mode: shell-script
 # sh-indentation: 2
 # eval: (add-hook 'before-save-hook 'time-stamp)
-# time-stamp-pattern: "10/scriptversion=%:y-%02m-%02d.%02H; # UTC"
+# time-stamp-pattern: "30/scriptversion=%:y-%02m-%02d.%02H; # UTC"
 # time-stamp-time-zone: "UTC"
 # End:
 
 # Set a version string.
-scriptversion='(GNU libtool) 2.4.6.40-6ca5-dirty'
+scriptversion='(GNU libtool) 2.4.6.42-b88ce'
 
 
 # func_echo ARG...
@@ -2267,7 +2267,7 @@ include the following information:
        compiler:       $LTCC
        compiler flags: $LTCFLAGS
        linker:         $LD (gnu? $with_gnu_ld)
-       version:        $progname (GNU libtool) 2.4.6.40-6ca5-dirty
+       version:        $progname (GNU libtool) 2.4.6.42-b88ce
        automake:       `($AUTOMAKE --version) 2>/dev/null |$SED 1q`
        autoconf:       `($AUTOCONF --version) 2>/dev/null |$SED 1q`
 

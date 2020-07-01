@@ -9,19 +9,19 @@ dnl The PCRE_PRERELEASE feature is for identifying release candidates. It might
 dnl be defined as -RC2, for example. For real releases, it should be empty.
 
 m4_define(pcre_major, [8])
-m4_define(pcre_minor, [42])
+m4_define(pcre_minor, [44])
 m4_define(pcre_prerelease, [])
-m4_define(pcre_date, [2018-03-20])
+m4_define(pcre_date, [2020-02-12])
 
 # NOTE: The CMakeLists.txt file searches for the above variables in the first
 # 50 lines of this file. Please update that if the variables above are moved.
 
 # Libtool shared library interface versions (current:revision:age)
-m4_define(libpcre_version, [3:10:2])
-m4_define(libpcre16_version, [2:10:2])
-m4_define(libpcre32_version, [0:10:0])
-m4_define(libpcreposix_version, [0:6:0])
-m4_define(libpcrecpp_version, [0:1:0])
+m4_define(libpcre_version, [3:12:2])
+m4_define(libpcre16_version, [2:12:2])
+m4_define(libpcre32_version, [0:12:0])
+m4_define(libpcreposix_version, [0:7:0])
+m4_define(libpcrecpp_version, [0:2:0])
 
 AC_PREREQ(2.57)
 AC_INIT(PCRE, pcre_major.pcre_minor[]pcre_prerelease, , pcre)
@@ -159,12 +159,15 @@ AC_ARG_ENABLE(jit,
 
 if test "$enable_jit" = "auto"; then
   AC_LANG(C)
+  SAVE_CPPFLAGS=$CPPFLAGS
+  CPPFLAGS=-I$srcdir
   AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
   #define SLJIT_CONFIG_AUTO 1
   #include "sljit/sljitConfigInternal.h"
   #if (defined SLJIT_CONFIG_UNSUPPORTED && SLJIT_CONFIG_UNSUPPORTED)
   #error unsupported
   #endif]])], enable_jit=yes, enable_jit=no)
+  CPPFLAGS=$SAVE_CPPFLAGS
 fi
 
 # Handle --disable-pcregrep-jit (enabled by default)

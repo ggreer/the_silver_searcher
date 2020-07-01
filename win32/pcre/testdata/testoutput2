@@ -5614,9 +5614,8 @@ No match
     123456\P
 No match
 
-//KF>testsavedregex
+//S-KF>testsavedregex
 Compiled pattern written to testsavedregex
-Study data written to testsavedregex
 
 /abc/IS>testsavedregex
 Capturing subpattern count = 0
@@ -14720,5 +14719,9 @@ No need char
     aaab 
  0: ab
  1: a
+
+/(?(?=^))b/
+    abc
+ 0: b
 
 /-- End of testinput2 --/

@@ -1,6 +1,22 @@
 News about PCRE releases
 ------------------------
 
+Note that this library (now called PCRE1) is now being maintained for bug fixes
+only. New projects are advised to use the new PCRE2 libraries.
+
+
+Release 8.44 12-February-2020
+-----------------------------
+
+This is a bug-fix release.
+
+
+Release 8.43 23-February-2019
+-----------------------------
+
+This is a bug-fix release.
+
+
 Release 8.42 20-March-2018
 --------------------------
 

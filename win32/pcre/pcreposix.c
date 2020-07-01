@@ -6,7 +6,7 @@
 and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
-           Copyright (c) 1997-2018 University of Cambridge
+           Copyright (c) 1997-2020 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -298,6 +298,7 @@ if (preg->re_pcre == NULL)
 (void)pcre_fullinfo((const pcre *)preg->re_pcre, NULL, PCRE_INFO_CAPTURECOUNT,
   &re_nsub);
 preg->re_nsub = (size_t)re_nsub;
+preg->re_erroffset = (size_t)(-1);  /* No meaning after successful compile */
 return 0;
 }
 
@@ -334,8 +335,6 @@ BOOL nosub =
 if ((eflags & REG_NOTBOL) != 0) options |= PCRE_NOTBOL;
 if ((eflags & REG_NOTEOL) != 0) options |= PCRE_NOTEOL;
 if ((eflags & REG_NOTEMPTY) != 0) options |= PCRE_NOTEMPTY;
-
-((regex_t *)preg)->re_erroffset = (size_t)(-1);  /* Only has meaning after compile */
 
 /* When no string data is being returned, or no vector has been passed in which
 to put it, ensure that nmatch is zero. Otherwise, ensure the vector for holding

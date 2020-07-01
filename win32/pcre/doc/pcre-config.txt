@@ -16,8 +16,8 @@ DESCRIPTION
 
        pcre-config  returns  the configuration of the installed PCRE libraries
        and the options required to compile a program to use them. Some of  the
-       options  apply  only  to  the  8-bit,  or  16-bit, or 32-bit libraries,
-       respectively, and are not available if only one of those libraries  has
+       options  apply  only  to the 8-bit, or 16-bit, or 32-bit libraries, re-
+       spectively, and are not available if only one of  those  libraries  has
        been built. If an unavailable option is encountered, the "usage" infor-
        mation is output.
 
@@ -36,37 +36,37 @@ OPTIONS
        --version Writes the version number of the installed PCRE libraries  to
                  the standard output.
 
-       --libs    Writes  to  the  standard  output  the  command  line options
-                 required to link with the 8-bit PCRE library (-lpcre on  many
+       --libs    Writes  to  the  standard output the command line options re-
+                 quired to link with the 8-bit PCRE library  (-lpcre  on  many
                  systems).
 
-       --libs16  Writes  to  the  standard  output  the  command  line options
-                 required to link with the 16-bit PCRE  library  (-lpcre16  on
-                 many systems).
+       --libs16  Writes  to  the  standard output the command line options re-
+                 quired to link with the 16-bit PCRE library (-lpcre16 on many
+                 systems).
 
-       --libs32  Writes  to  the  standard  output  the  command  line options
-                 required to link with the 32-bit PCRE  library  (-lpcre32  on
-                 many systems).
+       --libs32  Writes  to  the  standard output the command line options re-
+                 quired to link with the 32-bit PCRE library (-lpcre32 on many
+                 systems).
 
        --libs-cpp
-                 Writes  to  the  standard  output  the  command  line options
-                 required to link with PCRE's C++ wrapper  library  (-lpcrecpp
+                 Writes  to  the  standard output the command line options re-
+                 quired to link with PCRE's  C++  wrapper  library  (-lpcrecpp
                  -lpcre on many systems).
 
        --libs-posix
-                 Writes  to  the  standard  output  the  command  line options
-                 required to  link  with  PCRE's  POSIX  API  wrapper  library
+                 Writes  to  the  standard output the command line options re-
+                 quired  to  link  with  PCRE's  POSIX  API  wrapper   library
                  (-lpcreposix -lpcre on many systems).
 
-       --cflags  Writes  to  the  standard  output  the  command  line options
-                 required to compile files that use  PCRE  (this  may  include
-                 some -I options, but is blank on many systems).
+       --cflags  Writes  to  the  standard output the command line options re-
+                 quired to compile files that use PCRE (this may include  some
+                 -I options, but is blank on many systems).
 
        --cflags-posix
-                 Writes  to  the  standard  output  the  command  line options
-                 required to compile files that use PCRE's POSIX  API  wrapper
-                 library  (this  may  include some -I options, but is blank on
-                 many systems).
+                 Writes  to  the  standard output the command line options re-
+                 quired to compile files that use PCRE's POSIX API wrapper li-
+                 brary (this may include some -I options, but is blank on many
+                 systems).
 
 
 SEE ALSO

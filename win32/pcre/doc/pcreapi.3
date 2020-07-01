@@ -1227,7 +1227,7 @@ the following negative numbers:
   PCRE_ERROR_BADOPTION      the value of \fIwhat\fP was invalid
   PCRE_ERROR_UNSET          the requested field is not set
 .sp
-The "magic number" is placed at the start of each compiled pattern as an simple
+The "magic number" is placed at the start of each compiled pattern as a simple
 check against passing an arbitrary memory pointer. The endianness error can
 occur if a compiled pattern is saved and reloaded on a different host. Here is
 a typical call of \fBpcre_fullinfo()\fP, to obtain the length of the compiled
@@ -1294,7 +1294,7 @@ returned. For anchored patterns, -2 is returned.
 .sp
 Return the value of the first data unit (non-UTF character) of any matched
 string in the situation where PCRE_INFO_FIRSTCHARACTERFLAGS returns 1;
-otherwise return 0. The fourth argument should point to an \fBuint_t\fP
+otherwise return 0. The fourth argument should point to a \fBuint_t\fP
 variable.
 .P
 In the 8-bit library, the value is always less than 256. In the 16-bit library
@@ -1560,7 +1560,7 @@ returned value 1 (with "z" returned from PCRE_INFO_REQUIREDCHAR), but for
 .sp
 Return the value of the rightmost literal data unit that must exist in any
 matched string, other than at its start, if such a value has been recorded. The
-fourth argument should point to an \fBuint32_t\fP variable. If there is no such
+fourth argument should point to a \fBuint32_t\fP variable. If there is no such
 value, 0 is returned.
 .
 .

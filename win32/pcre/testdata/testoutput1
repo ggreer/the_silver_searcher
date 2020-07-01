@@ -9442,4 +9442,32 @@ No match
     \  X
  0: X
      
+/X+(?#comment)?/
+    >XXX<
+ 0: X
+
+/   (?<word> \w+ )*    \.   /xi
+    pokus.
+ 0: pokus.
+ 1: pokus
+    
+/(?(DEFINE) (?<word> \w+ ) ) (?&word)*   \./xi
+    pokus.
+ 0: pokus.
+
+/(?(DEFINE) (?<word> \w+ ) ) ( (?&word)* )   \./xi 
+    pokus.
+ 0: pokus.
+ 1: <unset>
+ 2: pokus
+
+/(?&word)*  (?(DEFINE) (?<word> \w+ ) )  \./xi
+    pokus.
+ 0: pokus.
+
+/(?&word)*  \. (?<word> \w+ )/xi
+    pokus.hokus
+ 0: pokus.hokus
+ 1: hokus
+
 /-- End of testinput1 --/

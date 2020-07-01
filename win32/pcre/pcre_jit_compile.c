@@ -3938,10 +3938,10 @@ static sljit_s32 character_to_int32(pcre_uchar chr)
 sljit_s32 value = (sljit_s32)chr;
 #if defined COMPILE_PCRE8
 #define SSE2_COMPARE_TYPE_INDEX 0
-return (value << 24) | (value << 16) | (value << 8) | value;
+return ((unsigned int)value << 24) | ((unsigned int)value << 16) | ((unsigned int)value << 8) | (unsigned int)value;
 #elif defined COMPILE_PCRE16
 #define SSE2_COMPARE_TYPE_INDEX 1
-return (value << 16) | value;
+return ((unsigned int)value << 16) | value;
 #elif defined COMPILE_PCRE32
 #define SSE2_COMPARE_TYPE_INDEX 2
 return value;
@@ -8507,7 +8507,7 @@ if (opcode == OP_ONCE)
   /* We temporarily encode the needs_control_head in the lowest bit.
      Note: on the target architectures of SLJIT the ((x << 1) >> 1) returns
      the same value for small signed numbers (including negative numbers). */
-  BACKTRACK_AS(bracket_backtrack)->u.framesize = (BACKTRACK_AS(bracket_backtrack)->u.framesize << 1) | (needs_control_head ? 1 : 0);
+  BACKTRACK_AS(bracket_backtrack)->u.framesize = ((unsigned int)BACKTRACK_AS(bracket_backtrack)->u.framesize << 1) | (needs_control_head ? 1 : 0);
   }
 return cc + repeat_length;
 }
@@ -9002,7 +9002,7 @@ if (exact > 1)
 #ifdef SUPPORT_UTF
       && !common->utf
 #endif
-      )
+      && type != OP_ANYNL && type != OP_EXTUNI)
     {
     OP2(SLJIT_ADD, TMP1, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(exact));
     add_jump(compiler, &backtrack->topbacktracks, CMP(SLJIT_GREATER, TMP1, 0, STR_END, 0));
