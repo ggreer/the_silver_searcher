@@ -138,6 +138,7 @@ that defines variables `OUTDIR` and/or `MY_SDKS`:
     set "OUTDIR=XPVM"        &:# Optional: Base output path, overriding the default OUTDIR=bin directory.
     set "MY_SDKS=H:\JFL\SDK" &:# Optional: Path to the shared SDKs, as seen from this system.
 
+
 ## Using this make system for a new project
 
 Everything is designed to minimize the amount of things to do, while having the ability to build things easily for
@@ -271,3 +272,45 @@ in the project top directory.
 
         $(BP)/program3: $(SP)/program3a.c $(SP)/program3b.c $(SP)/program3c.c
 
+
+## Managing program properties
+
+In Windows Explorer, right-clicking on a program and selecting "Properties" displays a dialog box with multiple tabs.
+The "Details" tab displays a list of properties of the program.exe: File description, Type, File version, Product name,
+Product Version, Copyright, Legal trademarks, Original filename, etc.
+
+The SysToolsLib configuration and make system helps generating this information without having to create a dedicated
+program.rc resource file. For that, your C source must contain the following definitions:
+
+C constants definitions                                    | Description
+---------------------------------------------------------- | ----------------------------------------------------------
+`#define PROGRAM_DESCRIPTION "Demo of program properties"` | A short one-line string describing the program
+`#define PROGRAM_NAME        "demoprop"`                   | The base name of the program
+`#define PROGRAM_VERSION     "1.0.0"`                      | Program version MAJOR.MINOR.PATH[.BUILD] (Optional)
+`#define PROGRAM_DATE        "2019-06-16"`                 | Program date in ISO format. (Used to generate PROGRAM_VERSION if it's missing)
+
+make.bat and win32.mak will extract this information from demoprop.c, and generate a demoprop.rc with it.  
+If you *do* have your own demoprop.rc, then #include "SysToolsLib.rc" to do the same.
+
+Note that, for consistency, it's strongly recommended to reuse these same strings in the program's built-in help:
+When the user invokes it with options -? for help, or -V for the program version, then display these very strings.
+
+Configure.bat queries Windows for your full name and email address, to generate the copyright strings.  
+As these values may not always be the right ones, you can override them by adding in the sources directory
+a configure.YOURNAME.bat script defining the values you want:
+
+Batch variables definitions                | Description
+------------------------------------------ | -----------------------------
+`set "MY_FULLNAME=Jean-François Larvoire"` | The build author's full name
+`set "MY_EMAIL=jf.larvoire@free.fr"`       | The build author's email
+
+Important: If, as in this example, the MY_FULLNAME string contains non-ASCII characters, then configure.YOURNAME.bat
+must temporarily change the console code page to match its own encoding. Else the string would not be loaded correctly
+by configure.bat.    
+Configure.bat defines variable CON.CP with the current code page. Configure.USER.bat can use it to set, then restore the
+initial code page as needed. For example, assuming configure.USER.bat is encoded using code page 1252, it should contain:
+
+    if not %CON.CP%==1252 chcp 1252 >nul     &:# Make sure the next lines are executed using code page 1252
+    set "MY_FULLNAME=Jean-François Larvoire" &:# The build author's full name
+    set "MY_EMAIL=jf.larvoire@free.fr"       &:# The build author's email
+    if not %CON.CP%==1252 chcp %CON.CP% >nul &:# Restore the initial code page

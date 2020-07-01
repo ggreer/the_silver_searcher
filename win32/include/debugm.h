@@ -133,6 +133,9 @@
 *    2019-04-15 JFL Changed the debug puts() routine to an fputs-based routine*
 *		    which does not implicitely outputs an \n in the end.      *
 *		    Likewise, renamed SET_DEBUG_PUTS() as SET_DEBUG_PUT().    *
+*    2019-09-24 JFL Fixed bug in debug_vsprintf() using new try_vsnprintf().  *
+*    2020-03-19 JFL Fixed DEBUG_PRINT_MACRO() which sometimes failed in DOS   *
+*		    and WIN95 when used with undefined macros.		      *
 *		    							      *
 *        (C) Copyright 2016 Hewlett Packard Enterprise Development LP         *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -144,7 +147,7 @@
 #include <stdio.h>	/* Macros use printf */
 #include <stdarg.h>
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>	/* Macros use malloc */
 
 #ifdef __cplusplus
 extern "C" {
@@ -168,10 +171,10 @@ extern "C" {
 
 #ifndef _MSC_VER /* Emulate Microsoft's _vsnprintf() using the standard vsnprintf() */
 #define _VSNPRINTF_EMULATION \
-int _vsnprintf(char *pBuf, int iBufSize, const char *pszFormat, va_list vl) {  \
-  int iRet = vsnprintf(pBuf, iBufSize, pszFormat, vl);                         \
-  if (iRet > iBufSize) iRet = -1;                                              \
-  return iRet;			                                               \
+int _vsnprintf(char *pBuf, int iBufSize, const char *pszFormat, va_list vl) {     \
+  int iRet = vsnprintf(pBuf, iBufSize, pszFormat, vl); /* Always appends an \0 */ \
+  if (iRet >= iBufSize) iRet = -1; /* So if need iBufSize, output is truncated */ \
+  return iRet;									  \
 }
 #else /* Use Microsoft's own */
 #define _VSNPRINTF_EMULATION
@@ -192,40 +195,48 @@ int (*pdput)(const char *) = debug_put; /* Debug output routine. Default: debug_
 #define DEBUG_GLOBALS DEBUG_GLOBAL_VARS
 #else /* !defined(_MSDOS) */
 #define DEBUG_GLOBALS \
-DEBUG_GLOBAL_VARS							       \
-_VSNPRINTF_EMULATION							       \
-char *debug_vsprintf(char *pszFormat, va_list vl) {                            \
-  char *pszBuf = NULL;		                                               \
-  int n = 0, nBufSize = 64;				                       \
-  do {pszBuf = (char *)realloc(pszBuf, nBufSize *= 2);} while (		       \
-    pszBuf && ((n = _vsnprintf(pszBuf, nBufSize, pszFormat, vl)) == -1)        \
-  );		                                                               \
-  if (!pszBuf) return NULL;						       \
-  /* if (n && (pszBuf[n-1] == '\n')) pszBuf[--n] = '\0'; */                    \
-  return (char *)realloc(pszBuf, n+1);	                                       \
-}									       \
-char *debug_sprintf(char *pszFormat, ...) {                                    \
-  char *pszBuf;			                                               \
-  va_list vl;                                                                  \
-  va_start(vl, pszFormat);                                                     \
-  pszBuf = debug_vsprintf(pszFormat, vl);				       \
-  va_end(vl);                                                                  \
-  return pszBuf;		                                               \
-}									       \
-int debug_printf(char *pszFormat, ...) {                                       \
-  char *pszBuf1 = NULL, *pszBuf2 = NULL;		                       \
-  int n = 0;	                                                               \
-  va_list vl;                                                                  \
-  va_start(vl, pszFormat);                                                     \
-  pszBuf1 = debug_vsprintf(pszFormat, vl);				       \
-  va_end(vl);                                                                  \
-  if (!pszBuf1) return 0;		                                       \
-  pszBuf2 = debug_sprintf("%*s%s", iIndent, "", pszBuf1);                      \
-  if (pszBuf2) n = (int)strlen(pszBuf2);                                       \
-  pdput(pszBuf2);	                                                       \
-  fflush(stdout);	                                                       \
-  free(pszBuf1); free(pszBuf2);                                                \
-  return n;                                                                    \
+DEBUG_GLOBAL_VARS							          \
+_VSNPRINTF_EMULATION							          \
+/* Wrapper around _vsnprintf() that avoids consuming the va_list arguments */     \
+int try_vsnprintf(char *pBuf, int iBufSize, const char *pszFormat, va_list vl) {  \
+  int iRet;									  \
+  va_list vl2;									  \
+  va_copy(vl2, vl);								  \
+  iRet = _vsnprintf(pBuf, iBufSize, pszFormat, vl2);				  \
+  va_end(vl2);									  \
+  return iRet;									  \
+}										  \
+char *debug_vsprintf(char *pszFormat, va_list vl) {			          \
+  char *pszBuf = NULL;		                                                  \
+  int n = 0, nBufSize = 64;				                          \
+  do {pszBuf = (char *)realloc(pszBuf, nBufSize *= 2);} while (		          \
+    pszBuf && ((n = try_vsnprintf(pszBuf, nBufSize, pszFormat, vl)) == -1)        \
+  );		                                                                  \
+  if (!pszBuf) return NULL;						          \
+  return (char *)realloc(pszBuf, n+1);	                                          \
+}									          \
+char *debug_sprintf(char *pszFormat, ...) {                                       \
+  char *pszBuf;			                                                  \
+  va_list vl;                                                                     \
+  va_start(vl, pszFormat);                                                        \
+  pszBuf = debug_vsprintf(pszFormat, vl);				          \
+  va_end(vl);                                                                     \
+  return pszBuf;		                                                  \
+}									          \
+int debug_printf(char *pszFormat, ...) {                                          \
+  char *pszBuf1 = NULL, *pszBuf2 = NULL;		                          \
+  int n = 0;	                                                                  \
+  va_list vl;                                                                     \
+  va_start(vl, pszFormat);                                                        \
+  pszBuf1 = debug_vsprintf(pszFormat, vl);				          \
+  va_end(vl);                                                                     \
+  if (!pszBuf1) return 0;		                                          \
+  pszBuf2 = debug_sprintf("%*s%s", iIndent, "", pszBuf1);                         \
+  if (pszBuf2) n = (int)strlen(pszBuf2);                                          \
+  pdput(pszBuf2);	                                                          \
+  fflush(stdout);	                                                          \
+  free(pszBuf1); free(pszBuf2);                                                   \
+  return n;                                                                       \
 }
 #endif /* defined(_MSDOS) */
 
@@ -405,7 +416,7 @@ extern DEBUG_TLS int iIndent;	/* Debug messages indentation. Thread local. */
 /* Display a macro name and value. */
 #define DEBUG_PRINT_MACRO(name) DEBUG_DO( \
   const char *pszName = #name; /* Don't use STRINGIZE because we're already inside a macro */ \
-  const char *pszValue = STRINGIZE(name); /* Don't use VALUEIZE because we're already inside a macro */ \
+  const char *pszValue = "" STRINGIZE(name); /* Don't use VALUEIZE because we're already inside a macro */ \
   DEBUG_PRINT_INDENT(); \
   if (strcmp(pszName, pszValue)) { \
     printf("#define %s %s\n", pszName, pszValue); \

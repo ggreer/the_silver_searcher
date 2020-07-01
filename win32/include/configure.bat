@@ -69,9 +69,20 @@
 :#                  set "MSVCLIBX=D:\My\Tools\MSVCLIBX"                       *
 :#                  set "PTHREADS=S:\Shared\Libs\Pthreads2"                   *
 :#                                                                            *
-:#                  Finally configure.bat will search all SDKs in a directory *
+:#                  Configure.bat will then search all SDKs in a directory    *
 :#                  called %MY_SDKS%. You may set that variable in your       *
 :#                  configure.USER.bat file as well.                          *
+:#                                                                            *
+:#                  Finally configure.bat will try to get the user full name  *
+:#                  and email, into variables %MY_FULLNAME% and %MY_EMAIL%.   *
+:#		    You may set these variables in your configure.USER.bat.   *
+:#                  Important: If MY_FULLNAME contains non-ASCII characters,  *
+:#                  then configure.USER.bat must temporarily change the       *
+:#                  console code page to match its own encoding. Else the     *
+:#		    variable will not be encoded correctly. Note that	      *
+:#		    configure.bat defines variable CON.CP with the current    *
+:#		    code page. Configure.USER.bat can use it to restore the   *
+:#		    initial code page.
 :#                                                                            *
 :#                  A macro called %ADD_POST_CONFIG_ACTION% allows defining   *
 :#                  commands that run _after_ all configure.*.bat files are   *
@@ -181,6 +192,7 @@
 :#   2019-04-15 JFL Added option -nodos.                                      *
 :#                  Fixed option -vs, and split it into options -vsp and -vsn.*
 :#   2019-04-16 JFL Merged in the 2019-01-20 change made for Ag.              *
+:#   2019-06-12 JFL Added the user full name and email to %CONFIG.BAT%.	      *
 :#   2020-06-30 JFL Added the 7-Zip LZMA SDK to the list of known SDKs.       *
 :#                                                                            *
 :#      © Copyright 2016-2020 Hewlett Packard Enterprise Development LP       *
@@ -1356,6 +1368,70 @@ goto :eof
 
 :#----------------------------------------------------------------------------#
 :#                                                                            #
+:#  Function        trim						      #
+:#                                                                            #
+:#  Description     Trim spaces (or other chars.) from the ends of a string   #
+:#                                                                            #
+:#  Arguments       %1	    Variable name                                     #
+:#                  %2	    Characters to be trimmed. Default: space and tab  #
+:#                                                                            #
+:#  Notes 	    Inspired from Tcl string timming routines                 #
+:#                                                                            #
+:#  History                                                                   #
+:#   2012-11-09 JFL  Disable delayed expansion to support strings with !s.    #
+:#                   Fixed the debug output for the returned value.           #
+:#   2015-11-19 JFL Adapted to new %UPVAR% mechanism.                         #
+:#                                                                            #
+:#----------------------------------------------------------------------------#
+
+:# Trim spaces (or other characters) from the beginning of a string
+:# %1 = String variable to be trimmed
+:# %2 = Characters to be trimmed. Default: space and tab
+:trimleft
+%FUNCTION% EnableExtensions DisableDelayedExpansion
+if not defined %~1 %RETURN%
+call set "string=%%%~1%%"
+set "chars=%~2"
+if not defined chars set "chars=	 "
+:# %ECHOVARS.D% %~1 chars
+for /f "tokens=* delims=%chars%" %%a in ("%string%") do set "string=%%a"
+%UPVAR% %~1
+set "%~1=%string%"
+%RETURN%
+
+:# Trim spaces (or other characters) from the end of a string
+:# %1 = String variable to be trimmed
+:# %2 = Characters to be trimmed. Default: space and tab
+:trimright
+%FUNCTION% EnableExtensions DisableDelayedExpansion
+if not defined %~1 %RETURN%
+call set "string=%%%~1%%"
+set "chars=%~2"
+if not defined chars set "chars=	 "
+:# %ECHOVARS.D% RETVAR %~1 string chars DEBUG.RETVARS
+:trimright_loop
+if not defined string goto trimright_exit
+for /f "delims=%chars%" %%a in ("%string:~-1%") do goto trimright_exit
+set "string=%string:~0,-1%"
+goto trimright_loop
+:trimright_exit
+%UPVAR% %~1
+set "%~1=%string%"
+%RETURN%
+
+:# Trim spaces (or other characters) from both ends of a string
+:# %1 = String variable to be trimmed
+:# %2 = Characters to be trimmed. Default: space and tab
+:trim
+%FUNCTION%
+if not defined %~1 %RETURN%
+call :trimleft "%~1" "%~2"
+call :trimright "%~1" "%~2"
+%UPVAR% %~1
+%RETURN%
+
+:#----------------------------------------------------------------------------#
+:#                                                                            #
 :#  Function        Find16, Find32, Find64                                    #
 :#                                                                            #
 :#  Description     Find Microsoft development tools                          #
@@ -2179,18 +2255,30 @@ if exist "%windir%\SysWow64" if not exist "%windir%\SysWow64\chcp.com" (
   copy /y "%windir%\System32\chcp.com" "%windir%\SysWow64\" >NUL
 )
 
+:# Get various code pages. Must be done before calling configure.*.bat extensions.
 :# Get the Windows system Code Page
-call :Reg.GetValue HKLM\SYSTEM\CurrentControlSet\Control\Nls\CodePage ACP WIN.CP
-:# Get the corresponding Character Set
-call :Reg.GetValue HKLM\SOFTWARE\Classes\MIME\Database\Codepage\%WIN.CP% BodyCharset WIN.CS
-if not defined WIN.CS set "WIN.CS=cp%WIN.CP%"
-
-:# Get the DOS cmd.exe Code Page
-for /f "tokens=2 delims=:" %%n in ('chcp') do set "DOS.CP=%%n"
-set "DOS.CP=%DOS.CP: =%" &:# Trim spaces
-:# Get the corresponding Character Set
-call :Reg.GetValue HKLM\SOFTWARE\Classes\MIME\Database\Codepage\%DOS.CP% BodyCharset DOS.CS
-if not defined DOS.CS set "DOS.CS=cp%DOS.CP%"
+if not defined WIN.CS (
+  call :Reg.GetValue HKLM\SYSTEM\CurrentControlSet\Control\Nls\CodePage ACP WIN.CP
+  :# Get the corresponding Character Set
+  call :Reg.GetValue HKLM\SOFTWARE\Classes\MIME\Database\Codepage\!WIN.CP! BodyCharset WIN.CS
+  if not defined WIN.CS set "WIN.CS=cp!WIN.CP!"
+)
+:# Get the default console Code Page
+if not defined DOS.CS (
+  call :Reg.GetValue HKLM\SYSTEM\CurrentControlSet\Control\Nls\CodePage OEMCP DOS.CP
+  :# Get the corresponding Character Set
+  call :Reg.GetValue HKLM\SOFTWARE\Classes\MIME\Database\Codepage\!DOS.CP! BodyCharset DOS.CS
+  if not defined DOS.CS set "DOS.CS=cp!DOS.CP!"
+)
+:# Get the current console Code Page
+if not defined CON.CS (
+  for /f "tokens=2 delims=:" %%n in ('chcp') do for %%p in (%%n) do set "CON.CP=%%p"
+  set "CON.CP=!CON.CP: =!" &:# Trim spaces
+  :# Get the corresponding Character Set
+  call :Reg.GetValue HKLM\SOFTWARE\Classes\MIME\Database\Codepage\!CON.CP! BodyCharset CON.CS
+  if not defined CON.CS set "CON.CS=cp!CON.CP!"
+)
+%ECHOVARS.D% WIN.CP DOS.CP CON.CP
 
 :# Known SDKs:
 set "SDK.STINCLUDE.NAME=System Tools global C includes"
@@ -2237,8 +2325,11 @@ set "SDK.LZMA.FILE=bin\7zS2con.sfx"
 :# Call other local and project-specific configure scripts, possibly overriding all the above
 :# Must be placed before the following commands, to allow defining %MSVCLIBX%, %SYSLIB%, %98DDK%, %BOOST%, %PTHREADS%
 :# Make sure the files are invoked in a predictable order: The alphabetic order.
+set "NINCLUDE=0"
 for %%d in ("%windir%" "%HOME%" ".") do (
   %FOREACHLINE% %%f in ('dir /b /o "%%~d\configure.*.bat" 2^>NUL') do (
+    set /A "NINCLUDE+=1" & if !NINCLUDE!==1 %CONFIG%.
+    %CONFIG% :# Included %%~d\%%~f
     %TRUE.EXE% &:# Clear the errorlevel in the likely case that the batch does not do it
     %DO% call "%%~d\%%~f"
     if errorlevel 1 (
@@ -2471,6 +2562,42 @@ call :long2short MSVC32LONG MSVC32 &:# Microsoft Visual C++ 32/64 bits (Short pa
 
 set "WINSDK=!%VS%.WINSDK!" &:# Microsoft Windows SDK
 
+:# Get the user full name. Use value from configure.*.bat if defined.
+:# This requires temporarily changing code page, because wmic.exe always outputs data in the DOS character set 
+%ECHOVARS.D% WIN.CP DOS.CP CON.CP
+if not defined MY_FULLNAME if not %CON.CP%==%DOS.CP% chcp %DOS.CP% >nul 2>nul &:# Only works outside the () block that calls wmic. Don't move it inside.
+if not defined MY_FULLNAME (
+  %FOREACHLINE% %%l in ('wmic UserAccount where name^="%USERNAME%" get FullName 2^>NUL ^| findstr /r .') do set "MY_FULLNAME=%%l"
+  call set "MY_FULLNAME=%%MY_FULLNAME%%" &:# Remove the extra CR that buggy versions of wmic.exe append to the string
+  call :TrimRight MY_FULLNAME &:# Remove extra spaces after the name
+  if not %CON.CP%==%DOS.CP% chcp %CON.CP% >nul 2>nul &rem restore the initial console code page
+)
+if not defined MY_FULLNAME set "MY_FULLNAME=%USERNAME%" &:# As a last resort, use the user name. Might be "Administrator", but better than nothing.
+%ECHOVARS.D% MY_FULLNAME
+
+:# Get the user email address. Use value from configure.*.bat if defined.
+if not defined MY_EMAIL ( :# Try getting the domain account name, if any
+  :# Get the domain account name, which is often the user.name@company.com
+  %FOREACHLINE% %%l in ('whoami /upn 2^>NUL') do set "MY_EMAIL=%%l"
+  :# Check if it's indeed an email: If there's no @ in the string, delete it.
+  if defined MY_EMAIL if "!MY_EMAIL:@=!"=="!MY_EMAIL!" set "MY_EMAIL="
+)
+if not defined MY_EMAIL (:# Try getting the Microsoft account name, if any.
+  :# Get the current user Security IDentifier
+  %FOREACHLINE% %%l in ('wmic UserAccount where name^="%USERNAME%" get sid 2^>NUL ^| findstr /r .') do set "SID=%%l"
+  call set "SID=%%SID%%" &:# Remove the extra CR that buggy versions of wmic.exe append to the string
+  set "SID=!SID: =!"	 &:# Remove extra spaces after the SID
+  set "KEY=HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\Credential Providers\{D6886603-9D2F-4EB2-B667-1971041FA96B}"
+  set "MSACCOUNT="
+  :# Get the Microsoft account name, which is often the user.name@provider.com
+  %FOREACHLINE% %%l in ('reg query "!KEY!\!SID!\UserNames" /f * /k 2^>NUL ^| findstr "HKEY_LOCAL_MACHINE"') do set "MSACCOUNT=%%l"
+  if defined MSACCOUNT for %%a in ("!MSACCOUNT!") do set MY_EMAIL=%%~nxa
+  %ECHOVARS.D% SID MSACCOUNT
+  set "MSACCOUNT="
+)
+if not defined MY_EMAIL set "MY_EMAIL=%USERDOMAIN%" &:# As a last resort, use the domain name. OK, it's not an email, but we don't have anything better.
+%ECHOVARS.D% MY_EMAIL
+
 :# Set the path
 :# No need to change that path, as Visual Studio installation sets it, right?
 :# Actually it does, but other tools such as MSDN can break it!
@@ -2512,13 +2639,6 @@ for %%c in ("%CONFIG.BAT%") do %ECHO.V% :# Writing %%~fc
 %CONFIG% SET "MSVC32=%MSVC32%" ^&:# Microsoft Visual C++ 32/64 bits (Short path)
 :# %CONFIG%.
 :# %CONFIG% SET "CONV=%CONV%" ^&:# SysToolsLib's code page conversion tool
-
-:# Environment variables
-%CONFIG%.
-%CONFIG% SET "WIN_CP=%WIN.CP%" ^&:# Windows Code Page
-%CONFIG% SET "WIN_CS=%WIN.CS%" ^&:# Windows Character Set
-%CONFIG% SET "DOS_CP=%DOS.CP%" ^&:# DOS Code Page
-%CONFIG% SET "DOS_CS=%DOS.CS%" ^&:# DOS Character Set
 
 :# Clear Target-OS-specific variables that will be selected in OS-specific make files
 %CONFIG%.
@@ -2573,6 +2693,30 @@ for %%v in (OUTDIR MD_OUTDIR LOGDIR IGNORE_NMAKEFILE OS) do (
   set "COMMENT[%%v]="
 )
 
+:# Environment variables
+%CONFIG%.
+%CONFIG% SET "WIN_CP=%WIN.CP%" ^&:# Windows system Code Page
+%CONFIG% SET "WIN_CS=%WIN.CS%" ^&:# Windows system Character Set
+%CONFIG% SET "DOS_CP=%DOS.CP%" ^&:# Default console Code Page
+%CONFIG% SET "DOS_CS=%DOS.CS%" ^&:# Default console Character Set
+:# Don't store the following two, as the CP may change in another console instance
+:# %CONFIG% SET "CON_CP=%CON.CP%" ^&:# Current console Code Page
+:# %CONFIG% SET "CON_CS=%CON.CS%" ^&:# Current console Character Set
+:# Instead, find them dynamically at make time
+%CONFIG% for /f "tokens=2 delims=:" %%%%n in ('chcp') do for %%%%p in (%%%%n) do set "CON_CP=%%%%p" ^&:# Current console Code Page. Was CP %CON.CP% during configuration, but may be different now.
+
+:# Write user identification strings. They must be written and read back using the Windows system code page.
+%ECHOVARS.D% WIN.CP DOS.CP CON.CP
+if not %CON.CP%==%WIN.CP% chcp %WIN.CP% >nul 2>nul &:# Make sure the full name is encoded in the system's ANSI character set
+%ECHOVARS.D% MY_FULLNAME
+%CONFIG%.
+%CONFIG% :# User identification strings. They were written, and must be read back, using the Windows system code page.
+%CONFIG% if not %%CON_CP%%==%%WIN_CP%% chcp %%WIN_CP%% ^>nul 2^>nul
+%CONFIG% SET "MY_FULLNAME=!MY_FULLNAME!" ^&:# The build author's full name
+%CONFIG% SET "MY_EMAIL=!MY_EMAIL!" ^&:# The build author's email
+%CONFIG% if not %%CON_CP%%==%%WIN_CP%% chcp %%CON_CP%% ^>nul 2^>nul
+if not %CON.CP%==%WIN.CP% chcp %CON.CP% >nul 2>nul
+
 if defined POST_MAKE_ACTIONS (
   %CONFIG%.
   %CONFIG% :# List of commands to run when make.bat exits
@@ -2590,6 +2734,13 @@ for %%f in (configure make) do (
   ) else (
     %EXEC% xcopy /d /y %STINCLUDE%\BatProxy.bat %%f.bat ">"NUL 2">"NUL
   )
+)
+
+:# Security check: Detect if some bug caused the code page to change
+for /f "tokens=2 delims=:" %%n in ('chcp') do for %%p in (%%n) do set "NOW.CP=%%p"
+if not %NOW.CP%==%CON.CP% (
+  >&2 %ECHO% configure.bat: Error: The code page was inadvertently changed from %CON.CP% to %NOW.CP%
+  exit /b 9999
 )
 
 set _DO.XVD=%MACRO% ( %ECHO.XVD% %!%MACRO.ARGS:~1%!% %&% %!%MACRO.ARGS:~1%!% ) %/MACRO%

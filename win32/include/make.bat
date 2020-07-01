@@ -109,13 +109,15 @@
 :#                  Added %MD_OUTDIR% to allow creating a junction or symlink.*
 :#   2017-10-22 JFL Support goals like bin\WIN32\myprog.exe.                  *
 :#   2017-10-27 JFL Fixed OUTDIR changes.				      *
+:#   2020-01-06 JFL Output a more helpful message if can't find nmake.exe.    *
+:#   2020-01-29 JFL In the end, count warnings, and open the log if any found.*
 :#                                                                            *
-:#      © Copyright 2016-2017 Hewlett Packard Enterprise Development LP       *
+:#      © Copyright 2016-2020 Hewlett Packard Enterprise Development LP       *
 :# Licensed under the Apache 2.0 license  www.apache.org/licenses/LICENSE-2.0 *
 :#*****************************************************************************
 
 setlocal EnableExtensions EnableDelayedExpansion
-set "VERSION=2017-10-27"
+set "VERSION=2020-01-29"
 set "SCRIPT=%~nx0"				&:# Script name
 set "SPATH=%~dp0" & set "SPATH=!SPATH:~0,-1!"	&:# Script path, without the trailing \
 set  "ARG0=%~f0"				&:# Script full pathname
@@ -1347,7 +1349,14 @@ if errorlevel 1 %RETURN%
 :# Update the PATH for running Visual Studio tools, from definitions set in %CONFIG.BAT%
 set PATH=!%MAKEORIGIN%_PATH!
 if not defined MAKE for %%m in (nmake.exe) do set "MAKE="%%~$PATH:m"" &:# Includes enclosing quotes
-%ECHOVARS.D% CD MESSAGES OUTDIR MAKEORIGIN PATH INCLUDE %MAKEORIGIN%_CC
+%ECHOVARS.D% CD MESSAGES OUTDIR MAKE MAKEORIGIN PATH INCLUDE %MAKEORIGIN%_CC
+if [%MAKE%]==[""] set "MAKE="
+if not defined MAKE (
+  set "MSG=Can't find nmake.exe"
+  if defined MSVC32LONG set ^"MSG=!MSG! in "%MSVC32LONG%"^"
+  >&2 echo Error: !MSG!. Try running configure.bat.
+  exit /b 1
+)
 set "NMAKEFLAGS=/NOLOGO /c /s"
 %IF_VERBOSE% set "NMAKEFLAGS=/NOLOGO"
 :# Clear a few multi-line variables that pollute the (nmake /P) logs
@@ -1723,11 +1732,20 @@ if %MAKEDEPTH%==0 if defined LOGFILE ( :# If this is the top-level instance of m
 )
 
 if %MAKEDEPTH%==0 ( :# If this is the top-level instance of make.bat, show the final result
-  echo.>con
-  echo %RESULT% >con
+  set "SHOW_LOG=%ERROR%"
+  if %ERROR%==0 if defined LOGFILE ( :# Count warnings in the log file
+    set "WARNINGS=0"
+    for /f "delims=" %%l in ('findstr /i warning "%LOGFILE%"') do set /a "WARNINGS+=1"
+    if not !WARNINGS!==0 (
+      set "RESULT=!RESULT!, but with !WARNINGS! warnings"
+      set "SHOW_LOG=1"
+    )
+  )
+  >con echo.
+  >con echo !RESULT!
+  if not !SHOW_LOG!==0 start notepad "%LOGFILE%"
 )
 
-if %MAKEDEPTH%==0 if not %ERROR%==0 if defined LOGFILE start notepad "%LOGFILE%"
 set "&="
 if defined POST_MAKE_ACTIONS set "&=&"
 endlocal %&% %POST_MAKE_ACTIONS% & exit /b %ERROR%
