@@ -116,7 +116,7 @@ This typically includes the 3 version strings.
 
 Home page: http://sourceforge.net/projects/pthreads4w/
 
-Using a patched version of pthread 3.0, which is the latest available as of November 2018.
+Using a patched version of pthread 3.0, which is the latest available as of June 2020.
 Note that the 2.10 beta used by [KJK](https://github.com/kjk/the_silver_searcher) worked with only minimal patches for MsvcLibX compatibility,
 but the 2.10 RC, 2.10 release, and 3.0 release do not: They hang at run time. The root cause is a memory allocation issue in purely static builds of pthreads.lib
 
@@ -144,7 +144,7 @@ Hence the special IGNORE_NMAKEFILE definition in configure.pthread.bat.
 
 Home page: http://www.zlib.net/
 
-Using zlib 1.2.11, which is the latest version as of November 2018
+Using zlib 1.2.11, which is the latest version as of June 2020.
 
 #### Files added
 Name               | Description
