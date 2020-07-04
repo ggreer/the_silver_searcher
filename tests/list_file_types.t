@@ -36,9 +36,6 @@ Language types are output:
     --bitbake
         .bb  .bbappend  .bbclass  .inc
   
-    --bro
-        .bro  .bif
-  
     --cc
         .c  .h  .xs
   
@@ -416,6 +413,9 @@ Language types are output:
   
     --yaml
         .yaml  .yml
+  
+    --zeek
+        .zeek  .bro  .bif
   
     --zephir
         .zep
