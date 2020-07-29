@@ -186,8 +186,7 @@ size_t combine_file_extensions(size_t *extension_index, size_t len, char **exts)
      * file types to search, you'd better search all the files.
      * */
     size_t ext_capacity = 100;
-    (*exts) = (char *)ag_malloc(ext_capacity * SINGLE_EXT_LEN);
-    memset((*exts), 0, ext_capacity * SINGLE_EXT_LEN);
+    (*exts) = (char *)ag_calloc(ext_capacity, SINGLE_EXT_LEN);
     size_t num_of_extensions = 0;
 
     size_t i;
@@ -199,7 +198,7 @@ size_t combine_file_extensions(size_t *extension_index, size_t len, char **exts)
                 break;
             }
             char *pos = (*exts) + num_of_extensions * SINGLE_EXT_LEN;
-            strncpy(pos, ext, strlen(ext));
+            memcpy(pos, ext, strlen(ext));
             ++num_of_extensions;
             ext = langs[extension_index[i]].extensions[++j];
         } while (ext);
