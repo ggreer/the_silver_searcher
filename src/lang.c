@@ -149,60 +149,45 @@ size_t get_lang_count() {
     return sizeof(langs) / sizeof(lang_spec_t);
 }
 
-char *make_lang_regex(char *ext_array, size_t num_exts) {
-    int regex_capacity = 100;
+char *make_lang_regex(size_t *selected_langs, size_t count) {
+    size_t regex_capacity = 128;
+    size_t regex_length = 3;
     char *regex = ag_malloc(regex_capacity);
-    int regex_length = 3;
-    int subsequent = 0;
-    char *extension;
-    size_t i;
+    int first = 1;
+    size_t i, j;
 
-    strcpy(regex, "\\.(");
+    strncpy(regex, "\\.(", regex_capacity);
 
-    for (i = 0; i < num_exts; ++i) {
-        extension = ext_array + i * SINGLE_EXT_LEN;
-        int extension_length = strlen(extension);
-        while (regex_length + extension_length + 3 + subsequent > regex_capacity) {
-            regex_capacity *= 2;
-            regex = ag_realloc(regex, regex_capacity);
+    // for each requested language
+    for (i = 0; i < count; ++i) {
+        const char **current_lang_exts = langs[selected_langs[i]].extensions;
+
+        // for each ext in the language
+        for (j = 0; current_lang_exts[j] != NULL; ++j) {
+            const char *ext = current_lang_exts[j];
+            const size_t ext_len = strlen(ext);
+
+            // resize regex buffer as needed. +4 is room for "|)$\0"
+            while (regex_capacity < (regex_length + ext_len + 4)) {
+                regex_capacity *= 2;
+                regex = ag_realloc(regex, regex_capacity);
+            }
+
+            // add a | before all but the first ext in the list
+            if (first) {
+                first = 0;
+            } else {
+                regex[regex_length++] = '|';
+            }
+
+            // memcpy is safe because we've already made sure regex is big enough
+            memcpy(regex + regex_length, ext, ext_len);
+            regex_length += ext_len;
         }
-        if (subsequent) {
-            regex[regex_length++] = '|';
-        } else {
-            subsequent = 1;
-        }
-        strcpy(regex + regex_length, extension);
-        regex_length += extension_length;
     }
 
     regex[regex_length++] = ')';
     regex[regex_length++] = '$';
-    regex[regex_length++] = 0;
+    regex[regex_length++] = '\0';
     return regex;
-}
-
-size_t combine_file_extensions(size_t *extension_index, size_t len, char **exts) {
-    /* Keep it fixed as 100 for the reason that if you have more than 100
-     * file types to search, you'd better search all the files.
-     * */
-    size_t ext_capacity = 100;
-    (*exts) = (char *)ag_calloc(ext_capacity, SINGLE_EXT_LEN);
-    size_t num_of_extensions = 0;
-
-    size_t i;
-    for (i = 0; i < len; ++i) {
-        size_t j = 0;
-        const char *ext = langs[extension_index[i]].extensions[j];
-        do {
-            if (num_of_extensions == ext_capacity) {
-                break;
-            }
-            char *pos = (*exts) + num_of_extensions * SINGLE_EXT_LEN;
-            memcpy(pos, ext, strlen(ext));
-            ++num_of_extensions;
-            ext = langs[extension_index[i]].extensions[++j];
-        } while (ext);
-    }
-
-    return num_of_extensions;
 }
