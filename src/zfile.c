@@ -297,7 +297,7 @@ zfile_read(void *cookie_, char *buf, size_t size) {
         if (size == 0)
             break;
 
-        /* If we have not satisfied read, the output buffer must be empty */
+            /* If we have not satisfied read, the output buffer must be empty */
 #ifdef HAVE_ZLIB_H
         assert(cookie->stream.gz.next_out ==
                &cookie->outbuf[cookie->outbuf_start]);
