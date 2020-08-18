@@ -27,6 +27,9 @@ Language types are output:
     --aspx
         .asp  .asa  .aspx  .asax  .ashx  .ascx  .asmx
   
+    --avro
+        .avro  .avsc
+  
     --batch
         .bat  .cmd
   
