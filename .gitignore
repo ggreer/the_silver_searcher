@@ -19,11 +19,14 @@ config.status
 config.sub
 configure
 depcomp
+html/
+Doxyfile
 gmon.out
 install-sh
 Makefile
 Makefile.in
 missing
+rust/target
 src/config.h*
 stamp-h1
 tests/*.err
