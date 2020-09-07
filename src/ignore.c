@@ -206,7 +206,7 @@ static int ackmate_dir_match(const char *dir_name) {
 }
 
 /* This is the hottest code in Ag. 10-15% of all execution time is spent here */
-static int path_ignore_search(const ignores *ig, const char *path, const char *filename) {
+int path_ignore_search(const ignores *ig, const char *path, const char *filename) {
     char *temp;
     int temp_start_pos;
     size_t i;
@@ -286,98 +286,4 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
     int rv = ackmate_dir_match(temp);
     free(temp);
     return rv;
-}
-
-/* This function is REALLY HOT. It gets called for every file */
-int filename_filter(const char *path, const struct dirent *dir, void *baton) {
-    const char *filename = dir->d_name;
-    if (!opts.search_hidden_files && filename[0] == '.') {
-        return 0;
-    }
-
-    size_t i;
-    for (i = 0; evil_hardcoded_ignore_files[i] != NULL; i++) {
-        if (strcmp(filename, evil_hardcoded_ignore_files[i]) == 0) {
-            return 0;
-        }
-    }
-
-    if (!opts.follow_symlinks && is_symlink(path, dir)) {
-        log_debug("File %s ignored becaused it's a symlink", dir->d_name);
-        return 0;
-    }
-
-    if (is_named_pipe(path, dir)) {
-        log_debug("%s ignored because it's a named pipe or socket", path);
-        return 0;
-    }
-
-    if (opts.search_all_files && !opts.path_to_ignore) {
-        return 1;
-    }
-
-    scandir_baton_t *scandir_baton = (scandir_baton_t *)baton;
-    const char *path_start = scandir_baton->path_start;
-
-    const char *extension = strchr(filename, '.');
-    if (extension) {
-        if (extension[1]) {
-            // The dot is not the last character, extension starts at the next one
-            ++extension;
-        } else {
-            // No extension
-            extension = NULL;
-        }
-    }
-
-#ifdef HAVE_DIRENT_DNAMLEN
-    size_t filename_len = dir->d_namlen;
-#else
-    size_t filename_len = 0;
-#endif
-
-    if (strncmp(filename, "./", 2) == 0) {
-#ifndef HAVE_DIRENT_DNAMLEN
-        filename_len = strlen(filename);
-#endif
-        filename++;
-        filename_len--;
-    }
-
-    const ignores *ig = scandir_baton->ig;
-
-    while (ig != NULL) {
-        if (extension) {
-            int match_pos = binary_search(extension, ig->extensions, 0, ig->extensions_len);
-            if (match_pos >= 0) {
-                log_debug("file %s ignored because name matches extension %s", filename, ig->extensions[match_pos]);
-                return 0;
-            }
-        }
-
-        if (path_ignore_search(ig, path_start, filename)) {
-            return 0;
-        }
-
-        if (is_directory(path, dir)) {
-#ifndef HAVE_DIRENT_DNAMLEN
-            if (!filename_len) {
-                filename_len = strlen(filename);
-            }
-#endif
-            if (filename[filename_len - 1] != '/') {
-                char *temp;
-                ag_asprintf(&temp, "%s/", filename);
-                int rv = path_ignore_search(ig, path_start, temp);
-                free(temp);
-                if (rv) {
-                    return 0;
-                }
-            }
-        }
-        ig = ig->parent;
-    }
-
-    log_debug("%s not ignored", filename);
-    return 1;
 }
