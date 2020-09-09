@@ -5378,252 +5378,6 @@ extern "C" {
         __basep: *mut __off_t,
     ) -> __ssize_t;
 }
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct ignores {
-    pub extensions: *mut *mut cty::c_char,
-    pub extensions_len: size_t,
-    pub names: *mut *mut cty::c_char,
-    pub names_len: size_t,
-    pub slash_names: *mut *mut cty::c_char,
-    pub slash_names_len: size_t,
-    pub regexes: *mut *mut cty::c_char,
-    pub regexes_len: size_t,
-    pub invert_regexes: *mut *mut cty::c_char,
-    pub invert_regexes_len: size_t,
-    pub slash_regexes: *mut *mut cty::c_char,
-    pub slash_regexes_len: size_t,
-    pub dirname: *const cty::c_char,
-    pub dirname_len: size_t,
-    pub abs_path: *mut cty::c_char,
-    pub abs_path_len: size_t,
-    pub parent: *mut ignores,
-}
-#[test]
-fn bindgen_test_layout_ignores() {
-    assert_eq!(
-        ::core::mem::size_of::<ignores>(),
-        136usize,
-        concat!("Size of: ", stringify!(ignores))
-    );
-    assert_eq!(
-        ::core::mem::align_of::<ignores>(),
-        8usize,
-        concat!("Alignment of ", stringify!(ignores))
-    );
-    assert_eq!(
-        unsafe { &(*(::core::ptr::null::<ignores>())).extensions as *const _ as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(ignores),
-            "::",
-            stringify!(extensions)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::core::ptr::null::<ignores>())).extensions_len as *const _ as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(ignores),
-            "::",
-            stringify!(extensions_len)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::core::ptr::null::<ignores>())).names as *const _ as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(ignores),
-            "::",
-            stringify!(names)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::core::ptr::null::<ignores>())).names_len as *const _ as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(ignores),
-            "::",
-            stringify!(names_len)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::core::ptr::null::<ignores>())).slash_names as *const _ as usize },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(ignores),
-            "::",
-            stringify!(slash_names)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::core::ptr::null::<ignores>())).slash_names_len as *const _ as usize },
-        40usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(ignores),
-            "::",
-            stringify!(slash_names_len)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::core::ptr::null::<ignores>())).regexes as *const _ as usize },
-        48usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(ignores),
-            "::",
-            stringify!(regexes)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::core::ptr::null::<ignores>())).regexes_len as *const _ as usize },
-        56usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(ignores),
-            "::",
-            stringify!(regexes_len)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::core::ptr::null::<ignores>())).invert_regexes as *const _ as usize },
-        64usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(ignores),
-            "::",
-            stringify!(invert_regexes)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::core::ptr::null::<ignores>())).invert_regexes_len as *const _ as usize },
-        72usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(ignores),
-            "::",
-            stringify!(invert_regexes_len)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::core::ptr::null::<ignores>())).slash_regexes as *const _ as usize },
-        80usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(ignores),
-            "::",
-            stringify!(slash_regexes)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::core::ptr::null::<ignores>())).slash_regexes_len as *const _ as usize },
-        88usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(ignores),
-            "::",
-            stringify!(slash_regexes_len)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::core::ptr::null::<ignores>())).dirname as *const _ as usize },
-        96usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(ignores),
-            "::",
-            stringify!(dirname)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::core::ptr::null::<ignores>())).dirname_len as *const _ as usize },
-        104usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(ignores),
-            "::",
-            stringify!(dirname_len)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::core::ptr::null::<ignores>())).abs_path as *const _ as usize },
-        112usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(ignores),
-            "::",
-            stringify!(abs_path)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::core::ptr::null::<ignores>())).abs_path_len as *const _ as usize },
-        120usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(ignores),
-            "::",
-            stringify!(abs_path_len)
-        )
-    );
-    assert_eq!(
-        unsafe { &(*(::core::ptr::null::<ignores>())).parent as *const _ as usize },
-        128usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(ignores),
-            "::",
-            stringify!(parent)
-        )
-    );
-}
-extern "C" {
-    pub static mut root_ignores: *mut ignores;
-}
-extern "C" {
-    pub static mut evil_hardcoded_ignore_files: [*const cty::c_char; 0usize];
-}
-extern "C" {
-    pub static mut ignore_pattern_files: [*const cty::c_char; 0usize];
-}
-extern "C" {
-    pub fn init_ignore(
-        parent: *mut ignores,
-        dirname: *const cty::c_char,
-        dirname_len: size_t,
-    ) -> *mut ignores;
-}
-extern "C" {
-    pub fn cleanup_ignore(ig: *mut ignores);
-}
-extern "C" {
-    pub fn add_ignore_pattern(ig: *mut ignores, pattern: *const cty::c_char);
-}
-extern "C" {
-    pub fn load_ignore_patterns(ig: *mut ignores, path: *const cty::c_char);
-}
-extern "C" {
-    pub fn filename_filter(
-        path: *const cty::c_char,
-        dir: *const dirent,
-        baton: *mut cty::c_void,
-    ) -> cty::c_int;
-}
-extern "C" {
-    pub fn is_empty(ig: *mut ignores) -> cty::c_int;
-}
-extern "C" {
-    pub fn path_ignore_search(
-        ig: *const ignores,
-        path: *const cty::c_char,
-        filename: *const cty::c_char,
-    ) -> cty::c_int;
-}
 pub type int_least8_t = __int_least8_t;
 pub type int_least16_t = __int_least16_t;
 pub type int_least32_t = __int_least32_t;
@@ -8465,6 +8219,252 @@ extern "C" {
         src: *const cty::c_char,
         size: cty::c_ulong,
     ) -> cty::c_ulong;
+}
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct ignores {
+    pub extensions: *mut *mut cty::c_char,
+    pub extensions_len: size_t,
+    pub names: *mut *mut cty::c_char,
+    pub names_len: size_t,
+    pub slash_names: *mut *mut cty::c_char,
+    pub slash_names_len: size_t,
+    pub regexes: *mut *mut cty::c_char,
+    pub regexes_len: size_t,
+    pub invert_regexes: *mut *mut cty::c_char,
+    pub invert_regexes_len: size_t,
+    pub slash_regexes: *mut *mut cty::c_char,
+    pub slash_regexes_len: size_t,
+    pub dirname: *const cty::c_char,
+    pub dirname_len: size_t,
+    pub abs_path: *mut cty::c_char,
+    pub abs_path_len: size_t,
+    pub parent: *mut ignores,
+}
+#[test]
+fn bindgen_test_layout_ignores() {
+    assert_eq!(
+        ::core::mem::size_of::<ignores>(),
+        136usize,
+        concat!("Size of: ", stringify!(ignores))
+    );
+    assert_eq!(
+        ::core::mem::align_of::<ignores>(),
+        8usize,
+        concat!("Alignment of ", stringify!(ignores))
+    );
+    assert_eq!(
+        unsafe { &(*(::core::ptr::null::<ignores>())).extensions as *const _ as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(ignores),
+            "::",
+            stringify!(extensions)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::core::ptr::null::<ignores>())).extensions_len as *const _ as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(ignores),
+            "::",
+            stringify!(extensions_len)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::core::ptr::null::<ignores>())).names as *const _ as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(ignores),
+            "::",
+            stringify!(names)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::core::ptr::null::<ignores>())).names_len as *const _ as usize },
+        24usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(ignores),
+            "::",
+            stringify!(names_len)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::core::ptr::null::<ignores>())).slash_names as *const _ as usize },
+        32usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(ignores),
+            "::",
+            stringify!(slash_names)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::core::ptr::null::<ignores>())).slash_names_len as *const _ as usize },
+        40usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(ignores),
+            "::",
+            stringify!(slash_names_len)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::core::ptr::null::<ignores>())).regexes as *const _ as usize },
+        48usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(ignores),
+            "::",
+            stringify!(regexes)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::core::ptr::null::<ignores>())).regexes_len as *const _ as usize },
+        56usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(ignores),
+            "::",
+            stringify!(regexes_len)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::core::ptr::null::<ignores>())).invert_regexes as *const _ as usize },
+        64usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(ignores),
+            "::",
+            stringify!(invert_regexes)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::core::ptr::null::<ignores>())).invert_regexes_len as *const _ as usize },
+        72usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(ignores),
+            "::",
+            stringify!(invert_regexes_len)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::core::ptr::null::<ignores>())).slash_regexes as *const _ as usize },
+        80usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(ignores),
+            "::",
+            stringify!(slash_regexes)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::core::ptr::null::<ignores>())).slash_regexes_len as *const _ as usize },
+        88usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(ignores),
+            "::",
+            stringify!(slash_regexes_len)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::core::ptr::null::<ignores>())).dirname as *const _ as usize },
+        96usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(ignores),
+            "::",
+            stringify!(dirname)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::core::ptr::null::<ignores>())).dirname_len as *const _ as usize },
+        104usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(ignores),
+            "::",
+            stringify!(dirname_len)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::core::ptr::null::<ignores>())).abs_path as *const _ as usize },
+        112usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(ignores),
+            "::",
+            stringify!(abs_path)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::core::ptr::null::<ignores>())).abs_path_len as *const _ as usize },
+        120usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(ignores),
+            "::",
+            stringify!(abs_path_len)
+        )
+    );
+    assert_eq!(
+        unsafe { &(*(::core::ptr::null::<ignores>())).parent as *const _ as usize },
+        128usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(ignores),
+            "::",
+            stringify!(parent)
+        )
+    );
+}
+extern "C" {
+    pub static mut root_ignores: *mut ignores;
+}
+extern "C" {
+    pub static mut evil_hardcoded_ignore_files: [*const cty::c_char; 0usize];
+}
+extern "C" {
+    pub static mut ignore_pattern_files: [*const cty::c_char; 0usize];
+}
+extern "C" {
+    pub fn init_ignore(
+        parent: *mut ignores,
+        dirname: *const cty::c_char,
+        dirname_len: size_t,
+    ) -> *mut ignores;
+}
+extern "C" {
+    pub fn cleanup_ignore(ig: *mut ignores);
+}
+extern "C" {
+    pub fn add_ignore_pattern(ig: *mut ignores, pattern: *const cty::c_char);
+}
+extern "C" {
+    pub fn load_ignore_patterns(ig: *mut ignores, path: *const cty::c_char);
+}
+extern "C" {
+    pub fn filename_filter(
+        path: *const cty::c_char,
+        dir: *const dirent,
+        baton: *mut cty::c_void,
+    ) -> cty::c_int;
+}
+extern "C" {
+    pub fn is_empty(ig: *mut ignores) -> cty::c_int;
+}
+extern "C" {
+    pub fn path_ignore_search(
+        ig: *const ignores,
+        path: *const cty::c_char,
+        filename: *const cty::c_char,
+    ) -> cty::c_int;
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
