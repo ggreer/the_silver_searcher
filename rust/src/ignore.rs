@@ -22,6 +22,11 @@ use std::str;
 use regex::Regex;
 
 
+// placeholder until log_debug is translated
+fn log_debug_rs(message: &str) {
+    unsafe { log_debug(str_to_c_char_ptr(message)) };
+}
+
 unsafe fn ackmate_dir_match(dir_name: *const cty::c_char) -> cty::c_int {
     if opts.ackmate_dir_filter.is_null() {
         return 0;
@@ -33,7 +38,7 @@ unsafe fn ackmate_dir_match(dir_name: *const cty::c_char) -> cty::c_int {
     );
 }
 
-unsafe fn match_regexes(pattern: Vec<String>, match_str: &str) -> bool{
+fn match_regexes(pattern: Vec<String>, match_str: &str) -> bool{
     for mut name in pattern {
         if name.starts_with('*') {
             name = format!("{}{}", "[[:alpha:]]", &name);
@@ -41,28 +46,28 @@ unsafe fn match_regexes(pattern: Vec<String>, match_str: &str) -> bool{
         let re = Regex::new(&name).unwrap();
         if re.is_match(match_str) {
             let message = format!("{} {} {} {}", "File", match_str, "ignored because name matches slash regex pattern", &name);
-            log_debug(str_to_c_char_ptr(&message));
+            log_debug_rs(&message);
             return false
         }
         let message = format!("{} {} {} {}", "Pattern", &name, "doesn't match slash file", match_str);
-        log_debug(str_to_c_char_ptr(&message));
+        log_debug_rs(&message);
     }
 
     return true
 }
 
-unsafe fn match_static_pattern(vec: &Vec<String>, s: &str) -> bool {
+fn match_static_pattern(vec: &Vec<String>, s: &str) -> bool {
     let match_pos = match_position(s, vec);
     if match_pos != -1 {
         let message = format!("{} {} {} {}", "File", s, "ignored because name matches static pattern", vec[match_pos as usize]);
-        log_debug(str_to_c_char_ptr(&message));
+        log_debug_rs(&message);
         return true
     }
 
     return false
 }
 
-unsafe fn match_slash_filename(vec: &Vec<String>, s: &str) -> bool {
+fn match_slash_filename(vec: &Vec<String>, s: &str) -> bool {
     for v in vec {
         if v.contains(s) {
             let leading_slash_filename = format!("/{}", s);
@@ -70,12 +75,12 @@ unsafe fn match_slash_filename(vec: &Vec<String>, s: &str) -> bool {
             let ending_slash_filename = format!("{}/", s);
             if v == s || v.contains(&leading_slash_filename) || v.contains(&ending_filename) || v.contains(&ending_slash_filename) {
                 let message = format!("{} {} {} {}", "File", s, "ignored because name matches static pattern", v);
-                log_debug(str_to_c_char_ptr(&message));
+                log_debug_rs(&message);
                 return true
             }
         }
         let message = format!("{} {} {} {}", "Pattern", v, "doesn't match path", s);
-        log_debug(str_to_c_char_ptr(&message));            
+        log_debug_rs(&message);          
     }
 
     return false;
@@ -165,20 +170,20 @@ fn is_evil_hardcoded(filename: &str) -> bool {
     return false
 }
 
-unsafe fn is_unwanted_symlink(filename: &str, d_type: cty::c_uchar) -> bool {
-    if opts.follow_symlinks == 0 && d_type == DT_LNK {
+fn is_unwanted_symlink(filename: &str, d_type: cty::c_uchar) -> bool {
+    if unsafe { opts.follow_symlinks  } == 0 && d_type == DT_LNK {
         let message = format!("{} {} {}", "File", filename, "ignored becaused it's a symlink");
-        log_debug(str_to_c_char_ptr(&message));
+        log_debug_rs(&message);
         return true
     }
 
     return false
 }
 
-unsafe fn is_fifo(filename: &str, d_type: cty::c_uchar) -> bool {
+fn is_fifo(filename: &str, d_type: cty::c_uchar) -> bool {
     if d_type == DT_FIFO {
         let message = format!("{} {} {}", "File", filename, "ignored becaused it's a named pipe or socket");
-        log_debug(str_to_c_char_ptr(&message));
+        log_debug_rs(&message);
         return true
     }
 
@@ -201,7 +206,7 @@ unsafe fn check_extension(filename: &str, ig: *const ignores) -> bool {
         let extension_c_str = CString::new(extension.unwrap());
         if extensions_vec_c_str.contains(&extension_c_str.unwrap()) {
             let message = format!("{} {} {} {}", "File", filename, "ignored because name matches extension", extension.unwrap());
-            log_debug(str_to_c_char_ptr(&message));
+            log_debug_rs(&message);
             return false
         }
     }
@@ -222,8 +227,8 @@ unsafe fn check_dir(filename: &str, filename_vec: &Vec<char>, d_type: cty::c_uch
     return true
 }
 
-unsafe fn is_return_condition_a(filename: &str, filename_vec: &Vec<char>, d_type: cty::c_uchar) -> bool {
-    let cond_a = opts.search_hidden_files == 0 && filename_vec[0] == '.';
+fn is_return_condition_a(filename: &str, filename_vec: &Vec<char>, d_type: cty::c_uchar) -> bool {
+    let cond_a = unsafe { opts.search_hidden_files } == 0 && filename_vec[0] == '.';
     let cond_b = is_evil_hardcoded(&filename);
     let cond_c = is_unwanted_symlink(&filename, d_type);
     let cond_d = is_fifo(&filename, d_type);
