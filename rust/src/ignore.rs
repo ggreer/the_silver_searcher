@@ -112,26 +112,28 @@ unsafe fn path_ignore_search(ig: *const ignores, path: *const cty::c_char, filen
     if match_static_pattern(&names_vec, &filename) { return true };
 
     let mut path_str = char_ptr_to_string(path);
-    if path_str.len() > 1  && path_str.starts_with('.') {
+    if path_str.starts_with('.') {
         path_str.remove(0);
     }
 
-    let temp = format!("{}/{}", &path_str, &filename);
-    let mut slash_filename = String::from(&temp);
+    let mut temp = format!("{}/{}", &path_str, &filename);
+
     // ig->abs_path has its leading slash stripped,
     // so we have to strip the leading slash of temp as well
-    if slash_filename.len() > 1 && slash_filename.starts_with('/') {
-        slash_filename.remove(0);
-    };
+    if temp.starts_with('/') {
+        temp.remove(0);
+    }
+
+    let mut slash_filename = String::from(&temp);
 
     if strncmp_fl(&slash_filename, &char_ptr_to_string(abs_path), abs_path_len) == 0 {
         for i in 0..abs_path_len {
-            if slash_filename.len() > 1 {
+            if slash_filename.len() > 0 {
                 slash_filename.remove(0);
             }
         }
 
-        if slash_filename.len() > 1 && slash_filename.starts_with('/') {
+        if slash_filename.len() > 0 && slash_filename.starts_with('/') {
             slash_filename.remove(0);
         }
 
@@ -203,10 +205,11 @@ unsafe fn check_extension(filename: &str, ig: *const ignores) -> bool {
     true
 }
 
-unsafe fn check_dir(filename: &str, filename_vec: &Vec<char>, d_type: cty::c_uchar, path_start: *const i8, ig: *const ignores) -> bool {
+unsafe fn check_dir(filename_vec: &Vec<char>, d_type: cty::c_uchar, path_start: *const i8, ig: *const ignores) -> bool {
     if d_type == DT_DIR {
-        if filename_vec[&filename.len() - 1] != '/' {
-            let temp = format!("{}/", &filename);
+        if filename_vec[&filename_vec.len() - 1] != '/' {
+            let s: String = filename_vec.iter().collect();
+            let temp = format!("{}/", &s);
             if path_ignore_search(ig, path_start, &temp) {
                 return false
             }
@@ -216,20 +219,23 @@ unsafe fn check_dir(filename: &str, filename_vec: &Vec<char>, d_type: cty::c_uch
     true
 }
 
-fn is_return_condition_a(filename: &str, filename_vec: &Vec<char>, d_type: cty::c_uchar) -> bool {
+fn is_return_condition_a(filename_vec: &Vec<char>, d_type: cty::c_uchar) -> bool {
+    let s: String = filename_vec.iter().collect();
     let cond_a = unsafe { opts.search_hidden_files == 0 } && filename_vec[0] == '.';
-    let cond_b = is_evil_hardcoded(&filename);
-    let cond_c = is_unwanted_symlink(&filename, d_type);
-    let cond_d = is_fifo(&filename, d_type);
+    let cond_b = is_evil_hardcoded(&s);
+    let cond_c = is_unwanted_symlink(&s, d_type);
+    let cond_d = is_fifo(&s, d_type);
 
     cond_a || cond_b || cond_c || cond_d
 }
 
-unsafe fn is_return_condition_b(path: *const cty::c_char, filename: &str, filename_vec: &Vec<char>,
-    d_type: cty::c_uchar, path_start: *const cty::c_char, ig: *const ignores) -> bool {
-    let cond_a = !check_extension(&filename, ig);
-    let cond_b = path_ignore_search(ig, path_start, filename);
-    let cond_c = !check_dir(&filename, &filename_vec, d_type, path_start, ig);
+unsafe fn is_return_condition_b(path: *const cty::c_char, filename_vec: &Vec<char>,
+                                d_type: cty::c_uchar, path_start: *const cty::c_char,
+                                ig: *const ignores) -> bool {
+    let s: String = filename_vec.iter().collect();
+    let cond_a = !check_extension(&s, ig);
+    let cond_b = path_ignore_search(ig, path_start, &s);
+    let cond_c = !check_dir(&filename_vec, d_type, path_start, ig);
 
     cond_a || cond_b || cond_c
 }
@@ -240,7 +246,7 @@ pub unsafe extern "C" fn filename_filter(path: *const cty::c_char, dir: *const d
     // get vector of chars from dirent d_name to perform indexing on
     let mut filename_vec: Vec<char> = filename.chars().collect();
 
-    if is_return_condition_a(&filename, &filename_vec, (*dir).d_type) { return 0 };
+    if is_return_condition_a(&filename_vec, (*dir).d_type) { return 0 };
     
     if opts.search_all_files == 1 && opts.path_to_ignore == 0 { return 1 }
 
@@ -254,7 +260,7 @@ pub unsafe extern "C" fn filename_filter(path: *const cty::c_char, dir: *const d
     let mut ig = (*scandir_baton).ig;
 
     while !ig.is_null() {
-        if is_return_condition_b(path, &filename, &filename_vec, (*dir).d_type, path_start, ig) { return 0 }
+        if is_return_condition_b(path, &filename_vec, (*dir).d_type, path_start, ig) { return 0 }
         ig = (*ig).parent;
     }
 
