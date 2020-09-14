@@ -11,7 +11,7 @@ use crate::bindings::{
 use crate::file_types::*;
 
 use crate::helpers::{
-    get_extension_from_filename, char_ptr_to_string, str_to_c_char_ptr, fl_c_char_ptr_to_str,
+    get_extension, char_ptr_to_string, str_to_c_char_ptr, fl_c_char_ptr_to_str,
     double_i8_ptr_to_vec, strncmp, strncmp_fl, match_position, is_fnmatch
 };
 
@@ -89,7 +89,6 @@ fn match_slash_filename(vec: &Vec<String>, s: &str) -> bool {
 /* This is the hottest code in Ag. 10-15% of all execution time is spent here */
 unsafe fn path_ignore_search(ig: *const ignores, path: *const cty::c_char, filename: &str) -> bool {
     // Some convencience defines
-    // ********************************************************************************************************* //
     let names = (*ig).names;
     let slash_names = (*ig).slash_names;
     let regexes = (*ig).regexes; 
@@ -109,7 +108,6 @@ unsafe fn path_ignore_search(ig: *const ignores, path: *const cty::c_char, filen
     let regexes_vec = double_i8_ptr_to_vec(regexes, regexes_len);
     let slash_regexes_vec = double_i8_ptr_to_vec(slash_regexes, slash_regexes_len);
     let invert_regexes_vec = double_i8_ptr_to_vec(invert_regexes, invert_regexes_len);
-    // ********************************************************************************************************* //
 
     if match_static_pattern(&names_vec, &filename) { return true };
 
@@ -189,21 +187,14 @@ fn is_fifo(filename: &str, d_type: cty::c_uchar) -> bool {
 }
 
 unsafe fn check_extension(filename: &str, ig: *const ignores) -> bool {
-    let extension = get_extension_from_filename(&filename);
-
+    let extension = get_extension(&filename);
     let ext_len = (*ig).extensions_len as usize;
-    let extensions = slice_from_raw_parts((*ig).extensions, ext_len);
-    let mut extensions_vec_c_str: Vec<CString> = Vec::new();
-    for i in 0..ext_len {
-        let elem = (&*extensions)[i];
-        let elem_c_str = CString::from_raw(elem);
-        extensions_vec_c_str.push(elem_c_str);
-    }
+    let extensions = double_i8_ptr_to_vec((*ig).extensions, ext_len);
 
     if extension.is_some() {
-        let extension_c_str = CString::new(extension.unwrap());
-        if extensions_vec_c_str.contains(&extension_c_str.unwrap()) {
-            let message = format!("{} {} {} {}", "File", filename, "ignored because name matches extension", extension.unwrap());
+        let extension = extension.unwrap();
+        if extensions.contains(&extension) {
+            let message = format!("{} {} {} {}", "File", filename, "ignored because name matches extension", &extension);
             log_debug_rs(&message);
             return false
         }

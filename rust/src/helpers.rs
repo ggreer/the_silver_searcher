@@ -15,10 +15,22 @@ pub unsafe fn char_ptr_to_string(s: *const cty::c_char) -> String {
     String::from(CStr::from_ptr(s).to_str().unwrap())
 }
 
-pub fn get_extension_from_filename(filename: &str) -> Option<&str> {
-    Path::new(filename)
-        .extension()
-        .and_then(OsStr::to_str)
+pub fn get_extension(filename: &str) -> Option<String> {
+    let mut v: Vec<char> = filename.chars().collect();
+    let len = v.len();
+    let pos = v.iter().position(|&c| c == '.');
+    if  len < 2 ||
+        v[0] == '.' && v.iter().filter(|&c| *c == '.').count() < 2 ||
+        pos.is_none() {
+        return None
+    }
+
+    let mut s = String::new();
+    for i in pos.unwrap()+1..len {
+        s.push(v[i]);
+    }
+
+    Some(s)
 }
 
 pub fn fl_c_char_ptr_to_str(fixed_arr: &[cty::c_char; 256]) -> &'static str {
