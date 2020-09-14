@@ -140,20 +140,6 @@ fn match_slash_filename(vec: &Vec<String>, s: &str) -> bool {
 }
 
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn is_fnmatch_works() {
-        assert_eq!(get_position_in_string("hust", "huhustri"), 2);
-        assert_eq!(get_position_in_string("suhda", "asdhaisuhdaidhad"), 6);
-        assert_eq!(get_position_in_string("aaa", "bbbbb"), -1);
-        assert_eq!(get_position_in_string("aaaaaaaaa", "aaa"), -1);
-        assert_eq!(get_position_in_string("", "aaa"), 0);
-    }
-}
-
-
 /* This is the hottest code in Ag. 10-15% of all execution time is spent here */
 unsafe fn path_ignore_search(ig: *const ignores, path: *const cty::c_char, filename: &str) -> bool {
     // Some convencience defines
@@ -311,14 +297,12 @@ unsafe fn is_return_condition_b(path: *const cty::c_char, filename_vec: &Vec<cha
 #[no_mangle]
 pub unsafe extern "C" fn filename_filter(path: *const cty::c_char, dir: *const dirent, baton: *mut cty::c_void) -> cty::c_int {
     let filename: &str = fl_c_char_ptr_to_str(&(*dir).d_name);
-    // get vector of chars from dirent d_name to perform indexing on
     let mut filename_vec: Vec<char> = filename.chars().collect();
 
     if is_return_condition_a(&filename_vec, (*dir).d_type) { return 0 };
     
     if opts.search_all_files == 1 && opts.path_to_ignore == 0 { return 1 }
 
-    // check whether d_name starts with "./"
     if filename_vec[0] == '.' && filename_vec[1] == '/' {
         filename_vec.remove(0);
     }
