@@ -67,24 +67,92 @@ fn match_static_pattern(vec: &Vec<String>, s: &str) -> bool {
     false
 }
 
+fn is_match(sub: &Vec<char>, s: &Vec<char>) -> bool {
+    let mut result = true;
+    for i in 0..sub.len() {
+        if sub[i] != s[i] {
+            result = false;
+        }
+    }
+
+    result
+}
+
+fn get_position_in_string(sub: &str, s: &str) -> i32 {
+    let mut pos = -1;
+    let mut rel_pos = 0;
+
+    let longstring = String::from(s);
+    let mut longstring_vec: Vec<char> = longstring.chars().collect();
+    let substring_vec: Vec<char> = sub.chars().collect();
+
+    while longstring_vec.len() >= substring_vec.len() {
+        if is_match(&substring_vec, &longstring_vec) {
+            pos = rel_pos;
+            break;
+        } else {
+            longstring_vec.remove(0);
+            rel_pos += 1;
+        }
+    }
+
+    pos
+}
+
 fn match_slash_filename(vec: &Vec<String>, s: &str) -> bool {
     for v in vec {
-        if v.contains(s) {
-            let leading_slash_filename = format!("/{}", s);
-            let ending_filename = format!("{}\0", s);
-            let ending_slash_filename = format!("{}/", s);
-            if v == s || v.contains(&leading_slash_filename) || v.contains(&ending_filename) || v.contains(&ending_slash_filename) {
-                let message = format!("{} {} {} {}", "File", s, "ignored because name matches static pattern", v);
-                log_debug_rs(&message);
-                return true
+        let pos = get_position_in_string(v, s);
+        if pos != -1 {
+            let longstring = String::from(s);
+            let mut longstring_vec: Vec<char> = longstring.chars().collect();
+            let long_len = longstring_vec.len() as usize;
+
+            let substring: Vec<char> = v.chars().collect();
+            let sub_len = substring.len();
+
+            let mut one_before_pos = '?';
+            if pos > 1 {
+                one_before_pos = longstring_vec[pos as usize - 1];
+            }
+
+            let mut string_vec_at_pos: Vec<char> = Vec::new();
+            for i in pos as usize..long_len {
+                string_vec_at_pos.push(longstring_vec[i]);
+            }
+
+            let string_at_pos: String = string_vec_at_pos.iter().collect();
+            if string_at_pos == s || one_before_pos == '/' {
+                for i in 0..sub_len {
+                    string_vec_at_pos.remove(0);
+                }
+                if string_vec_at_pos[0] == '\0' || string_vec_at_pos[0] == '/' {
+                    let message = format!("{} {} {} {}", "File", s, "ignored because name matches static pattern", v);
+                    log_debug_rs(&message);
+                    return true
+                }
             }
         }
         let message = format!("{} {} {} {}", "Pattern", v, "doesn't match path", s);
-        log_debug_rs(&message);          
+        log_debug_rs(&message);
     }
 
     false
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn is_fnmatch_works() {
+        assert_eq!(get_position_in_string("hust", "huhustri"), 2);
+        assert_eq!(get_position_in_string("suhda", "asdhaisuhdaidhad"), 6);
+        assert_eq!(get_position_in_string("aaa", "bbbbb"), -1);
+        assert_eq!(get_position_in_string("aaaaaaaaa", "aaa"), -1);
+        assert_eq!(get_position_in_string("", "aaa"), 0);
+    }
+}
+
 
 /* This is the hottest code in Ag. 10-15% of all execution time is spent here */
 unsafe fn path_ignore_search(ig: *const ignores, path: *const cty::c_char, filename: &str) -> bool {
@@ -139,7 +207,7 @@ unsafe fn path_ignore_search(ig: *const ignores, path: *const cty::c_char, filen
 
         if match_static_pattern(&names_vec, &slash_filename) ||
             match_static_pattern(&slash_names_vec, &slash_filename) ||
-            match_slash_filename(&names_vec, &slash_filename) { 
+            match_slash_filename(&names_vec, &slash_filename) {
             return true 
         }
 
