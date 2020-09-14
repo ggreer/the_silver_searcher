@@ -8,11 +8,11 @@ use std::ptr::slice_from_raw_parts;
 
 pub fn str_to_c_char_ptr(s: &str) -> *mut cty::c_char {
     let c_str = CString::new(s.as_bytes()).unwrap_or_default();
-    return c_str.into_raw() as *mut cty::c_char;
+    c_str.into_raw() as *mut cty::c_char
 }
 
 pub unsafe fn char_ptr_to_string(s: *const cty::c_char) -> String {
-    return String::from(CStr::from_ptr(s).to_str().unwrap());
+    String::from(CStr::from_ptr(s).to_str().unwrap())
 }
 
 pub fn get_extension_from_filename(filename: &str) -> Option<&str> {
@@ -25,7 +25,7 @@ pub fn fl_c_char_ptr_to_str(fixed_arr: &[cty::c_char; 256]) -> &'static str {
     let ptr_arr = fixed_arr.as_ptr();
     assert!(!ptr_arr.is_null());
     let c_str: &CStr = unsafe { CStr::from_ptr(ptr_arr) };
-    return c_str.to_str().unwrap()
+    c_str.to_str().unwrap()
 }
 
 pub unsafe fn double_i8_ptr_to_vec(ptr: *mut *mut i8, ptr_len: usize) -> Vec<String> {
@@ -37,15 +37,13 @@ pub unsafe fn double_i8_ptr_to_vec(ptr: *mut *mut i8, ptr_len: usize) -> Vec<Str
         ptr_vec.push(char_ptr_to_string(elem));
     }
 
-    return ptr_vec
+    ptr_vec
 }
 
 fn min(a: usize, b: usize) -> usize {
-    if a > b {
-        return b
-    }
+    if a > b { return b }
 
-    return a
+    a
 }
 
 pub fn strncmp(a: &str, b: &str) -> cty::c_int {
@@ -60,7 +58,7 @@ pub fn strncmp(a: &str, b: &str) -> cty::c_int {
         else if a[n] > b[n] { return 1 }
     }
 
-    return 0;
+    0
 }
 
 pub fn strncmp_fl(a: &str, b: &str, mut n: usize) -> cty::c_int {
@@ -73,7 +71,7 @@ pub fn strncmp_fl(a: &str, b: &str, mut n: usize) -> cty::c_int {
         else if (a[n] as cty::c_uchar) > (b[n] as cty::c_uchar) { return 1 }
     }
 
-    return 0;
+    0
 }
 
 pub fn match_position(s: &str, v: &Vec<String>) -> cty::c_int {
