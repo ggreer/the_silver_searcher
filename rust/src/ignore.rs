@@ -12,7 +12,8 @@ use crate::file_types::*;
 
 use crate::helpers::{
     get_extension, char_ptr_to_string, str_to_c_char_ptr, fl_c_char_ptr_to_str,
-    double_i8_ptr_to_vec, strncmp, strncmp_fl, match_position, is_fnmatch
+    double_i8_ptr_to_vec, strncmp, strncmp_fl, match_position, is_fnmatch,
+    get_position_in_string
 };
 
 use std::ffi::{ CStr, CString };
@@ -33,8 +34,9 @@ unsafe fn ackmate_dir_match(dir_name: *const cty::c_char) -> cty::c_int {
     }
     /* we just care about the match, not where the matches are */
     pcre_exec(
-        opts.ackmate_dir_filter, mem::MaybeUninit::uninit().assume_init(), dir_name, 
-        char_ptr_to_string(dir_name).len() as i32, 0, 0, mem::MaybeUninit::uninit().assume_init(), 0
+        opts.ackmate_dir_filter, mem::MaybeUninit::uninit().assume_init(), 
+        dir_name, char_ptr_to_string(dir_name).len() as i32, 0, 
+        0, mem::MaybeUninit::uninit().assume_init(), 0
     )
 }
 
@@ -65,38 +67,6 @@ fn match_static_pattern(vec: &Vec<String>, s: &str) -> bool {
     }
 
     false
-}
-
-fn is_match(sub: &Vec<char>, s: &Vec<char>) -> bool {
-    let mut result = true;
-    for i in 0..sub.len() {
-        if sub[i] != s[i] {
-            result = false;
-        }
-    }
-
-    result
-}
-
-fn get_position_in_string(sub: &str, s: &str) -> i32 {
-    let mut pos = -1;
-    let mut rel_pos = 0;
-
-    let longstring = String::from(s);
-    let mut longstring_vec: Vec<char> = longstring.chars().collect();
-    let substring_vec: Vec<char> = sub.chars().collect();
-
-    while longstring_vec.len() >= substring_vec.len() {
-        if is_match(&substring_vec, &longstring_vec) {
-            pos = rel_pos;
-            break;
-        } else {
-            longstring_vec.remove(0);
-            rel_pos += 1;
-        }
-    }
-
-    pos
 }
 
 fn match_slash_filename(vec: &Vec<String>, s: &str) -> bool {
@@ -139,9 +109,8 @@ fn match_slash_filename(vec: &Vec<String>, s: &str) -> bool {
     false
 }
 
-
 /* This is the hottest code in Ag. 10-15% of all execution time is spent here */
-unsafe fn path_ignore_search(ig: *const ignores, path: *const cty::c_char, filename: &str) -> bool {
+unsafe fn path_ignore_search(ig: *const ignores, path: &str, filename: &str) -> bool {
     // Some convencience defines
     let names = (*ig).names;
     let slash_names = (*ig).slash_names;
@@ -165,15 +134,14 @@ unsafe fn path_ignore_search(ig: *const ignores, path: *const cty::c_char, filen
 
     if match_static_pattern(&names_vec, &filename) { return true };
 
-    let mut path_str = char_ptr_to_string(path);
+    let mut path_str = String::from(path);
     if path_str.starts_with('.') {
         path_str.remove(0);
     }
 
     let mut temp = format!("{}/{}", &path_str, &filename);
 
-    // ig->abs_path has its leading slash stripped,
-    // so we have to strip the leading slash of temp as well
+    // strip leading slash like abs_path
     if temp.starts_with('/') {
         temp.remove(0);
     }
@@ -191,7 +159,7 @@ unsafe fn path_ignore_search(ig: *const ignores, path: *const cty::c_char, filen
             slash_filename.remove(0);
         }
 
-        if match_static_pattern(&names_vec, &slash_filename) ||
+        if  match_static_pattern(&names_vec, &slash_filename) ||
             match_static_pattern(&slash_names_vec, &slash_filename) ||
             match_slash_filename(&names_vec, &slash_filename) {
             return true 
@@ -242,10 +210,8 @@ fn is_fifo(filename: &str, d_type: cty::c_uchar) -> bool {
     false
 }
 
-unsafe fn check_extension(filename: &str, ig: *const ignores) -> bool {
+fn check_extension(filename: &str, extensions: &Vec<String>) -> bool {
     let extension = get_extension(&filename);
-    let ext_len = (*ig).extensions_len as usize;
-    let extensions = double_i8_ptr_to_vec((*ig).extensions, ext_len);
 
     if extension.is_some() {
         let extension = extension.unwrap();
@@ -259,12 +225,12 @@ unsafe fn check_extension(filename: &str, ig: *const ignores) -> bool {
     true
 }
 
-unsafe fn check_dir(filename_vec: &Vec<char>, d_type: cty::c_uchar, path_start: *const i8, ig: *const ignores) -> bool {
+fn check_dir(filename_vec: &Vec<char>, d_type: cty::c_uchar, path_start: &str, ig: *const ignores) -> bool {
     if d_type == DT_DIR {
         if filename_vec[&filename_vec.len() - 1] != '/' {
             let s: String = filename_vec.iter().collect();
             let temp = format!("{}/", &s);
-            if path_ignore_search(ig, path_start, &temp) {
+            if unsafe { path_ignore_search(ig, path_start, &temp) } {
                 return false
             }
         }
@@ -275,6 +241,7 @@ unsafe fn check_dir(filename_vec: &Vec<char>, d_type: cty::c_uchar, path_start: 
 
 fn is_return_condition_a(filename_vec: &Vec<char>, d_type: cty::c_uchar) -> bool {
     let s: String = filename_vec.iter().collect();
+    
     let cond_a = unsafe { opts.search_hidden_files == 0 } && filename_vec[0] == '.';
     let cond_b = is_evil_hardcoded(&s);
     let cond_c = is_unwanted_symlink(&s, d_type);
@@ -283,11 +250,12 @@ fn is_return_condition_a(filename_vec: &Vec<char>, d_type: cty::c_uchar) -> bool
     cond_a || cond_b || cond_c || cond_d
 }
 
-unsafe fn is_return_condition_b(path: *const cty::c_char, filename_vec: &Vec<char>,
-                                d_type: cty::c_uchar, path_start: *const cty::c_char,
-                                ig: *const ignores) -> bool {
+unsafe fn is_return_condition_b(path: *const cty::c_char, filename_vec: &Vec<char>, d_type: cty::c_uchar,
+                                path_start: &str, ig: *const ignores) -> bool {
     let s: String = filename_vec.iter().collect();
-    let cond_a = !check_extension(&s, ig);
+    let extensions = double_i8_ptr_to_vec((*ig).extensions, (*ig).extensions_len as usize);
+
+    let cond_a = !check_extension(&s, &extensions);
     let cond_b = path_ignore_search(ig, path_start, &s);
     let cond_c = !check_dir(&filename_vec, d_type, path_start, ig);
 
@@ -312,7 +280,7 @@ pub unsafe extern "C" fn filename_filter(path: *const cty::c_char, dir: *const d
     let mut ig = (*scandir_baton).ig;
 
     while !ig.is_null() {
-        if is_return_condition_b(path, &filename_vec, (*dir).d_type, path_start, ig) { return 0 }
+        if is_return_condition_b(path, &filename_vec, (*dir).d_type, &char_ptr_to_string(path_start), ig) { return 0 }
         ig = (*ig).parent;
     }
 

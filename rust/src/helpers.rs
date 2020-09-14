@@ -107,14 +107,34 @@ pub fn is_fnmatch(filename: &str) -> bool {
     return fnmatch_chars.into_iter().any(|c| filename.contains(c));
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn is_fnmatch_works() {
-        assert_eq!(is_fnmatch("huhu!huhu"), true);
-        assert_eq!(is_fnmatch("agzdu(asdg]"), true);
-        assert_eq!(is_fnmatch("***"), true);
-        assert_eq!(is_fnmatch("huhasdh"), false);
+fn is_match(sub: &Vec<char>, s: &Vec<char>) -> bool {
+    let mut result = true;
+    for i in 0..sub.len() {
+        if sub[i] != s[i] {
+            result = false;
+        }
     }
+
+    result
+}
+
+pub fn get_position_in_string(sub: &str, s: &str) -> i32 {
+    let mut pos = -1;
+    let mut rel_pos = 0;
+
+    let longstring = String::from(s);
+    let mut longstring_vec: Vec<char> = longstring.chars().collect();
+    let substring_vec: Vec<char> = sub.chars().collect();
+
+    while longstring_vec.len() >= substring_vec.len() {
+        if is_match(&substring_vec, &longstring_vec) {
+            pos = rel_pos;
+            break;
+        } else {
+            longstring_vec.remove(0);
+            rel_pos += 1;
+        }
+    }
+
+    pos
 }
