@@ -201,7 +201,7 @@ fn is_unwanted_symlink(filename: &str, d_type: cty::c_uchar) -> bool {
 }
 
 fn is_fifo(filename: &str, d_type: cty::c_uchar) -> bool {
-    if d_type == DT_FIFO {
+    if d_type == DT_FIFO || d_type == DT_SOCK {
         let message = format!("{} {} {}", "File", filename, "ignored becaused it's a named pipe or socket");
         log_debug_rs(&message);
         return true
@@ -250,7 +250,7 @@ fn is_return_condition_a(filename_vec: &Vec<char>, d_type: cty::c_uchar) -> bool
     cond_a || cond_b || cond_c || cond_d
 }
 
-unsafe fn is_return_condition_b(path: *const cty::c_char, filename_vec: &Vec<char>, d_type: cty::c_uchar,
+unsafe fn is_return_condition_b(filename_vec: &Vec<char>, d_type: cty::c_uchar,
                                 path_start: &str, ig: *const ignores) -> bool {
     let s: String = filename_vec.iter().collect();
     let extensions = double_i8_ptr_to_vec((*ig).extensions, (*ig).extensions_len as usize);
@@ -280,7 +280,7 @@ pub unsafe extern "C" fn filename_filter(path: *const cty::c_char, dir: *const d
     let mut ig = (*scandir_baton).ig;
 
     while !ig.is_null() {
-        if is_return_condition_b(path, &filename_vec, (*dir).d_type, &char_ptr_to_string(path_start), ig) { return 0 }
+        if is_return_condition_b(&filename_vec, (*dir).d_type, &char_ptr_to_string(path_start), ig) { return 0 }
         ig = (*ig).parent;
     }
 
