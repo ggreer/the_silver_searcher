@@ -5,9 +5,7 @@ fn main() {
 
     let bindings = bindgen::Builder::default()
         .ctypes_prefix("cty")
-        .use_core()
         .header("wrapper.h")
-        .trust_clang_mangling(false)
         .rustfmt_bindings(true)
         .generate()
         .expect("Unable to generate bindings");
