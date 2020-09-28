@@ -19,6 +19,7 @@ pub fn get_extension(filename: &str) -> Option<String> {
     let mut v: Vec<char> = filename.chars().collect();
     let len = v.len();
     let pos = v.iter().position(|&c| c == '.');
+
     if  len < 2 ||
         v[0] == '.' && v.iter().filter(|&c| *c == '.').count() < 2 ||
         pos.is_none() {
@@ -45,7 +46,7 @@ pub unsafe fn double_i8_ptr_to_vec(ptr: *mut *mut i8, ptr_len: usize) -> Vec<Str
     let mut ptr_vec: Vec<String> = Vec::new();
 
     for i in 0..ptr_len {
-        let elem = (&*pv)[i];
+        let elem = (*pv)[i];
         ptr_vec.push(char_ptr_to_string(elem));
     }
 
