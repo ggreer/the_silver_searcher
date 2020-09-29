@@ -6,10 +6,10 @@ ag_LDADD = ${PCRE_LIBS} ${LZMA_LIBS} ${ZLIB_LIBS} $(PTHREAD_LIBS)
 
 dist_man_MANS = doc/ag.1
 
-bashcompdir = $(pkgdatadir)/completions
-dist_bashcomp_DATA = ag.bashcomp.sh
+bashcompdir = $(datadir)/bash-completion/completions
+dist_bashcomp_DATA = completions/bash/ag
 zshcompdir = $(datadir)/zsh/site-functions
-dist_zshcomp_DATA = _the_silver_searcher
+dist_zshcomp_DATA = completions/zsh/_ag
 
 EXTRA_DIST = Makefile.w32 LICENSE NOTICE the_silver_searcher.spec README.md
 
