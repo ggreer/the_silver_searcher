@@ -62,9 +62,10 @@ or
 * Fedora 22+
 
         dnf install the_silver_searcher
-* RHEL7+
+* RHEL/CentOS 6+
 
-        yum install epel-release.noarch the_silver_searcher
+        yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-$(rpm --eval %rhel).noarch.rpm
+        yum install the_silver_searcher
 * Gentoo
 
         emerge -a sys-apps/the_silver_searcher
@@ -79,10 +80,6 @@ or
 * openSUSE
 
         zypper install the_silver_searcher
-
-* CentOS
-
-        yum install the_silver_searcher
 
 * NixOS/Nix/Nixpkgs
 
