@@ -11,7 +11,7 @@ use crate::bindings::{
 use crate::file_types::*;
 
 use crate::helpers::{
-    get_extension, char_ptr_to_string, str_to_c_char_ptr, fl_c_char_ptr_to_str,
+    get_extension, char_ptr_to_string, str_to_c_char_ptr, fl_c_array_to_str,
     double_i8_ptr_to_vec, strncmp, strncmp_fl, match_position,
     get_position_in_string
 };
