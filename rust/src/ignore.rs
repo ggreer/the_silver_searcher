@@ -264,7 +264,7 @@ unsafe fn is_return_condition_b(filename_vec: &Vec<char>, d_type: cty::c_uchar,
 
 #[no_mangle]
 pub unsafe extern "C" fn filename_filter(path: *const cty::c_char, dir: *const dirent, baton: *mut cty::c_void) -> cty::c_int {
-    let filename: &str = fl_c_char_ptr_to_str(&(*dir).d_name);
+    let filename: String = fl_c_array_to_str(&(*dir).d_name);
     let mut filename_vec: Vec<char> = filename.chars().collect();
 
     if is_return_condition_a(&filename_vec, (*dir).d_type) { return 0 };
@@ -284,7 +284,7 @@ pub unsafe extern "C" fn filename_filter(path: *const cty::c_char, dir: *const d
         ig = (*ig).parent;
     }
 
-    let message = format!("{} {}", filename, "not ignored");
+    let message = format!("{} {}", &filename, "not ignored");
     log_debug(str_to_c_char_ptr(&message));
 
     1
