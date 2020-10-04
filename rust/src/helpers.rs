@@ -37,9 +37,8 @@ pub fn get_extension(filename: &str) -> Option<String> {
 pub fn fl_c_array_to_str(fixed_arr: &[cty::c_char; 256]) -> String {
     let ptr_arr = fixed_arr.as_ptr();
     assert!(!ptr_arr.is_null());
-    let c_str: &CStr = unsafe { CStr::from_ptr(ptr_arr) };
-    
-    String::from(c_str.to_str().unwrap())
+
+    unsafe { char_ptr_to_string(ptr_arr) }
 }
 
 pub unsafe fn double_i8_ptr_to_vec(ptr: *mut *mut i8, ptr_len: usize) -> Vec<String> {
