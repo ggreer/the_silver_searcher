@@ -147,7 +147,6 @@ ssize_t search_buf(const char *buf, const size_t buf_len,
                     if (rv < 0) {
                         break;
                     }
-                    size_t line_to_buf = buf_offset + line_offset;
                     log_debug("Regex match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
                     line_offset = offset_vector[1];
                     if (offset_vector[0] == offset_vector[1]) {
@@ -157,8 +156,8 @@ ssize_t search_buf(const char *buf, const size_t buf_len,
 
                     realloc_matches(&matches, &matches_size, matches_len + matches_spare);
 
-                    matches[matches_len].start = offset_vector[0] + line_to_buf;
-                    matches[matches_len].end = offset_vector[1] + line_to_buf;
+                    matches[matches_len].start = offset_vector[0] + buf_offset;
+                    matches[matches_len].end = offset_vector[1] + buf_offset;
                     matches_len++;
 
                     if (opts.max_matches_per_file > 0 && matches_len >= opts.max_matches_per_file) {
