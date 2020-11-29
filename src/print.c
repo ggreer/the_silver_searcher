@@ -176,7 +176,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
         if (cur_match < matches_len && i == matches[cur_match].start) {
             print_context.in_a_match = TRUE;
             /* We found the start of a match */
-            if (cur_match > 0 && blanks_between_matches && print_context.lines_since_last_match > (opts.before + opts.after + 1)) {
+            if (cur_match > 0 && (opts.multiline_break || (blanks_between_matches && print_context.lines_since_last_match > (opts.before + opts.after + 1)))) {
                 fprintf(out_fd, "--\n");
             }
 
@@ -352,8 +352,12 @@ void print_column_number(const match_t matches[], size_t last_printed_match,
 }
 
 void print_file_separator(void) {
-    if (first_file_match == 0 && opts.print_break) {
-        fprintf(out_fd, "\n");
+    if (first_file_match == 0) {
+        if (opts.multiline_break) {
+            fprintf(out_fd, "--\n");
+        } else if (opts.print_break) {
+            fprintf(out_fd, "\n");
+        }
     }
     first_file_match = 0;
 }
