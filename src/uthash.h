@@ -93,9 +93,9 @@ typedef unsigned char uint8_t;
 #endif
 
 /* initial number of buckets */
-#define HASH_INITIAL_NUM_BUCKETS 32     /* initial number of buckets        */
+#define HASH_INITIAL_NUM_BUCKETS 32 /* initial number of buckets        */
 #define HASH_INITIAL_NUM_BUCKETS_LOG2 5 /* lg2 of initial number of buckets */
-#define HASH_BKT_CAPACITY_THRESH 10     /* expand when bucket count reaches */
+#define HASH_BKT_CAPACITY_THRESH 10 /* expand when bucket count reaches */
 
 /* calculate the element whose hash handle address is hhe */
 #define ELMT_FROM_HH(tbl, hhp) ((void *)(((char *)(hhp)) - ((tbl)->hho)))
