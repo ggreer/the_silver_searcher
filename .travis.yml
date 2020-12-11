@@ -5,6 +5,10 @@ sudo: false
 branches:
   only:
     - master
+    - ppc64le
+arch:
+  - amd64
+  - ppc64le
 
 compiler:
   - clang
