@@ -232,8 +232,6 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     option_t *longopts;
     char *lang_regex = NULL;
     size_t *ext_index = NULL;
-    char *extensions = NULL;
-    size_t num_exts = 0;
 
     init_options();
 
@@ -623,18 +621,12 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     if (has_filetype) {
-        num_exts = combine_file_extensions(ext_index, lang_num, &extensions);
-        lang_regex = make_lang_regex(extensions, num_exts);
+        lang_regex = make_lang_regex(ext_index, lang_num);
         compile_study(&opts.file_search_regex, &opts.file_search_regex_extra, lang_regex, 0, 0);
     }
 
-    if (extensions) {
-        free(extensions);
-    }
     free(ext_index);
-    if (lang_regex) {
-        free(lang_regex);
-    }
+    free(lang_regex);
     free(longopts);
 
     argc -= optind;
