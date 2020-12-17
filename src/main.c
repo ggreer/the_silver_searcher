@@ -154,7 +154,7 @@ int main(int argc, char **argv) {
             }
 #if defined(HAVE_PTHREAD_SETAFFINITY_NP) && (defined(USE_CPU_SET) || defined(HAVE_SYS_CPUSET_H))
             if (opts.use_thread_affinity) {
-#if defined(__linux__) || defined(__midipix__)
+#if defined(__linux__) || defined(__midipix__) || defined(__CYGWIN__)
                 cpu_set_t cpu_set;
 #elif __FreeBSD__
                 cpuset_t cpu_set;
