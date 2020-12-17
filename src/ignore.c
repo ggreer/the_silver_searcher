@@ -117,33 +117,42 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
         return;
     }
 
+    char *local_pattern = ag_strndup(pattern, pattern_len + 1);
+    local_pattern[pattern_len] = '\0';
+
+    if (local_pattern[0] != '/' && strstr(local_pattern, "/*/")) {
+        memmove(local_pattern + 1, pattern, pattern_len + 1);
+        memcpy(local_pattern, "/", 1);
+        pattern_len++;
+    }
+
     char ***patterns_p;
     size_t *patterns_len;
-    if (is_fnmatch(pattern)) {
-        if (pattern[0] == '*' && pattern[1] == '.' && strchr(pattern + 2, '.') && !is_fnmatch(pattern + 2)) {
+    if (is_fnmatch(local_pattern)) {
+        if (local_pattern[0] == '*' && local_pattern[1] == '.' && strchr(local_pattern + 2, '.') && !is_fnmatch(local_pattern + 2)) {
             patterns_p = &(ig->extensions);
             patterns_len = &(ig->extensions_len);
-            pattern += 2;
+            local_pattern += 2;
             pattern_len -= 2;
-        } else if (pattern[0] == '/') {
+        } else if (local_pattern[0] == '/') {
             patterns_p = &(ig->slash_regexes);
             patterns_len = &(ig->slash_regexes_len);
-            pattern++;
+            local_pattern++;
             pattern_len--;
-        } else if (pattern[0] == '!') {
+        } else if (local_pattern[0] == '!') {
             patterns_p = &(ig->invert_regexes);
             patterns_len = &(ig->invert_regexes_len);
-            pattern++;
+            local_pattern++;
             pattern_len--;
         } else {
             patterns_p = &(ig->regexes);
             patterns_len = &(ig->regexes_len);
         }
     } else {
-        if (pattern[0] == '/') {
+        if (local_pattern[0] == '/') {
             patterns_p = &(ig->slash_names);
             patterns_len = &(ig->slash_names_len);
-            pattern++;
+            local_pattern++;
             pattern_len--;
         } else {
             patterns_p = &(ig->names);
@@ -159,13 +168,13 @@ void add_ignore_pattern(ignores *ig, const char *pattern) {
     *patterns_p = patterns = ag_realloc(*patterns_p, (*patterns_len) * sizeof(char *));
     /* TODO: de-dupe these patterns */
     for (i = *patterns_len - 1; i > 0; i--) {
-        if (strcmp(pattern, patterns[i - 1]) > 0) {
+        if (strcmp(local_pattern, patterns[i - 1]) > 0) {
             break;
         }
         patterns[i] = patterns[i - 1];
     }
-    patterns[i] = ag_strndup(pattern, pattern_len);
-    log_debug("added ignore pattern %s to %s", pattern,
+    patterns[i] = ag_strndup(local_pattern, pattern_len);
+    log_debug("added ignore pattern %s to %s", local_pattern,
               ig == root_ignores ? "root ignores" : ig->abs_path);
 }
 
