@@ -16,7 +16,7 @@
 #define FG_RGB (FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN)
 #define BG_RGB (BACKGROUND_RED | BACKGROUND_BLUE | BACKGROUND_GREEN)
 
-// BUFSIZ is guarenteed to be "at least 256 bytes" which might
+// BUFSIZ is guaranteed to be "at least 256 bytes" which might
 // not be enough for us. Use an arbitrary but reasonably big
 // buffer. win32 colored output will be truncated to this length.
 #define BUF_SIZE (16 * 1024)
