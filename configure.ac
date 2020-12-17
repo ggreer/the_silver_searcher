@@ -81,4 +81,26 @@ AM_COND_IF(
     [AC_MSG_WARN([clang-format not found. 'make test' will not detect improperly-formatted files.])]
 )
 
+###############################################################################################
+
+AC_ARG_ENABLE(debug,
+              AC_HELP_STRING([--enable-debug],
+                             [Build Rust code with debugging information [default=no]]),
+              [debug_release=$enableval],
+              [debug_release=no])
+
+AC_MSG_CHECKING(whether to build Rust code with debugging information)
+if test "x$debug_release" = "xyes" ; then
+	AC_MSG_RESULT(yes)
+	RUST_TARGET_SUBDIR=debug
+else
+	AC_MSG_RESULT(no)
+	RUST_TARGET_SUBDIR=release
+fi
+AM_CONDITIONAL([DEBUG_RELEASE], [test "x$debug_release" = "xyes"])
+
+AC_SUBST([RUST_TARGET_SUBDIR])
+
+###############################################################################################
+
 AC_OUTPUT

@@ -1,3 +1,18 @@
+# The Silver Searcher - Incremental manual transpilation to Rust
+
+Hi there!
+
+First of all, thank you for your work on this beautiful tool and for sharing it for free!
+
+About this pull request:
+As part of my Bachelor thesis in Computer Science at the Technische Universität Darmstadt, I forumlated a "recipe" to do manual and incremental C to Rust transpilation and applied it on your project's filter and ignore functionalities.
+Of course it would be great if you considered merging this pull request or branching off in your repository, but apart from that even some sort of smallish feedback would mean a lot coming from you and may substanciate further work on this topic.
+For about 5 months, I will keep working on this with my thesis' supervisor, and, if everything works out, we will publish a paper - so thank you very much if you should find the time to contribute and help me pacing forward in this direction!
+
+Best
+Phil
+
+
 # The Silver Searcher
 
 A code searching tool similar to `ack`, with a focus on speed.

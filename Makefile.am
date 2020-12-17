@@ -13,6 +13,49 @@ dist_zshcomp_DATA = _the_silver_searcher
 
 EXTRA_DIST = Makefile.w32 LICENSE NOTICE the_silver_searcher.spec README.md
 
+#########################################################################################
+
+RUST_SOURCE =\
+	rust/Cargo.toml\
+	rust/src/lib.rs
+
+RUST_EXTRA =\
+	rust/Cargo.lock
+
+if DEBUG_RELEASE
+CARGO_RELEASE_ARGS=
+else
+CARGO_RELEASE_ARGS=--release
+endif
+
+rust_dir = $(top_srcdir)/rust
+
+check-local-rust:
+	cd $(rust_dir) && \
+	CARGO_TARGET_DIR=target cargo test
+
+clean-local-rust:
+	cd $(rust_dir) && \
+	cargo clean
+
+RUST_LIB=$(rust_dir)/target/@RUST_TARGET_SUBDIR@/librust_internals.a
+
+$(RUST_LIB): $(RUST_SOURCE)
+	cd $(rust_dir) && \
+	CARGO_TARGET_DIR=target cargo build --verbose $(CARGO_RELEASE_ARGS)
+
+EXTRA_DIST += \
+	$(RUST_SOURCE) \
+	$(RUST_EXTRA)
+
+ag_LDADD += $(RUST_LIB)
+
+# solve undefined reference to 'dlsym' caused by newer
+# versions of gcc/ld default to linking with --as-needed.
+ag_LDFLAGS = -Wl,--no-as-needed -ldl
+
+#########################################################################################
+
 all:
 	@$(MAKE) ag -r
 
