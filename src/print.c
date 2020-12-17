@@ -85,7 +85,7 @@ void print_trailing_context(const char *path, const char *buf, size_t n) {
 
     if (print_context.lines_since_last_match != 0 &&
         print_context.lines_since_last_match <= opts.after) {
-        if (opts.print_path == PATH_PRINT_EACH_LINE) {
+        if (opts.print_path == PATH_PRINT_EACH_LINE || opts.vimgrep) {
             print_path(path, ':');
         }
         print_line_number(print_context.line, sep);
@@ -193,7 +193,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                 for (j = (opts.before - lines_to_print); j < opts.before; j++) {
                     print_context.prev_line = (print_context.last_prev_line + j) % opts.before;
                     if (print_context.context_prev_lines[print_context.prev_line] != NULL) {
-                        if (opts.print_path == PATH_PRINT_EACH_LINE) {
+                        if (opts.print_path == PATH_PRINT_EACH_LINE || opts.vimgrep) {
                             print_path(path, ':');
                         }
                         print_line_number(print_context.line - (opts.before - j), sep);
