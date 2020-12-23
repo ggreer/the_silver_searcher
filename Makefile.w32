@@ -15,10 +15,11 @@ SRCS = \
 	src/scandir.c \
 	src/search.c \
 	src/util.c \
-	src/print_w32.c
+	src/print_w32.c \
+	src/iscygpty.c
 OBJS = $(subst .c,.o,$(SRCS))
 
-CFLAGS = -O2 -Isrc/win32 -DPACKAGE_VERSION=\"$(VERSION)\"
+CFLAGS = -O2 -Isrc/win32 -DPACKAGE_VERSION=\"$(VERSION)\" -D_WIN32_WINNT=0x0600
 LIBS = -lz -lpthread -lpcre -llzma -lshlwapi
 TARGET = ag.exe
 

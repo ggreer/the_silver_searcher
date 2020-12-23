@@ -22,7 +22,7 @@ then
     exit 1
 fi
 
-SOURCE_FILES=$(git ls-files src/)
+SOURCE_FILES=$(git ls-files src/ | grep -v 'iscygpty\.[ch]')
 
 if [ "$1" == "reformat" ]
 then
@@ -45,6 +45,7 @@ then
         echo "Suggested change:"
         cp -r src clang_format_src
         $CLANG_FORMAT -style=file -i clang_format_src/*.c clang_format_src/*.h
+        cp src/iscygpty.[ch] clang_format_src
         diff -ur src clang_format_src
         rm -r clang_format_src
         echo "Run '$0 reformat' to fix formatting"

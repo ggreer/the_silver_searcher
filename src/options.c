@@ -10,6 +10,7 @@
 
 #include "config.h"
 #include "ignore.h"
+#include "iscygpty.h"
 #include "lang.h"
 #include "log.h"
 #include "options.h"
@@ -357,7 +358,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 
     rv = fstat(fileno(stdin), &statbuf);
     if (rv == 0) {
-        if (S_ISFIFO(statbuf.st_mode) || S_ISREG(statbuf.st_mode)) {
+        if ((S_ISFIFO(statbuf.st_mode) || S_ISREG(statbuf.st_mode)) && !is_cygpty(fileno(stdin))) {
             opts.search_stream = 1;
         }
     }
@@ -366,7 +367,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         * turn off colors
         * print filenames on every line
      */
-    if (!isatty(fileno(stdout))) {
+    if (!isatty(fileno(stdout)) && !is_cygpty(fileno(stdout))) {
         opts.color = 0;
         group = 0;
 
