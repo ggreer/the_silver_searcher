@@ -628,11 +628,12 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
             if (opts.file_search_regex) {
                 rc = pcre_exec(opts.file_search_regex, NULL, dir_full_path, strlen(dir_full_path),
                                0, 0, offset_vector, 3);
-                if (rc < 0) { /* no match */
-                    log_debug("Skipping %s due to file_search_regex.", dir_full_path);
+                if ((!opts.invert_file_search_regex && rc < 0) ||
+                    (opts.invert_file_search_regex && rc >= 0)) { /* no match */
+                    log_debug("Skipping %s due to file_search_regex (invert = %d).", dir_full_path, opts.invert_file_search_regex);
                     goto cleanup;
                 } else if (opts.match_files) {
-                    log_debug("match_files: file_search_regex matched for %s.", dir_full_path);
+                    log_debug("match_files: file_search_regex (invert = %d) matched for %s.", opts.invert_file_search_regex, dir_full_path);
                     pthread_mutex_lock(&print_mtx);
                     print_path(dir_full_path, opts.path_sep);
                     pthread_mutex_unlock(&print_mtx);

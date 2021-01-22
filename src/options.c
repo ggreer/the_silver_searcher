@@ -89,6 +89,8 @@ Search Options:\n\
   -f --follow             Follow symlinks\n\
   -F --fixed-strings      Alias for --literal for compatibility with grep\n\
   -G --file-search-regex  PATTERN Limit search to filenames matching PATTERN\n\
+     --invert-file-search-regex  PATTERN\n\
+                          Limit search to filenames not matching PATTERN\n\
      --hidden             Search hidden files (obeys .*ignore files)\n\
   -i --ignore-case        Match case insensitively\n\
      --ignore PATTERN     Ignore files/directories matching PATTERN\n\
@@ -260,6 +262,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "filename", no_argument, NULL, 0 },
         { "filename-pattern", required_argument, NULL, 'g' },
         { "file-search-regex", required_argument, NULL, 'G' },
+        { "invert-file-search-regex", required_argument, NULL, 0 },
         { "files-with-matches", no_argument, NULL, 'l' },
         { "files-without-matches", no_argument, NULL, 'L' },
         { "fixed-strings", no_argument, NULL, 'F' },
@@ -577,6 +580,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                     opts.print_filename_only = 1;
                     opts.print_path = PATH_PRINT_NOTHING;
                     opts.stats = 1;
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "invert-file-search-regex") == 0) {
+                    opts.invert_file_search_regex = 1;
+                    file_search_regex = ag_strdup(optarg);
                     break;
                 }
 

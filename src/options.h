@@ -37,6 +37,11 @@ typedef struct {
     int match_files;
     pcre *file_search_regex;
     pcre_extra *file_search_regex_extra;
+    int invert_file_search_regex; /* Search files that don't match file_search_regex. Note that this
+                                     is a boolean, whereas the --invert-file-search-regex flag takes
+                                     a string. Setting --invert-file-search-regex="foobar" on the
+                                     commandline results in file_search_regex being set to "foobar"
+                                     and invert_file_search_regex being set to true. */
     int color;
     char *color_line_number;
     char *color_match;
