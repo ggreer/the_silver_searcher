@@ -362,6 +362,9 @@ Language types are output:
   
     --thrift
         .thrift
+    
+    --txt
+        .txt
   
     --tla
         .tla
