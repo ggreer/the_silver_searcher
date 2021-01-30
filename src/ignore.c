@@ -1,6 +1,7 @@
 #include <ctype.h>
 #include <dirent.h>
 #include <limits.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -211,6 +212,7 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
     int temp_start_pos;
     size_t i;
     int match_pos;
+    bool unignore = false;
 
     match_pos = binary_search(filename, ig->names, 0, ig->names_len);
     if (match_pos >= 0) {
@@ -275,12 +277,27 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
     }
 
     for (i = 0; i < ig->regexes_len; i++) {
-        if (fnmatch(ig->regexes[i], filename, fnmatch_flags) == 0) {
+        if (strcmp(ig->regexes[i], "*") == 0) {
+            log_debug("Ignoring %s to prevent ignoring everything", ig->regexes[i]);
+            size_t j;
+            for (j = 0; j < ig->regexes_len; j++) {
+                if (ig->regexes[j][0] == '!') {
+                    if (fnmatch(ig->regexes[j] + 1, filename, fnmatch_flags) == 0) {
+                        log_debug("File un-ignored due to matching un-ignore pattern %s", ig->regexes[j]);
+                        unignore = true;
+                        // Since this is hot code, fast break out of this loop
+                        goto skip;
+                    }
+                }
+            }
+            return 1;
+        } else if (fnmatch(ig->regexes[i], filename, fnmatch_flags) == 0) {
             log_debug("file %s ignored because name matches regex pattern %s", filename, ig->regexes[i]);
             free(temp);
             return 1;
         }
-        log_debug("pattern %s doesn't match file %s", ig->regexes[i], filename);
+    skip:
+        log_debug("pattern %s doesn't match file %s.  Unignore match?: %s", ig->regexes[i], filename, unignore ? "true" : "false");
     }
 
     int rv = ackmate_dir_match(temp);
