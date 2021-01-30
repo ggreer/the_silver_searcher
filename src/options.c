@@ -293,8 +293,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "nofollow", no_argument, &opts.follow_symlinks, 0 },
         { "no-group", no_argument, &group, 0 },
         { "nogroup", no_argument, &group, 0 },
-        { "no-heading", no_argument, &opts.print_path, PATH_PRINT_EACH_LINE },
-        { "noheading", no_argument, &opts.print_path, PATH_PRINT_EACH_LINE },
+        { "no-heading", no_argument, NULL, 0 },
+        { "noheading", no_argument, NULL, 0 },
         { "no-mmap", no_argument, &opts.mmap, FALSE },
         { "nommap", no_argument, &opts.mmap, FALSE },
         { "no-multiline", no_argument, &opts.multiline, FALSE },
@@ -543,6 +543,14 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                            strcmp(longopts[opt_index].name, "nofilename") == 0) {
                     opts.print_path = PATH_PRINT_NOTHING;
                     opts.print_line_numbers = FALSE;
+                    break;
+                } else if (strcmp(longopts[opt_index].name, "no-heading") == 0 ||
+                           strcmp(longopts[opt_index].name, "noheading") == 0) {
+                    /* PATH_PRINT_NOTHING should take precedence over
+                     * PATH_PRINT_EACH_LINE */
+                    if (opts.print_path == PATH_PRINT_NOTHING)
+                        break;
+                    opts.print_path = PATH_PRINT_EACH_LINE;
                     break;
                 } else if (strcmp(longopts[opt_index].name, "no-pager") == 0 ||
                            strcmp(longopts[opt_index].name, "nopager") == 0) {
