@@ -192,8 +192,7 @@ out:
     if (res == NULL) {
         if (in != NULL)
             fclose(in);
-        if (cookie != NULL)
-            free(cookie);
+        free(cookie);
     }
     return res;
 }
