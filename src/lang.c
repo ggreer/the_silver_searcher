@@ -4,7 +4,13 @@
 #include "lang.h"
 #include "util.h"
 
-lang_spec_t langs[] = {
+#ifdef _WIN32
+#define strcasecmp _stricmp
+#endif
+
+#define MAX_LANGS 1000
+
+lang_spec_t langs[MAX_LANGS] = {
     { "actionscript", { "as", "mxml" } },
     { "ada", { "ada", "adb", "ads" } },
     { "asciidoc", { "adoc", "ad", "asc", "asciidoc" } },
@@ -145,8 +151,115 @@ lang_spec_t langs[] = {
     { "zephir", { "zep" } }
 };
 
+lang_spec_t *get_lang_slot() {
+    lang_spec_t *first_free = langs;
+    for (; first_free < langs + MAX_LANGS && first_free->name; ++first_free)
+        ;
+
+    return first_free;
+}
+
+char const *lang_add_ext(lang_spec_t *l, char const *ext) {
+    const char **pExt = l->extensions;
+    size_t i = 0;
+    for (; i < MAX_EXTENSIONS && *pExt; ++pExt, ++i)
+        ;
+
+    if (!*pExt) {
+        return (*pExt = strdup(ext));
+    } else {
+        return (*pExt);
+    }
+}
+
+lang_spec_t *lang_new(char const *name) {
+    lang_spec_t *result = get_lang_slot();
+    if (result < langs + MAX_LANGS) {
+        result->name = strdup(name);
+        return result;
+    }
+
+    return 0;
+}
+
+lang_spec_t *lang_find(char const *name) {
+    lang_spec_t *result = langs;
+    for (; result < langs + MAX_LANGS; ++result)
+        if (!strcasecmp(name, result->name))
+            return result;
+
+    return 0;
+}
+
+lang_spec_t *lang_parse_spec(char const *spec) {
+    lang_spec_t *result = 0;
+    char *_spec = strdup(spec);
+    if (_spec) {
+        const char *name = strtok(_spec, " ");
+        if (name) {
+            const char *op = strtok(NULL, " ");
+            if (op) {
+                switch (op[0]) {
+                    case ':':
+                        result = lang_new(name);
+                        break;
+                    case '+':
+                        result = lang_find(name);
+                        break;
+                }
+            }
+        }
+
+        if (result) {
+            const char *ext = 0;
+            while (ext = strtok(NULL, " ,"))
+                lang_add_ext(result, ext);
+        }
+
+        free(_spec);
+    }
+
+    return result;
+}
+
+void lang_parse_file(const char *path) {
+    FILE *f = fopen(path, "rt");
+    if (f) {
+        char *line = 0;
+        size_t len = 0, read = 0;
+
+        while ((read = getline(&line, &len, f)) != -1) {
+            char *line_contents = strtok(line, "\n");
+            if (line_contents) {
+                if (line_contents[0] != '#' && line_contents[0] != 0)
+                    lang_parse_spec(line_contents);
+            }
+        }
+
+        if (line)
+            free(line);
+        fclose(f);
+    }
+}
+
+void lang_parse_user_spec() {
+    char dot_ag_path[1024] = { 0 };
+#ifdef _WIN32
+    strncat(dot_ag_path, getenv("USERPROFILE"), sizeof(dot_ag_path));
+#else
+    strncat(dot_ag_path, getenv("HOME"), sizeof(dot_ag_path));
+#endif
+    strncat(dot_ag_path, "\\.aglang", sizeof(dot_ag_path));
+    if (access(dot_ag_path, 0) != -1)
+        lang_parse_file(dot_ag_path);
+}
+
 size_t get_lang_count() {
-    return sizeof(langs) / sizeof(lang_spec_t);
+    return (get_lang_slot() - langs);
+}
+
+lang_spec_t const *get_langs(void) {
+    return langs;
 }
 
 char *make_lang_regex(char *ext_array, size_t num_exts) {

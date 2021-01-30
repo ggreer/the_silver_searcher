@@ -9,7 +9,15 @@ typedef struct {
     const char *extensions[MAX_EXTENSIONS];
 } lang_spec_t;
 
-extern lang_spec_t langs[];
+/**
+ Parses additional lang_spec_t from a file
+ */
+void lang_parse_user_spec();
+
+/**
+ Returns languages directory
+ */
+lang_spec_t const *get_langs(void);
 
 /**
  Return the language count.

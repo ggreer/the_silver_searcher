@@ -342,6 +342,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     ext_index = (size_t *)ag_malloc(sizeof(size_t) * lang_count);
     memset(ext_index, 0, sizeof(size_t) * lang_count);
 
+    lang_spec_t const *langs = get_langs();
     for (i = 0; i < lang_count; i++) {
         option_t opt = { langs[i].name, no_argument, NULL, 0 };
         longopts[i + longopts_len] = opt;
