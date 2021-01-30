@@ -4,9 +4,7 @@ Setup:
   $ mkdir -p ./a/b/c
   $ printf 'whatever1\n' > ./a/b/c/blah.yml
   $ printf 'whatever2\n' > ./a/b/foo.yml
-  $ printf 'a/b/foo.yml\n' > ./.gitignore
-# TODO: have this work instead of the above
-# $ printf 'a/b/*.yml\n' > ./.gitignore
+  $ printf 'a/b/*.yml\n' > ./.gitignore
 
 Ignore foo.yml but not blah.yml:
 
