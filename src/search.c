@@ -1,6 +1,7 @@
 #include "search.h"
 #include "print.h"
 #include "scandir.h"
+#include <stdbool.h>
 
 size_t alpha_skip_lookup[256];
 size_t *find_skip_lookup;
@@ -625,14 +626,26 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
         }
 
         if (!is_directory(path, dir)) {
-            if (opts.file_search_regex) {
-                rc = pcre_exec(opts.file_search_regex, NULL, dir_full_path, strlen(dir_full_path),
-                               0, 0, offset_vector, 3);
-                if (rc < 0) { /* no match */
+            if (opts.file_search_regex || opts.filetype_regex) {
+                bool filename_matched = true;
+                if (opts.file_search_regex) {
+                    rc = pcre_exec(opts.file_search_regex, NULL, dir_full_path, strlen(dir_full_path),
+                                   0, 0, offset_vector, 3);
+                    if (rc < 0)
+                        filename_matched = false;
+                }
+                if (opts.filetype_regex) {
+                    rc = pcre_exec(opts.filetype_regex, NULL, dir_full_path, strlen(dir_full_path),
+                                   0, 0, offset_vector, 3);
+                    if (rc < 0)
+                        filename_matched = false;
+                }
+
+                if (!filename_matched) { /* no match */
                     log_debug("Skipping %s due to file_search_regex.", dir_full_path);
                     goto cleanup;
                 } else if (opts.match_files) {
-                    log_debug("match_files: file_search_regex matched for %s.", dir_full_path);
+                    log_debug("match_files: file_search_regex/filetype_regex matched for %s.", dir_full_path);
                     pthread_mutex_lock(&print_mtx);
                     print_path(dir_full_path, opts.path_sep);
                     pthread_mutex_unlock(&print_mtx);
