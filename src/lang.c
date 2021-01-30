@@ -40,6 +40,7 @@ lang_spec_t langs[] = {
     { "factor", { "factor" } },
     { "fortran", { "f", "F", "f77", "f90", "F90", "f95", "f03", "for", "ftn", "fpp", "FPP" } },
     { "fsharp", { "fs", "fsi", "fsx" } },
+    { "fusion", { "fusion" } },
     { "gettext", { "po", "pot", "mo" } },
     { "glsl", { "vert", "tesc", "tese", "geom", "frag", "comp" } },
     { "go", { "go" } },
