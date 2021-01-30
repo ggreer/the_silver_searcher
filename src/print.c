@@ -226,7 +226,7 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                     print_line_number(print_context.line, ';');
                     for (; print_context.last_printed_match < cur_match; print_context.last_printed_match++) {
                         size_t start = matches[print_context.last_printed_match].start - print_context.line_preceding_current_match_offset;
-                        fprintf(out_fd, "%lu %lu",
+                        fprintf(out_fd, "%zu %zu",
                                 start,
                                 matches[print_context.last_printed_match].end - matches[print_context.last_printed_match].start);
                         print_context.last_printed_match == cur_match - 1 ? fputc(':', out_fd) : fputc(',', out_fd);
