@@ -1,0 +1,27 @@
+version: 1.0.{build}
+
+environment:
+  matrix:
+    - compiler: msys2
+      ARCH: x64
+      MSYS2_ARCH: x86_64
+      MSYS2_DIR: msys64
+      MSYSTEM: MINGW64
+    - compiler: msys2
+      ARCH: x86
+      MSYS2_ARCH: i686
+      MSYS2_DIR: msys64
+      MSYSTEM: MINGW32
+    - compiler: cygwin
+
+build_script:
+  - '%APPVEYOR_BUILD_FOLDER%\win32\appveyor.bat build'
+
+after_build:
+  - '%APPVEYOR_BUILD_FOLDER%\win32\appveyor.bat package'
+
+test_script:
+  - '%APPVEYOR_BUILD_FOLDER%\win32\appveyor.bat test'
+
+artifacts:
+  - path: ag-*.zip
