@@ -1,6 +1,7 @@
 #include "search.h"
 #include "print.h"
 #include "scandir.h"
+#include <libgen.h>
 
 size_t alpha_skip_lookup[256];
 size_t *find_skip_lookup;
@@ -524,6 +525,43 @@ static int check_symloop_leave(dirkey_t *dirkey) {
 #endif
 }
 
+static void load_ignore_patterns_from_dir(ignores *ig, const char *dir_full_path) {
+    const char *ignore_file = NULL;
+    char *ignore_filepath = NULL;
+    int i;
+
+    log_debug("Looking for ignore patterns in %s", dir_full_path);
+    for (i = 0; opts.skip_vcs_ignores ? (i == 0) : (ignore_pattern_files[i] != NULL); i++) {
+        ignore_file = ignore_pattern_files[i];
+        ag_asprintf(&ignore_filepath, "%s/%s", dir_full_path, ignore_file);
+        load_ignore_patterns(ig, ignore_filepath);
+        free(ignore_filepath);
+    }
+}
+
+void load_ignore_patterns_including_parent_dirs(ignores *ig, const char *dir_path) {
+    char *dir_real_path;
+    char *dirpath0, *dirpath;
+
+    dir_real_path = realpath(dir_path, NULL);
+    if (dir_real_path == NULL) {
+        return;
+    }
+
+    dirpath0 = NULL;
+    dirpath = dir_real_path;
+    while ((dirpath0 == NULL || strcmp(dirpath0, dirpath) != 0) &&
+           !is_repository_root(dir_real_path)) {
+        load_ignore_patterns_from_dir(ig, dirpath);
+        free(dirpath0);
+        dirpath0 = ag_strdup(dirpath);
+        dirpath = dirname(dirpath);
+    }
+
+    free(dirpath0);
+    free(dir_real_path);
+}
+
 /* TODO: Append matches to some data structure instead of just printing them out.
  * Then ag can have sweet summaries of matches/files scanned/time/etc.
  */
@@ -537,7 +575,6 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
     const char *path_start = path;
 
     char *dir_full_path = NULL;
-    const char *ignore_file = NULL;
     int i;
 
     int symres;
@@ -549,14 +586,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
         return;
     }
 
-    /* find .*ignore files to load ignore patterns from */
-    for (i = 0; opts.skip_vcs_ignores ? (i == 0) : (ignore_pattern_files[i] != NULL); i++) {
-        ignore_file = ignore_pattern_files[i];
-        ag_asprintf(&dir_full_path, "%s/%s", path, ignore_file);
-        load_ignore_patterns(ig, dir_full_path);
-        free(dir_full_path);
-        dir_full_path = NULL;
-    }
+    load_ignore_patterns_from_dir(ig, path);
 
     /* path_start is the part of path that isn't in base_path
      * base_path will have a trailing '/' because we put it there in parse_options
@@ -658,11 +688,17 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
             if (depth < opts.max_search_depth || opts.max_search_depth == -1) {
                 log_debug("Searching dir %s", dir_full_path);
                 ignores *child_ig;
+                ignores *parent_ig = ig;
+                size_t d_name_len =
 #ifdef HAVE_DIRENT_DNAMLEN
-                child_ig = init_ignore(ig, dir->d_name, dir->d_namlen);
+                    dir->d_namlen;
 #else
-                child_ig = init_ignore(ig, dir->d_name, strlen(dir->d_name));
+                    strlen(dir->d_name);
 #endif
+                if (is_repository_root(dir_full_path)) {
+                    parent_ig = NULL;
+                }
+                child_ig = init_ignore(parent_ig, dir->d_name, d_name_len);
                 search_dir(child_ig, base_path, dir_full_path, depth + 1,
                            original_dev);
                 cleanup_ignore(child_ig);
