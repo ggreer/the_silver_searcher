@@ -8,7 +8,7 @@ Setup:
 Do not use parallel flag, which disables stream input:
 
   $ unalias ag
-  $ alias ag="$TESTDIR/../ag --nocolor --workers=1"
+  $ alias ag="$TESTDIR/../ag --noagrc --nocolor --workers=1"
 
 B flag on pipe:
 

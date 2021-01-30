@@ -112,6 +112,11 @@ Search Options:\n\
   -w --word-regexp        Only match whole words\n\
   -W --width NUM          Truncate match lines after NUM characters\n\
   -z --search-zip         Search contents of compressed (e.g., gzip) files\n\
+\n\
+Other Options:\n\
+     --agrc=<agrc-path>   Load options (one per line) from <agrc-path>\n\
+                          (default is $HOME/.agrc)\n\
+     --no-agrc            Don't use an agrc file\n\
 \n");
     printf("File Types:\n\
 The search can be restricted to certain types of files. Example:\n\
@@ -206,6 +211,47 @@ void cleanup_options(void) {
     }
 }
 
+/*
+ * Get a list of options from an ".agrc" file (typically $HOME/.agrc) to be prepended
+ * to the standard argc/argv
+ */
+static void get_opts_from_file(const char *path, int *argc_out, char ***argv_out) {
+    FILE *fp = NULL;
+    int count = 0;
+    int list_size = 10; // initially allocate space for 10 args, will be realloc'd if needed
+    char **list = NULL;
+    char buf[128] = { 0 }; // max length of options in .agrc
+    char *arg = NULL;
+
+    if ((fp = fopen(path, "r")) != NULL) {
+        list = ag_malloc(list_size * sizeof(char *));
+        while (fgets(buf, sizeof(buf), fp)) {
+            // ignore lines which don't start with -
+            if (buf[0] == '-') {
+                // strip trailing newline
+                char *newline = strchr(buf, '\n');
+                if (newline) {
+                    *newline = '\0';
+                }
+                if (count >= list_size) {
+                    // expand buffer if needed
+                    list_size *= 2;
+                    list = ag_realloc(list, list_size * sizeof(char *));
+                }
+                arg = ag_strdup(buf);
+                list[count] = arg;
+                count++;
+                log_debug("Got argument '%s' from agrc", arg);
+            }
+        }
+        fclose(fp);
+    } else {
+        log_debug("Unable to open agrc file '%s'", path);
+    }
+    *argc_out = count;
+    *argv_out = list;
+}
+
 void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     int ch;
     size_t i;
@@ -227,6 +273,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     size_t lang_count;
     size_t lang_num = 0;
     int has_filetype = 0;
+    int use_agrc = 1;
+    char *agrc_file = NULL;
 
     size_t longopts_len, full_len;
     option_t *longopts;
@@ -242,6 +290,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "ackmate-dir-filter", required_argument, NULL, 0 },
         { "affinity", no_argument, &opts.use_thread_affinity, 1 },
         { "after", optional_argument, NULL, 'A' },
+        { "agrc", required_argument, NULL, 0 },
         { "all-text", no_argument, NULL, 't' },
         { "all-types", no_argument, NULL, 'a' },
         { "before", optional_argument, NULL, 'B' },
@@ -283,6 +332,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         /* Accept both --no-* and --no* forms for convenience/BC */
         { "no-affinity", no_argument, &opts.use_thread_affinity, 0 },
         { "noaffinity", no_argument, &opts.use_thread_affinity, 0 },
+        { "no-agrc", no_argument, NULL, 0 },
+        { "noagrc", no_argument, NULL, 0 },
         { "no-break", no_argument, &opts.print_break, 0 },
         { "nobreak", no_argument, &opts.print_break, 0 },
         { "no-color", no_argument, &opts.color, 0 },
@@ -378,7 +429,78 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.stdout_inode = statbuf.st_ino;
     }
 
+    // Check whether to exclude ~/.agrc by searching argc/argv for --no-agrc or --noagrc
+    // Note, the optstr here must match the optstr used for main argument parsing
+    while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:FfHhiLlm:nop:QRrSsvVtuUwW:z0", longopts, &opt_index)) != -1) {
+        if (ch == 'D') {
+            // enable debugging early to allow for debug messages during agrc parsing
+            set_log_level(LOG_LEVEL_DEBUG);
+        } else if (ch == 0) {
+            if (strcmp(longopts[opt_index].name, "agrc") == 0) {
+                use_agrc = 1;
+                if (optarg) {
+                    if (access(optarg, R_OK)) {
+                        die("Can't read agrc file '%s'", optarg);
+                    }
+                    agrc_file = ag_strdup(optarg);
+                }
+                break;
+            } else if ((strcmp(longopts[opt_index].name, "no-agrc") == 0) ||
+                       (strcmp(longopts[opt_index].name, "noagrc") == 0)) {
+                use_agrc = 0;
+                break;
+            }
+        }
+    }
+    log_debug("use_agrc = %d", use_agrc);
+    if (use_agrc) {
+        int agrc_argc;
+        char **agrc_argv;
+
+        if (agrc_file == NULL) {
+            // check for AGRC environment var
+            char *agrc_env = getenv("AGRC");
+            if (agrc_env) {
+                agrc_file = ag_strdup(agrc_env);
+            } else {
+                // default agrc is $HOME/.agrc
+                int agrc_len = strlen(home_dir) + sizeof("/.agrc");
+                agrc_file = ag_malloc(agrc_len);
+                snprintf(agrc_file, agrc_len, "%s/.agrc", home_dir);
+            }
+        }
+        log_debug("Using agrc file '%s'", agrc_file);
+
+        get_opts_from_file(agrc_file, &agrc_argc, &agrc_argv);
+        if (agrc_argc) {
+            // if we get arguments from .agrc, prepend them to argc/argv
+            int new_argc = argc + agrc_argc;
+            char **new_argv = ag_malloc(new_argc * sizeof(char *));
+
+            // leave argv[0] as-is
+            new_argv[0] = argv[0];
+            // prepend args from agrc (starting at argv[1])
+            for (i = 0; i < (size_t)agrc_argc; i++) {
+                new_argv[i + 1] = agrc_argv[i];
+            }
+            // copy the rest of the old argv
+            for (i = 1; i < (size_t)argc; i++) {
+                new_argv[agrc_argc + i] = argv[i];
+            }
+            argc = new_argc;
+            argv = new_argv;
+        }
+        free(agrc_argv);
+    }
+    for (i = 0; i < (size_t)argc; i++) {
+        log_debug("argv[%lu] = '%s'", i, argv[i]);
+    }
+
     char *file_search_regex = NULL;
+    // reset after getopt_long call above
+    optind = 1;
+    opterr = 1;
+    // the optstring here must match the optstring used above when checking for [no]agrc
     while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:FfHhiLlm:nop:QRrSsvVtuUwW:z0", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
@@ -578,6 +700,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                     opts.print_path = PATH_PRINT_NOTHING;
                     opts.stats = 1;
                     break;
+                } else if ((strcmp(longopts[opt_index].name, "agrc") == 0) ||
+                           (strcmp(longopts[opt_index].name, "no-agrc") == 0) ||
+                           (strcmp(longopts[opt_index].name, "noagrc") == 0)) {
+                    break; // no-op as these arguments are handled earlier, but needed to avoid erroring out below
                 }
 
                 /* Continue to usage if we don't recognize the option */

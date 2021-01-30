@@ -23,6 +23,10 @@ Output results in a format parseable by AckMate \fIhttps://github\.com/protocool
 Set thread affinity (if platform supports it)\. Default is true\.
 .
 .TP
+\fB\-\-agrc=<path\-to\-agrc\-file>\fR
+Use \fIpath\-to\-agrc\-file\fR instead of $AGRC or $HOME/\.agrc for default options\. Specify \fB\-\-no\-agrc\fR to disable reading from an agrc file\. See \fIAGRC\fR for details\.
+.
+.TP
 \fB\-a \-\-all\-types\fR
 Search all files\. This doesn\'t include hidden files, and doesn\'t respect any ignore files\.
 .
@@ -270,6 +274,15 @@ If you want to ignore \.gitignore and \.hgignore, but still take \.ignore into a
 .
 .P
 Use the \fB\-t\fR option to search all text files; \fB\-a\fR to search all files; and \fB\-u\fR to search all, including hidden files\.
+.
+.SH "AGRC"
+To modify the "default" options, ag can read a list of command\-line arguments from an "agrc" file\. One "agrc" file will be selected as the first of 1) the \fB<path>\fR in \fB\-\-agrc=<path>\fR, 2) the environment variable \fBAGRC\fR, or 3) the default \fB$HOME/\.agrc\fR\.
+.
+.P
+If \fB\-\-noagrc\fR is specified, an "agrc" file will not be used\.
+.
+.P
+The "agrc" file should contain a list of command\-line arguments, one per line\. You don\'t need to quote arguments as you would in a shell as the entire line will be considered a single argument\. For long options which take a value, use the form \fB\-\-option=value\fR rather than \fB\-\-option value\fR\.
 .
 .SH "EXAMPLES"
 \fBag printf\fR: Find matches for "printf" in the current directory\.
