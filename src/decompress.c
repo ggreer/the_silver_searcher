@@ -49,7 +49,7 @@ static void *decompress_zlib(const void *buf, const int buf_len,
 
     stream.avail_in = buf_len;
     /* Explicitly cast away the const-ness of buf */
-    stream.next_in = (Bytef *)buf;
+    stream.next_in = (z_const Bytef *) buf;
 
     pagesize = getpagesize();
     result_size = ((buf_len + pagesize - 1) & ~(pagesize - 1));
