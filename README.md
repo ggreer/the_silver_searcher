@@ -167,6 +167,13 @@ or
 
         sudo make install
 
+4. Make test (Optional):
+
+    * OS X:
+              brew install clang-format
+              pip install cram
+              make test
+
 
 ### Building a release tarball
 
