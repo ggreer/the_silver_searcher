@@ -174,7 +174,11 @@ ssize_t search_buf(const char *buf, const size_t buf_len,
 multiline_done:
 
     if (opts.invert_match) {
-        matches_len = invert_matches(buf, buf_len, matches, matches_len);
+        if (opts.print_filename_only) {
+            matches_len = matches_len > 0 ? 0 : 1;
+        } else {
+            matches_len = invert_matches(buf, buf_len, matches, matches_len);
+        }
     }
 
     if (opts.stats) {
