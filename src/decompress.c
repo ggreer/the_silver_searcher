@@ -24,8 +24,8 @@ const uint8_t LZMA_HEADER_SOMETIMES[3] = { 0x5D, 0x00, 0x00 };
  *    Not copyrighted -- provided to the public domain
  *    Version 1.4  11 December 2005  Mark Adler 
  */
-static void *decompress_zlib(const void *buf, const int buf_len,
-                             const char *dir_full_path, int *new_buf_len) {
+static void *decompress_zlib(const void *buf, const size_t buf_len,
+                             const char *dir_full_path, size_t *new_buf_len) {
     int ret = 0;
     unsigned char *result = NULL;
     size_t result_size = 0;
@@ -101,8 +101,8 @@ error_out:
 #endif
 
 
-static void *decompress_lzw(const void *buf, const int buf_len,
-                            const char *dir_full_path, int *new_buf_len) {
+static void *decompress_lzw(const void *buf, const size_t buf_len,
+                            const char *dir_full_path, size_t *new_buf_len) {
     (void)buf;
     (void)buf_len;
     log_err("LZW (UNIX compress) files not yet supported: %s", dir_full_path);
@@ -111,8 +111,8 @@ static void *decompress_lzw(const void *buf, const int buf_len,
 }
 
 
-static void *decompress_zip(const void *buf, const int buf_len,
-                            const char *dir_full_path, int *new_buf_len) {
+static void *decompress_zip(const void *buf, const size_t buf_len,
+                            const char *dir_full_path, size_t *new_buf_len) {
     (void)buf;
     (void)buf_len;
     log_err("Zip files not yet supported: %s", dir_full_path);
@@ -122,8 +122,8 @@ static void *decompress_zip(const void *buf, const int buf_len,
 
 
 #ifdef HAVE_LZMA_H
-static void *decompress_lzma(const void *buf, const int buf_len,
-                             const char *dir_full_path, int *new_buf_len) {
+static void *decompress_lzma(const void *buf, const size_t buf_len,
+                             const char *dir_full_path, size_t *new_buf_len) {
     lzma_stream stream = LZMA_STREAM_INIT;
     lzma_ret lzrt;
     unsigned char *result = NULL;
@@ -189,8 +189,8 @@ error_out:
 
 
 /* This function is very hot. It's called on every file when zip is enabled. */
-void *decompress(const ag_compression_type zip_type, const void *buf, const int buf_len,
-                 const char *dir_full_path, int *new_buf_len) {
+void *decompress(const ag_compression_type zip_type, const void *buf, const size_t buf_len,
+                 const char *dir_full_path, size_t *new_buf_len) {
     switch (zip_type) {
 #ifdef HAVE_ZLIB_H
         case AG_GZIP:
@@ -217,7 +217,7 @@ void *decompress(const ag_compression_type zip_type, const void *buf, const int 
 
 
 /* This function is very hot. It's called on every file. */
-ag_compression_type is_zipped(const void *buf, const int buf_len) {
+ag_compression_type is_zipped(const void *buf, const size_t buf_len) {
     /* Zip magic numbers
      * compressed file: { 0x1F, 0x9B }
      * http://en.wikipedia.org/wiki/Compress
