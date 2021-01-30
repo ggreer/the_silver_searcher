@@ -64,7 +64,7 @@ or
         dnf install the_silver_searcher
 * RHEL7+
 
-        yum install epel-release.noarch the_silver_searcher
+        yum install epel-release && yum install the_silver_searcher
 * Gentoo
 
         emerge -a sys-apps/the_silver_searcher
