@@ -130,6 +130,11 @@ or
 
   Run the relevant [`setup-*.exe`](https://cygwin.com/install.html), and select "the\_silver\_searcher" in the "Utils" category.
 
+### Windows
+
+See the dedicated [wiki article](https://github.com/ggreer/the_silver_searcher/wiki/Windows)
+
+
 ## Building from source
 
 ### Building master
