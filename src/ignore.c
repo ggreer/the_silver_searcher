@@ -182,13 +182,25 @@ void load_ignore_patterns(ignores *ig, const char *path) {
     char *line = NULL;
     ssize_t line_len = 0;
     size_t line_cap = 0;
+    int i = 0;
 
     while ((line_len = getline(&line, &line_cap, fp)) > 0) {
         if (line_len == 0 || line[0] == '\n' || line[0] == '#') {
             continue;
         }
+        i++;
         if (line[line_len - 1] == '\n') {
             line[line_len - 1] = '\0'; /* kill the \n */
+        }
+        /* Ignore .gitignore files if they start with a ignore-all line.
+         * HACK for https://github.com/ggreer/the_silver_searcher/issues/168. */
+        if (i == 1
+                && ( (line[0] == '*' && strlen(line) == 1)
+                  || (line[0] == '/' && line[1] == '*' && strlen(line) == 2))
+                && strlen(path) >= 10
+                && strcmp(path + strlen(path) - 10, ".gitignore") == 0) {
+            log_debug("Ignoring star-ignore file %s", path);
+            break;
         }
         add_ignore_pattern(ig, line);
     }
