@@ -319,17 +319,6 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     scandir_baton_t *scandir_baton = (scandir_baton_t *)baton;
     const char *path_start = scandir_baton->path_start;
 
-    const char *extension = strchr(filename, '.');
-    if (extension) {
-        if (extension[1]) {
-            // The dot is not the last character, extension starts at the next one
-            ++extension;
-        } else {
-            // No extension
-            extension = NULL;
-        }
-    }
-
 #ifdef HAVE_DIRENT_DNAMLEN
     size_t filename_len = dir->d_namlen;
 #else
@@ -347,11 +336,29 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
     const ignores *ig = scandir_baton->ig;
 
     while (ig != NULL) {
+        const char *extension = strchr(filename, '.');
         if (extension) {
+            if (extension[1]) {
+                // The dot is not the last character, extension starts at the next one
+                ++extension;
+            } else {
+                // No extension
+                extension = NULL;
+            }
+        }
+
+        while (extension) {
             int match_pos = binary_search(extension, ig->extensions, 0, ig->extensions_len);
             if (match_pos >= 0) {
                 log_debug("file %s ignored because name matches extension %s", filename, ig->extensions[match_pos]);
                 return 0;
+            }
+
+            // Extension could actually contain multiple extensions, for example min.js.map
+            extension = strchr(extension, '.');
+            if (extension) {
+                // Move past the dot
+                ++extension;
             }
         }
 

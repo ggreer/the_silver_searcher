@@ -12,6 +12,7 @@ Setup:
   $ printf 'targetE\n' > subdir/anotherFile.test.txt
   $ printf 'targetF\n' > subdir/anotherFile.txt
   $ printf 'targetH\n' > subdir/somethingElse.min.js
+  $ printf 'targetI\n' > subdir/anotherFile.some.test.txt
 
 Ignore patterns with single extension in root directory:
 
@@ -52,3 +53,8 @@ Do not ignore patterns with partial extensions in subdirectory:
 
   $ ag "targetF"
   subdir/anotherFile.txt:1:targetF
+
+*.test.txt ignores *.some.test.txt
+
+  $ ag "targetI"
+  [1]
