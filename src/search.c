@@ -372,7 +372,10 @@ void search_file(const char *file_full_path) {
         ssize_t bytes_read = 0;
 
         if (!opts.search_binary_files) {
-            bytes_read += read(fd, buf, ag_min(f_len, 512));
+            bytes_read = read(fd, buf, ag_min(f_len, 512));
+            if (bytes_read < 0) {
+                die("Failed to read %s: %s", file_full_path, strerror(errno));
+            }
             // Optimization: If skipping binary files, don't read the whole buffer before checking if binary or not.
             if (is_binary(buf, f_len)) {
                 log_debug("File %s is binary. Skipping...", file_full_path);
@@ -381,7 +384,10 @@ void search_file(const char *file_full_path) {
         }
 
         while (bytes_read < f_len) {
-            bytes_read += read(fd, buf + bytes_read, f_len);
+            ssize_t r = read(fd, buf + bytes_read, f_len);
+            if (r < 0)
+                break;
+            bytes_read += r;
         }
         if (bytes_read != f_len) {
             die("File %s read(): expected to read %u bytes but read %u", file_full_path, f_len, bytes_read);
