@@ -137,7 +137,7 @@ zfile_cookie_cleanup(struct zfile *cookie) {
             lzma_end(&cookie->stream.lzma);
             break;
 #endif
-        default:
+        case AG_NO_COMPRESSION:
             /* Compiler false positive - unreachable. */
             break;
     }
