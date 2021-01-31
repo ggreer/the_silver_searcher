@@ -459,8 +459,12 @@ int is_wordchar(char ch) {
 int is_lowercase(const char *s) {
     int i;
     for (i = 0; s[i] != '\0'; i++) {
-        if (!isascii(s[i]) || isupper(s[i])) {
-            return FALSE;
+        if (s[i] == '\\') {
+            i++;
+        } else {
+            if (!isascii(s[i]) || isupper(s[i])) {
+                return FALSE;
+            }
         }
     }
     return TRUE;
