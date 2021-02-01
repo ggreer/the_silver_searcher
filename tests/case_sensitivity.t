@@ -3,11 +3,14 @@ Setup:
   $ . $TESTDIR/setup.sh
   $ printf 'Foo\n' >> ./sample
   $ printf 'bar\n' >> ./sample
+  $ printf '  Baz bun\n' >> ./sample
 
 Smart case by default:
 
   $ ag foo sample
   1:Foo
+  $ ag '\Wbaz' sample
+  3:  Baz bun
   $ ag FOO sample
   [1]
   $ ag 'f.o' sample
