@@ -460,7 +460,8 @@ int is_lowercase(const char *s) {
     int i;
     for (i = 0; s[i] != '\0'; i++) {
         if (s[i] == '\\') {
-            i++;
+            if (s[i + 1] != '\0')
+                i++;
         } else {
             if (!isascii(s[i]) || isupper(s[i])) {
                 return FALSE;
