@@ -205,6 +205,19 @@ static int ackmate_dir_match(const char *dir_name) {
     return pcre_exec(opts.ackmate_dir_filter, NULL, dir_name, strlen(dir_name), 0, 0, NULL, 0);
 }
 
+/* Return 1 if the file is unignored by invert_regexes, 0 otherwise. */
+static int path_ignore_inverted(const ignores *ig, const char *path, const char *filename) {
+    size_t i;
+    for (i = 0; i < ig->invert_regexes_len; i++) {
+        if (fnmatch(ig->invert_regexes[i], filename, fnmatch_flags) == 0) {
+            log_debug("file %s (path=%s) not ignored because name matches regex pattern !%s", filename, path, ig->invert_regexes[i]);
+            return 1;
+        }
+        log_debug("pattern !%s doesn't match file %s", ig->invert_regexes[i], filename);
+    }
+    return 0;
+}
+
 /* This is the hottest code in Ag. 10-15% of all execution time is spent here */
 static int path_ignore_search(const ignores *ig, const char *path, const char *filename) {
     char *temp;
@@ -230,6 +243,10 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
         }
         match_pos = binary_search(slash_filename, ig->names, 0, ig->names_len);
         if (match_pos >= 0) {
+            if (path_ignore_inverted(ig, path, slash_filename)) {
+                free(temp);
+                return 0;
+            }
             log_debug("file %s ignored because name matches static pattern %s", temp, ig->names[match_pos]);
             free(temp);
             return 1;
@@ -237,6 +254,10 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
 
         match_pos = binary_search(slash_filename, ig->slash_names, 0, ig->slash_names_len);
         if (match_pos >= 0) {
+            if (path_ignore_inverted(ig, path, slash_filename)) {
+                free(temp);
+                return 0;
+            }
             log_debug("file %s ignored because name matches slash static pattern %s", slash_filename, ig->slash_names[match_pos]);
             free(temp);
             return 1;
@@ -247,6 +268,10 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
             if (pos == slash_filename || (pos && *(pos - 1) == '/')) {
                 pos += strlen(ig->names[i]);
                 if (*pos == '\0' || *pos == '/') {
+                    if (path_ignore_inverted(ig, path, slash_filename)) {
+                        free(temp);
+                        return 0;
+                    }
                     log_debug("file %s ignored because path somewhere matches name %s", slash_filename, ig->names[i]);
                     free(temp);
                     return 1;
@@ -256,7 +281,16 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
         }
 
         for (i = 0; i < ig->slash_regexes_len; i++) {
-            if (fnmatch(ig->slash_regexes[i], slash_filename, fnmatch_flags) == 0) {
+            if (fnmatch(ig->slash_regexes[i], slash_filename, fnmatch_flags) == 0
+                /* Don't ignore entire directories (slash_filename="a/") with a
+                   wildcard that ends with an asterisk ("a/*"), because there
+                   may be inversions for specific files in that directory. */
+                && !(ig->slash_regexes[i][strlen(ig->slash_regexes[i]) - 1] == '*' && slash_filename[strlen(slash_filename) - 1] == '/')) {
+                if (path_ignore_inverted(ig, path, slash_filename)) {
+                    free(temp);
+                    return 0;
+                }
+
                 log_debug("file %s ignored because name matches slash regex pattern %s", slash_filename, ig->slash_regexes[i]);
                 free(temp);
                 return 1;
@@ -265,13 +299,9 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
         }
     }
 
-    for (i = 0; i < ig->invert_regexes_len; i++) {
-        if (fnmatch(ig->invert_regexes[i], filename, fnmatch_flags) == 0) {
-            log_debug("file %s not ignored because name matches regex pattern !%s", filename, ig->invert_regexes[i]);
-            free(temp);
-            return 0;
-        }
-        log_debug("pattern !%s doesn't match file %s", ig->invert_regexes[i], filename);
+    if (path_ignore_inverted(ig, path, filename)) {
+        free(temp);
+        return 0;
     }
 
     for (i = 0; i < ig->regexes_len; i++) {
