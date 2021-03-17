@@ -120,6 +120,7 @@ lang_spec_t langs[] = {
     { "stata", { "do", "ado" } },
     { "stylus", { "styl" } },
     { "swift", { "swift" } },
+    { "talon", { "talon" } },
     { "tcl", { "tcl", "itcl", "itk" } },
     { "terraform", { "tf", "tfvars" } },
     { "tex", { "tex", "cls", "sty" } },
