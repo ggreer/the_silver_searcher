@@ -102,10 +102,14 @@ or
 
 ### Windows
 
+* Scoop
+
+      scoop install ag
+
 * Win32/64
 
   Unofficial daily builds are [available](https://github.com/k-takata/the_silver_searcher-win32).
-  
+
 * winget
 
         winget install "The Silver Searcher"
@@ -119,13 +123,15 @@ or
      2. In the directory defined in environment variable bindir_%PROCESSOR_ARCHITECTURE%
      3. In the directory defined in environment variable bindir
      4. In the directory defined in environment variable windir
-  
+
 * Chocolatey
 
         choco install ag
+
 * MSYS2
 
         pacman -S mingw-w64-{i686,x86_64}-ag
+
 * Cygwin
 
   Run the relevant [`setup-*.exe`](https://cygwin.com/install.html), and select "the\_silver\_searcher" in the "Utils" category.
