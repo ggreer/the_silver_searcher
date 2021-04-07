@@ -154,7 +154,7 @@ or
         winget install "The Silver Searcher"
   
   Notes:
-  - This installs the [release](https://github.com/JFLarvoire/the_silver_searcher/releases) of ag.exe optimized for Windows.
+  - This installs a [release](https://github.com/JFLarvoire/the_silver_searcher/releases) of ag.exe optimized for Windows.
   - winget is intended to become the default package manager client for Windows.  
     As of June 2020, it's still in beta, and can be installed using instructions [there](https://github.com/microsoft/winget-cli).
   - The setup script in the Ag's winget package installs ag.exe in the first directory that matches one of these criteria:
