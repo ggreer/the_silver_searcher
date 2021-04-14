@@ -43,6 +43,26 @@ int main(int argc, char **argv) {
     int workers_len;
     int num_cores;
 
+#ifdef _WIN32
+    UINT cp = GetACP();
+    char **tmp_argv = alloca(argc * sizeof(wchar_t*)), *tmp;
+    for (i = 1; i < argc; i++) {
+        int len = strlen(argv[i]);
+        size_t pwcl = MultiByteToWideChar(cp, 0, argv[i], len,  NULL, 0);
+        wchar_t* pwcs = (wchar_t*) malloc(sizeof(wchar_t) * (pwcl + 1));
+        if (pwcs == NULL) continue;
+        pwcl = MultiByteToWideChar(cp, 0, argv[i], len, pwcs, pwcl + 1);
+        pwcs[pwcl] = '\0';
+        size_t pmbl = WideCharToMultiByte(CP_UTF8, 0, pwcs, -1, NULL, 0, NULL, NULL);
+        char* pmbs = (char*) malloc(sizeof(char) * (pmbl + 1));
+        if (pmbs == NULL) continue;
+        pmbl = WideCharToMultiByte(CP_UTF8, 0, pwcs, pwcl, pmbs, pmbl, NULL, NULL);
+        pmbs[pmbl] = '\0';
+        free(pwcs);
+        argv[i] = pmbs;
+    }
+#endif
+
 #ifdef HAVE_PLEDGE
     if (pledge("stdio rpath proc exec", NULL) == -1) {
         die("pledge: %s", strerror(errno));
