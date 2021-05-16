@@ -29,6 +29,7 @@ extern "C" {
 /* Standard routines that have a Microsoft-specific equivalent */
 #include <string.h>
 #define strcasecmp _stricmp
+#define strncasecmp _strnicmp
 
 /* These are standard routines, but Microsoft thinks not */
 

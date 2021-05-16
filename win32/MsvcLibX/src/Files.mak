@@ -49,6 +49,7 @@ OBJECTS = \
     +basename.obj		\
     +chdir.obj			\
     +clock_gettime.obj		\
+    +dasprintf.obj		\
     +debugv.obj			\
     +dirent.obj			\
     +dirname.obj		\
@@ -77,6 +78,7 @@ OBJECTS = \
     +readlink.obj		\
     +realpath.obj		\
     +rmdir.obj			\
+    +snprintf.obj		\
     +spawn.obj			\
     +strerror.obj		\
     +strndup.obj		\
@@ -92,6 +94,8 @@ OBJECTS = \
 
 # WIN32 UTF-8 extension routines, used for implementing UTF-8 support for WIN32 libc.  
 WIN32_OBJECTS = \
+    +aswprintf.obj		\
+    +daswprintf.obj		\
     +GetFileAttributes.obj	\
     +GetFileAttributesEx.obj	\
     +GetFullPathName.obj	\
@@ -171,11 +175,17 @@ access.c: $(CI)\debugm.h $(I)\io.h $(I)\msvclibx.h $(I)\stdio.h $(I)\windows.h
 
 asprintf.c: $(I)\msvclibx.h $(I)\stdio.h $(I)\stdlib.h $(I)\stdarg.h
 
+aswprintf.c: $(I)\msvclibx.h $(I)\stdio.h $(I)\stdlib.h $(I)\stdarg.h
+
 basename.c: $(I)\libgen.h $(I)\limits.h $(I)\msvclibx.h $(I)\stdlib.h $(I)\string.h
 
 chdir.c: $(CI)\debugm.h $(I)\iconv.h $(I)\stdio.h $(I)\string.h $(I)\unistd.h $(I)\windows.h
 
 clock_gettime.c: $(I)\msvclibx.h $(I)\time.h $(I)\sys\stat.h $(I)\windows.h
+
+dasprintf.c: $(I)\msvclibx.h $(I)\stdio.h $(I)\stdlib.h $(I)\stdarg.h
+
+daswprintf.c: $(I)\msvclibx.h $(I)\stdio.h $(I)\stdlib.h $(I)\stdarg.h
 
 debugv.c: $(CI)\debugm.h
 
@@ -248,6 +258,8 @@ readlink.c: $(CI)\debugm.h $(I)\unistd.h $(I)\reparsept.h $(I)\string.h $(I)\uni
 realpath.c: $(CI)\debugm.h $(I)\direct.h $(I)\stdlib.h $(I)\string.h $(I)\unistd.h $(I)\windows.h
 
 rmdir.c: $(CI)\debugm.h $(I)\msvclibx.h $(I)\sys\stat.h $(I)\stdio.h $(I)\string.h $(I)\windows.h
+
+snprintf.c: $(I)\msvclibx.h $(I)\stdio.h $(I)\stdlib.h $(I)\stdarg.h
 
 spawn.c: $(CI)\debugm.h $(I)\msvclibx.h $(I)\process.h $(I)\stdio.h $(I)\windows.h
 

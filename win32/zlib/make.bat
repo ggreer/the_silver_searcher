@@ -10,7 +10,7 @@
 :#                                                                            *
 :#                  Make any change needed regarding the actual configuration *
 :#		    process in %STINCLUDE%\configure.bat. Idem for the make   *
-:#                  process in make.bat.				      *                                                          *
+:#                  process in make.bat.				      *
 :#                                                                            *
 :#  History:                                                                  *
 :#   2016-10-10 JFL jf.larvoire@hpe.com created this file.		      *
@@ -23,13 +23,14 @@
 :#                  in many Unix+Windows open source projects.                *
 :#                  Fixed several :# comments, which should have been &:#.    *
 :#   2018-01-12 JFL Improved comments and the debugging output.               *
+:#   2020-12-10 JFL Search for batchs in [.|..|..\..]\[.|WIN32|C]\include.    *
 :#                                                                            *
 :#        © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 :# Licensed under the Apache 2.0 license  www.apache.org/licenses/LICENSE-2.0 *
 :#*****************************************************************************
 
 setlocal EnableExtensions EnableDelayedExpansion
-set "VERSION=2018-01-12"
+set "VERSION=2020-12-10"
 set "SCRIPT=%~nx0"				&:# Script name
 
 goto main
@@ -67,9 +68,9 @@ goto :next_arg
 if defined STINCLUDE %CHECKDIR% "%STINCLUDE%" &:# If pre-defined, make sure the value is valid
 
 :# As a first choice, use the make.bat provided in this project
-if not defined STINCLUDE %CHECKDIR% include win32\include &:# If we have one here, use it
+if not defined STINCLUDE %CHECKDIR% include win32\include C\include &:# If we have one here, use it
 :# Else try in the near context
-for %%p in (.. ..\..) do if not defined STINCLUDE %CHECKDIR% %%p\include %%p\win32\include &:# Default: Search it the parent directory, and 2nd level.
+for %%p in (.. ..\..) do if not defined STINCLUDE %CHECKDIR% %%p\include %%p\win32\include %%p\C\include &:# Default: Search it the parent directory, and 2nd level.
 :# We might also store the information in the registry
 if not defined STINCLUDE ( :# Try getting the copy in the master environment
   for /f "tokens=3" %%v in ('reg query "HKCU\Environment" /v STINCLUDE 2^>NUL') do set "STINCLUDE=%%v"

@@ -19,35 +19,27 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-/* Wrapper around _vsnprintf() that avoids consuming the va_list arguments */
-static int try_vsnprintf(char *pBuf, int iBufSize, const char *pszFormat, va_list vl) {
-  int iRet;
-  va_list vl2;
-  va_copy(vl2, vl);
-  iRet = _vsnprintf(pBuf, iBufSize, pszFormat, vl2);
-  va_end(vl2);
-  return iRet;
-}
-
-/* Work around the theoric (but unlikely) possibility that shrinking a buffer can fail */
-static char *try_shrink_buf(char *pBuf, int iSize) {
-  char *p2 = realloc(pBuf, iSize);
-  return p2 ? p2 : pBuf; /* If this failed, return the initial buffer */
-}
-
 /* Lower level version using a va_list */
 int vasprintf(char **ppszBuf, const char *pszFormat, va_list vl) {
-  char *pszBuf = NULL;
-  int iRet = -1, nBufSize = 64;
-  do {pszBuf = (char *)realloc(pszBuf, nBufSize *= 2);} while (
-    pszBuf && ((iRet = try_vsnprintf(pszBuf, nBufSize, pszFormat, vl)) == -1)
-  );
-  if (!pszBuf || (iRet < 0)) {
-    if (pszBuf) free(pszBuf);
-    return -1;
+  char *pBuf, *pBuf2;
+  int n, nBufSize = 64;
+  va_list vl0, vl2;
+  /* First try it once with the original va_list (When nBufSize == 128) */
+  /* This consumes the vl arguments, which needs to be done once */
+  va_copy(vl0, vl);	/* Save a copy of the caller's va_list */
+  for (pBuf = NULL; (pBuf2 = (char *)realloc(pBuf, nBufSize *= 2)) != NULL; ) {
+    va_copy(vl2, vl0);
+    n = _vsnprintf(pBuf = pBuf2, nBufSize, pszFormat, (nBufSize == 128) ? vl : vl2);
+    va_end(vl2);
+    if ((n >= 0) && (n < nBufSize)) { /* Success at last, now we know the necessary size */
+      pBuf2 = (char *)realloc(pBuf, n+1); /* Free the unused space in the end - May fail */
+      *ppszBuf = pBuf2 ? pBuf2 : pBuf;    /* Return the valid one */
+      va_end(vl0);
+      return n;
+    } /* Else if n == nBufSize, actually not success, as there's no NUL in the end */
   }
-  *ppszBuf = try_shrink_buf(pszBuf, iRet+1); /* Updates *ppszBuf only if successful */
-  return iRet;
+  va_end(vl0);
+  return -1;
 }
 
 /* Upper level version using ellipsis */

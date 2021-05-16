@@ -36,6 +36,7 @@
 *		    Fixed support for pathnames >= 260 characters.	      *
 *    2018-02-28 JFL Fixed alphasort() when files differ only by case.	      *
 *    2018-03-06 JFL Fixed a warning with Visual Studio 2015.         	      *
+*    2020-12-15 JFL Added support for IO_REPARSE_TAG_APPEXECLINK.             *
 *		    							      *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -266,7 +267,7 @@ _dirent *readdir(DIR *pDir) { /* Read a directory entry. Return pDir, or NULL fo
 #ifdef _WIN32
 
 #include <windows.h>
-#include "reparsept.h"	/* For the undocumented IO_REPARSE_TAG_LX_SYMLINK */
+#include "reparsept.h"	/* For the undocumented IO_REPARSE_TAG_LX_SYMLINK, etc */
 
 /* Requires including windows.h and especially the kernel section */
 
@@ -448,6 +449,7 @@ realloc_wBuf:
       case IO_REPARSE_TAG_SYMLINK:		/* NTFS symbolic link */
       case IO_REPARSE_TAG_NFS:			/* NFS symbolic link */
       case IO_REPARSE_TAG_LX_SYMLINK:		/* LinuX subsystem symlink */
+      case IO_REPARSE_TAG_APPEXECLINK:		/* UWP application execution link */
 	pDirent->d_type = DT_LNK;		/* Symbolic link */
 	break;
       default:	/* Anything else is definitely not like a Unix symlink */

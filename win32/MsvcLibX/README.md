@@ -177,7 +177,7 @@ Then execute the following commands, adapting the paths as needed:
     BASEDIR=/c/Users/YOURNAME/Documents/SRC
     mkdir $BASEDIR/MyTools
     cd $BASEDIR/MyTools
-    # Get a bash script to build Linux versions using similar directory outputs 
+    # Get a shell script to build Linux versions using similar directory outputs 
     cp $BASEDIR/MsvcLibX/src/exe .
     # Make sure the Linux C compiler finds MsvcLibX debug macros, but not other MsvcLibX include files.
     # Important: Do not point C_INCLUDE_PATH at MsvcLibX/include, as this directory

@@ -11,6 +11,7 @@
 *    2016-10-05 JFL Fixed compatibility with Visual Studio 2003 and older.    *
 *                   Removed a few useless special cases, and added EZERO case.*
 *                   Make sure the global errno is _not_ changed by this funct.*
+*    2020-08-28 JFL Remove the CR characters in the error message.            *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -71,6 +72,30 @@ int _get_errno_from_oserr(unsigned long dwErr) {
 extern int __cdecl _get_errno_from_oserr(unsigned long oserrno);
 #endif
 
+#if 0
+/* Initially I thought there was a duplicate CR in the formatted string */
+/* Remove duplicate characters from a string */
+static int RemoveDuplicateChars(char *pszText, char cToDeDup) {
+  int i, j;
+  char c = *pszText, c0 = ~cToDeDup;
+  for (i=j=0; ; c0=c, c=pszText[++i]) {
+    if (i > j) pszText[j] = c;
+    if (!c) return (i-j); /* Return the number of characters removed */
+    if ((c != cToDeDup) || (c0 != cToDeDup)) j++;
+  }
+}
+#endif
+/* Remove a specific character from a string */
+static int RemoveChars(char *pszText, char cToRemove) {
+  int i, j;
+  char c = *pszText;
+  for (i=j=0; ; c=pszText[++i]) {
+    if (i > j) pszText[j] = c;
+    if (!c) return (i-j); /* Return the number of characters removed */
+    if (c != cToRemove) j++;
+  }
+}
+
 int Win32ErrorToErrno() {
   DWORD dwError = GetLastError();
 
@@ -79,6 +104,8 @@ int Win32ErrorToErrno() {
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
 		  NULL, dwError, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		  (LPTSTR)&lpMsgBuf, 0, NULL);
+    /* Messages end with CR LF. But the printf(LF) generates an extra CR, which confuses some software. */
+    if (lpMsgBuf) RemoveChars(lpMsgBuf, '\x0D'); /* So remove the CR characters */
     DEBUG_PRINTF(("// Win32 error %d (0x%X): %s", dwError, dwError, lpMsgBuf ? lpMsgBuf : "Unknown\n"));
     LocalFree( lpMsgBuf );
   });

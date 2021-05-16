@@ -18,6 +18,8 @@
 *    2017-04-12 JFL Added puts(), and ANSI versions of fputc, fputs, fwrite.  *
 *    2017-08-09 JFL Added vfprintfM(), fprintfM() and printfM().              *
 *    2018-04-24 JFL Added fputsW, vfprintfW(), fprintfW() and printfW().      *
+*    2020-06-26 JFL Added asprintf() family of routines.		      *
+*    2020-07-28 JFL Added standard implementations of snprintf(), vnsprintf().*
 *									      *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -40,12 +42,25 @@ extern "C" {
 #define fileno	_fileno
 #define pclose _pclose
 #define popen _popen
-#define snprintf _snprintf
 #define tempnam _tempnam
+
+/* Fix non standard implementations */
+#if defined(_UCRT) /* Starting with Visual Stdio 14/2015 (_MSC_VER==1900), these ARE standard */
+#define snprintf snprintf
+#define vsnprintf vsnprintf
+#else 		   /* But older implementations are absent, or duplicate the non-standard _snprintf(), etc */
+extern int correct_snprintf(char *ppszBuf, size_t nBufSize, const char *pszFormat, ...);
+#define snprintf correct_snprintf
+extern int correct_vsnprintf(char *ppszBuf, size_t nBufSize, const char *pszFormat, va_list vl);
+#define vsnprintf correct_vsnprintf
+#endif
 
 /* GNU extensions: asprintf(), etc */
 extern int vasprintf(char **ppszBuf, const char *pszFormat, va_list vl);
 extern int asprintf(char **ppszBuf, const char *pszFormat, ...);
+/* MsvcLibX-specific alternatives, used internally for debugging */
+extern char *dvasprintf(const char *pszFormat, va_list vl);
+extern char *dasprintf(const char *pszFormat, ...);
 
 /************************ MS-DOS-specific definitions ************************/
 
@@ -101,6 +116,13 @@ extern int printfA(const char *pszFormat, ...);
 extern int fputwsW(const wchar_t *pws, FILE *f);
 #define fputws fputwsW		/* Use our workaround routine instead */
 #endif
+
+/* Wide-character string formatting, similar to GNU asprintf(), etc, extensions */
+extern int vaswprintf(wchar_t **ppwszBuf, const wchar_t *pwszFormat, va_list vl);
+extern int aswprintf(wchar_t **ppwszBuf, const wchar_t *pwszFormat, ...);
+/* MsvcLibX-specific alternatives, used internally for debugging */
+extern wchar_t *dvaswprintf(const wchar_t *pwszFormat, va_list vl);
+extern wchar_t *daswprintf(const wchar_t *pwszFormat, ...);
 
 /* fopen() alternatives */
 FILE *fopenM(const char *pszName, const char *pszMode, UINT cp);

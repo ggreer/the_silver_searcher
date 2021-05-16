@@ -111,13 +111,14 @@
 :#   2017-10-27 JFL Fixed OUTDIR changes.				      *
 :#   2020-01-06 JFL Output a more helpful message if can't find nmake.exe.    *
 :#   2020-01-29 JFL In the end, count warnings, and open the log if any found.*
+:#   2020-12-16 JFL Added optional LINK_OUDIR to link OUTDIR to another one.  *
 :#                                                                            *
 :#      © Copyright 2016-2020 Hewlett Packard Enterprise Development LP       *
 :# Licensed under the Apache 2.0 license  www.apache.org/licenses/LICENSE-2.0 *
 :#*****************************************************************************
 
 setlocal EnableExtensions EnableDelayedExpansion
-set "VERSION=2020-01-29"
+set "VERSION=2020-12-16"
 set "SCRIPT=%~nx0"				&:# Script name
 set "SPATH=%~dp0" & set "SPATH=!SPATH:~0,-1!"	&:# Script path, without the trailing \
 set  "ARG0=%~f0"				&:# Script full pathname
@@ -1554,11 +1555,25 @@ if "%OUTDIR%"=="" (
   set "OUTDIR\=%OUTDIR%\"
 )
 
-:# Allow optionally creating a junction or a symbolic link instead of a subdirectory
+:# Allow optionally creating a junction instead of a subdirectory
+if defined LINK_OUTDIR ( :# Check if creating junctions works, and if so, prepare to create one
+  mklink /j TEST_JUNCTION_CREATION "%LINK_OUTDIR%\%OUTDIR%" >NUL 2>NUL
+  if not errorlevel 1 (
+    set "MD_OUTDIR0=!MD_OUTDIR!"
+    set MD_OUTDIR=mklink /j "%OUTDIR%" "%LINK_OUTDIR%\%OUTDIR%"
+    rd TEST_JUNCTION_CREATION
+  )
+)
 if not defined MD_OUTDIR set MD_OUTDIR=md "%OUTDIR%"
+%ECHOVARS.D% CD OUTDIR LINK_OUTDIR MD_OUTDIR
 if not "%OUTDIR%"=="" call :is_dir "%OUTDIR%" || %MD_OUTDIR% || (
-  >&2 echo Cannot create output directory "%OUTDIR%".
+  >&2 echo Error: %MD_OUTDIR%: Cannot create the output directory.
   exit /b 1
+)
+if defined LINK_OUTDIR ( :# Restore the initial MD_OUTDIR saved above
+  set "MD_OUTDIR=!MD_OUTDIR0!"
+  set "MD_OUTDIR0="
+  set "LINK_OUTDIR=" &rem Make sure it's not inherited
 )
 
 :# Select a log file

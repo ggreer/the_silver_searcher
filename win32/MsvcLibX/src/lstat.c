@@ -18,6 +18,7 @@
 *    2017-03-18 JFL Moved unlink() and rmdir() to their own source files.     *
 *    2017-10-05 JFL Removed one huge buffer on stack, to lower stack usage.   *
 *    2018-05-31 JFL Changed dirent2stat() first arg to (const _dirent *).     *
+*    2020-12-15 JFL Added support for IO_REPARSE_TAG_APPEXECLINK.             *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -67,6 +68,8 @@ int dirent2stat(const _dirent *pDirent, struct _stat *pStat) {
 
 
 #ifdef _WIN32
+
+#include "reparsept.h" /* For the undocumented IO_REPARSE_TAG_LX_SYMLINK, etc */
 
 /* ------------ Display the *stat* macro values at compile time ------------ */
 
@@ -206,8 +209,9 @@ check_attr_again:
 	/* readlink() fails if the reparse point does not target a valid pathname */
 	if (n < 0) goto this_is_not_a_symlink; /* This is not a junction. */
 	bIsJunction = TRUE; /* Else this is a junction. Fall through to the symlink case. */
-	} 	      
+	}
       case IO_REPARSE_TAG_SYMLINK:		/* NTFS symbolic link */
+      case IO_REPARSE_TAG_APPEXECLINK:		/* Application Execution link */
 	pStat->st_mode |= S_IFLNK;		/* Symbolic link */
 	break;
       default:	/* Anything else is definitely not like a Unix symlink */

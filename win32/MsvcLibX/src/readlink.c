@@ -22,6 +22,10 @@
 *    2017-05-31 JFL Get strerror() prototype from string.h.                   *
 *    2017-06-27 JFL Decode the new reparse point types defined in reparsept.h.*
 *    2018-04-24 JFL Changed PATH_MAX to WIDE_PATH_MAX for wide bufs.	      *
+*    2020-12-11 JFL Added the ability to read IO_REPARSE_TAG_APPEXECLINK links.
+*    2020-12-14 JFL Changed readlink to also read these APPEXEC links.        *
+*    2020-12-15 JFL Added debug descriptions for all known tag types.         *
+*                   Changed readlink to also read these LX_SYMLINK links.     *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -39,7 +43,8 @@
 #ifdef _WIN32
 
 #include <windows.h>
-#include "reparsept.h"
+#include "iconv.h"
+#include "reparsept.h" /* For the undocumented IO_REPARSE_TAG_LX_SYMLINK, etc */
 
 #pragma warning(disable:4201) /* Ignore the "nonstandard extension used : nameless struct/union" warning */
 #include <Shlwapi.h> /* For PathFindFileName() */
@@ -143,27 +148,20 @@ int TrimTailSlashesW(WCHAR *pwszPath) {
 
 #pragma warning(disable:4706) /* Ignore the "assignment within conditional expression" warning */
 
-/* Get the reparse point target, and return the tag. 0=failure */
-DWORD ReadReparsePointW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
+/* Get the reparse point data, and return the tag. 0=failure */
+DWORD ReadReparsePointW(const WCHAR *path, char *buf, size_t bufsize) {
   DWORD dwAttr;
   HANDLE hLink;
   BOOL done;
   DWORD dwRead;
-  char iobuf[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
   DWORD dwFlagsAndAttributes;
   DWORD dwTag;
-  WCHAR *pwStr;
   PREPARSE_READ_BUFFER pIoctlBuf;
-  PMOUNTPOINT_READ_BUFFER pMountpointBuf;
-  PSYMLINK_READ_BUFFER pSymlinkBuf;
-  unsigned short offset, len = 0;
   DEBUG_CODE(
-  char *pszUtf8;
+  char *pType = "";
   )
 
-  DEBUG_WSTR2NEWUTF8(path, pszUtf8);
-  DEBUG_ENTER(("ReadReparsePointW(\"%s\", 0x%p, %d);\n", pszUtf8, buf, bufsize));
-  DEBUG_FREEUTF8(pszUtf8);
+  DEBUG_WENTER((L"ReadReparsePointW(\"%s\", 0x%p, %d);\n", path, buf, bufsize));
 
   dwAttr = GetFileAttributesW(path);
   XDEBUG_PRINTF(("GetFileAttributes() = 0x%lX\n", dwAttr));
@@ -174,7 +172,7 @@ DWORD ReadReparsePointW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
 
   if (!(dwAttr & FILE_ATTRIBUTE_REPARSE_POINT)) {
     errno = EINVAL;
-    RETURN_INT_COMMENT(0, ("File is not a link\n"));
+    RETURN_INT_COMMENT(0, ("File is not a reparse point\n"));
   }
 
   dwFlagsAndAttributes = FILE_FLAG_OPEN_REPARSE_POINT;
@@ -190,15 +188,15 @@ DWORD ReadReparsePointW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
   XDEBUG_PRINTF(("CreateFile() = 0x%lX\n", hLink));
   if (hLink == INVALID_HANDLE_VALUE) {
     errno = EPERM;
-    RETURN_INT_COMMENT(0, ("Cannot open the link\n"));
+    RETURN_INT_COMMENT(0, ("Cannot open the reparse point\n"));
   }
 
   done = DeviceIoControl(hLink,				/* hDevice, */
     			 FSCTL_GET_REPARSE_POINT,       /* dwIoControlCode, */
     			 NULL,				/* lpInBuffer, */
     			 0,				/* nInBufferSize, */
-    			 iobuf,				/* lpOutBuffer, */
-    			 sizeof(iobuf),			/* nOutBufferSize, */
+    			 buf,				/* lpOutBuffer, */
+    			 (DWORD)bufsize,		/* nOutBufferSize, */
     			 &dwRead,			/* lpBytesReturned, */
     			 NULL				/* lpOverlapped */
     			);
@@ -216,43 +214,111 @@ DWORD ReadReparsePointW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
     errno = EBADF;
     RETURN_INT_COMMENT(0, ("Invalid reparse data buffer\n"));
   }
-  pIoctlBuf = (PREPARSE_READ_BUFFER)iobuf;
+  pIoctlBuf = (PREPARSE_READ_BUFFER)buf;
   dwTag = pIoctlBuf->ReparseTag;
   DEBUG_CODE_IF_ON(
-    char *pType = "";
     switch (dwTag) {
-    case IO_REPARSE_TAG_RESERVED_ZERO:		pType = "Reserved"; break;	
-    case IO_REPARSE_TAG_RESERVED_ONE:		pType = "Reserved"; break;
-    case IO_REPARSE_TAG_RESERVED_TWO:		pType = "Reserved"; break;
-    case IO_REPARSE_TAG_MOUNT_POINT:		pType = "Mount point or junction"; break;
-    case IO_REPARSE_TAG_HSM:			pType = "Hierarchical Storage Manager"; break;
-    case IO_REPARSE_TAG_DRIVE_EXTENDER:		pType = "Home server drive extender"; break;
-    case IO_REPARSE_TAG_HSM2:			pType = "Hierarchical Storage Manager Product #2"; break;
-    case IO_REPARSE_TAG_SIS:			pType = "Single-instance storage filter driver"; break;
-    case IO_REPARSE_TAG_WIM:			pType = "Windows boot Image File"; break;
-    case IO_REPARSE_TAG_CSV:			pType = "Cluster Shared Volume"; break;
-    case IO_REPARSE_TAG_DFS:			pType = "Distributed File System"; break;
-    case IO_REPARSE_TAG_FILTER_MANAGER:		pType = "Filter manager test harness"; break;
-    case IO_REPARSE_TAG_SYMLINK:		pType = "Symbolic link"; break;
-    case IO_REPARSE_TAG_IIS_CACHE:		pType = "Internet Information Services cache"; break;
-    case IO_REPARSE_TAG_DFSR:			pType = "Distributed File System R filter"; break;
-    case IO_REPARSE_TAG_DEDUP:			pType = "Deduplicated file"; break;
-    case IO_REPARSE_TAG_NFS:			pType = "NFS symbolic link"; break;
-    case IO_REPARSE_TAG_APPXSTREAM:		pType = "APPXSTREAM (?)"; break;
-    case IO_REPARSE_TAG_FILE_PLACEHOLDER:	pType = "Placeholder for a OneDrive file"; break;
-    case IO_REPARSE_TAG_DFM:			pType = "DFM (?)"; break;
-    case IO_REPARSE_TAG_WOF:			pType = "Windows Overlay Filesystem compressed file"; break;
-    case IO_REPARSE_TAG_WCI:			pType = "Windows Container Image?"; break;
-    case IO_REPARSE_TAG_GLOBAL_REPARSE:		pType = "GLOBAL_REPARSE (?)"; break;
-    case IO_REPARSE_TAG_CLOUD:			pType = "CLOUD (?)"; break;
-    case IO_REPARSE_TAG_APPEXECLINK:		pType = "APPEXECLINK (?)"; break;
-    case IO_REPARSE_TAG_GVFS:			pType = "GVFS (?)"; break;
-    case IO_REPARSE_TAG_LX_SYMLINK:		pType = "Linux Sub-System Symbolic Link"; break;
-    default:					pType = "Unknown type! Please report its value and update readlink.c."; break;
+    case IO_REPARSE_TAG_RESERVED_ZERO:		/* 0x00000000 */ pType = "Reserved"; break;	
+    case IO_REPARSE_TAG_RESERVED_ONE:		/* 0x00000001 */ pType = "Reserved"; break;
+    case IO_REPARSE_TAG_RESERVED_TWO:		/* 0x00000002 */ pType = "Reserved"; break;
+    case IO_REPARSE_TAG_MOUNT_POINT:		/* 0xA0000003 */ pType = "Mount point or junction"; break;
+    case IO_REPARSE_TAG_HSM:			/* 0xC0000004 */ pType = "Hierarchical Storage Manager"; break;
+    case IO_REPARSE_TAG_DRIVE_EXTENDER:		/* 0x80000005 */ pType = "Home server drive extender"; break;
+    case IO_REPARSE_TAG_HSM2:			/* 0x80000006 */ pType = "Hierarchical Storage Manager Product #2"; break;
+    case IO_REPARSE_TAG_SIS:			/* 0x80000007 */ pType = "Single-instance storage filter driver"; break;
+    case IO_REPARSE_TAG_WIM:			/* 0x80000008 */ pType = "Windows boot Image File"; break;
+    case IO_REPARSE_TAG_CSV:			/* 0x80000009 */ pType = "Cluster Shared Volume"; break;
+    case IO_REPARSE_TAG_DFS:			/* 0x8000000A */ pType = "Distributed File System"; break;
+    case IO_REPARSE_TAG_FILTER_MANAGER:		/* 0x8000000B */ pType = "Filter manager test harness"; break;
+    case IO_REPARSE_TAG_SYMLINK:		/* 0xA000000C */ pType = "Symbolic link"; break;
+    case IO_REPARSE_TAG_IIS_CACHE:		/* 0xA0000010 */ pType = "Internet Information Services cache"; break;
+    case IO_REPARSE_TAG_DFSR:			/* 0x80000012 */ pType = "Distributed File System R filter"; break;
+    case IO_REPARSE_TAG_DEDUP:			/* 0x80000013 */ pType = "Deduplicated file"; break;
+    case IO_REPARSE_TAG_NFS:			/* 0x80000014 */ pType = "NFS symbolic link"; break;
+    case IO_REPARSE_TAG_APPXSTREAM:		/* 0xC0000014 */ pType = "APPXSTREAM (Not used?)"; break;
+    case IO_REPARSE_TAG_FILE_PLACEHOLDER:	/* 0x80000015 */ pType = "Placeholder for a OneDrive file"; break;
+    case IO_REPARSE_TAG_DFM:			/* 0x80000016 */ pType = "Dynamic File filter"; break;
+    case IO_REPARSE_TAG_WOF:			/* 0x80000017 */ pType = "Windows Overlay Filesystem compressed file"; break;
+    case IO_REPARSE_TAG_WCI:			/* 0x80000018 */ pType = "Windows Container Isolation filter"; break;
+    case IO_REPARSE_TAG_GLOBAL_REPARSE:		/* 0xA0000019 */ pType = "NPFS server silo named pipe symbolic link into the host silo"; break;
+    case IO_REPARSE_TAG_CLOUD:			/* 0x9000001A */ pType = "Cloud Files filter"; break;
+    case IO_REPARSE_TAG_APPEXECLINK:		/* 0x8000001B */ pType = "Application Execution link"; break;
+    case IO_REPARSE_TAG_PROJFS:			/* 0x9000001C */ pType = "Projected File System VFS filter, ex for git"; break;
+    case IO_REPARSE_TAG_LX_SYMLINK:		/* 0xA000001D */ pType = "Linux Sub-System Symbolic Link"; break;
+    case IO_REPARSE_TAG_STORAGE_SYNC:		/* 0x8000001E */ pType = "Azure File Sync (AFS) filter"; break;
+    case IO_REPARSE_TAG_WCI_TOMBSTONE:		/* 0xA000001F */ pType = "Windows Container Isolation filter tombstone"; break;
+    case IO_REPARSE_TAG_UNHANDLED:		/* 0xA0000020 */ pType = "Unhandled Windows Container Isolation filter"; break;
+    case IO_REPARSE_TAG_ONEDRIVE:		/* 0xA0000021 */ pType = "One Drive (Not used?)"; break;
+    case IO_REPARSE_TAG_PROJFS_TOMBSTONE:	/* 0xA0000022 */ pType = "Projected File System VFS filter tombstone, ex for git"; break;
+    case IO_REPARSE_TAG_AF_UNIX:		/* 0xA0000023 */ pType = "Linux Sub-System Socket"; break;
+    case IO_REPARSE_TAG_LX_FIFO:		/* 0xA0000024 */ pType = "Linux Sub-System FIFO"; break;
+    case IO_REPARSE_TAG_LX_CHR:			/* 0xA0000025 */ pType = "Linux Sub-System Character Device"; break;
+    case IO_REPARSE_TAG_LX_BLK:			/* 0xA0000026 */ pType = "Linux Sub-System Block Device"; break;
+    case IO_REPARSE_TAG_WCI_LINK:		/* 0xA0000027 */ pType = "Windows Container Isolation filter Link"; break;
+    default:					pType = "Unknown type! Please report its value and update reparsept.h & readlink.c."; break;
     }
     DEBUG_PRINTF(("ReparseTag = 0x%04X; // %s\n", (unsigned)(dwTag), pType));
   )
   XDEBUG_PRINTF(("ReparseDataLength = 0x%04X\n", (unsigned)(pIoctlBuf->ReparseDataLength)));
+  
+  /* Dump the whole payload in extra-debug mode */
+  XDEBUG_CODE_IF_ON({
+    unsigned int ul;
+    unsigned int u;
+    unsigned int uMax;
+    DEBUG_PRINTF(("ReparseDataBuffer =\n\
+Offset    00           04           08           0C           0   4    8   C   \n\
+--------  -----------  -----------  -----------  -----------  -------- --------\n\
+"));
+
+    for (ul = 0; ul < (unsigned)(pIoctlBuf->ReparseDataLength); ul += 16) {
+      printf("%08X ", ul);
+
+      uMax = (unsigned)(pIoctlBuf->ReparseDataLength) - ul;
+      if (uMax > 16) uMax = 16;
+
+      /* Display the hex dump */
+      for (u=0; u<16; u++) {
+	if (!(u&3)) printf(" ");
+	if (u < uMax) {
+	  printf("%02.2X ", ((unsigned char *)pIoctlBuf->DataBuffer)[ul + u]);
+	} else {
+	  printf("   ");
+	}
+      }
+
+      /* Display the ASCII characters dump */
+      for (u=0; u<16; u++) {
+      	char c = ((char *)pIoctlBuf->DataBuffer)[ul + u];
+	if (!(u&7)) printf(" ");
+	if (c < ' ') c = ' ';
+	if ((unsigned char)c > '\x7F') c = ' ';
+	printf("%c", c);
+      }
+
+      printf("\n");
+    }
+  })
+
+  RETURN_DWORD_COMMENT(dwTag, ("%s\n", pType));
+}
+
+/* Get the symlink or junction target. Returns the tag, or 0 on failure */
+DWORD ReadLinkW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
+  char iobuf[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
+  DWORD dwTag;
+  PMOUNTPOINT_READ_BUFFER pMountpointBuf;
+  PSYMLINK_READ_BUFFER pSymlinkBuf;
+  PLX_SYMLINK_READ_BUFFER pLxSymlinkBuf;
+  PAPPEXECLINK_READ_BUFFER pAppExecLinkBuf;
+  WCHAR *pwStr = NULL;
+  WCHAR *pwNewStr = NULL;
+  unsigned short offset = 0, len = 0;
+  
+  DEBUG_WENTER((L"ReadLinkW(\"%s\", 0x%p, %d);\n", path, buf, bufsize));
+
+  dwTag = ReadReparsePointW(path, iobuf, sizeof(iobuf));
+  if (!dwTag) RETURN_CONST(0);
 
   /* Process the supported tag types */
   switch (dwTag) {
@@ -281,9 +347,49 @@ DWORD ReadReparsePointW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
       len = pMountpointBuf->SubstituteNameLength / 2; /* Convert bytes to wide characters count */
       break;
 
+    case IO_REPARSE_TAG_LX_SYMLINK: /* LinuX SubSystem symbolic links */
+      pLxSymlinkBuf = (PLX_SYMLINK_READ_BUFFER)iobuf;
+      if (pLxSymlinkBuf->FileType == 2) {
+      	char *pszTarget;
+      	len = pLxSymlinkBuf->ReparseDataLength - sizeof(pLxSymlinkBuf->FileType); /* The UTF-8 target string length */
+      	pszTarget = malloc(len + 1); /* Room for the UTF-8 string plus a NUL */
+        if (!pszTarget) RETURN_INT_COMMENT(0, ("Insufficient memory\n"));
+      	CopyMemory(pszTarget, (char *)(pLxSymlinkBuf->PathBuffer), len);
+      	pszTarget[len] = '\0';
+      	pwNewStr = MultiByteToNewWideString(CP_UTF8, pszTarget);
+      	free(pszTarget);
+        if (!pwNewStr) RETURN_INT_COMMENT(0, ("Insufficient memory\n"));
+        pwStr = pwNewStr;
+      } else {
+        errno = EBADF;
+	RETURN_INT_COMMENT(0, ("Unsupported LXSS Symlink type = %d\n", (int)(pLxSymlinkBuf->FileType)));
+      }
+      break;
+    
+    case IO_REPARSE_TAG_APPEXECLINK: /* Ex: Empty *.exe in %LOCALAPPDATA%\Microsoft\WindowsApps */
+      pAppExecLinkBuf = (PAPPEXECLINK_READ_BUFFER)iobuf;
+      XDEBUG_PRINTF(("Version = 0x%04X\n", (unsigned)(pAppExecLinkBuf->Version)));
+      XDEBUG_CODE_IF_ON({
+      	WCHAR *pwStr0 = pwStr = pAppExecLinkBuf->StringList;
+      	while((pwStr-pwStr0) < pAppExecLinkBuf->ReparseDataLength) {
+      	  wprintf(L"%s\n", pwStr);
+      	  pwStr += lstrlenW(pwStr) + 1;
+      	}
+      })
+      
+      if (pAppExecLinkBuf->Version == 3) {
+      	unsigned short u;
+	for (u=0, pwStr = pAppExecLinkBuf->StringList; u<2; u++) pwStr += lstrlenW(pwStr) + 1;
+	len = (unsigned short)lstrlenW(pwStr);
+      } else {
+        errno = EBADF;
+	RETURN_INT_COMMENT(0, ("Unsupported AppExecLink Version = %d\n", (int)(pAppExecLinkBuf->Version)));
+      }
+      break;
+
     default:
       errno = EINVAL;
-      RETURN_INT_COMMENT(0, ("Unsupported reparse point type\n"));
+      RETURN_INT_COMMENT(0, ("Unsupported reparse point type 0x%X\n", dwTag));
   }
   if (len) {
     if (len >= bufsize) {
@@ -294,28 +400,23 @@ DWORD ReadReparsePointW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
   }
   buf[len] = L'\0';
 
-  DEBUG_WSTR2NEWUTF8(buf, pszUtf8);
-  DEBUG_LEAVE(("return 0x%X; // \"%s\"\n", dwTag, pszUtf8));
-  DEBUG_FREEUTF8(pszUtf8);
+  if (pwNewStr) free(pwNewStr);
+
+  DEBUG_WLEAVE((L"return 0x%X; // \"%s\"\n", dwTag, buf));
   return dwTag;
 }
 
-/* Posix routine readlink - Wide char version */
+/* Posix routine readlink - Wide char version. Returns the link size, or -1 on failure */
 ssize_t readlinkW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
   ssize_t nRead;
   UINT drvType;
   DWORD dwTag;
-  DEBUG_CODE(
-  char *pszUtf8;
-  )
 
-  DEBUG_WSTR2NEWUTF8(path, pszUtf8);
-  DEBUG_ENTER(("readlink(\"%s\", 0x%p, %d);\n", pszUtf8, buf, bufsize));
-  DEBUG_FREEUTF8(pszUtf8);
+  DEBUG_WENTER((L"readlink(\"%s\", 0x%p, %d);\n", path, buf, bufsize));
 
   /* TO DO: Fix readlinkW (And thus ReadReparsePointW) to return truncated links if the buffer is too small.
             Returning an ENAMETOOLONG or ENOMEM error as we do now is sane, but NOT standard */
-  dwTag = ReadReparsePointW(path, buf, bufsize);
+  dwTag = ReadLinkW(path, buf, bufsize);
   if (!dwTag) {
     RETURN_INT_COMMENT(-1, ("ReadReparsePointW() failed.\n"));
   }
@@ -330,14 +431,10 @@ ssize_t readlinkW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
     if (!strncmpW(buf+5, L":\\", 2)) {
       nRead -= 4;
       CopyMemory(buf, buf+4, (nRead+1)*sizeof(WCHAR));
-      DEBUG_WSTR2NEWUTF8(buf, pszUtf8);
-      XDEBUG_PRINTF(("buf = \"%s\"; // Removed '\\\\?\\': \n", pszUtf8));
-      DEBUG_FREEUTF8(pszUtf8);
+      XDEBUG_WPRINTF((L"buf = \"%s\"; // Removed '\\\\?\\': \n", buf));
     } else { /* Return an error for other types, as Posix SW cannot handle them successfully. */
       errno = EINVAL;
-      DEBUG_WSTR2NEWUTF8(buf+4, pszUtf8);
-      DEBUG_LEAVE(("return -1; // Unsupported mount point type: %s\n", pszUtf8));
-      DEBUG_FREEUTF8(pszUtf8);
+      DEBUG_WLEAVE((L"return -1; // Unsupported mount point type: %s\n", buf+4));
       return -1;
     }
   }
@@ -354,9 +451,7 @@ ssize_t readlinkW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
     WCHAR *pc1 = L"A";
     WCHAR *pc2 = L"a";
 
-    DEBUG_WSTR2NEWUTF8(buf, pszUtf8);
-    XDEBUG_PRINTF(("rawJunctionTarget = \"%s\"\n", pszUtf8));
-    DEBUG_FREEUTF8(pszUtf8);
+    XDEBUG_WPRINTF((L"rawJunctionTarget = \"%s\"\n", buf));
 
     GetFullPathNameW(path, WIDE_PATH_MAX, wszAbsPath, NULL); /* Get the drive letter in the full path */
     szRootDir[0] = (char)(wszAbsPath[0]); /* Copy the drive letter */
@@ -377,9 +472,7 @@ ssize_t readlinkW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
 	dwErr = WNetGetConnectionW(wszLocalName, wszRemoteName, &dwLength);
 	if (dwErr == NO_ERROR) {
 	  WCHAR *pwsz;
-	  DEBUG_WSTR2NEWUTF8(wszRemoteName, pszUtf8);
-	  XDEBUG_PRINTF(("net use %c: %s\n", (char)(wszLocalName[0]), pszUtf8));
-	  DEBUG_FREEUTF8(pszUtf8);
+	  XDEBUG_WPRINTF((L"net use %c: %s\n", (char)(wszLocalName[0]), wszRemoteName));
 	  if ((wszRemoteName[0] == L'\\') && (wszRemoteName[1] == L'\\')) {
 	    pwsz = wcschr(wszRemoteName+2, L'\\');
 	    if (pwsz) {
@@ -398,9 +491,7 @@ ssize_t readlinkW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
 		XDEBUG_PRINTF(("// Checking if it's an alias of the root of the shared drive\n"));
 		buf[0] = wszAbsPath[0];
 		dwAttr = GetFileAttributesW(buf);
-		DEBUG_WSTR2NEWUTF8(buf, pszUtf8);
-		XDEBUG_PRINTF(("GetFileAttributes(\"%s\") = 0x%lX\n", pszUtf8, dwAttr));
-		DEBUG_FREEUTF8(pszUtf8);
+		XDEBUG_WPRINTF((L"GetFileAttributes(\"%s\") = 0x%lX\n", buf, dwAttr));
 		if (dwAttr != INVALID_FILE_ATTRIBUTES) {
 		  iTargetFound = TRUE;
 		  XDEBUG_PRINTF(("// Confirmed it's an alias of the root of the shared drive\n"));
@@ -411,9 +502,7 @@ ssize_t readlinkW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
 		  if (pwsz2) {
 		    CopyMemory(buf+2, pwsz2, (lstrlenW(pwsz2)+1)*sizeof(WCHAR));
 		    dwAttr = GetFileAttributesW(buf);
-		    DEBUG_WSTR2NEWUTF8(buf, pszUtf8);
-		    XDEBUG_PRINTF(("GetFileAttributes(\"%s\") = 0x%lX\n", pszUtf8, dwAttr));
-		    DEBUG_FREEUTF8(pszUtf8);
+		    XDEBUG_WPRINTF((L"GetFileAttributes(\"%s\") = 0x%lX\n", buf, dwAttr));
 		    if (dwAttr != INVALID_FILE_ATTRIBUTES) {
 		      iTargetFound = TRUE;
 		      XDEBUG_PRINTF(("// Confirmed it's a first level shared directory\n"));
@@ -457,12 +546,8 @@ ssize_t readlinkW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
           even when relative paths were used for creating them. */
     TrimTailSlashesW(wszAbsPath);
     GetFullPathNameW(buf, WIDE_PATH_MAX, wszAbsPath2, NULL);
-    DEBUG_WSTR2NEWUTF8(wszAbsPath, pszUtf8);
-    XDEBUG_PRINTF(("szAbsPath = \"%s\"\n", pszUtf8));
-    DEBUG_FREEUTF8(pszUtf8);
-    DEBUG_WSTR2NEWUTF8(wszAbsPath2, pszUtf8);
-    XDEBUG_PRINTF(("szAbsPath2 = \"%s\"\n", pszUtf8));
-    DEBUG_FREEUTF8(pszUtf8);
+    XDEBUG_WPRINTF((L"szAbsPath = \"%s\"\n", wszAbsPath));
+    XDEBUG_WPRINTF((L"szAbsPath2 = \"%s\"\n", wszAbsPath2));
     /* Find the first (case insensitive) difference */
     for (p1=wszAbsPath, p2=wszAbsPath2; (*pc1 = *p1) && (*pc2 = *p2); p1++, p2++) {
       CharLowerW(pc1);
@@ -473,12 +558,8 @@ ssize_t readlinkW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
       WCHAR *pc;
       /* Backtrack to the last \ */
       for ( ; *(p1-1) != L'\\'; p1--, p2--) ;
-      DEBUG_WSTR2NEWUTF8(p1, pszUtf8);
-      XDEBUG_PRINTF(("szRelPath1 = \"%s\"\n", pszUtf8));
-      DEBUG_FREEUTF8(pszUtf8);
-      DEBUG_WSTR2NEWUTF8(p2, pszUtf8);
-      XDEBUG_PRINTF(("szRelPath2 = \"%s\"\n", pszUtf8));
-      DEBUG_FREEUTF8(pszUtf8);
+      XDEBUG_WPRINTF((L"szRelPath1 = \"%s\"\n", p1));
+      XDEBUG_WPRINTF((L"szRelPath2 = \"%s\"\n", p2));
       buf[0] = '\0';
       /* Count the # of parent directories that remain in path 1 */
       for (pc=p1; *pc; pc++) if (*pc == L'\\') lstrcatW(buf, L"..\\");
@@ -489,15 +570,13 @@ ssize_t readlinkW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
     } /* Else the drives differ. Paths cannot be relative. Don't change buf. */
   }
 
-  DEBUG_WSTR2NEWUTF8(buf, pszUtf8);
-  DEBUG_LEAVE(("return %d; // \"%s\"\n", (int)nRead, pszUtf8));
-  DEBUG_FREEUTF8(pszUtf8);
+  DEBUG_WLEAVE((L"return %d; // \"%s\"\n", (int)nRead, buf));
   return (int)nRead;
 }
 
 #pragma warning(default:4706)
 
-/* Posix routine readlink - MultiByte char version */
+/* Posix routine readlink - MultiByte char version. Returns the link size, or -1 on failure */
 ssize_t readlinkM(const char *path, char *buf, size_t bufsize, UINT cp) {
   WCHAR wszPath[WIDE_PATH_MAX];
   WCHAR wszTarget[WIDE_PATH_MAX];
@@ -560,13 +639,9 @@ ssize_t readlinkM(const char *path, char *buf, size_t bufsize, UINT cp) {
 
 int ResolveTailLinksW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
   DWORD dwAttr;
-  DEBUG_CODE( /* TO DO: Use DEBUG_WSTR2NEWUTF8() / DEBUG_FREEUTF8() to avoid wasting stack space */
-  char szUtf8[UTF8_PATH_MAX];
-  )
   size_t l;
 
-  DEBUG_WSTR2UTF8(path, szUtf8, sizeof(szUtf8));
-  DEBUG_ENTER(("ResolveTailLinks(\"%s\", %p, %ul);\n", szUtf8, buf, (unsigned long)bufsize));
+  DEBUG_WENTER((L"ResolveTailLinks(\"%s\", %p, %ul);\n", path, buf, (unsigned long)bufsize));
 
   dwAttr = GetFileAttributesW(path);
   XDEBUG_PRINTF(("GetFileAttributes() = 0x%lX\n", dwAttr));
@@ -603,11 +678,8 @@ int ResolveTailLinksW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
       pwsz = wszBuf3;
     }
     iRet = ResolveTailLinksW(pwsz, buf, bufsize);
-    DEBUG_CODE(
-      szUtf8[0] = '\0';
-      if (iRet >= 0) DEBUG_WSTR2UTF8(buf, szUtf8, sizeof(szUtf8));
-    )
-    RETURN_INT_COMMENT(iRet, ("\"%s\"\n", szUtf8));
+    DEBUG_WLEAVE((L"return %d; // \"%s\"\n", iRet, buf));
+    return iRet;
   }
 
   l = lstrlenW(path);
@@ -616,7 +688,8 @@ int ResolveTailLinksW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
     RETURN_INT_COMMENT(-1, ("Buffer too small\n"));
   }
   lstrcpyW(buf, path);
-  RETURN_CONST_COMMENT(0, ("\"%s\"\n", szUtf8));
+  DEBUG_WLEAVE((L"return 0; // \"%s\"\n", buf));
+  return 0;
 }
 
 int ResolveTailLinksM(const char *path, char *buf, size_t bufsize, UINT cp) {
@@ -668,6 +741,117 @@ int ResolveTailLinksU(const char *path, char *buf, size_t bufsize) {
   return ResolveTailLinksM(path, buf, bufsize, CP_UTF8);
 }
 
-#endif
+/*---------------------------------------------------------------------------*\
+*                                                                             *
+|   Function	    ReadAppExecLink					      |
+|									      |
+|   Description	    Get the AppExecLink target, and return the tag            |
+|									      |
+|   Parameters      const char *path	    The AppExecLink name              |
+|		    char *buf		    Output buffer		      |
+|		    size_t bufsize	    Output buffer size in characters  |
+|									      |
+|   Returns	    >0 = Success, 0 = Failure and set errno		      |
+|		    							      |
+|   Notes	    TO DO: Detect circular loops?			      |
+|									      |
+|   History								      |
+|    2020-12-11 JFL Created this routine                               	      |
+*									      *
+\*---------------------------------------------------------------------------*/
 
+/* Get the AppExecLink target, and return its size. 0=failure */
+int ReadAppExecLinkW(const WCHAR *path, WCHAR *buf, size_t bufsize) {
+  char iobuf[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
+  DWORD dwTag;
+  PAPPEXECLINK_READ_BUFFER pAppExecLinkBuf;
+  WCHAR *pwStr = NULL;
+  unsigned short offset = 0, len = 0;
+
+  DEBUG_WENTER((L"ReadAppExecLinkW(\"%s\", 0x%p, %d);\n", path, buf, bufsize));
+
+  dwTag = ReadReparsePointW(path, iobuf, sizeof(iobuf));
+  if (!dwTag) RETURN_CONST(0);
+
+  /* Process the supported tag types */
+  switch (dwTag) {
+    case IO_REPARSE_TAG_APPEXECLINK: /* Ex: Empty *.exe in %LOCALAPPDATA%\Microsoft\WindowsApps */
+      pAppExecLinkBuf = (PAPPEXECLINK_READ_BUFFER)iobuf;
+      XDEBUG_PRINTF(("Version = 0x%04X\n", (unsigned)(pAppExecLinkBuf->Version)));
+      XDEBUG_CODE_IF_ON({
+      	WCHAR *pwStr0 = pwStr = pAppExecLinkBuf->StringList;
+      	while((pwStr-pwStr0) < pAppExecLinkBuf->ReparseDataLength) {
+      	  wprintf(L"%s\n", pwStr);
+      	  pwStr += lstrlenW(pwStr) + 1;
+      	}
+      })
+      
+      if (pAppExecLinkBuf->Version == 3) {
+      	unsigned short u;
+	for (u=0, pwStr = pAppExecLinkBuf->StringList; u<2; u++) pwStr += lstrlenW(pwStr) + 1;
+	offset = 0;
+	len = (unsigned short)lstrlenW(pwStr);
+      } else {
+        DEBUG_PRINTF(("# WARNING: Unexpected AppExecLink Version = %d\n", (int)(pAppExecLinkBuf->Version)));
+      }
+      break;
+
+    default:
+      errno = EINVAL;
+      RETURN_INT_COMMENT(0, ("Unsupported reparse point type\n"));
+  }
+  if (len) {
+    if (len >= bufsize) {
+      errno = ENAMETOOLONG;
+      RETURN_INT_COMMENT(0, ("The output buffer is too small. The link size is %d bytes.\n", len));
+    }
+    CopyMemory(buf, pwStr+offset, len*sizeof(WCHAR));
+  }
+  buf[len] = L'\0';
+
+  DEBUG_WLEAVE((L"return 0x%X; // \"%s\"\n", len, buf));
+  return len;
+}
+
+/* Get the AppExecLink target, and return its size. 0 = failure */
+int ReadAppExecLinkM(const char *path, char *buf, size_t bufsize, UINT cp) {
+  WCHAR wszPath[WIDE_PATH_MAX];
+  WCHAR wszTarget[WIDE_PATH_MAX];
+  int n;
+  char *pszDefaultChar;
+
+  /* Convert the pathname to a unicode string, with the proper extension prefixes if it's longer than 260 bytes */
+  n = MultiByteToWidePath(cp,			/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
+    			  path,			/* lpMultiByteStr, */
+			  wszPath,		/* lpWideCharStr, */
+			  COUNTOF(wszPath)	/* cchWideChar, */
+			  );
+  if (!n) {
+    errno = Win32ErrorToErrno();
+    DEBUG_PRINTF(("ReadAppExecLinkM(\"%s\", ...); // Conversion to Unicode failed. errno=%d - %s\n", path, errno, strerror(errno)));
+    return 0;
+  }
+
+  n = ReadAppExecLinkW(wszPath, wszTarget, WIDE_PATH_MAX);
+  if (n <= 0) return n;
+
+  pszDefaultChar = (cp == CP_UTF8) ? NULL : "?";
+  n = WideCharToMultiByte(cp,			/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
+			  0,			/* dwFlags, */
+			  wszTarget,		/* lpWideCharStr, */
+			  n + 1,		/* cchWideChar, */
+			  buf,			/* lpMultiByteStr, */
+			  (int)bufsize,		/* cbMultiByte, */
+			  pszDefaultChar,	/* lpDefaultChar, */
+			  NULL			/* lpUsedDefaultChar */
+			  );
+  if (!n) {
+    errno = Win32ErrorToErrno();
+    DEBUG_PRINTF(("ReadAppExecLinkM(\"%s\", ...); // Conversion back from Unicode failed. errno=%d - %s\n", path, errno, strerror(errno)));
+  }
+
+  return n;
+}
+
+#endif /* _WIN32 */
 

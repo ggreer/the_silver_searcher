@@ -1,84 +1,84 @@
 /*****************************************************************************\
-*                                                                             *
-*   Filename:	    debugm.h						      *
-*                                                                             *
-*   Description:    Debug macros					      *
-*                                                                             *
-*   Notes:	    OS-independant macros for managing distinct debug and     *
-*		    release versions of a C or C++ program.                   * 
-*                   The debug version is generated if the _DEBUG constant     *
-*                   is defined. Else the release version is generated.        *
-*                   These macros produce no extra code in the release version,*
-*                   and thus have no overhead in that release version.	      *
-*                   Even in the debug version, the debug output is disabled   *
-*                   by default. It must be enabled by using DEBUG_ON().       *
-*                                                                             *
-*                   Usage:                                                    *
-*                   - One source file must instanciate DEBUG_GLOBALS.         *
-*                   - The source file parsing the arguments must look for one *
-*                     argument (Ex: --debug) and enable the debug mode. Ex:   *
-*			DEBUG_CODE(		                              *
-*			  if (!strcmp(arg, "--debug")) DEBUG_ON();            *
-*			)                                                     *
-*                   - Insert DEBUG_ENTER() calls at the beginning of all      *
-*                     routines that should be traced, and replace all their   *
+*									      *
+*   Filename	    debugm.h						      *
+*									      *
+*   Description     Debug macros					      *
+*		    							      *
+*   Notes	    OS-independant macros for managing distinct debug and     *
+*		    release versions of a C or C++ program.		      * 
+*		    The debug version is generated if the _DEBUG constant     *
+*		    is defined. Else the release version is generated.	      *
+*		    These macros produce no extra code in the release version,*
+*		    and thus have no overhead in that release version.	      *
+*		    Even in the debug version, the debug output is disabled   *
+*		    by default. It must be enabled by using DEBUG_ON().	      *
+*		    							      *
+*		    Usage:						      *
+*		    - One source file must instanciate DEBUG_GLOBALS.	      *
+*		    - The source file parsing the arguments must look for one *
+*		      argument (Ex: --debug) and enable the debug mode. Ex:   *
+*			DEBUG_CODE(					      *
+*			  if (!strcmp(arg, "--debug")) DEBUG_ON();	      *
+*			)						      *
+*		    - Insert DEBUG_ENTER() calls at the beginning of all      *
+*		      routines that should be traced, and replace all their   *
 *		      return instructions with RETURN_XXX() macros.	      *
-*                   - Pepper the sources with DEBUG_PRINTF() calls displaying *
-*                     critical intermediate values.                           *
-*                                                                             *
+*		    - Pepper the sources with DEBUG_PRINTF() calls displaying *
+*		      critical intermediate values.			      *
+*		    							      *
 *		    The debug output will show the function call stack by     *
 *		    indenting traced subroutines proportionally to their call *
-*                   depth.						      *
+*		    depth.						      *
 *		    To make the debug output more readable, it is recommended *
 *		    to format it so that it looks like valid C code.	      *
-*                                                                             *
-*                   The macros actually support multiple debug levels.        *
-*                   Level 1 is the normal debug mode.                         *
-*                   Level 2 is the eXtra debug mode. Use it for displaying    *
-*                    more detailed debug information, that is not needed in   *
-*                    normal debugging sessions.                               *
-*                   More levels could be used if desired.                     *
-*                                                                             *
-*    DEBUG_GLOBALS              Define global functions and variables used by *
-*				macros below. Don't use the variables directly.
-*    int iDebug = FALSE;        Global variable enabling debug output if TRUE.*
-*    int iIndent = 0;           Global variable controlling debug indentation.*
+*		    							      *
+*		    The macros actually support multiple debug levels.	      *
+*		    Level 1 is the normal debug mode.			      *
+*		    Level 2 is the eXtra debug mode. Use it for displaying    *
+*		     more detailed debug information, that is not needed in   *
+*		     normal debugging sessions.				      *
+*		    More levels could be used if desired.		      *
+*		    							      *
+*    DEBUG_GLOBALS		Define global functions and variables used by *
+*    				macros below. Don't use the variables directly.
+*    int iDebug = FALSE;	Global variable enabling debug output if TRUE.*
+*    int iIndent = 0;		Global variable controlling debug indentation.*
 *    int (*pdput)(const char *) Pointer to the put() routine for debug output.*
-*                                                                             *
+*    		    							      *
 *    DEBUG_ON()			Turn the debug mode on (Enables debug output) *
-*    DEBUG_MORE()		Increase the debug level                      *
-*    DEBUG_LESS()		Decrease the debug level                      *
-*    DEBUG_OFF()		Turn the debug mode off                       *
-*                                                                             *
-*    DEBUG_IS_ON()		Test if the debug mode is enabled             *
+*    DEBUG_MORE()		Increase the debug level		      *
+*    DEBUG_LESS()		Decrease the debug level		      *
+*    DEBUG_OFF()		Turn the debug mode off			      *
+*    		    							      *
+*    DEBUG_IS_ON()		Test if the debug mode is enabled	      *
 *    XDEBUG_ON()		Turn eXtra debug mode on <==> 2*DEBUG_MORE()  *
-*    XDEBUG_IS_ON()		Test if the eXtra debug mode is enabled       *
-*                                                                             *
-*    DEBUG_CODE(code)		Define code only in the _DEBUG version        *
-*    DEBUG_CODE_IF_ON(code)	Debug code executed if debug mode is on       *
+*    XDEBUG_IS_ON()		Test if the eXtra debug mode is enabled	      *
+*    		    							      *
+*    DEBUG_CODE(code)		Define code only in the _DEBUG version	      *
+*    DEBUG_CODE_IF_ON(code)	Debug code executed if debug mode is on	      *
 *    XDEBUG_CODE_IF_ON(code)	Debug code executed if eXtra debug mode is on *
-*                                                                             *
+*    		    							      *
 *    SET_DEBUG_PUT(pFunc)	Set the routine to use for debug output.      *
-*                               Useful to replace the default routine with a  *
-*                               thread-safe routine in multi-threaded programs.
-*                                                                             *
+*    				Useful to replace the default routine with a  *
+*    				thread-safe routine in multi-threaded programs.
+*    		    							      *
 *    DEBUG_PRINTF((format, ...))	Print a debug string if debug is on.  *
-*                                       The double parenthesis are necessary  *
-*                                       because C90 does not support macros   *
-*                                       with variable list of arguments.      *
+*    					The double parenthesis are necessary  *
+*    					because C90 does not support macros   *
+*    					with variable list of arguments.      *
 *    DEBUG_FPRINTF((iFile, fmt, ...))	Print a debug string to a stream      *
-*                                                                             *
-*        Important: Any call to DEBUG_ENTER MUST be matched by one call to    *
-*                   DEBUG_LEAVE or RETURN_... when the function returns.      *                                                                             *
-*                                                                             *
+*    		    							      *
+*    	Important: Any call to DEBUG_ENTER MUST be matched by one call to     *
+*    		   DEBUG_LEAVE or RETURN_... when the function returns .      *
+*    		    							      *
 *    DEBUG_ENTER((format, ...))		Print a function name and arguments.  *
-*                                       Increase indentation of further calls.*
-*                                       It's the caller's responsibility to   *
-*                                       format the routine name and arguments.*
-*    DEBUG_LEAVE((format, ...))		Print a function return value.        *
-*                                       Decrease indentation of further calls.*
-*                                       It's the caller's responsibility to   *
-*                                       format the return instruction & value.*
+*    					Increase indentation of further calls.*
+*    					It's the caller's responsibility to   *
+*    					format the routine name and arguments.*
+*    DEBUG_LEAVE((format, ...))		Print a function return value.	      *
+*    					Decrease indentation of further calls.*
+*    					It's the caller's responsibility to   *
+*    					format the return instruction & value.*
 *    RETURN()				Leave and trace return		      *
 *    RETURN_CONST(value)		Leave and trace return constant	      *
 *    RETURN_BOOL(b)			Leave and trace return boolean	      *
@@ -89,19 +89,19 @@
 *    RETURN_LONG(l)			Leave and trace return long	      *
 *    RETURN_CSTRING(s)			Leave and trace return const. string  *
 *    RETURN_CPTR(p)			Leave and trace return const. pointer *
-*                                                                             *
+*    									      *
 *    RETURN_COMMENT((format, ...))	Leave, print comment and return	      *
 *    RETURN_CONST_COMMENT(value, (...)) Leave, print comment & return a const.*
 *    RETURN_BOOL_COMMENT(b, (...))	Leave, print comment & return a bool. *
 *    RETURN_INT_COMMENT(i, (...))	Leave, print comment & return an int. *
-*                                                                             *
-*    Windows only:                                                            *
+*    	    								      *
+*    Windows only:							      *
 *    char *pszUtf8 = DEBUG_WSTR2NEWUTF8(pszUtf16);  Create a new UTF-8 string *
 *    DEBUG_FREEUTF8(pszUtf8);			    Free the UTF-8 string     *
-*                                                                             *
+*		    							      *
 *   History:								      *
-*    2012-01-16 JFL jf.larvoire@hp.com created this file.                     *
-*    2012-02-03 JFL Renamed DEBUG_IF_IS_ON DEBUG_CODE_IF_ON.                  *
+*    2012-01-16 JFL jf.larvoire@hp.com created this file.		      *
+*    2012-02-03 JFL Renamed DEBUG_IF_IS_ON DEBUG_CODE_IF_ON.		      *
 *		    Renamed file from debug.h to debugm.h because of a file   *
 *		    name collision with another library on my PC.	      *
 *    2014-02-10 JFL Added macros for an extra debug mode.		      *
@@ -114,7 +114,7 @@
 *    2016-10-04 JFL Added macros DEBUG_OFF(), DEBUG_MORE(), DEBUG_LESS().     *
 *		    Allow using DEBUG_ON()/MORE()/LESS()/OFF() in release mode.
 *    2017-03-22 JFL Rewrote DEBUG_PRINTF() and similar macros to generate a   *
-*		    string, and output it in a single call to puts().         *
+*		    string, and output it in a single call to puts().	      *
 *		    This is useful for multi-threaded programs, that need     *
 *		    to use a semaphore for synchronizing debug output from    *
 *		    multiple threads.					      *
@@ -126,24 +126,29 @@
 *    2017-08-25 JFL Added an OS identification string definition.	      *
 *		    Bug fix in _VSNPRINTF_EMULATION.			      *
 *    2017-10-30 JFL Added macro DEBUG_QUIET_LEAVE().			      *
-*    2018-02-02 JFL Added several missing DEBUG_xxx_COMMENT() macros.         *
-*    2018-04-25 JFL Added macro DEBUG_WPRINTF().                              *
-*                   Added macros DEBUG_WENTER() and DEBUG_WLEAVE().           *
-*    2018-10-01 JFL DEBUG_FREEUTF8() now clears the buffer pointer.           *
+*    2018-02-02 JFL Added several missing DEBUG_xxx_COMMENT() macros.	      *
+*    2018-04-25 JFL Added macro DEBUG_WPRINTF().			      *
+*		    Added macros DEBUG_WENTER() and DEBUG_WLEAVE().	      *
+*    2018-10-01 JFL DEBUG_FREEUTF8() now clears the buffer pointer.	      *
 *    2019-04-15 JFL Changed the debug puts() routine to an fputs-based routine*
 *		    which does not implicitely outputs an \n in the end.      *
 *		    Likewise, renamed SET_DEBUG_PUTS() as SET_DEBUG_PUT().    *
 *    2019-09-24 JFL Fixed bug in debug_vsprintf() using new try_vsnprintf().  *
 *    2020-03-19 JFL Fixed DEBUG_PRINT_MACRO() which sometimes failed in DOS   *
 *		    and WIN95 when used with undefined macros.		      *
+*    2020-07-22 JFL Fixed bug in debug_vsprintf(): Make sure _vsnprintf()     *
+*		    in try_vsnprintf() always appends a NUL to its output.    *
+*    2020-07-24 JFL Rewrote debug_printf() to use the standard asprintf() as  *
+*		    much as possible.					      *
+*    2020-12-11 JFL Added XDEBUG_WPRINTF and RETURN_DWORD* macros.            *
 *		    							      *
-*        (C) Copyright 2016 Hewlett Packard Enterprise Development LP         *
+*	 (C) Copyright 2016 Hewlett Packard Enterprise Development LP	      *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
 \*****************************************************************************/
 
-#ifndef	_DEBUGM_H
-#define	_DEBUGM_H	1
-                                                                  
+#ifndef _DEBUGM_H
+#define _DEBUGM_H	1
+								  
 #include <stdio.h>	/* Macros use printf */
 #include <stdarg.h>
 #include <string.h>
@@ -169,15 +174,95 @@ extern "C" {
 #define DEBUG_TLS
 #endif
 
-#ifndef _MSC_VER /* Emulate Microsoft's _vsnprintf() using the standard vsnprintf() */
-#define _VSNPRINTF_EMULATION \
-int _vsnprintf(char *pBuf, int iBufSize, const char *pszFormat, va_list vl) {     \
-  int iRet = vsnprintf(pBuf, iBufSize, pszFormat, vl); /* Always appends an \0 */ \
-  if (iRet >= iBufSize) iRet = -1; /* So if need iBufSize, output is truncated */ \
-  return iRet;									  \
+#if defined(HAS_MSVCLIBX) || defined(GNU_SOURCE)  /* If we have MsvcLibX or GNU asprintf() functions, use them */
+#define _DEBUG_USE_ASPRINTF 1
+#endif
+
+/* #undef _DEBUG_USE_ASPRINTF // For testing the alternate implementation */
+
+#if _DEBUG_USE_ASPRINTF || (!defined(_MSC_VER)) || defined(_UCRT)  /* If this library has a standard vsnprintf() function, use it */
+#define _DEBUG_VSNPRINTF_DEFINITION
+#define debug_vsnprintf vsnprintf
+#elif !defined(_MSDOS)	    /* Else redefine them for MSVC versions before the UCRT was introduced, except for MS-DOS which does not support very large macros like that */
+#define _DEBUG_VSNPRINTF_DEFINITION									 	\
+int debug_vsnprintf(char *pBuf, size_t nBufSize, const char *pszFormat, va_list vl) {                           \
+  char *pBuf2;                                                                                                  \
+  int iRet;                                                                                                     \
+  va_list vl0;                                                                                                  \
+  /* First try it with the original arguments */                                                                \
+  /* This consumes the vl arguments, which needs to be done once */                                             \
+  /* This also optimizes the number of calls, in the normal case where the output buffer was sized correctly */ \
+  va_copy(vl0, vl);	/* Save a copy of the caller's va_list */                                               \
+  iRet = _vsnprintf(pBuf, nBufSize, pszFormat, vl);                                                             \
+  if (iRet >= 0) {	/* Success, the output apparently fits in the buffer */                                 \
+    if ((size_t)iRet == nBufSize) if (pBuf && nBufSize) pBuf[nBufSize-1] = '\0'; /* Fix the missing NUL */      \
+    va_end(vl0);                                                                                                \
+    return iRet;                                                                                                \
+  }                                                                                                             \
+  /* OK, this does not fit. Try it with larger and larger buffers, until we know the full output size */        \
+  iRet = vasprintf(&pBuf2, pszFormat, vl0);                                                                     \
+  if (iRet >= 0) {	/*  Success at last, now we know the necessary size */                                  \
+    if (pBuf && nBufSize) {	/* Copy whatever fits in the output buffer */                                   \
+      if (nBufSize-1) memcpy(pBuf, pBuf2, nBufSize-1);                                                          \
+      pBuf[nBufSize-1] = '\0';	/* Make sure there's a NUL in the end */                                        \
+    }                                                                                                           \
+    free(pBuf2);                                                                                                \
+  }                                                                                                             \
+  va_end(vl0);                                                                                                  \
+  return iRet;                                                                                                  \
 }
-#else /* Use Microsoft's own */
-#define _VSNPRINTF_EMULATION
+#endif
+
+#if _DEBUG_USE_ASPRINTF  /* If we have MsvcLibX or GNU asprintf() functions, use them */
+#define _DEBUG_ASPRINTF_DEFINITION
+#define debug_vasprintf vasprintf
+#define debug_asprintf  asprintf
+#elif !defined(_MSDOS)	    /* Else redefine them, except for MS-DOS which does not support very large macros like that */
+#define _DEBUG_ASPRINTF_DEFINITION							    \
+int debug_vasprintf(char **ppszBuf, const char *pszFormat, va_list vl) {		    \
+  char *pBuf, *pBuf2;									    \
+  int n, nBufSize = 64;									    \
+  va_list vl0, vl2;									    \
+  /* First try it once with the original va_list (When nBufSize == 128) */		    \
+  /* This consumes the vl arguments, which needs to be done once */			    \
+  va_copy(vl0, vl);	/* Save a copy of the caller's va_list */			    \
+  for (pBuf = NULL; (pBuf2 = (char *)realloc(pBuf, nBufSize *= 2)) != NULL; ) {		    \
+    va_copy(vl2, vl0);									    \
+    n = debug_vsnprintf(pBuf = pBuf2, nBufSize, pszFormat, (nBufSize == 128) ? vl : vl2);   \
+    va_end(vl2);									    \
+    if ((n >= 0) && (n < nBufSize)) { /* Success, now we know the necessary size */	    \
+      pBuf2 = (char *)realloc(pBuf, n+1); /* Free the unused space in the end - May fail */ \
+      *ppszBuf = pBuf2 ? pBuf2 : pBuf;	  /* Return the valid one */			    \
+      va_end(vl0);									    \
+      return n;										    \
+    } /* Else if n == nBufSize, actually not success, as there's no NUL in the end */	    \
+  }											    \
+  va_end(vl0);										    \
+  return -1;										    \
+}											    \
+int debug_asprintf(char **ppszBuf, const char *pszFormat, ...) {			    \
+  int n;										    \
+  va_list vl;										    \
+  va_start(vl, pszFormat);								    \
+  n = debug_vasprintf(ppszBuf, pszFormat, vl);						    \
+  va_end(vl);										    \
+  return n;										    \
+}
+#endif
+
+#if defined(HAS_MSVCLIBX)  /* If we have the MsvcLibX dasprintf() functions, use it */
+#define _DEBUG_DASPRINTF_DEFINITION
+#define debug_dasprintf dasprintf
+#else
+#define _DEBUG_DASPRINTF_DEFINITION							\
+char *debug_dasprintf(const char *pszFormat, ...) {					\
+  char *pszBuf = NULL;									\
+  va_list vl;										\
+  va_start(vl, pszFormat);								\
+  debug_vasprintf(&pszBuf, pszFormat, vl); /* Updates pszBuf only if successful */	\
+  va_end(vl);										\
+  return pszBuf;									\
+}
 #endif
 
 /* Conditional compilation based on Microsoft's standard _DEBUG definition */
@@ -195,57 +280,36 @@ int (*pdput)(const char *) = debug_put; /* Debug output routine. Default: debug_
 #define DEBUG_GLOBALS DEBUG_GLOBAL_VARS
 #else /* !defined(_MSDOS) */
 #define DEBUG_GLOBALS \
-DEBUG_GLOBAL_VARS							          \
-_VSNPRINTF_EMULATION							          \
-/* Wrapper around _vsnprintf() that avoids consuming the va_list arguments */     \
-int try_vsnprintf(char *pBuf, int iBufSize, const char *pszFormat, va_list vl) {  \
-  int iRet;									  \
-  va_list vl2;									  \
-  va_copy(vl2, vl);								  \
-  iRet = _vsnprintf(pBuf, iBufSize, pszFormat, vl2);				  \
-  va_end(vl2);									  \
-  return iRet;									  \
-}										  \
-char *debug_vsprintf(char *pszFormat, va_list vl) {			          \
-  char *pszBuf = NULL;		                                                  \
-  int n = 0, nBufSize = 64;				                          \
-  do {pszBuf = (char *)realloc(pszBuf, nBufSize *= 2);} while (		          \
-    pszBuf && ((n = try_vsnprintf(pszBuf, nBufSize, pszFormat, vl)) == -1)        \
-  );		                                                                  \
-  if (!pszBuf) return NULL;						          \
-  return (char *)realloc(pszBuf, n+1);	                                          \
-}									          \
-char *debug_sprintf(char *pszFormat, ...) {                                       \
-  char *pszBuf;			                                                  \
-  va_list vl;                                                                     \
-  va_start(vl, pszFormat);                                                        \
-  pszBuf = debug_vsprintf(pszFormat, vl);				          \
-  va_end(vl);                                                                     \
-  return pszBuf;		                                                  \
-}									          \
-int debug_printf(char *pszFormat, ...) {                                          \
-  char *pszBuf1 = NULL, *pszBuf2 = NULL;		                          \
-  int n = 0;	                                                                  \
-  va_list vl;                                                                     \
-  va_start(vl, pszFormat);                                                        \
-  pszBuf1 = debug_vsprintf(pszFormat, vl);				          \
-  va_end(vl);                                                                     \
-  if (!pszBuf1) return 0;		                                          \
-  pszBuf2 = debug_sprintf("%*s%s", iIndent, "", pszBuf1);                         \
-  if (pszBuf2) n = (int)strlen(pszBuf2);                                          \
-  pdput(pszBuf2);	                                                          \
-  fflush(stdout);	                                                          \
-  free(pszBuf1); free(pszBuf2);                                                   \
-  return n;                                                                       \
+DEBUG_GLOBAL_VARS									    \
+_DEBUG_VSNPRINTF_DEFINITION								    \
+_DEBUG_ASPRINTF_DEFINITION								    \
+_DEBUG_DASPRINTF_DEFINITION								    \
+int debug_printf(const char *pszFormat, ...) {						    \
+  char *pszBuf1, *pszBuf2;								    \
+  int n;										    \
+  va_list vl;										    \
+  va_start(vl, pszFormat);								    \
+  n = debug_vasprintf(&pszBuf1, pszFormat, vl);						    \
+  va_end(vl);										    \
+  if (n == -1) return -1; /* No memory for generating the debug output */		    \
+  n = debug_asprintf(&pszBuf2, "%*s%s", iIndent, "", pszBuf1);				    \
+  if (n == -1) goto abort_debug_printf;							    \
+  pdput(pszBuf2); /* Output everything in a single system call. Useful if multithreaded. */ \
+  fflush(stdout); /* Make sure we see the output. Useful to see everything before a crash */\
+  free(pszBuf2);									    \
+abort_debug_printf:									    \
+  free(pszBuf1);									    \
+  return n;										    \
 }
 #endif /* defined(_MSDOS) */
 
 extern int iDebug;	/* Global variable enabling of disabling debug messages */
 extern int (*pdput)(const char *);	/* Pointer to the debug puts routine */
 #if !defined(_MSDOS)
-extern int debug_printf(char *fmt,...);	/* Print debug messages */
-extern char *debug_sprintf(char *fmt,...); /* Print debug messages to a new buffer */
-extern char *debug_vsprintf(char *fmt, va_list vl); /* Common subroutine of the previous two */
+extern int debug_printf(const char *fmt, ...);		  /* Print debug messages */
+extern int debug_asprintf(char **, const char *fmt, ...); /* Print debug messages to a new buffer */
+extern int debug_vasprintf(char **, const char *fmt, va_list vl); /* Common subroutine of the previous two */
+extern char *debug_dasprintf(const char *fmt, ...);	  /* Shorter alternative used by other macros below */
 #endif /* !defined(_MSDOS) */
 #define DEBUG_ON() iDebug = 1		/* Turn debug mode on */
 #define DEBUG_MORE() iDebug += 1	/* Increase the debug level */
@@ -270,6 +334,7 @@ extern DEBUG_TLS int iIndent;	/* Debug messages indentation. Thread local. */
    to make recursive calls easier to review. */
 #define DEBUG_FPRINTF(args) DEBUG_DO(if (DEBUG_IS_ON()) {DEBUG_PRINT_INDENT(); fprintf args;})
 #define DEBUG_WPRINTF(args) DEBUG_DO(if (DEBUG_IS_ON()) {DEBUG_PRINT_INDENT(); wprintf args;})
+#define XDEBUG_WPRINTF(args) DEBUG_DO(if (XDEBUG_IS_ON()) {DEBUG_PRINT_INDENT(); wprintf args;})
 #if defined(_MSDOS)
 #define DEBUG_PRINTF(args) DEBUG_DO(if (DEBUG_IS_ON()) {DEBUG_PRINT_INDENT(); printf args; fflush(stdout);})
 #define XDEBUG_PRINTF(args) DEBUG_DO(if (XDEBUG_IS_ON()) {DEBUG_PRINT_INDENT(); printf args; fflush(stdout);})
@@ -305,6 +370,8 @@ extern DEBUG_TLS int iIndent;	/* Debug messages indentation. Thread local. */
   DEBUG_LEAVE(("return \"%s\";\n", DEBUG_s)); return DEBUG_s;)
 #define RETURN_CPTR(p) DEBUG_DO(const void *DEBUG_p = (p); \
   DEBUG_LEAVE(("return %p;\n", DEBUG_p)); return DEBUG_p;)
+#define RETURN_DWORD(dw) DEBUG_DO(DWORD DEBUG_dw = (dw); \
+  DEBUG_LEAVE(("return 0x%lX;\n", DEBUG_dw)); return DEBUG_dw;)
 
 #if defined(_MSDOS)
 #define RETURN_COMMENT(args) DEBUG_DO(DEBUG_LEAVE(("return; // ")); \
@@ -327,27 +394,31 @@ extern DEBUG_TLS int iIndent;	/* Debug messages indentation. Thread local. */
   DEBUG_LEAVE(("return \"%s\"; // \n", DEBUG_s)); if (DEBUG_IS_ON()) printf args; return DEBUG_s;)
 #define RETURN_CPTR_COMMENT(p, args) DEBUG_DO(const void *DEBUG_p = (p); \
   DEBUG_LEAVE(("return %p; // \n", DEBUG_p)); if (DEBUG_IS_ON()) printf args; return DEBUG_p;)
+#define RETURN_DWORD_COMMENT(dw, args) DEBUG_DO(DWORD DEBUG_dw = (dw); \
+  DEBUG_LEAVE(("return 0x%lX; // \n", DEBUG_dw)); if (DEBUG_IS_ON()) printf args; return DEBUG_dw;)
 #else /* !defined(_MSDOS) */
 #define RETURN_COMMENT(args) DEBUG_DO(char *DEBUG_buf = NULL; \
-  if (DEBUG_IS_ON()) DEBUG_buf = debug_sprintf args; DEBUG_LEAVE(("return; // %s", DEBUG_buf)); return;)
+  if (DEBUG_IS_ON()) DEBUG_buf = debug_dasprintf args; DEBUG_LEAVE(("return; // %s", DEBUG_buf)); free(DEBUG_buf); return;)
 #define RETURN_CONST_COMMENT(k, args) DEBUG_DO(char *DEBUG_buf = NULL; \
-  if (DEBUG_IS_ON()) DEBUG_buf = debug_sprintf args; DEBUG_LEAVE(("return %s; // %s", #k, DEBUG_buf)); free(DEBUG_buf); return k;)
+  if (DEBUG_IS_ON()) DEBUG_buf = debug_dasprintf args; DEBUG_LEAVE(("return %s; // %s", #k, DEBUG_buf)); free(DEBUG_buf); return k;)
 #define RETURN_INT_COMMENT(i, args) DEBUG_DO(int DEBUG_i = (i); char *DEBUG_buf = NULL; \
-  if (DEBUG_IS_ON()) DEBUG_buf = debug_sprintf args; DEBUG_LEAVE(("return %d; // %s", DEBUG_i, DEBUG_buf)); free(DEBUG_buf); return DEBUG_i;)
+  if (DEBUG_IS_ON()) DEBUG_buf = debug_dasprintf args; DEBUG_LEAVE(("return %d; // %s", DEBUG_i, DEBUG_buf)); free(DEBUG_buf); return DEBUG_i;)
 #define RETURN_STRING_COMMENT(s, args) DEBUG_DO(char *DEBUG_s = (s); char *DEBUG_buf = NULL; \
-  if (DEBUG_IS_ON()) DEBUG_buf = debug_sprintf args; DEBUG_LEAVE(("return %s; // %s", DEBUG_s, DEBUG_buf)); free(DEBUG_buf); return DEBUG_s;)
+  if (DEBUG_IS_ON()) DEBUG_buf = debug_dasprintf args; DEBUG_LEAVE(("return %s; // %s", DEBUG_s, DEBUG_buf)); free(DEBUG_buf); return DEBUG_s;)
 #define RETURN_CHAR_COMMENT(c, args) DEBUG_DO(char DEBUG_c = (c); char *DEBUG_buf = NULL; \
-  if (DEBUG_IS_ON()) DEBUG_buf = debug_sprintf args; DEBUG_LEAVE(("return %c; // %s", DEBUG_c, DEBUG_buf)); free(DEBUG_buf); return DEBUG_c;)
+  if (DEBUG_IS_ON()) DEBUG_buf = debug_dasprintf args; DEBUG_LEAVE(("return %c; // %s", DEBUG_c, DEBUG_buf)); free(DEBUG_buf); return DEBUG_c;)
 #define RETURN_BOOL_COMMENT(b, args) DEBUG_DO(int DEBUG_b = (b); char *DEBUG_buf = NULL; \
-  if (DEBUG_IS_ON()) DEBUG_buf = debug_sprintf args; DEBUG_LEAVE(("return %s; // %s", DEBUG_b ? "TRUE" : "FALSE", DEBUG_buf)); free(DEBUG_buf); return DEBUG_b;)
+  if (DEBUG_IS_ON()) DEBUG_buf = debug_dasprintf args; DEBUG_LEAVE(("return %s; // %s", DEBUG_b ? "TRUE" : "FALSE", DEBUG_buf)); free(DEBUG_buf); return DEBUG_b;)
 #define RETURN_PTR_COMMENT(p, args) DEBUG_DO(void *DEBUG_p = (p); char *DEBUG_buf = NULL; \
-  if (DEBUG_IS_ON()) DEBUG_buf = debug_sprintf args; DEBUG_LEAVE(("return %p; // %s", DEBUG_p, DEBUG_buf)); free(DEBUG_buf); return DEBUG_p;)
+  if (DEBUG_IS_ON()) DEBUG_buf = debug_dasprintf args; DEBUG_LEAVE(("return %p; // %s", DEBUG_p, DEBUG_buf)); free(DEBUG_buf); return DEBUG_p;)
 #define RETURN_LONG_COMMENT(l, args) DEBUG_DO(long DEBUG_l = (l); char *DEBUG_buf = NULL; \
-  if (DEBUG_IS_ON()) DEBUG_buf = debug_sprintf args; DEBUG_LEAVE(("return %l; // %s", DEBUG_l, DEBUG_buf)); free(DEBUG_buf); return DEBUG_l;)
+  if (DEBUG_IS_ON()) DEBUG_buf = debug_dasprintf args; DEBUG_LEAVE(("return %l; // %s", DEBUG_l, DEBUG_buf)); free(DEBUG_buf); return DEBUG_l;)
 #define RETURN_CSTRING_COMMENT(s, args) DEBUG_DO(const char *DEBUG_s = (s); char *DEBUG_buf = NULL; \
-  if (DEBUG_IS_ON()) DEBUG_buf = debug_sprintf args; DEBUG_LEAVE(("return %s; // %s", DEBUG_s, DEBUG_buf)); free(DEBUG_buf); return DEBUG_s;)
+  if (DEBUG_IS_ON()) DEBUG_buf = debug_dasprintf args; DEBUG_LEAVE(("return %s; // %s", DEBUG_s, DEBUG_buf)); free(DEBUG_buf); return DEBUG_s;)
 #define RETURN_CPTR_COMMENT(p, args) DEBUG_DO(const void *DEBUG_p = (p); char *DEBUG_buf = NULL; \
-  if (DEBUG_IS_ON()) DEBUG_buf = debug_sprintf args; DEBUG_LEAVE(("return %p; // %s", DEBUG_p, DEBUG_buf)); free(DEBUG_buf); return DEBUG_p;)
+  if (DEBUG_IS_ON()) DEBUG_buf = debug_dasprintf args; DEBUG_LEAVE(("return %p; // %s", DEBUG_p, DEBUG_buf)); free(DEBUG_buf); return DEBUG_p;)
+#define RETURN_DWORD_COMMENT(dw, args) DEBUG_DO(DWORD DEBUG_dw = (dw); char *DEBUG_buf = NULL; \
+  if (DEBUG_IS_ON()) DEBUG_buf = debug_dasprintf args; DEBUG_LEAVE(("return 0x%X; // %s", DEBUG_dw, DEBUG_buf)); free(DEBUG_buf); return DEBUG_dw;)
 #endif /* defined(_MSDOS) */
 
 #define SET_DEBUG_PUT(pFunc) pdput = pFunc /* Set the debug put routine */
@@ -364,21 +435,22 @@ extern DEBUG_TLS int iIndent;	/* Debug messages indentation. Thread local. */
 #define DEBUG_OFF() (void)0
 #define DEBUG_IS_ON() 0
 #define XDEBUG_IS_ON() 0
-#define DEBUG_CODE(code) 	/* Code included in _DEBUG version only */
+#define DEBUG_CODE(code)	/* Code included in _DEBUG version only */
 #define DEBUG_CODE_IF_ON(code)	/* Code included in _DEBUG version only */
-#define XDEBUG_CODE_IF_ON(code)	/* Code included in _DEBUG version only */
+#define XDEBUG_CODE_IF_ON(code) /* Code included in _DEBUG version only */
 
 #define DEBUG_PRINT_INDENT() DEBUG_DO_NOTHING() /* Print call-depth spaces */
 
-#define DEBUG_FPRINTF(args) DEBUG_DO_NOTHING()  /* Print a debug string to a stream */
-#define DEBUG_WPRINTF(args) DEBUG_DO_NOTHING()  /* Print a wide debug string to stdout */
-#define DEBUG_PRINTF(args)  DEBUG_DO_NOTHING()  /* Print a debug string to stdout */
-#define XDEBUG_PRINTF(args) DEBUG_DO_NOTHING()  /* Print an extra debug string to stdout */
-#define DEBUG_ENTER(args)   DEBUG_DO_NOTHING()  /* Print and increase indent */
-#define DEBUG_WENTER(args)  DEBUG_DO_NOTHING()  /* Print and increase indent */
-#define DEBUG_LEAVE(args)   DEBUG_DO_NOTHING()  /* Print and decrease indent */
-#define DEBUG_WLEAVE(args)  DEBUG_DO_NOTHING()  /* Print and decrease indent */
-#define DEBUG_QUIET_LEAVE() DEBUG_DO_NOTHING()  /* Print and decrease indent */
+#define DEBUG_FPRINTF(args)  DEBUG_DO_NOTHING()	/* Print a debug string to a stream */
+#define DEBUG_WPRINTF(args)  DEBUG_DO_NOTHING()	/* Print a wide debug string to stdout */
+#define DEBUG_PRINTF(args)   DEBUG_DO_NOTHING()	/* Print a debug string to stdout */
+#define XDEBUG_PRINTF(args)  DEBUG_DO_NOTHING()	/* Print an extra debug string to stdout */
+#define XDEBUG_WPRINTF(args) DEBUG_DO_NOTHING()	/* Print an extra debug string to stdout */
+#define DEBUG_ENTER(args)    DEBUG_DO_NOTHING()	/* Print and increase indent */
+#define DEBUG_WENTER(args)   DEBUG_DO_NOTHING()	/* Print and increase indent */
+#define DEBUG_LEAVE(args)    DEBUG_DO_NOTHING()	/* Print and decrease indent */
+#define DEBUG_WLEAVE(args)   DEBUG_DO_NOTHING()	/* Print and decrease indent */
+#define DEBUG_QUIET_LEAVE()  DEBUG_DO_NOTHING()	/* Print and decrease indent */
 
 #define DEBUG_RETURN_INT(i, comment) return(i)
 
@@ -393,6 +465,7 @@ extern DEBUG_TLS int iIndent;	/* Debug messages indentation. Thread local. */
 #define RETURN_LONG(l) return(l)
 #define RETURN_CSTRING(s) return(s)
 #define RETURN_CPTR(p) return(p)
+#define RETURN_DWORD(dw) return(dw)
 
 #define RETURN_COMMENT(args) return
 #define RETURN_CONST_COMMENT(k, args) return(k)
@@ -404,12 +477,13 @@ extern DEBUG_TLS int iIndent;	/* Debug messages indentation. Thread local. */
 #define RETURN_LONG_COMMENT(l, args) return(l)
 #define RETURN_CSTRING_COMMENT(s, args) return(s)
 #define RETURN_CPTR_COMMENT(p, args) return(p)
+#define RETURN_DWORD_COMMENT(dw, args) return(dw)
 
 #define SET_DEBUG_PUT(pFunc) DEBUG_DO_NOTHING() /* Set the debug put routine */
 
 #endif /* defined(_DEBUG) */
 
-#define STRINGIZE(s) #s            /* Convert a macro name to a string */
+#define STRINGIZE(s) #s		   /* Convert a macro name to a string */
 #define VALUEIZE(s) STRINGIZE(s)   /* Convert a macro value to a string */
 #define MACRODEF(s) "#define " #s " " STRINGIZE(s)
 
@@ -439,7 +513,7 @@ extern DEBUG_TLS int iIndent;	/* Debug messages indentation. Thread local. */
 #define DEBUG_WSTR2NEWUTF8(pwStr, pUtf8)	\
   DEBUG_CODE(					\
     do {					\
-      int nUtf8 = (int)lstrlenW(pwStr) * 2 + 1;	\
+      int nUtf8 = (int)lstrlenW(pwStr) * 2 + 1; \
       pUtf8 = malloc(nUtf8);			\
       DEBUG_WSTR2UTF8(pwStr, pUtf8, nUtf8);	\
     } while (0);				\

@@ -888,8 +888,8 @@ $(REMOVE_UTF8_BOM): "$(THIS_MAKEFILE)"
 	)
 	set "PROGRAM_DESCRIPTION="
 	for /f "tokens=1,2,*" %%a in ('findstr /B /C:"#define PROGRAM_DESCRIPTION" "!PROGRAM.ver!" 2^>NUL') do set "PROGRAM_DESCRIPTION=%%~c"
-	:# If the C source contains PROGRAM property defitions, and if there's no corresponding .rc file, then create one
-	set PROGRAM_
+	:# If the C source contains PROGRAM property definitions, and if there's no corresponding .rc file, then create one
+	set PROGRAM_ 2>NUL
 	if defined PROGRAM_VERSION if defined PROGRAM_DESCRIPTION if not exist "%~n1.rc" (
 	  echo Generating %~dpn2.rc
 	  >"%~dpn2.rc" echo #include "%~dp1SysToolsLib.rc"

@@ -144,6 +144,9 @@
 #		    Added the BUILDING_$(PROGRAM) mechanism for conditionally #
 #		    specifying SOURCES in the NMakefile calling this All.mak. #
 #    2019-02-09 JFL Added support for ARM64 target OS.			      #
+#    2020-12-16 JFL Added a dependency on NUL for all pseudo-targets. This    #
+#		    makes sure that they run, even if a file with that name   #
+#                   exists. We had the case with a new `clean` Shell script.  #
 #		    							      #
 #       © Copyright 2016-2017 Hewlett Packard Enterprise Development LP       #
 # Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 #
@@ -549,7 +552,7 @@ default: all
 
 !IF DEFINED(DIRS)
 # List sub-directories to build, one per line
-list_dirs:
+list_dirs: NUL
     for %%d in ($(DIRS)) do @echo %%~d
 
 # Build individual modules in the specified subdirectories
@@ -559,14 +562,14 @@ $(DIRS): NUL
 !ENDIF
 
 !IF DEFINED(MODULE) # Defined in Files.mak
-module_name:
+module_name: NUL
     @echo $(MODULE)
 !ENDIF
 
-all_case1:
+all_case1: NUL
     @echo Applying All.mak all rule first case: DEFINED(ALL) or DEFINED(DIRS)
 
-all_case2:
+all_case2: NUL
     @echo Applying All.mak all rule second case: Try using PROGRAMS
 
 !IF DEFINED(ALL) || DEFINED(DIRS)
@@ -609,27 +612,27 @@ all: all_case2 $(REQS) # Having a batch file is necessary for dynamically updati
 
 # Dummy targets for dynamically checking common prerequisites
 ERRMSG=>&2 echo Error: # Use a variable, to avoid getting the word "Error" in the build log when there's no error
-BiosLib_library:
+BiosLib_library: NUL
     if not defined BIOSLIB %ERRMSG% The BiosLib library is not configured & exit /b 1
     if not exist %BIOSLIB%\clibdef.h %ERRMSG% The BiosLib library is not configured correctly & exit /b 1
     if not exist %BIOSLIB%\bios.lib %ERRMSG% The BiosLib library must be built first & exit /b 1
 
-LoDosLib_library:
+LoDosLib_library: NUL
     if not defined LODOSLIB %ERRMSG% The LoDosLib library is not configured & exit /b 1
     if not exist %LODOSLIB%\lodos.h %ERRMSG% The LoDosLib library is not configured correctly & exit /b 1
     if not exist %LODOSLIB%\lodos.lib %ERRMSG% The LoDosLib library must be built first & exit /b 1
 
-SysLib_library:
+SysLib_library: NUL
     if not defined SYSLIB %ERRMSG% The SysLib library is not configured & exit /b 1
     if not exist %SYSLIB%\oprintf.h %ERRMSG% The SysLib library is not configured correctly & exit /b 1
     if not exist %SYSLIB%\$(OD)lib\*.lib %ERRMSG% The SysLib library must be built first & exit /b 1
 
-MsvcLibX_library:
+MsvcLibX_library: NUL
     if not defined MSVCLIBX %ERRMSG% The MsvcLibX library is not configured & exit /b 1
     if not exist %MSVCLIBX%\include\msvclibx.h %ERRMSG% The MsvcLibX library is not configured correctly & exit /b 1
     if not exist %MSVCLIBX%\$(OD)lib\*.lib %ERRMSG% The MsvcLibX library must be built first & exit /b 1
 
-PModeLib_library:
+PModeLib_library: NUL
     if not defined PMODELIB %ERRMSG% The PModeLib library is not configured & exit /b 1
     if not exist %PMODELIB%\pmode.h %ERRMSG% The PModeLib library is not configured correctly & exit /b 1
     if not exist %PMODELIB%\pmode.lib %ERRMSG% The PModeLib library must be built first & exit /b 1
@@ -649,7 +652,7 @@ $(ZIPFILE): $(ZIPSOURCES)
 dist zip: $(ZIPFILE)
 
 # List PROGRAMS defined in Files.mak
-list_programs:
+list_programs: NUL
     cmd /c <<"$(TMP)\list_programs.$(PID).bat" || exit /b &:# Using the shell PID to generate a unique name, to avoid conflicts in case of // builds.
         @echo off
         setlocal EnableExtensions EnableDelayedExpansion
@@ -669,7 +672,7 @@ list_programs:
 <<
 
 # Erase all output files
-clean mostlyclean distclean:
+clean mostlyclean distclean: NUL
 !IF DEFINED(DIRS)
     for %%d in ($(DIRS)) do @$(BMAKE) -C %%d $@ 
 !ENDIF
@@ -700,14 +703,14 @@ clean mostlyclean distclean:
 
 # Convert sources from Windows to Unix formats
 UNIXTEMP=$(TMP)\$(PROGRAM)
-w2u:
+w2u: NUL
     echo Converting sources into Unix format, in $(UNIXTEMP) >con
     -rd /S /Q $(UNIXTEMP) >nul
     md $(UNIXTEMP)
     for %%F in ($(SOURCES) *.h *Makefile *.mak go go.bat make.bat *.htm) do call w2u %%F $(UNIXTEMP)\%%~nxF
 
 # Help message describing the targets
-help:
+help: NUL
     type <<
 Usage: make.bat [options] [nmake_options] [macro_definitions] [targets] ...
 
