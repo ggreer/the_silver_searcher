@@ -933,7 +933,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
 #if CONVERT_UNICODE_ESCAPES // Work around a limitation of PCRE1 regular expressions, which only support \xXX, but not \uXXXX now \UXXXXXXXX
-#define CUE_LOG_DEBUG printf // log_debug or printf
+#define CUE_LOG_DEBUG log_debug // log_debug or printf
     if ((!opts.literal) || opts.fixed_string) { // Unless the -Q|--literal option was used
         // Convert \xXX, \uXXXX & \UXXXXXXXX escape sequences in the search string to UTF-8
 	CUE_LOG_DEBUG("Initial query: \"%s\"\n", opts.query);
