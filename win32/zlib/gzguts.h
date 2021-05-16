@@ -43,7 +43,7 @@
 #  define WIDECHAR
 #endif
 
-#ifdef WINAPI_FAMILY
+#if defined(WINAPI_FAMILY) && !defined(HAS_MSVCLIBX)
 #  define open _open
 #  define read _read
 #  define write _write

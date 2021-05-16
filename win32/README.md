@@ -154,7 +154,10 @@ Files.mak          | Define input and output files.
 zlib.mak           | Zlib-specific make rules.
 
 #### Files modified
-None
+Name               | Description
+-------------------|-------------------------------------------------------------------
+gzguts.h           | Line 47: Changed `#ifdef WINAPI_FAMILY` to `#if defined(WINAPI_FAMILY) && !defined(HAS_MSVCLIBX)`
+zutil.h            | Line 170: Changed to: `#if (defined(_MSC_VER) && (_MSC_VER > 600)) && !defined __INTERIX && !defined HAS_MSVCLIBX`
 
 
 ## Debug versions
