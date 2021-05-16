@@ -62,7 +62,7 @@
 /* #undef HAVE_STRLCPY */
 
 /* Define to 1 if you have the `strndup' function. */
-/* #undef HAVE_STRNDUP */
+#define HAVE_STRNDUP 1
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #define HAVE_SYS_STAT_H 1
@@ -74,7 +74,7 @@
 #define HAVE_UNISTD_H 1
 
 /* Define to 1 if you have the `vasprintf' function. */
-/* #undef HAVE_VASPRINTF */
+#define HAVE_VASPRINTF 1
 
 /* Define to 1 if you have the <zlib.h> header file. */
 #define HAVE_ZLIB_H 1
@@ -92,11 +92,11 @@
 #define PACKAGE_URL "https://github.com/ggreer/the_silver_searcher"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "2.2.3.1"
+#define PACKAGE_VERSION "2.2.4"
 
 /* MsvcLibX/Windows port version and date */
 #define PROGRAM_VERSION PACKAGE_VERSION
-#define PROGRAM_DATE "2020-06-30"
+#define PROGRAM_DATE "2021-05-15"
 
 /* Define to the full name and version of this package. */
 #define PACKAGE_STRING "the_silver_searcher " PACKAGE_VERSION

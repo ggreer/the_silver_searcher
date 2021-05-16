@@ -157,8 +157,19 @@ Search Options:\n\
   -w --word-regexp        Only match whole words\n\
   -W --width NUM          Truncate match lines after NUM characters\n\
   -z --search-zip         Search contents of compressed (e.g., gzip) files\n\
-\n");
-    printf("File Types:\n\
+");
+#ifdef _WIN32
+    printf("\
+                          Note that Windows zip files are not supported.\n\
+");
+#endif
+#if CONVERT_UNICODE_ESCAPES
+    printf("\n\
+Escape sequences in the PATTERN string: (Except when using -Q|--literal)\n\
+  \\xXX, \\uXXXX & \\UXXXXXXXX are converted to the equivalent Unicode character.\n\
+");
+#endif
+    printf("\nFile Types:\n\
 The search can be restricted to certain types of files. Example:\n\
   ag --html needle\n\
   - Searches for 'needle' in files with suffix .htm, .html, .shtml or .xhtml.\n\
@@ -166,11 +177,28 @@ The search can be restricted to certain types of files. Example:\n\
 For a list of supported file types run:\n\
   ag --list-file-types\n");
 #if SUPPORT_TWO_ENCODINGS
-    printf("\nSupported text file encodings:\n");
+    printf("\nInput text files encodings supported:\n");
     int iACP = GetACP(); /* Get the Windows System Code Page */
     printf("  Code Page %d = %s\n", iACP, GetCPName(iACP, NULL));
     printf("  Code Page 65001 = UTF-8\n");
 #endif /* SUPPORT_TWO_ENCODINGS */
+#if HAS_MSVCLIBX
+    printf("\n\
+Output text encoding:\n\
+  Ag.exe behaves the same way as Microsoft's own console tools:\n\
+  All output to the console is encoded as UTF-16. This ensures that all\n\
+  characters are displayed correctly, independently of the current code page.\n\
+  Output to a pipe or a file is encoded in the current console code page.\n\
+  For pipes, this maximizes the chances that characters for your language are\n\
+  processed correctly by further commands in the pipe. But for files, this may\n\
+  produce unexpected results, as the default console code page is often\n\
+  different from the system code page. If you want the output file to be in\n\
+  a specific encoding, change the console code page to that encoding value.\n\
+  Internally, ag.exe uses UTF-8 for all text. This may cause options like\n\
+  --ackmate, that report character offsets, to produce seemingly incorrect\n\
+  results. When using this option, it is necessary to use code page 65001.\n\
+");
+#endif
     printf("\n\
 ag was originally created by Geoff Greer. More information (and the latest release)\n\
 can be found at http://geoff.greer.fm/ag\n");
@@ -581,6 +609,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.only_matching = 1;
                 break;
             case 'F':
+                opts.fixed_string = 1;
+                // Fall through as fixed strings are literal strings
             case 'Q':
                 opts.literal = 1;
                 break;
@@ -901,6 +931,81 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         log_err("Error: No query. What do you want to search for?");
         exit(1);
     }
+
+#if CONVERT_UNICODE_ESCAPES // Work around a limitation of PCRE1 regular expressions, which only support \xXX, but not \uXXXX now \UXXXXXXXX
+#define CUE_LOG_DEBUG printf // log_debug or printf
+    if ((!opts.literal) || opts.fixed_string) { // Unless the -Q|--literal option was used
+        // Convert \xXX, \uXXXX & \UXXXXXXXX escape sequences in the search string to UTF-8
+	CUE_LOG_DEBUG("Initial query: \"%s\"\n", opts.query);
+	char *pIn, *pOut, lastC = '\0';
+	for (pIn=pOut=opts.query; *pIn; ) {
+	    int iMaxWidth = 0;
+	    if ((lastC != '\\') && (pIn[0] == '\\')) switch (pIn[1]) {
+	        case 'x': iMaxWidth = 2; break;
+	        case 'u': iMaxWidth = 4; break;
+	        case 'U': iMaxWidth = 8; break;
+	        default:                 break;
+	    }
+	    if (iMaxWidth) {
+	        int nHex;
+		int iCode = 0;
+		char cType = pIn[1];
+	        for (nHex=0; nHex<iMaxWidth; nHex++) { // Scan up to iMaxWidth hexadecimal characters
+		    int iHexDigit;
+		    if (!sscanf(pIn+2+nHex, "%1x", &iHexDigit)) break;
+		    iCode <<= 4;
+		    iCode += iHexDigit;
+		}
+	        if (nHex && iCode) { // We indeed got non nul hexadecimal characters
+		    CUE_LOG_DEBUG("Found escape sequence \\%c%0*X\n", cType, nHex, iCode);
+		    wchar_t *pWChars = (wchar_t *)&iCode;
+		    int nWChars = 1;
+		    /* TO DO: Use iconv() instead */
+		    if (iCode & 0xFFFF0000) { // Convert the UTF-32 code to UTF-16
+		        int iCode20 = iCode - 0x10000;
+		        if (iCode20 & 0xFFF00000) goto bad_unicode_char; // Can't have more than 20 bits
+		        pWChars = (wchar_t *)&iCode20;
+		        nWChars = 2; // This will be encoded as two surrogate UTF-16 characters
+		        int low10 = iCode20 & 0x3FF;		// Low 10 bits
+		        int hi10 = (iCode20 >> 10) & 0x3FF;	// High 10 bits
+		        pWChars[0] = (wchar_t)(0xD800 + hi10);
+		        pWChars[1] = (wchar_t)(0xDC00 + low10);
+		        CUE_LOG_DEBUG("Converted to 2 UTF-16 words: \\x%04X \\x%04X\n", pWChars[0], pWChars[1]);
+		    }
+#ifndef WC_ERR_INVALID_CHARS
+#define WC_ERR_INVALID_CHARS      0x00000080  // Why is it not defined, whereas WideCharToMultiByte() is?
+#endif
+		    int nUtf8 = WideCharToMultiByte(CP_UTF8,		  /* CodePage, */
+						    WC_ERR_INVALID_CHARS, /* dwFlags, */
+						    pWChars,		  /* lpWideCharStr, */
+						    nWChars,		  /* cchWideChar, */
+						    pOut,		  /* lpMultiByteStr, */
+						    2+nHex,		  /* cbMultiByte, */
+						    NULL,		  /* lpDefaultChar, */
+						    NULL		  /* lpUsedDefaultChar */
+						    );
+		    if (nUtf8) {
+		        char szBuf[80];
+			int n = sprintf(szBuf, "Converted %*.*s to %d UTF-8 bytes:", nUtf8, nUtf8, pOut, nUtf8);
+			for (int j=0; j<nUtf8; j++) n += sprintf(szBuf+n, " \\x%02X", (unsigned char)(pOut[j]));
+			CUE_LOG_DEBUG("%s\n", szBuf);
+			pIn += 2+nHex;
+			pOut += nUtf8;
+			lastC = '\0';
+			continue;
+		    }
+		}
+bad_unicode_char:
+		log_err("Error: Invalid Unicode character: \\%c%0*.*X\n", cType, nHex, nHex, iCode);
+		exit(1);
+	    }
+	    lastC = *(pOut++) = *(pIn++);
+	}
+	*pOut = '\0';
+	opts.query_len = (int)(pOut - opts.query); // strlen(opts.query);
+	CUE_LOG_DEBUG("Updated Query: \"%s\"\n", opts.query);
+    }
+#endif // CONVERT_UNICODE_ESCAPES
 
     if (!is_regex(opts.query)) {
         opts.literal = 1;

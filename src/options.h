@@ -28,6 +28,10 @@ enum path_print_behavior {
 
 #if defined(HAS_MSVCLIBX)
 #define SUPPORT_TWO_ENCODINGS 1 /* Support Windows System Code Page in addition to UTF-8 */
+
+#if defined(PCRE_MAJOR) /* If we're using PCRE 1 */
+#define CONVERT_UNICODE_ESCAPES 1 // Convert \uXXXX & \UXXXXXXXX escape sequences in the search string to UTF-8
+#endif
 #endif
 
 typedef struct {
@@ -48,6 +52,7 @@ typedef struct {
     int color_win_ansi;
     int column;
     int context;
+    int fixed_string;
     int follow_symlinks;
     int invert_match;
     int literal;
