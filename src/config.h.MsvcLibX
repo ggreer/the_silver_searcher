@@ -1,4 +1,8 @@
-/* src/config.h.  Manually updated for building with Microsoft Visual C++ with MsvcLibX.  */
+/* src/config.h.MsvcLibX - Handcrafted version of config.h for building ag.exe
+                           with Microsoft Visual C++ and MsvcLibX.  */
+
+/* WARNING: The config.h file is overwritten by this config.h.MsvcLibX file.
+            Do not edit config.h, but instead edit config.h.MsvcLibX. */
 
 /* Have dirent struct member d_namlen */
 /* #undef HAVE_DIRENT_DNAMLEN */
