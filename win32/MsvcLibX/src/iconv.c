@@ -58,12 +58,13 @@
 |									      |
 |   Description:    Convert a string from one MBCS encoding to another        |
 |									      |
-|   Parameters:     char *buf	    Buffer containg a NUL-terminated string   |
-|		    size_t nBytes   Buffer size				      |
-|		    UINT cpFrom	    Initial Windows code page identifier      |
-|		    UINT cpTo	    Final Windows code page identifier	      |
-|		    LPCSTR lpDfltC  Pointer to the Default Character to use   |
-|		    			(NULL = Use the default default!)     |
+|   Parameters:     char *buf	     Buffer containg a NUL-terminated string  |
+|		    size_t nBytes    Buffer size			      |
+|		    UINT cpFrom	     Initial Windows code page identifier     |
+|		    UINT cpTo	     Final Windows code page identifier	      |
+|		    LPCSTR lpDfltC   Pointer to the Default Character to use  |
+|		    		     (NULL = Use the default default!)        |
+|		    LPBOOL lpUsedDef If !NULL, tell if the dflt char was used.|
 |		    							      |
 |   Returns:	    The converted string size. -1=error, and errno set.	      |
 |		    							      |
@@ -71,11 +72,16 @@
 |    http://msdn.microsoft.com/en-us/library/windows/desktop/dd317756(v=vs.85).aspx
 |		    							      |
 |   History:								      |
-|    2014-02-27 JFL Created this routine                               	      |
+|    2014-02-27 JFL Created this routine				      |
+|    2021-05-17 JFL Added the lpUsedDef argument.			      |
 *									      *
 \*---------------------------------------------------------------------------*/
 
-int ConvertBuf(const char *pFromBuf, size_t nFromBufSize, UINT cpFrom, char *pToBuf, size_t nToBufSize, UINT cpTo, LPCSTR lpDefaultChar) {
+#ifndef WC_NO_BEST_FIT_CHARS	/* Not defined if targeting Windows 95, but we want it anyway */
+#define WC_NO_BEST_FIT_CHARS      0x00000400  /* Do not use best fit chars */
+#endif
+
+int ConvertBuf(const char *pFromBuf, size_t nFromBufSize, UINT cpFrom, char *pToBuf, size_t nToBufSize, UINT cpTo, LPCSTR lpDefaultChar, LPBOOL lpUsedDef) {
   int n = (int)nFromBufSize;
   WCHAR *pWBuf = (WCHAR *)malloc(sizeof(WCHAR)*n);
   if (!pWBuf) {
@@ -89,14 +95,14 @@ int ConvertBuf(const char *pFromBuf, size_t nFromBufSize, UINT cpFrom, char *pTo
 			  pWBuf,		/* lpWideCharStr, */
 			  n			/* cchWideChar, */
 			  );
-  n = WideCharToMultiByte(cpTo,		/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
-			  0,			/* dwFlags, */
+  n = WideCharToMultiByte(cpTo,			/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
+			  WC_NO_BEST_FIT_CHARS,	/* dwFlags, */
 			  pWBuf,		/* lpWideCharStr, */
 			  n,			/* cchWideChar, */
 			  pToBuf,		/* lpMultiByteStr, */
 			  (int)nToBufSize,	/* cbMultiByte, */
 			  lpDefaultChar,	/* lpDefaultChar, */
-			  NULL		/* lpUsedDefaultChar */
+			  lpUsedDef			/* lpUsedDefaultChar */
 			  );
   free(pWBuf);
   if (!n) {
@@ -106,10 +112,10 @@ int ConvertBuf(const char *pFromBuf, size_t nFromBufSize, UINT cpFrom, char *pTo
   return n;
 }
 
-int ConvertString(char *buf, size_t nBufSize, UINT cpFrom, UINT cpTo, LPCSTR lpDefaultChar) {
+int ConvertString(char *buf, size_t nBufSize, UINT cpFrom, UINT cpTo, LPCSTR lpDefaultChar, LPBOOL lpUsedDef) {
   int n = lstrlen(buf) + 1;
   if (cpFrom != cpTo) {
-    n = ConvertBuf(buf, n, cpFrom, buf, nBufSize, cpTo, lpDefaultChar);
+    n = ConvertBuf(buf, n, cpFrom, buf, nBufSize, cpTo, lpDefaultChar, lpUsedDef);
   }
   if (n > 0) { /* If the conversion succeeded */
     n -= 1;	  /* Output string size, not counting the final NUL */
@@ -117,7 +123,7 @@ int ConvertString(char *buf, size_t nBufSize, UINT cpFrom, UINT cpTo, LPCSTR lpD
   return n;
 }
 
-char *DupAndConvert(const char *string, UINT cpFrom, UINT cpTo, LPCSTR lpDefaultChar) {
+char *DupAndConvert(const char *string, UINT cpFrom, UINT cpTo, LPCSTR lpDefaultChar, LPBOOL lpUsedDef) {
   int nBytes;
   char *pBuf;
   nBytes = 4 * ((int)lstrlen(string) + 1); /* Worst case for the size needed */
@@ -127,7 +133,7 @@ char *DupAndConvert(const char *string, UINT cpFrom, UINT cpTo, LPCSTR lpDefault
     return NULL;
   }
   lstrcpy(pBuf, string);
-  nBytes = ConvertString(pBuf, nBytes, cpFrom, cpTo, lpDefaultChar);
+  nBytes = ConvertString(pBuf, nBytes, cpFrom, cpTo, lpDefaultChar, lpUsedDef);
   if (nBytes == -1) {
     free(pBuf);
     return NULL;
@@ -255,10 +261,11 @@ size_t iconv(iconv_t cpFromTo, char **inBuf, size_t *inBytesLeft, char **outBuf,
   if (((!inBuf) || (!*inBuf)) && (outBuf && *outBuf) && (outBytesLeft && *outBytesLeft)) {
     return 0; /* Return the output buffer to its default shift state */
   }
-  iToSize = ConvertBuf(pFromBuf, nFromBufSize, cpFrom, pToBuf, nToBufSize, cpTo, NULL);
+  iToSize = ConvertBuf(pFromBuf, nFromBufSize, cpFrom, pToBuf, nToBufSize, cpTo, NULL, NULL);
   /* TO DO: Manage the invalid character cases */
   /* TO DO: Manage the query cases, with NULL output pointers or 0 sizes */
   /* TO DO: Manage conversions from/to UTF-16 */
+  /* TO DO: Manage conversions from/to UTF-32 */
   if (iToSize == -1) return (size_t)-1;
   *inBuf += *inBytesLeft;
   *inBytesLeft = 0;
@@ -564,7 +571,7 @@ int fputsM(const char *buf, FILE *f, UINT cp) {
     iRet = fputws(pwBuf, f);
     free(pwBuf);
   } else if (isTranslatedFile(iFile, cp, &cpOut)) { /* Convert the string encoding and output it */
-    pBuf = DupAndConvert(buf, cp, cpOut, NULL);
+    pBuf = DupAndConvert(buf, cp, cpOut, NULL, NULL);
     if (!pBuf) return -1;
     iRet = fputs(pBuf, f);
     free(pBuf);
@@ -739,7 +746,7 @@ int fgetcM(FILE *hf, UINT cp) {
     c = fgetc(hf);
     if (c == -1) return c;		/* Input error */
     if (cp == inputCodePage) return c;	/* No translation needed */
-    nBuf = ConvertBuf((char *)&c, 1, inputCodePage, szBuf, sizeof(szBuf), cp, NULL);
+    nBuf = ConvertBuf((char *)&c, 1, inputCodePage, szBuf, sizeof(szBuf), cp, NULL, NULL);
     if (nBuf <= 0) return -1;		/* Conversion error */
     iBuf = 0;
   }

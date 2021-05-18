@@ -382,7 +382,7 @@ ssize_t search_stream(FILE *stream, const char *path) {
                         return;  /* That's real bad */
                     }
                 }
-                line_len = ConvertString(line, line_cap, cp, CP_UTF8, NULL);
+                line_len = ConvertString(line, line_cap, cp, CP_UTF8, NULL, NULL);
             }
         }
 #endif

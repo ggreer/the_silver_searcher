@@ -46,10 +46,10 @@ size_t iconv(iconv_t cpFromTo, char **inBuf, size_t *inBytesLeft, char **outBuf,
 #define iconv_close(cpFromTo) 0
 
 /* MsvcLibX public routines */
-int ConvertBuf(const char *pFromBuf, size_t nFromBufSize, UINT cpFrom, char *pToBuf, size_t nToBufSize, UINT cpTo, LPCSTR lpDefaultChar);
-int ConvertString(char *buf, size_t nBufSize, UINT cpFrom, UINT cpTo, LPCSTR lpDefaultChar);
+int ConvertBuf(const char *pFromBuf, size_t nFromBufSize, UINT cpFrom, char *pToBuf, size_t nToBufSize, UINT cpTo, LPCSTR lpDefaultChar, LPBOOL lpUsedDef);
+int ConvertString(char *buf, size_t nBufSize, UINT cpFrom, UINT cpTo, LPCSTR lpDefaultChar, LPBOOL lpUsedDef);
 int CountCharacters(const char *string, UINT cp);
-char *DupAndConvert(const char *string, UINT cpFrom, UINT cpTo, LPCSTR lpDefaultChar);
+char *DupAndConvert(const char *string, UINT cpFrom, UINT cpTo, LPCSTR lpDefaultChar, LPBOOL lpUsedDef);
 WCHAR *MultiByteToNewWideStringEx(UINT cp, DWORD dwFlags, const char *string);
 #define MultiByteToNewWideString(cp, string) MultiByteToNewWideStringEx(cp, 0, string)
 
