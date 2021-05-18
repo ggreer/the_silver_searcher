@@ -167,6 +167,7 @@ Search Options:\n\
     printf("\n\
 Escape sequences in the PATTERN string: (Except when using -Q|--literal)\n\
   \\xXX, \\uXXXX & \\UXXXXXXXX are converted to the equivalent Unicode character.\n\
+  Use option --verbose to display the pattern string generated.\n\
 ");
 #endif
     printf("\nFile Types:\n\
@@ -456,6 +457,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "stats", no_argument, &opts.stats, 1 },
         { "stats-only", no_argument, NULL, 0 },
         { "unrestricted", no_argument, NULL, 'u' },
+        { "verbose", no_argument, &opts.verbose, 1 },
         { "version", no_argument, &version, 1 },
         { "vimgrep", no_argument, &opts.vimgrep, 1 },
         { "width", required_argument, NULL, 'W' },
@@ -952,7 +954,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 		char cType = pIn[1];
 	        for (nHex=0; nHex<iMaxWidth; nHex++) { // Scan up to iMaxWidth hexadecimal characters
 		    int iHexDigit;
-		    if (!sscanf(pIn+2+nHex, "%1x", &iHexDigit)) break;
+		    if ((!isprint(pIn[2+nHex])) || !sscanf(pIn+2+nHex, "%1x", &iHexDigit)) break;
 		    iCode <<= 4;
 		    iCode += iHexDigit;
 		}
@@ -1005,6 +1007,9 @@ bad_unicode_char:
 	opts.query_len = (int)(pOut - opts.query); // strlen(opts.query);
 	CUE_LOG_DEBUG("Updated Query: \"%s\"\n", opts.query);
     }
+    if (opts.verbose) printf("Searching for %s \"%s\"\n",
+                             opts.literal ? "literal string" : "regular expression",
+                             opts.query);
 #endif // CONVERT_UNICODE_ESCAPES
 
     if (!is_regex(opts.query)) {
