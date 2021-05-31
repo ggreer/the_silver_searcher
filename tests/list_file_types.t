@@ -165,6 +165,9 @@ Language types are output:
     --java
         .java  .properties
   
+    --jenkinsfile
+        .jenkinsfile
+  
     --jinja2
         .j2
   
