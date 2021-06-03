@@ -20,20 +20,35 @@ pthread_mutex_t work_queue_mtx = PTHREAD_MUTEX_INITIALIZER;
 
 symdir_t *symhash = NULL;
 
-#if SUPPORT_TWO_ENCODINGS
+#if SUPPORT_MULTIPLE_ENCODINGS
 /* Names of the encodings. Must match enum in search.h. */
 char *szEncoding[] = {
     "unknown",
-    "ASCII",
     "Windows",
     "UTF-8",
+    "UTF-16",
 };
 
-/*
+#if 0
 #if ((sizeof(szEncoding) / sizeof(char *)) != N_ENCODINGS)
-#error Mismatch between the ENCODING list and szEncoding list.
+#error Mismatch between the enum ENCODING list and the szEncoding list.
 #endif
-*/
+#endif
+
+#if HAS_MSVCLIBX /* Then use the encoding detection routine there */
+
+#include <iconv.h> /* GetBufferEncoding() detects Windows, UTF8, UTF16, UTF32 encodings */
+ENCODING detect_encoding(const char *buf, const size_t buf_len) {
+    switch (GetBufferEncoding(buf, buf_len, BE_TEST_BINARY | BE_TEST_SYSTEM | BE_TEST_UTF8 | BE_TEST_UTF16)) {
+    case CP_UNDEFINED: return ENC_UNKNOWN;
+    case CP_UTF8:  return ENC_UTF8;
+    case CP_UTF16: return ENC_UTF16;
+    case CP_ACP:
+    default:       return ENC_WIN_CP;
+    }
+}
+
+#else /* Define simple encoding detection routines here */
 
 int CountUtf8CharBytes(const char *buf, const size_t buf_len) {
     if (buf_len == 0)
@@ -95,43 +110,69 @@ ENCODING detect_encoding(const char *buf, const size_t buf_len) {
         iOffset += n - 1; /* Skip the UTF-8 character. (All but the last byte, which will be skipped by the for loop) */
     }
     if (!iFoundNonAscii) {
-        return ENC_ASCII;
+        return ENC_WIN_CP;	/* Actually could be a TBD ENC_ASCII */
     }
     return ENC_UTF8;
 }
+#endif
 
 __thread int enc = ENC_UNKNOWN; /* The current file encoding */
-#endif                          /* SUPPORT_TWO_ENCODINGS */
+#endif                          /* SUPPORT_MULTIPLE_ENCODINGS */
 
 /* Returns: -1 if skipped, otherwise # of matches */
-ssize_t search_buf(const char *buf, const size_t buf_len,
+ssize_t search_buf(const char *buf, size_t buf_len,
                    const char *dir_full_path) {
     int binary = -1; /* 1 = yes, 0 = no, -1 = don't know */
     size_t buf_offset = 0;
 
+#if SUPPORT_MULTIPLE_ENCODINGS
+    /* Detect the data encoding */
+    enc = detect_encoding(buf, buf_len);
+    log_debug("File %s encoding is %s.", dir_full_path, szEncoding[enc]);
+#endif /* SUPPORT_MULTIPLE_ENCODINGS */
+
     if (opts.search_stream) {
+	log_debug("Searching in stream, so skipping binary test");
         binary = 0;
-    } else if (!opts.search_binary_files && opts.mmap) { /* if not using mmap, binary files have already been skipped */
+    } else if (!opts.search_binary_files && opts.mmap && (enc != ENC_UTF16)) { /* if not using mmap, binary files have already been skipped */
+	log_debug("Doing binary test");
         binary = is_binary((const void *)buf, buf_len);
         if (binary) {
             log_debug("File %s is binary. Skipping...", dir_full_path);
             return -1;
         }
+    } else {
+	log_debug("Skipping binary test as sbf=%d, mmap=%d, enc=%d", opts.search_binary_files, opts.mmap, enc);
     }
 
     char *query = opts.query;
     int query_len = opts.query_len;
 
-#if SUPPORT_TWO_ENCODINGS
-    /* Detect the data encoding, and select the corresponding query */
-    enc = detect_encoding(buf, buf_len);
-    log_debug("File %s encoding is %s.", dir_full_path, szEncoding[enc]);
-    if (enc != ENC_UTF8) { /* ASCII, or Windows System Code Page */
+#if SUPPORT_MULTIPLE_ENCODINGS
+    const char *buf0 = buf;
+    /* Depending on the data encoding, select the corresponding query */
+    switch (enc) {
+    case ENC_UTF8:
+	break;
+    case ENC_UTF16:
+        size_t buf2_len = buf_len * 2;
+        char *buf2 = malloc(buf2_len); /* Allocate a temporary buffer for the UTF-8 conversion */
+        if (buf2) {
+            buf2_len = WideCharToMultiByte(CP_UTF8, 0, (LPCWCH)buf, buf_len/2, buf2, buf2_len, NULL, NULL);
+            if (buf2_len) {
+		buf = (const char *)buf2;
+		buf_len = buf2_len;
+	    }
+        }
+	break;
+    default: /* ASCII, or Windows System Code Page */
         /* Use the non-UTF8 query for pure ASCII too, as it should be faster */
         query = opts.query2;
         query_len = opts.query2_len;
+        break;
     }
-#endif /* SUPPORT_TWO_ENCODINGS */
+    log_debug("Using the %s query: %s", (query == opts.query) ? "UTF-8" : "ANSI", query);
+#endif /* SUPPORT_MULTIPLE_ENCODINGS */
 
     size_t matches_len = 0;
     match_t *matches;
@@ -217,13 +258,13 @@ ssize_t search_buf(const char *buf, const size_t buf_len,
         int offset_vector[3];
         pcre *re = opts.re;
         pcre_extra *re_extra = opts.re_extra;
-#if SUPPORT_TWO_ENCODINGS
+#if SUPPORT_MULTIPLE_ENCODINGS
         if (enc != ENC_UTF8) { /* ASCII, or Windows System Code Page */
             /* Use the non-UTF8 regular expression for pure ASCII too, as it should be faster */
             re = opts.re2;
             re_extra = opts.re2_extra;
         }
-#endif /* SUPPORT_TWO_ENCODINGS */
+#endif /* SUPPORT_MULTIPLE_ENCODINGS */
         if (opts.multiline) {
             int rv = 0;
             while (buf_offset < buf_len &&
@@ -338,6 +379,10 @@ multiline_done:
         free(matches);
     }
 
+#if SUPPORT_MULTIPLE_ENCODINGS
+    if ((void *)buf != (void *)buf0) free((void *)buf);
+#endif /* SUPPORT_MULTIPLE_ENCODINGS */
+
     /* FIXME: handle case where matches_len > SSIZE_MAX */
     return (ssize_t)matches_len;
 }
@@ -362,27 +407,24 @@ ssize_t search_stream(FILE *stream, const char *path) {
         if (fileno(stream) == 0) { /* If reading from stdin */
             struct stat s;
             fstat(0, &s);
-            if (!cp) {
-                if (S_ISFIFO(s.st_mode)) { /* If it's a pipe, Windows converted it to the console code page */
-                    cp = consoleCodePage;
-                } else { /* It's a file. The encoding varies */
-                    if ((line_len >= 3) && !memcmp(line, "\xEF\xBB\xBF", 3)) {
-                        cp = 65001; /* There's a BOM, that's UTF-8 */
-                    } else {
-                        cp = systemCodePage; /* Assume it's in the system code page */
-                        /* TO DO: Dynamically detect if it's ANSI or UTF8 with no BOM */
-                    }
+            if ((cp == 0) || (cp == CP_ASCII)) { /* A file may begin with ASCII lines, then further down prove to be ANSI or UTF8 */
+                cp = GetBufferEncoding(line, strlen(line), 0);
+                if (!cp) {
+		    if (S_ISFIFO(s.st_mode)) { /* If it's a pipe, Windows converted it to the console code page */
+			cp = consoleCodePage;
+		    } else { /* It's a file. The encoding varies */
+			cp = systemCodePage; /* Assume it's in the system code page */
+		    }
                 }
+                if (cp != CP_ASCII) log_debug("Standard input is code page %u", cp);
             }
-            if (cp != CP_UTF8) {
-                if ((line_len * 4) >= line_cap) {  /* Prevent buffer overflows */
+            if ((cp != CP_UTF8) && ((cp != CP_ASCII))) {
+                if ((line_len * 4) >= (ssize_t)line_cap) {  /* Prevent buffer overflows */
                     line_cap = (line_len * 4) + 1; /* Worst case size for UTF-8 characters */
                     line = realloc(line, line_cap);
-                    if (!line) { /* Out of memory */
-                        return;  /* That's real bad */
-                    }
+                    if (!line) return -1; /* Out of memory */
                 }
-                line_len = ConvertString(line, line_cap, cp, CP_UTF8, NULL, NULL);
+                line_len = ConvertString(line, line_cap, cp, CP_UTF8);
             }
         }
 #endif

@@ -28,9 +28,9 @@
 #include "search.h"
 #include "util.h"
 
-#if SUPPORT_TWO_ENCODINGS
+#if SUPPORT_MULTIPLE_ENCODINGS
 #include <iconv.h>
-#endif /* SUPPORT_TWO_ENCODINGS */
+#endif /* SUPPORT_MULTIPLE_ENCODINGS */
 
 typedef struct {
     pthread_t thread;
@@ -138,10 +138,10 @@ int main(int argc, char **argv) {
             opts.literal_starts_wordchar = is_wordchar(opts.query[0]);
             opts.literal_ends_wordchar = is_wordchar(opts.query[opts.query_len - 1]);
         }
-#if SUPPORT_TWO_ENCODINGS
+#if SUPPORT_MULTIPLE_ENCODINGS
         /* Generate the Windows System Code page version of the query */
-        BOOL bUsedDef;
-        opts.query2 = DupAndConvert(opts.query, CP_UTF8, CP_ACP, NULL, &bUsedDef);
+        BOOL bUsedDef = FALSE;
+        opts.query2 = DupAndConvertEx(opts.query, CP_UTF8, CP_ACP, 0, NULL, &bUsedDef);
         if (!opts.query2) {
             die("Error in main(): Not enough memory");
         }
@@ -152,8 +152,8 @@ int main(int argc, char **argv) {
           free(opts.query2);
           opts.query2 = "^(?!x)x"; // A regular expression that cannot match anything
         }
-	opts.query2_len = strlen(opts.query2);
-#endif /* SUPPORT_TWO_ENCODINGS */
+	opts.query2_len = (int)strlen(opts.query2);
+#endif /* SUPPORT_MULTIPLE_ENCODINGS */
     } else {
         if (opts.casing == CASE_INSENSITIVE) {
             pcre_opts |= PCRE_CASELESS;
@@ -163,15 +163,15 @@ int main(int argc, char **argv) {
             ag_asprintf(&word_regexp_query, "\\b(?:%s)\\b", opts.query);
             free(opts.query);
             opts.query = word_regexp_query;
-            opts.query_len = strlen(opts.query);
+            opts.query_len = (int)strlen(opts.query);
         }
         compile_study(&opts.re, &opts.re_extra, opts.query, pcre_opts, study_opts);
-#if SUPPORT_TWO_ENCODINGS
+#if SUPPORT_MULTIPLE_ENCODINGS
         /* Repeat the compilation for a Windows System Code page version of the query */
         /* Use . as the default character, to match any characters in a regexp. */
         /* TO DO: Actually we need a more complex heuristic, to manage complex cases like ranges, etc. */
-        BOOL bUsedDef;
-        opts.query2 = DupAndConvert(opts.query, CP_UTF8, CP_ACP, ".", &bUsedDef);
+        BOOL bUsedDef = FALSE;
+        opts.query2 = DupAndConvertEx(opts.query, CP_UTF8, CP_ACP, 0, ".", &bUsedDef);
         if (!opts.query2) {
             die("Error in main(): Not enough memory");
         }
@@ -182,9 +182,9 @@ int main(int argc, char **argv) {
           free(opts.query2);
           opts.query2 = "^(?!x)x"; // A regular expression that cannot match anything
         }
-	opts.query2_len = strlen(opts.query2);
+	opts.query2_len = (int)strlen(opts.query2);
 	compile_study(&opts.re2, &opts.re2_extra, opts.query2, pcre_opts & ~PCRE_UTF8, study_opts);
-#endif /* SUPPORT_TWO_ENCODINGS */
+#endif /* SUPPORT_MULTIPLE_ENCODINGS */
     }
 
     if (opts.search_stream) {

@@ -27,7 +27,7 @@ enum path_print_behavior {
 };
 
 #if defined(HAS_MSVCLIBX)
-#define SUPPORT_TWO_ENCODINGS 1 /* Support Windows System Code Page in addition to UTF-8 */
+#define SUPPORT_MULTIPLE_ENCODINGS 1 /* Support Windows System Code Page in addition to UTF-8 */
 
 #if defined(PCRE_MAJOR) /* If we're using PCRE 1 */
 #define CONVERT_UNICODE_ESCAPES 1 // Convert \uXXXX & \UXXXXXXXX escape sequences in the search string to UTF-8
@@ -77,10 +77,10 @@ typedef struct {
     int passthrough;
     pcre *re;
     pcre_extra *re_extra;
-#if SUPPORT_TWO_ENCODINGS
+#if SUPPORT_MULTIPLE_ENCODINGS
     pcre *re2;             /* re, converted into the second text encoding */
     pcre_extra *re2_extra; /* re_extra, converted likewise */
-#endif                     /* SUPPORT_TWO_ENCODINGS */
+#endif                     /* SUPPORT_MULTIPLE_ENCODINGS */
     int recurse_dirs;
     int search_all_files;
     int skip_vcs_ignores;
@@ -94,10 +94,10 @@ typedef struct {
     ino_t stdout_inode;
     char *query;
     int query_len;
-#if SUPPORT_TWO_ENCODINGS
+#if SUPPORT_MULTIPLE_ENCODINGS
     char *query2; /* query, converted into the second text encoding */
     int query2_len;
-#endif /* SUPPORT_TWO_ENCODINGS */
+#endif /* SUPPORT_MULTIPLE_ENCODINGS */
     char *pager;
     int paths_len;
     int parallel;

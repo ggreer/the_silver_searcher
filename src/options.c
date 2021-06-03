@@ -30,7 +30,8 @@ const char *color_path = "\033[1;32m";        /* bold green */
 
 cli_options opts;
 
-#if SUPPORT_TWO_ENCODINGS
+#if SUPPORT_MULTIPLE_ENCODINGS
+#include <iconv.h>
 /* Get the actual name of a code page */
 char *GetCPName(int iCP, LPCPINFOEX lpCpi) {
     int i;
@@ -65,7 +66,7 @@ char *GetCPName(int iCP, LPCPINFOEX lpCpi) {
     }
     return pszName;
 }
-#endif /* SUPPORT_TWO_ENCODINGS */
+#endif /* SUPPORT_MULTIPLE_ENCODINGS */
 
 /* TODO: try to obey out_fd? */
 void usage(void) {
@@ -163,13 +164,6 @@ Search Options:\n\
                           Note that Windows zip files are not supported.\n\
 ");
 #endif
-#if CONVERT_UNICODE_ESCAPES
-    printf("\n\
-Escape sequences in the PATTERN string: (Except when using -Q|--literal)\n\
-  \\xXX, \\uXXXX & \\UXXXXXXXX are converted to the equivalent Unicode character.\n\
-  Use option --verbose to display the pattern string generated.\n\
-");
-#endif
     printf("\nFile Types:\n\
 The search can be restricted to certain types of files. Example:\n\
   ag --html needle\n\
@@ -177,37 +171,64 @@ The search can be restricted to certain types of files. Example:\n\
 \n\
 For a list of supported file types run:\n\
   ag --list-file-types\n");
-#if SUPPORT_TWO_ENCODINGS
-    printf("\nInput text files encodings supported:\n");
-    int iACP = GetACP(); /* Get the Windows System Code Page */
-    printf("  Code Page %d = %s\n", iACP, GetCPName(iACP, NULL));
-    printf("  Code Page 65001 = UTF-8\n");
-#endif /* SUPPORT_TWO_ENCODINGS */
+#if SUPPORT_MULTIPLE_ENCODINGS
+    printf("\n\
+Input text encoding for non-ASCII text:\n\
+  It is dynamically identified among one of these supported encodings:\n\
+  o For text piped in via standard input:\n\
+    - The current console code page: Code Page %d = %s\n\
+    - Code Page 65001 = UTF-8\n\
+", consoleCodePage, GetCPName(consoleCodePage, NULL));
+    printf("\
+  o For text read from files:\n\
+    - The Windows System Code Page: Code Page %u = %s\n\
+    - Code Page 65001 = UTF-8\n\
+", systemCodePage, GetCPName(systemCodePage, NULL));
+#if HAS_MSVCLIBX
+    printf("\
+    - Code Page 1200  = UTF-16\n\
+");
+#endif /* HAS_MSVCLIBX */
+#endif /* SUPPORT_MULTIPLE_ENCODINGS */
 #if HAS_MSVCLIBX
     printf("\n\
 Output text encoding:\n\
   Ag.exe behaves the same way as Microsoft's own console tools:\n\
-  All output to the console is encoded as UTF-16. This ensures that all\n\
+  All output to the console is encoded as UTF-16. This ensures that all Unicode\n\
   characters are displayed correctly, independently of the current code page.\n\
   Output to a pipe or a file is encoded in the current console code page.\n\
   For pipes, this maximizes the chances that characters for your language are\n\
   processed correctly by further commands in the pipe. But for files, this may\n\
   produce unexpected results, as the default console code page is often\n\
   different from the system code page. If you want the output file to be in\n\
-  a specific encoding, change the console code page to that encoding value.\n\
+  a specific encoding, change the console code page to the encoding you want.\n\
   Internally, ag.exe uses UTF-8 for all text. This may cause options like\n\
   --ackmate, that report character offsets, to produce seemingly incorrect\n\
-  results. When using this option, it is necessary to use code page 65001.\n\
+  results. When using such options, it is necessary to use code page 65001 to\n\
+  get correct offsets.\n\
+");
+#endif
+#if CONVERT_UNICODE_ESCAPES
+    printf("\n\
+Escape sequences in the PATTERN string: (Except when using -Q|--literal)\n\
+  \\xXX, \\uXXXX & \\UXXXXXXXX are converted to the equivalent Unicode character.\n\
+  Use option --verbose to display the pattern string generated.\n\
+  Caution: \\x80 to \\x9F are invalid Unicode code points. To search for the Euro\n\
+  sign, use either € or \\u20AC, but not \\x80, even for CP 1252 files. Likewise,\n\
+  to search for all non-ASCII characters, use [^\\x00-\\x7F], not [\\x80-\\xFF].\n\
 ");
 #endif
     printf("\n\
-ag was originally created by Geoff Greer. More information (and the latest release)\n\
-can be found at http://geoff.greer.fm/ag\n");
+ag was originally created by Geoff Greer. More information, and the latest\n\
+release for Unix/Linux, can be found at http://geoff.greer.fm/ag\n");
 #if HAS_MSVCLIBX
     printf("\
 This version was ported to Windows by Krzysztof Kowalczyk, then significantly\n\
 enhanced by Jean-François Larvoire. The latest release can be found at\n\
-https://github.com/JFLarvoire/the_silver_searcher/releases");
+https://github.com/JFLarvoire/the_silver_searcher/releases\n\
+You can also install it using the Windows package manager:\n\
+winget install \"The Silver Searcher\"\n\
+");
 #endif
 }
 
@@ -226,7 +247,7 @@ void print_version(void) {
 #ifdef HAVE_ZLIB_H
     zlib = '+';
 #endif
-#if SUPPORT_TWO_ENCODINGS
+#if SUPPORT_MULTIPLE_ENCODINGS
     twoEnc = '+';
 #endif
 
@@ -925,7 +946,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         // use default query
         opts.query = ag_strdup(".");
     }
-    opts.query_len = strlen(opts.query);
+    opts.query_len = (int)strlen(opts.query);
 
     log_debug("Query is %s", opts.query);
 
@@ -934,11 +955,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         exit(1);
     }
 
-#if CONVERT_UNICODE_ESCAPES // Work around a limitation of PCRE1 regular expressions, which only support \xXX, but not \uXXXX now \UXXXXXXXX
-#define CUE_LOG_DEBUG log_debug // log_debug or printf
+#if CONVERT_UNICODE_ESCAPES // Work around a limitation of PCRE1 regular expressions, which only support \xXX, but not \uXXXX nor \UXXXXXXXX
     if ((!opts.literal) || opts.fixed_string) { // Unless the -Q|--literal option was used
         // Convert \xXX, \uXXXX & \UXXXXXXXX escape sequences in the search string to UTF-8
-	CUE_LOG_DEBUG("Initial query: \"%s\"\n", opts.query);
+	log_debug("Initial query: \"%s\"", opts.query);
 	char *pIn, *pOut, lastC = '\0';
 	for (pIn=pOut=opts.query; *pIn; ) {
 	    int iMaxWidth = 0;
@@ -959,7 +979,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 		    iCode += iHexDigit;
 		}
 	        if (nHex && iCode) { // We indeed got non nul hexadecimal characters
-		    CUE_LOG_DEBUG("Found escape sequence \\%c%0*X\n", cType, nHex, iCode);
+		    log_debug("Found escape sequence \\%c%0*X", cType, nHex, iCode);
 		    wchar_t *pWChars = (wchar_t *)&iCode;
 		    int nWChars = 1;
 		    /* TO DO: Use iconv() instead */
@@ -972,7 +992,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 		        int hi10 = (iCode20 >> 10) & 0x3FF;	// High 10 bits
 		        pWChars[0] = (wchar_t)(0xD800 + hi10);
 		        pWChars[1] = (wchar_t)(0xDC00 + low10);
-		        CUE_LOG_DEBUG("Converted to 2 UTF-16 words: \\x%04X \\x%04X\n", pWChars[0], pWChars[1]);
+		        log_debug("Converted to 2 UTF-16 words: \\x%04X \\x%04X", pWChars[0], pWChars[1]);
 		    }
 #ifndef WC_ERR_INVALID_CHARS
 #define WC_ERR_INVALID_CHARS      0x00000080  // Why is it not defined, whereas WideCharToMultiByte() is?
@@ -990,7 +1010,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 		        char szBuf[80];
 			int n = sprintf(szBuf, "Converted %*.*s to %d UTF-8 bytes:", nUtf8, nUtf8, pOut, nUtf8);
 			for (int j=0; j<nUtf8; j++) n += sprintf(szBuf+n, " \\x%02X", (unsigned char)(pOut[j]));
-			CUE_LOG_DEBUG("%s\n", szBuf);
+			log_debug("%s", szBuf);
 			pIn += 2+nHex;
 			pOut += nUtf8;
 			lastC = '\0';
@@ -998,14 +1018,14 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 		    }
 		}
 bad_unicode_char:
-		log_err("Error: Invalid Unicode character: \\%c%0*.*X\n", cType, nHex, nHex, iCode);
+		log_err("Error: Invalid Unicode character: \\%c%0*.*X", cType, nHex, nHex, iCode);
 		exit(1);
 	    }
 	    lastC = *(pOut++) = *(pIn++);
 	}
 	*pOut = '\0';
 	opts.query_len = (int)(pOut - opts.query); // strlen(opts.query);
-	CUE_LOG_DEBUG("Updated Query: \"%s\"\n", opts.query);
+	log_debug("Updated Query: \"%s\"", opts.query);
     }
     if (opts.verbose) printf("Searching for %s \"%s\"\n",
                              opts.literal ? "literal string" : "regular expression",
@@ -1065,7 +1085,7 @@ bad_unicode_char:
 		char *pc;
 		for (pc = path; *pc; pc++) if (*pc == '\\') *pc = '/';
 #endif
-            path_len = strlen(path);
+            path_len = (int)strlen(path);
             /* kill trailing slash */
             if (path_len > 1 && path[path_len - 1] == '/') {
                 path[path_len - 1] = '\0';
@@ -1078,7 +1098,7 @@ bad_unicode_char:
             base_path = realpath(path, NULL);
 #endif
             if (base_path) {
-                base_path_len = strlen(base_path);
+                base_path_len = (int)strlen(base_path);
                 /* add trailing slash */
                 if (base_path_len > 1 && base_path[base_path_len - 1] != '/') {
                     base_path = ag_realloc(base_path, base_path_len + 2);

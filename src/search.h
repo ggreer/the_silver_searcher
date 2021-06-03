@@ -48,18 +48,18 @@ extern pthread_cond_t files_ready;
 extern pthread_mutex_t stats_mtx;
 extern pthread_mutex_t work_queue_mtx;
 
-#if SUPPORT_TWO_ENCODINGS
+#if SUPPORT_MULTIPLE_ENCODINGS
 /* Text files encodings supported */
 typedef enum {
     ENC_UNKNOWN,
-    ENC_ASCII,  /* ASCII */
     ENC_WIN_CP, /* Windows System Code Page (Varies depending on localization) */
     ENC_UTF8,   /* Unicode encoded as UTF-8 */
+    ENC_UTF16,  /* Unicode encoded as UTF-16 */
     N_ENCODINGS /* Number of encoding constants. Must be last. */
 } ENCODING;
 
 extern __thread int enc; /* Encoding detected for the current file */
-#endif                   /* SUPPORT_TWO_ENCODINGS */
+#endif                   /* SUPPORT_MULTIPLE_ENCODINGS */
 
 /* For symlink loop detection */
 #define SYMLOOP_ERROR (-1)
