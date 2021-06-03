@@ -112,13 +112,14 @@
 :#   2020-01-06 JFL Output a more helpful message if can't find nmake.exe.    *
 :#   2020-01-29 JFL In the end, count warnings, and open the log if any found.*
 :#   2020-12-16 JFL Added optional LINK_OUDIR to link OUTDIR to another one.  *
+:#   2021-06-03 JFL Avoid counting constants like NO_WARNINGS as warnings.    *
 :#                                                                            *
 :#      © Copyright 2016-2020 Hewlett Packard Enterprise Development LP       *
 :# Licensed under the Apache 2.0 license  www.apache.org/licenses/LICENSE-2.0 *
 :#*****************************************************************************
 
 setlocal EnableExtensions EnableDelayedExpansion
-set "VERSION=2020-12-16"
+set "VERSION=2021-06-03"
 set "SCRIPT=%~nx0"				&:# Script name
 set "SPATH=%~dp0" & set "SPATH=!SPATH:~0,-1!"	&:# Script path, without the trailing \
 set  "ARG0=%~f0"				&:# Script full pathname
@@ -1748,9 +1749,9 @@ if %MAKEDEPTH%==0 if defined LOGFILE ( :# If this is the top-level instance of m
 
 if %MAKEDEPTH%==0 ( :# If this is the top-level instance of make.bat, show the final result
   set "SHOW_LOG=%ERROR%"
-  if %ERROR%==0 if defined LOGFILE ( :# Count warnings in the log file
+  if %ERROR%==0 if defined LOGFILE ( :# Count warnings in the log file, excluding constants like _CRT_SECURE_NO_WARNINGS
     set "WARNINGS=0"
-    for /f "delims=" %%l in ('findstr /i warning "%LOGFILE%"') do set /a "WARNINGS+=1"
+    for /f "delims=" %%l in ('findstr /i warning "%LOGFILE%" ^| findstr /v WARNING') do set /a "WARNINGS+=1"
     if not !WARNINGS!==0 (
       set "RESULT=!RESULT!, but with !WARNINGS! warnings"
       set "SHOW_LOG=1"

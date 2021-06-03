@@ -103,7 +103,7 @@ size_t fwriteM(const void *buf, size_t itemSize, size_t nItems, FILE *f, UINT cp
     int n;
     pBuf = (char *)malloc(nBufSize);
     if (!pBuf) return 0; /* malloc sets errno = ENOMEM */
-    n = ConvertBuf(buf, nToWrite, cp, pBuf, nBufSize, cpOut, NULL, NULL);
+    n = ConvertBuf(buf, nToWrite, cp, pBuf, nBufSize, cpOut);
     if (n < 0) {
       free(pBuf);
       return 0;

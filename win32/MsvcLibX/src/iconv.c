@@ -7,6 +7,9 @@
 *   Notes:	    Define here a number of routines, that will eventually    *
 *		    be used by iconv().					      *
 *		    							      *
+*		    Also defines routines adding support for UTF-8 in any     *
+*		    console code page. (Enabled by defining _UTF8_SOURCE.)    *
+*		    							      *
 *   History:								      *
 *    2014-02-27 JFL Created this module.				      *
 *    2015-12-09 JFL Added routines fputsU and vfprintfU.		      *
@@ -22,6 +25,11 @@
 *    2017-09-27 JFL Added standard C library routines iconv(), etc.	      *
 *    2018-04-24 JFL Added fputsW, vfprintfW(), fprintfW() and printfW().      *
 *    2018-04-27 JFL Added MultiByteToNewWideString() from iconv.c.            *
+*    2021-05-17 JFL Added two new arguments to ConvertBuf() etc.              *
+*    2021-05-28 JFL Added conversions from/to UTF-16 and UTF-32.              *
+*                   Added a third argument to ConvertBuf() etc; Renamed them  *
+*                   with an Ex suffix; And added macros with the old name     *
+*                   without the extra three arguments.                        *
 *                                                                             *
 *         © Copyright 2016 Hewlett Packard Enterprise Development LP          *
 * Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 *
@@ -40,6 +48,8 @@
 
 #if defined(_MSDOS)
 
+#pragma warning(disable:4001) /* Ignore the "nonstandard extension 'single line comment' was used" warning */
+
 /* TO DO: Add support for DOS code pages! */
 
 #endif /* defined(_MSDOS) */
@@ -56,7 +66,7 @@
 *                                                                             *
 |   Function:	    ConvertString					      |
 |									      |
-|   Description:    Convert a string from one MBCS encoding to another        |
+|   Description:    Convert a string from one encoding to another	      |
 |									      |
 |   Parameters:     char *buf	     Buffer containg a NUL-terminated string  |
 |		    size_t nBytes    Buffer size			      |
@@ -71,51 +81,206 @@
 |   Notes:	    See the list of Windows code page identifiers there:      |
 |    http://msdn.microsoft.com/en-us/library/windows/desktop/dd317756(v=vs.85).aspx
 |		    							      |
+|		    WARNING: Do not insert debug_printf etc calls, as these   |
+|		    	     functions are indirectly invoked by debug_printf.|
+|		    							      |
 |   History:								      |
 |    2014-02-27 JFL Created this routine				      |
 |    2021-05-17 JFL Added the lpUsedDef argument.			      |
+|    2021-05-26 JFL Added conversions from/to UTF-16 and UTF-32.              |
 *									      *
 \*---------------------------------------------------------------------------*/
 
-#ifndef WC_NO_BEST_FIT_CHARS	/* Not defined if targeting Windows 95, but we want it anyway */
-#define WC_NO_BEST_FIT_CHARS      0x00000400  /* Do not use best fit chars */
-#endif
+#include <conio.h>	// For _cprintf()
 
-int ConvertBuf(const char *pFromBuf, size_t nFromBufSize, UINT cpFrom, char *pToBuf, size_t nToBufSize, UINT cpTo, LPCSTR lpDefaultChar, LPBOOL lpUsedDef) {
-  int n = (int)nFromBufSize;
-  WCHAR *pWBuf = (WCHAR *)malloc(sizeof(WCHAR)*n);
-  if (!pWBuf) {
-    errno = ENOMEM;
-    return -1;
+int ConvertBufEx(const char *pFromBuf, size_t nFromBufSize, UINT cpFrom, char *pToBuf, size_t nToBufSize,
+                 UINT cpTo, DWORD dwFlags, LPCSTR lpDefaultChar, LPBOOL lpUsedDef) { // ConvertBuf() sets these 3 arguments to 0
+  int nOut;			/* Number of output bytes */
+  int nWide;			/* Number of UTF-16 characters */
+  BOOL bUsedDef1 = FALSE;	/* Did the first conversion use the default character? */
+  BOOL bUsedDef2 = FALSE;	/* Did the second conversion use the default character? */
+  WCHAR *pTempWBuf = NULL;	/* The intermediate buffer, should we need one */
+  WCHAR *pWBuf;			/* The UTF-16 buffer actually used */
+  int nWBufMax;			/* Number of UTF-16 characters that fit in the UTF-16 buffer */
+
+  /* DO NOT INSERT DEBUG_PRINTF ETC CALLS, AS THIS FUNCTION IS INDIRECTLY INVOKED BY DEBUG_PRINTF */
+  XDEBUG_CODE_IF_ON(
+    _cprintf("ConvertBufEx(*%p, %ld, %u, *%p, %ld, %u, 0x%x, *%p, *%p)\n", \
+   	     pFromBuf, (long)nFromBufSize, cpFrom, pToBuf, (long)nToBufSize, cpTo, dwFlags, lpDefaultChar, lpUsedDef);
+  )
+
+  if (!nFromBufSize) return 0;	// Nothing to convert
+
+  if (cpFrom == cpTo) {		// No conversion needed, only a copy
+    if (nToBufSize < nFromBufSize) {
+      errno = EFBIG;
+      nOut = -1;
+    } else {
+      if (pFromBuf != pToBuf) memcpy(pToBuf, pFromBuf, nFromBufSize);
+      nOut = (int)nFromBufSize;
+    }
+    return nOut;
   }
-  n = MultiByteToWideChar(cpFrom,		/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
-			  0,			/* dwFlags, */
-			  pFromBuf,		/* lpMultiByteStr, */
-			  n,			/* cbMultiByte */
-			  pWBuf,		/* lpWideCharStr, */
-			  n			/* cchWideChar, */
-			  );
-  n = WideCharToMultiByte(cpTo,			/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
-			  WC_NO_BEST_FIT_CHARS,	/* dwFlags, */
-			  pWBuf,		/* lpWideCharStr, */
-			  n,			/* cchWideChar, */
-			  pToBuf,		/* lpMultiByteStr, */
-			  (int)nToBufSize,	/* cbMultiByte, */
-			  lpDefaultChar,	/* lpDefaultChar, */
-			  lpUsedDef			/* lpUsedDefaultChar */
-			  );
-  free(pWBuf);
-  if (!n) {
+
+  /* When do we need an intermediate UTF-16 buffer?
+     From               Temp              To
+     UTF-16 --------------------copy----> UTF-16
+     UTF-16 --------------------convert-> !UTF-16
+     !UTF-16 -convert-------------------> UTF16
+     !UTF-16 -convert-> UTF-16 -convert-> !UTF16 */
+  if (   ((cpFrom != CP_UTF16) && (cpTo != CP_UTF16))	// If (!UTF-16 -> !UTF-16)
+      || (pFromBuf == pToBuf) ) {			// Or if converting in place
+    nWBufMax = 2*(int)nFromBufSize; // Worst case: Each input byte generating a UTF-16 surrogate pair
+    pTempWBuf = (WCHAR *)malloc(sizeof(WCHAR)*nWBufMax); // Enough for worst case
+    if (!pTempWBuf) return -1; // errno=ENOMEM
+    pWBuf = pTempWBuf;
+  } else { // For the case (!UTF-16 -> UTF16); The inverse case (UTF-16 -> !UTF16) will override this in the first switch below
+    nWBufMax = (int)(nToBufSize / 2);
+    pWBuf = (WCHAR *)pToBuf;
+  }
+
+  /* Convert the original encoding to an intermediate UTF-16 version */
+  switch (cpFrom) {
+    case CP_UTF16:	/* Already UTF-16, so no conversion to do in that first stage */
+      if (pFromBuf == pToBuf) { // In this case, we need to copy it, to avoid overwriting the source with the second stage output
+      	memcpy(pWBuf, pFromBuf, nFromBufSize);
+      } else {			// Else we have nothing to do at all
+	pWBuf = (WCHAR *)pFromBuf;
+      }
+      nWide = (int)(nFromBufSize / 2); /* Drop a possible incomplete character in the end */
+      break;
+    case CP_UTF32: {	/* UTF-32 not supported by Windows MBCS API, so convert it ourselves */
+      DWORD dwU32;
+      const char *pIn;
+      nWide = 0;
+      for (pIn = pFromBuf; (size_t)(pIn - pFromBuf) < (nFromBufSize - 3); pIn += 4) {
+	dwU32 = *(const DWORD *)pIn;
+	if (dwU32 & 0xFFFF0000) { // Convert the UTF-32 code to two UTF-16 surrogate characters
+	  DWORD dwOffset = dwU32 - 0x10000; // Offset beyond the base plane 0
+	  if (dwOffset & 0xFFF00000) goto bad_unicode_char; // Can't have more than 20 bits
+	  pWBuf[nWide++] = (WORD)(0xD800 + ((dwOffset >> 10) & 0x3FF));	// High 10 bits
+	  pWBuf[nWide++] = (WORD)(0xDC00 + (dwOffset & 0x3FF));		// Low 10 bits
+	} else { // This is a plane 0 character, that maps directly to a UTF-16 character
+	  if ((dwU32 & 0xF800) == 0xD800) {	// Can't be a surrogate character
+bad_unicode_char:
+	    dwU32 = 0xFFFD; // The Unicode replacement character <?>
+	    bUsedDef1 = TRUE;
+	  }
+	  pWBuf[nWide++] = (WORD)dwU32;
+	}
+      }
+      if ((size_t)(pIn - pFromBuf) < nFromBufSize) { // There's an incomplete character in the end
+      	pWBuf[nWide++] = (WORD)0xFFFD; // The Unicode replacement character <?>
+	bUsedDef1 = TRUE;
+      }
+      break;
+    }
+    default:	/* Anything else is a single byte or multibyte encoding, so let Windows convert it */
+      XDEBUG_CODE_IF_ON(
+	_cprintf("MultiByteToWideChar(%u, 0x%x, *%p, %d, *%p, %lu)\n", \
+		 cpFrom, 0, pFromBuf, (int)nFromBufSize, pWBuf, (long)nWBufMax);
+      )
+      nWide = MultiByteToWideChar(cpFrom,		/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
+				  0,			/* dwFlags, */
+				  pFromBuf,		/* lpMultiByteStr, */
+				  (int)nFromBufSize,	/* cbMultiByte */
+				  pWBuf,		/* lpWideCharStr, */
+				  nWBufMax		/* cchWideChar, */
+				  );
+      break;
+  }
+
+  /* Convert from the intermediate UTF-16 version to the final encoding */
+  nOut = 0;
+  if (nWide) switch (cpTo) {
+    case CP_UTF16:	/* Already UTF-16, so nothing to do */
+      nOut = nWide * sizeof(WCHAR);
+      break;
+    case CP_UTF32: {	/* UTF-32 not supported by Windows MBCS API, so convert it ourselves */
+      const WORD *pwIn = pWBuf;
+      DWORD *pdwOut = (DWORD *)pToBuf;
+      int i;
+      for (i=0; i<nWide; i++) {
+	DWORD dw;
+	if ((size_t)((const char *)pdwOut - pToBuf) > (nToBufSize - 4)) {
+	  free(pTempWBuf);
+	  errno = EFBIG;
+	  return -1; // No room for storing the output character
+	}
+	dw = *(pwIn++);
+	if ((dw & 0xFC00) == 0xD800) { // This begins a surrogate pair
+	  DWORD dw2 = ((++i) < nWide) ? *(pwIn++) : 0;
+	  if ((dw2 & 0xFC00) == 0xDC00) {
+	    dw = 0x10000 + (((dw & 0x3FF) << 10) | (dw2 & 0x3FF)); // Recompose the Unicode character
+	  } else { // Missing end of a surrogate pair
+	    dw = 0xFFFD;
+	    bUsedDef2 = TRUE;
+	  }
+	} else if ((dw & 0xFC00) == 0xDC00) { // Unmatched end of a surrogate pair
+	  dw = 0xFFFD;
+	  bUsedDef2 = TRUE;
+	}
+	*(pdwOut++) = dw;
+      }
+      nOut = (int)((char *)pdwOut - (char *)pToBuf);
+      break;
+    }
+    default: {	/* Anything else is a single byte or multibyte encoding, so let Windows convert it */
+      LPBOOL lpUsedDef2 = ((cpTo == CP_UTF7) || (cpTo == CP_UTF8)) ? NULL : &bUsedDef2;
+      XDEBUG_CODE_IF_ON(
+	_cprintf("WideCharToMultiByte(%u, 0x%x, *%p, %d, *%p, %d, *%p, *%p)\n", \
+		 cpTo, dwFlags, pWBuf, nWide, pToBuf, (int)nToBufSize, lpDefaultChar, lpUsedDef2);
+      )
+      nOut = WideCharToMultiByte(cpTo,			/* CodePage, (CP_ACP, CP_OEMCP, CP_UTF8, ...) */
+				 dwFlags,		/* dwFlags, */
+				 pWBuf,			/* lpWideCharStr, */
+				 nWide,			/* cchWideChar, */
+				 pToBuf,		/* lpMultiByteStr, */
+				 (int)nToBufSize,	/* cbMultiByte, */
+				 lpDefaultChar,		/* lpDefaultChar, */
+				 lpUsedDef2		/* lpUsedDefaultChar */
+				 );
+    }
+  }
+
+  /* Cleanup */
+  free(pTempWBuf);
+  if (!nOut) {
     errno = Win32ErrorToErrno();
     return -1;
   }
-  return n;
+  if (lpUsedDef) *lpUsedDef = (bUsedDef1 || bUsedDef2);
+  return nOut;
 }
 
-int ConvertString(char *buf, size_t nBufSize, UINT cpFrom, UINT cpTo, LPCSTR lpDefaultChar, LPBOOL lpUsedDef) {
-  int n = lstrlen(buf) + 1;
+int ConvertStringEx(char *buf, size_t nBufSize, UINT cpFrom, UINT cpTo,
+		    DWORD dwFlags, LPCSTR lpDefaultChar, LPBOOL lpUsedDef) { // ConvertString() sets these 3 arguments to 0
+  int n;
+
+  /* DO NOT INSERT DEBUG_PRINTF ETC CALLS, AS THIS FUNCTION IS INDIRECTLY INVOKED BY DEBUG_PRINTF */
+  XDEBUG_CODE_IF_ON(
+    _cprintf("ConvertStringEx(*%p, %ld, %u, %u, 0x%x, *%p, *%p)\n", \
+   	     buf, (long)nBufSize, cpFrom, cpTo, dwFlags, lpDefaultChar, lpUsedDef);
+  )
+
+  switch (cpFrom) {
+    case CP_UTF16:
+      n = (lstrlenW((LPCWSTR)buf) + 1) * 2;
+      break;
+    case CP_UTF32:
+      for (n=0; (size_t)n<(nBufSize-3); n+=4) {
+      	if (!*(DWORD*)(buf+n)) {
+      	  n += 4;
+      	  break;
+      	}
+      }
+      break;
+    default:
+      n = lstrlen(buf) + 1;
+      break;
+  }
   if (cpFrom != cpTo) {
-    n = ConvertBuf(buf, n, cpFrom, buf, nBufSize, cpTo, lpDefaultChar, lpUsedDef);
+    n = ConvertBufEx(buf, n, cpFrom, buf, nBufSize, cpTo, dwFlags, lpDefaultChar, lpUsedDef);
   }
   if (n > 0) { /* If the conversion succeeded */
     n -= 1;	  /* Output string size, not counting the final NUL */
@@ -123,9 +288,17 @@ int ConvertString(char *buf, size_t nBufSize, UINT cpFrom, UINT cpTo, LPCSTR lpD
   return n;
 }
 
-char *DupAndConvert(const char *string, UINT cpFrom, UINT cpTo, LPCSTR lpDefaultChar, LPBOOL lpUsedDef) {
+char *DupAndConvertEx(const char *string, UINT cpFrom, UINT cpTo,
+		      DWORD dwFlags, LPCSTR lpDefaultChar, LPBOOL lpUsedDef) { // DupAndConvert() sets these 3 arguments to 0
   int nBytes;
   char *pBuf;
+
+  /* DO NOT INSERT DEBUG_PRINTF ETC CALLS, AS THIS FUNCTION IS INDIRECTLY INVOKED BY DEBUG_PRINTF */
+  XDEBUG_CODE_IF_ON(
+    _cprintf("DupAndConvertEx(*%p, %u, %u, 0x%x, *%p, *%p)\n", \
+   	     string, cpFrom, cpTo, dwFlags, lpDefaultChar, lpUsedDef);
+  )
+
   nBytes = 4 * ((int)lstrlen(string) + 1); /* Worst case for the size needed */
   pBuf = (char *)malloc(nBytes);
   if (!pBuf) {
@@ -133,7 +306,7 @@ char *DupAndConvert(const char *string, UINT cpFrom, UINT cpTo, LPCSTR lpDefault
     return NULL;
   }
   lstrcpy(pBuf, string);
-  nBytes = ConvertString(pBuf, nBytes, cpFrom, cpTo, lpDefaultChar, lpUsedDef);
+  nBytes = ConvertStringEx(pBuf, nBytes, cpFrom, cpTo, dwFlags, lpDefaultChar, lpUsedDef);
   if (nBytes == -1) {
     free(pBuf);
     return NULL;
@@ -199,7 +372,8 @@ WCHAR *MultiByteToNewWideStringEx(UINT cp, DWORD dwFlags, const char *string) {
 |		    							      |
 |   Returns:	    See Standard C library's iconv			      |
 |		    							      |
-|   Notes:	    							      |
+|   Notes:	    Use `locale -f` in a Unix box to list supported encodings.|
+|		    Also `locale charmap` displays the current encoding.      |
 |		    							      |
 |   History:								      |
 |    2017-09-27 JFL Created this routine.	                	      |
@@ -216,17 +390,23 @@ static short GetEncodingCP(const char *pszEnc) {
   } else if ((pszEnc[0] || pszEnc[1]) && !pszEnc[2]) {		/* Ex: 1252L (Non-standard) (Will fail for multiples of 256) */
     cp = *(unsigned short *)pszEnc;
   } else if (!strcmp(pszEnc, "UTF-7")) {
-    cp = 65000;
+    cp = CP_UTF7;	/* 65000 */
   } else if (!strcmp(pszEnc, "UTF-8")) {
-    cp = 65001;
+    cp = CP_UTF8;	/* 65001 */
   } else if (!strcmp(pszEnc, "UTF-16")) {
-    cp = 1200;
-/*
+    cp = CP_UTF16;	/* 1200 */
+#if 0
   } else if (!strcmp(pszEnc, "UTF-16LE")) {
-    cp = 1200;
+    cp = CP_UTF16LE;	/* 1200 */
   } else if (!strcmp(pszEnc, "UTF-16BE")) {
-    cp = 1201;
-*/
+    cp = CP_UTF16BE;	/* 1201 */
+#endif
+  } else if (!strcmp(pszEnc, "UTF-32")) {
+    cp = CP_UTF32;	/* 12000 */
+  } else if (   (!strcmp(pszEnc, "ANSI_X3.4-1968"))
+             || (!strcmp(pszEnc, "US-ASCII"))
+             || (!strcmp(pszEnc, "ASCII"))) {
+    cp = CP_ASCII;	/* 20127 */
   }
   if ((!cp) || !GetCPInfoEx(cp, 0, &cpi)) {
     errno = EINVAL;
@@ -261,7 +441,7 @@ size_t iconv(iconv_t cpFromTo, char **inBuf, size_t *inBytesLeft, char **outBuf,
   if (((!inBuf) || (!*inBuf)) && (outBuf && *outBuf) && (outBytesLeft && *outBytesLeft)) {
     return 0; /* Return the output buffer to its default shift state */
   }
-  iToSize = ConvertBuf(pFromBuf, nFromBufSize, cpFrom, pToBuf, nToBufSize, cpTo, NULL, NULL);
+  iToSize = ConvertBuf(pFromBuf, nFromBufSize, cpFrom, pToBuf, nToBufSize, cpTo);
   /* TO DO: Manage the invalid character cases */
   /* TO DO: Manage the query cases, with NULL output pointers or 0 sizes */
   /* TO DO: Manage conversions from/to UTF-16 */
@@ -498,13 +678,13 @@ int fputcM(int c, FILE *f, UINT cp) {
 
   if (isWideFile(iFile)) {
     /* Output a wide character to guaranty every Unicode character is displayed */
-    n = MultiByteToWideChar(cp, 0, buf, (int)nInBuf, wBuf, sizeof(wBuf)/sizeof(wchar_t));
+    n = MultiByteToWideChar(cp, 0, buf, (int)nInBuf, wBuf, sizeof(wBuf)/sizeof(WCHAR));
     iRet = fputws(wBuf, f);
   } else {
     UINT cpOut;
     if (isTranslatedFile(iFile, cp, &cpOut)) { /* Convert the string encoding */
       /* Do not call DupAndConvert(), to avoid the overhead of buffer allocations, etc */
-      n = MultiByteToWideChar(cp, 0, buf, (int)nInBuf, wBuf, sizeof(wBuf)/sizeof(wchar_t));
+      n = MultiByteToWideChar(cp, 0, buf, (int)nInBuf, wBuf, sizeof(wBuf)/sizeof(WCHAR));
       n = WideCharToMultiByte(cpOut, 0, wBuf, n, buf, sizeof(buf), NULL, NULL);
     }
     iRet = fputs(buf, f);
@@ -565,13 +745,13 @@ int fputsM(const char *buf, FILE *f, UINT cp) {
     /* Output a wide string to guaranty every Unicode character is displayed */
     size_t l = strlen(buf);
     int n;
-    wchar_t *pwBuf = (wchar_t *)malloc(l * 4);
+    WCHAR *pwBuf = (WCHAR *)malloc(l * 4);
     if (!pwBuf) return -1;
     n = MultiByteToWideChar(cp, 0, buf, (int)(l+1), pwBuf, (int)(l*2));
     iRet = fputws(pwBuf, f);
     free(pwBuf);
   } else if (isTranslatedFile(iFile, cp, &cpOut)) { /* Convert the string encoding and output it */
-    pBuf = DupAndConvert(buf, cp, cpOut, NULL, NULL);
+    pBuf = DupAndConvert(buf, cp, cpOut);
     if (!pBuf) return -1;
     iRet = fputs(pBuf, f);
     free(pBuf);
@@ -746,7 +926,7 @@ int fgetcM(FILE *hf, UINT cp) {
     c = fgetc(hf);
     if (c == -1) return c;		/* Input error */
     if (cp == inputCodePage) return c;	/* No translation needed */
-    nBuf = ConvertBuf((char *)&c, 1, inputCodePage, szBuf, sizeof(szBuf), cp, NULL, NULL);
+    nBuf = ConvertBuf((char *)&c, 1, inputCodePage, szBuf, sizeof(szBuf), cp);
     if (nBuf <= 0) return -1;		/* Conversion error */
     iBuf = 0;
   }

@@ -96,6 +96,7 @@ OBJECTS = \
 WIN32_OBJECTS = \
     +aswprintf.obj		\
     +daswprintf.obj		\
+    +GetEncoding.obj		\
     +GetFileAttributes.obj	\
     +GetFileAttributesEx.obj	\
     +GetFullPathName.obj	\
@@ -192,6 +193,8 @@ debugv.c: $(CI)\debugm.h
 dirent.c: $(CI)\debugm.h $(I)\dirent.h $(I)\io.h $(I)\reparsept.h $(I)\sys\stat.h $(I)\stdlib.h $(I)\string.h $(I)\unistd.h $(I)\windows.h
 
 dirname.c: $(I)\libgen.h $(I)\limits.h $(I)\msvclibx.h $(I)\stdlib.h $(I)\string.h
+
+encoding.c: $(CI)\debugm.h $(I)\msvclibx.h $(I)\stdio.h $(I)\string.h $(I)\iconv.h
 
 err2errno.c: $(CI)\debugm.h $(I)\msvclibx.h $(I)\stdio.h $(I)\windows.h
 
