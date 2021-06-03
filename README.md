@@ -5,7 +5,7 @@
 This repository is a fork of [Geoff Greer](https://github.com/ggreer)'s [The Silver Searcher](https://github.com/ggreer/the_silver_searcher) for Unix, also known as 'ag'.
 
 It is dedicated to building a well behaved version of ag.exe for Windows.  
-The original version can be built for Windows using MinGW, but it has several shortcomings that limit its usefulness for Windows users world-wide.  
+The original version can be built for Windows using MinGW, but it has several serious shortcomings that limit its usefulness for Windows users world-wide.  
 This version has the following improvements:
 
 * Use and display Windows paths with the \ character.
@@ -15,16 +15,23 @@ This version has the following improvements:
 * Support command line arguments with non-ASCII characters in any console code page. 
 * Correctly display pathnames and matching strings with non-ASCII characters in any console code page, even if they're not part of the code page.
 * Use PCRE UTF8 option, allowing to search for non-ASCII regular expressions. (Like "." matching 1 character = 1 to 4 bytes!)
-* Support the two text files encodings standard in each version of Windows, ANSI and UTF-8, and display matches correctly for both.
-  (Dynamically detects each file encoding.) (The so-called ANSI encoding is Windows-localization-specific. Ex: Code page 1252 for the USA version.)
-* Also support the console encoding for text piped through the standard input.
-  (Which _is_ often different from the above two, and can be changed dynamically. Ex: Code page 437 by default for the USA version.)
-* Support pathnames longer than 260 characters.
+* Support Unicode escape sequences \uXXXX and \UXXXXXXXX in the search pattern.
+* Support the three text files encodings standard in each version of Windows, the system code page, UTF-8, and UTF-16, and display matches correctly for all.
+  (Dynamically detects each file encoding.) (The system code page is Windows-localization-specific. Ex: Code page 1252 for the USA version.)  
+  Note that searching in UTF-16 files has a performance cost, as the text is converted to UTF-8 first. This is not the case for the other supported encodings.
+* Also support UTF-8 and the current console code page encodings for text piped through the standard input.
+  (The console code page being often different from the system code page. Ex: Code page 437 by default for the USA version.)
+* Support pathnames longer than 260 characters, up to 64 KB on NTFS volumes, even on old versions of Windows like XP and 7.
 * Support Windows junctions and symbolic links.
 * Support 64-bit statistics even for the 32-bit build. (Allows searching through more than 4GB of files with the x86 build.)
 * The debug version displays the thread number ahead of each debug message.
 * Can be built with Microsoft Visual Studio versions 2013 to 2019, without any dependency on outside libraries.
 * Last but not least, everything (ag.exe with all its provided dependent libraries) is built with a single make.bat command.
+
+Versions of Windows supported:
+
+* The 32-bits version runs in Windows XP, and all later versions of Windows.  
+  The 64-bits version runs in all AMD64 versions of Windows.
 
 Thanks to [Krzysztof Kowalczyk](https://github.com/kjk) who did the original [Native Visual Studio Port](https://github.com/kjk/the_silver_searcher).
 I've actually started from his August 2016 code, and kept improving it.
@@ -155,8 +162,10 @@ or
   
   Notes:
   - This installs a [release](https://github.com/JFLarvoire/the_silver_searcher/releases) of ag.exe optimized for Windows.
-  - winget is intended to become the default package manager client for Windows.  
-    As of June 2020, it's still in beta, and can be installed using instructions [there](https://github.com/microsoft/winget-cli).
+  - winget.exe now is the default command-line package manager for Windows 10.  
+    It is supported on Windows 10 build 1709 or newer.  
+    If needed, it can be installed from the Microsoft Store, where it is called "App Installer".  
+    It can also be installed manually using instructions on its [github home](https://github.com/microsoft/winget-cli).
   - The setup script in the Ag's winget package installs ag.exe in the first directory that matches one of these criteria:
      1. Over a previous instance of ag.exe *from the same [origin](https://github.com/JFLarvoire/the_silver_searcher)* found in the PATH
      2. In the directory defined in environment variable bindir_%PROCESSOR_ARCHITECTURE%
