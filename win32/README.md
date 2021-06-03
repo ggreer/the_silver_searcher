@@ -128,13 +128,14 @@ Files.mak             | Define input and output files.
 pthread.mak           | Pthread-specific make rules.
 
 #### Files modified
-Name                      | Description
---------------------------|----------------------------------------------------------------------------------------------------------
-\_ptw32.h                 | Line 151: Changed `#elif !defined(__MINGW32__)` to `#elif !defined(__MINGW32__) && !defined(HAS_MSVCLIBX)`
-config.h                  | Line 146: Changed `#if defined(_MSC_VER) && _MSC_VER >= 1900` to `#if defined(_MSC_VER) && (_MSC_VER >= 1900 || defined(HAS_MSVCLIBX))`
-dll.c (v2.10 only)        | Line 127: Moved four `#pragma comment (linker, ...)` lines to implement.h
-implement.h               | Line 137: Added a `#if defined(PTW32_CONFIG_MINGW) ... #endif` block with the four `#pragma comment (linker, ...)` lines from dll.c. This ensures that purely static builds link with dll.obj.
-ptw32_processInitialize.c | Lines 42 & 143: Added a fix for the bug that caused pthreads.lib 2.10 and 3.0 to hang in static builds.
+| Name                      | Description
+|---------------------------|----------------------------------------------------------------------------------------------------------
+| \_ptw32.h                 | Line 123: Surrounded `#define HAVE_STRUCT_TIMESPEC` by `#ifndef HAVE_STRUCT_TIMESPEC` and `#endif`
+|                           | Line 151: Changed `#elif !defined(__MINGW32__)` to `#elif !defined(__MINGW32__) && !defined(HAS_MSVCLIBX)`
+| config.h                  | Line 146: Changed `#if defined(_MSC_VER) && _MSC_VER >= 1900` to `#if defined(_MSC_VER) && (_MSC_VER >= 1900 || defined(HAS_MSVCLIBX))`
+| dll.c (v2.10 only)        | Line 127: Moved four `#pragma comment (linker, ...)` lines to implement.h
+| implement.h               | Line 137: Added a `#if defined(PTW32_CONFIG_MINGW) ... #endif` block with the four `#pragma comment (linker, ...)` lines from dll.c. This ensures that purely static builds link with dll.obj.
+| ptw32_processInitialize.c | Lines 42 & 143: Added a fix for the bug that caused pthreads.lib 2.10 and 3.0 to hang in static builds.
 
 Gotcha: pthread has its own Nmakefile file, which we do not want to use.  
 Hence the special IGNORE_NMAKEFILE definition in configure.pthread.bat.

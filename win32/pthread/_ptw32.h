@@ -120,7 +120,9 @@
 #    define RETAIN_WSALASTERROR
 #  elif defined(_MSC_VER)
 #    if _MSC_VER >= 1900
-#      define HAVE_STRUCT_TIMESPEC
+#      ifndef HAVE_STRUCT_TIMESPEC
+#        define HAVE_STRUCT_TIMESPEC
+#       endif
 #    elif _MSC_VER < 1300
 #      define  __PTW32_CONFIG_MSVC6
 #    elif _MSC_VER < 1400
