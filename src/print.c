@@ -31,6 +31,32 @@ void color_normal(FILE *f);
 static HANDLE console_handle = NULL;
 static WORD default_attr = FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_GREEN;
 
+/* Console event handler - Restores the initial color when aborting the program */
+static BOOL WINAPI CtrlHandler(DWORD fdwCtrlType) {
+    switch (fdwCtrlType) {
+    case CTRL_C_EVENT:		// Handle the CTRL-C event
+        log_debug("Ctrl-C event");
+        break;
+    case CTRL_CLOSE_EVENT:	// Handle a user exit request
+        log_debug("Ctrl-Close event");
+        break;
+    case CTRL_BREAK_EVENT:	// Handle a Ctrl-Break event
+        log_debug("Ctrl-Break event");
+        break;
+    case CTRL_LOGOFF_EVENT:
+        log_debug("Ctrl-Logoff event");
+        break;
+    case CTRL_SHUTDOWN_EVENT:
+        log_debug("Ctrl-Shutdown event");
+        break;
+    default:
+        log_debug("Unknown event 0x%X", fdwCtrlType);
+        break;
+    }
+    color_normal(NULL); /* Restore the initial color found when ag.exe started */
+    return FALSE; /* Let the normal handlers do what they have to do */
+}
+
 static int get_console_handle(void) {
     CONSOLE_SCREEN_BUFFER_INFO buf;
     BOOL ok;
@@ -43,6 +69,12 @@ static int get_console_handle(void) {
     if (ok) {
         default_attr = buf.wAttributes;
     }
+    /* Make sure to restore the normal color in the end, even when
+       aborting with Ctrl-C in the middle of colored output. */
+    /* I tried signal() and atexit(), but this did not work reliably:
+       Sometimes the foreground thread changed the color again _after_
+       the the signal or atexit handlers ran. */
+    SetConsoleCtrlHandler(CtrlHandler, TRUE);
     return 1;
 }
 
@@ -63,7 +95,6 @@ void color_highlight_line_no(FILE *f) {
     set_output_color(FOREGROUND_RED | FOREGROUND_INTENSITY);
 }
 void color_normal(FILE *f) {
-    get_console_handle();
     set_output_color(default_attr);
 }
 #pragma warning(default : 4100) /* Restore warning "unreferenced formal parameter" */
