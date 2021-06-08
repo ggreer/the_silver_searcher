@@ -53,6 +53,7 @@ typedef struct {
     int max_search_depth;
     int mmap;
     int multiline;
+    int multiline_break;
     int one_dev;
     int only_matching;
     char path_sep;

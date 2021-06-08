@@ -163,6 +163,7 @@ void init_options(void) {
     opts.mmap = TRUE;
 #endif
     opts.multiline = TRUE;
+    opts.multiline_break = FALSE;
     opts.width = 0;
     opts.path_sep = '\n';
     opts.print_break = TRUE;
@@ -280,6 +281,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "max-count", required_argument, NULL, 'm' },
         { "mmap", no_argument, &opts.mmap, TRUE },
         { "multiline", no_argument, &opts.multiline, TRUE },
+        { "multiline-break", no_argument, &opts.multiline_break, TRUE },
+        { "multilinebreak", no_argument, &opts.multiline_break, TRUE },
         /* Accept both --no-* and --no* forms for convenience/BC */
         { "no-affinity", no_argument, &opts.use_thread_affinity, 0 },
         { "noaffinity", no_argument, &opts.use_thread_affinity, 0 },
@@ -299,6 +302,9 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "nommap", no_argument, &opts.mmap, FALSE },
         { "no-multiline", no_argument, &opts.multiline, FALSE },
         { "nomultiline", no_argument, &opts.multiline, FALSE },
+        { "no-multiline-break", no_argument, &opts.multiline_break, FALSE },
+        { "no-multilinebreak", no_argument, &opts.multiline_break, FALSE },
+        { "nomultilinebreak", no_argument, &opts.multiline_break, FALSE },
         { "no-numbers", no_argument, &opts.print_line_numbers, FALSE },
         { "nonumbers", no_argument, &opts.print_line_numbers, FALSE },
         { "no-pager", no_argument, NULL, 0 },
@@ -742,6 +748,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.print_break = 1;
         group = 1;
         opts.search_stream = 0;
+    }
+
+    if (!opts.multiline) {
+        opts.multiline_break = FALSE;
     }
 
     if (opts.vimgrep) {

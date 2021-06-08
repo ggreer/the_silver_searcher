@@ -114,6 +114,9 @@ Recursively search for PATTERN in PATH. Like grep or ack, but faster.
 
   * `--[no]multiline`:
     Match regexes across newlines. Enabled by default.
+  
+  * `--[no]multilinebreak, --[no-]multilinebreak, --[no-]multiline-break`:
+    Print a break("--") between two multiline matches. Disable by default.
 
   * `-n --norecurse`:
     Don't recurse into directories.
