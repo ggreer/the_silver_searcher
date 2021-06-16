@@ -219,6 +219,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     int opt_index = 0;
     char *num_end;
     const char *home_dir = getenv("HOME");
+    const char *config_dir = getenv("XDG_CONFIG_HOME");
     char *ignore_file_path = NULL;
     int accepts_query = 1;
     int needs_query = 1;
@@ -685,10 +686,15 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         exit(1);
     }
 
-    if (home_dir && !opts.search_all_files) {
-        log_debug("Found user's home dir: %s", home_dir);
-        ag_asprintf(&ignore_file_path, "%s/.agignore", home_dir);
-        load_ignore_patterns(root_ignores, ignore_file_path);
+    if (!opts.search_all_files) {
+        if (config_dir) {
+            ag_asprintf(&ignore_file_path, "%s/%s", config_dir, "ag/ignore");
+        } else if (home_dir) {
+            ag_asprintf(&ignore_file_path, "%s/%s", home_dir, ".agignore");
+        }
+        if (ignore_file_path) {
+            load_ignore_patterns(root_ignores, ignore_file_path);
+        }
         free(ignore_file_path);
     }
 
@@ -710,9 +716,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             gitconfig_res[buf_len] = '\0';
             if (buf_len == 0) {
                 free(gitconfig_res);
-                const char *config_home = getenv("XDG_CONFIG_HOME");
-                if (config_home) {
-                    ag_asprintf(&gitconfig_res, "%s/%s", config_home, "git/ignore");
+                if (config_dir) {
+                    ag_asprintf(&gitconfig_res, "%s/%s", config_dir, "git/ignore");
                 } else if (home_dir) {
                     ag_asprintf(&gitconfig_res, "%s/%s", home_dir, ".config/git/ignore");
                 } else {
