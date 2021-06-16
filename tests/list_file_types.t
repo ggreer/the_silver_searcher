@@ -181,7 +181,7 @@ Language types are output:
         .jl
   
     --kotlin
-        .kt
+        .kt  .kts
   
     --less
         .less
