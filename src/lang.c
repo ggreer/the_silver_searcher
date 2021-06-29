@@ -61,6 +61,7 @@ lang_spec_t langs[] = {
     { "jinja2", { "j2" } },
     { "js", { "es6", "js", "jsx", "vue" } },
     { "json", { "json" } },
+    { "jsonnet", { "jsonnet", "libsonnet" } },
     { "jsp", { "jsp", "jspx", "jhtm", "jhtml", "jspf", "tag", "tagf" } },
     { "julia", { "jl" } },
     { "kotlin", { "kt" } },

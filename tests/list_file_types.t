@@ -174,6 +174,9 @@ Language types are output:
     --json
         .json
   
+    --jsonnet
+        .jsonnet  .libsonnet
+  
     --jsp
         .jsp  .jspx  .jhtm  .jhtml  .jspf  .tag  .tagf
   
