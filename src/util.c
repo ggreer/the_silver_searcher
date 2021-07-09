@@ -208,6 +208,8 @@ NO_SANITIZE_ALIGNMENT const char *hash_strnstr(const char *s, const char *find, 
         return NULL;
 
     // Step through s
+    /* MSC bug (?) Avoid syntax error : missing ';' before 'const' */
+    ;
     const size_t step = f_len - sizeof(uint16_t) + 1;
     size_t s_i = f_len - sizeof(uint16_t);
     for (; s_i <= s_len - f_len; s_i += step) {
@@ -229,7 +231,7 @@ NO_SANITIZE_ALIGNMENT const char *hash_strnstr(const char *s, const char *find, 
         size_t i;
         const char *R = s + s_i;
         for (i = 0; i < f_len; i++) {
-            char s_c = case_sensitive ? R[i] : tolower(R[i]);
+            char s_c = case_sensitive ? R[i] : (char)tolower(R[i]);
             if (s_c != find[i])
                 goto next_start;
         }
@@ -319,7 +321,8 @@ void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opt
 
     *re = pcre_compile(q, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
     if (*re == NULL) {
-        die("Bad regex! pcre_compile() failed at position %i: %s\nIf you meant to search for a literal string, run ag with -Q",
+        die("Bad regex! pcre_compile(\"%s\", 0x%X) failed at position %i: %s\nIf you meant to search for a literal string, run ag with -Q",
+            q, pcre_opts,
             pcre_err_offset,
             pcre_err);
     }
@@ -482,7 +485,7 @@ int is_directory(const char *path, const struct dirent *d) {
         free(full_path);
         return FALSE;
     }
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(HAS_MSVCLIBX)
     int is_dir = GetFileAttributesA(full_path) & FILE_ATTRIBUTE_DIRECTORY;
 #else
     int is_dir = S_ISDIR(s.st_mode);
@@ -492,7 +495,7 @@ int is_directory(const char *path, const struct dirent *d) {
 }
 
 int is_symlink(const char *path, const struct dirent *d) {
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(HAS_MSVCLIBX)
     char full_path[MAX_PATH + 1] = { 0 };
     sprintf(full_path, "%s\\%s", path, d->d_name);
     return (GetFileAttributesA(full_path) & FILE_ATTRIBUTE_REPARSE_POINT);
@@ -565,7 +568,7 @@ char *fgetln(FILE *fp, size_t *lenp) {
             size_t nsize;
             char *newbuf;
             nsize = used + BUFSIZ;
-            if (!(newbuf = realloc(buf, nsize))) {
+            if ((newbuf = realloc(buf, nsize)) == NULL) {
                 funlockfile(fp);
                 if (buf)
                     free(buf);
@@ -574,7 +577,7 @@ char *fgetln(FILE *fp, size_t *lenp) {
             buf = newbuf;
             used = nsize;
         }
-        buf[len++] = c;
+        buf[len++] = (char)c;
         if (c == '\n') {
             break;
         }
@@ -595,14 +598,14 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
     char *newlnptr = NULL;
 
     /* get line, bail on error */
-    if (!(srcln = fgetln(stream, &len))) {
+    if ((srcln = fgetln(stream, &len)) == NULL) {
         return -1;
     }
 
     if (len >= *n) {
         /* line is too big for buffer, must realloc */
         /* double the buffer, bail on error */
-        if (!(newlnptr = realloc(*lineptr, len * 2))) {
+        if ((newlnptr = realloc(*lineptr, len * 2)) == NULL) {
             return -1;
         }
         *lineptr = newlnptr;
@@ -689,7 +692,7 @@ int vasprintf(char **ret, const char *fmt, va_list args) {
 #ifdef __va_copy
     /* non-standard macro, but usually exists */
     __va_copy(args2, args);
-#elif va_copy
+#elif defined(va_copy) /* Changing it to "#elif va_copy" broke detection in MSVC. Why did they change it? */
     /* C99 macro. We compile with -std=c89 but you never know */
     va_copy(args2, args);
 #else

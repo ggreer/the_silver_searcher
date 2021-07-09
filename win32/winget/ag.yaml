@@ -1,0 +1,32 @@
+###############################################################################
+#                                                                             #
+#   Filename        ag.yaml                                                   #
+#                                                                             #
+#   Description     WinGet package manifest for The Silver Searcher           #
+#                                                                             #
+#   Notes                                                                     #
+#                                                                             #
+#   History                                                                   #
+#    2020-06-03 JFL Created this file.                                        #
+#                                                                             #
+###############################################################################
+
+Id: JFLarvoire.Ag
+Publisher: Jean-François Larvoire
+Name: The Silver Searcher
+Version: !VERSION!
+AppMoniker: Ag
+MinOSVersion: 5.1.0.0
+Description: A fast open source text search tool, optimized for software development
+Homepage: https://github.com/JFLarvoire/the_silver_searcher
+Tags: "find,grep,Ag"
+License: Apache Licence version 2.0
+LicenseUrl: https://github.com/JFLarvoire/the_silver_searcher/blob/master/LICENSE
+InstallerType: exe
+Switches:
+  Silent: -y
+  SilentWithProgress: -y
+Installers:
+  - Arch: x86
+    Url: https://github.com/JFLarvoire/the_silver_searcher/releases/download/!VERSION!-Windows/ag_setup.exe
+    Sha256: !HASH!

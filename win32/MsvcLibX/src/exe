@@ -1,0 +1,99 @@
+#!/bin/bash
+#*****************************************************************************#
+#                                                                             #
+#  Filename:	    exe							      #
+#                                                                             #
+#  Description:     Build simple C/C++ programs for Unix/Linux		      #
+#                                                                             #
+#  Notes:	    Usage: ./exe PROGRAM				      #
+#                                                                             #
+#                   Stores the executables in $OS.$PROC/[Debug/] for	      #
+#                   consistency with the Windows build tools.                 #
+#                   This allows sharing sources in a host system, and         #
+#                   using VMs for building the various Windows and Linux      #
+#                   versions in a set of OS-specific subdirectories.          #
+#                                                                             #
+#  History:                                                                   #
+#    2013-12-16 JFL Added support for MinGW64.				      #
+#    2015-12-12 JFL Help now displays the output directory name.              #
+#    2016-01-07 JFL Added compilation option -Wall.                           #
+#                                                                             #
+#         © Copyright 2016 Hewlett Packard Enterprise Development LP          #
+# Licensed under the Apache 2.0 license - www.apache.org/licenses/LICENSE-2.0 #
+#*****************************************************************************#
+
+FileNoCase() # Case-independant search for a file.
+{
+  find . -type f | grep -i -E "./$1$" | sed s=./==
+}
+
+# Identify the OS
+OS=`uname -s`
+PROC=`uname -p`
+if [[ "$OS" == "OSF1" && "`uname -m`" == "alpha" ]] ; then
+  OS=Tru64
+fi
+if [[ "$OS" == "WindowsNT" ]] ; then
+  OS=WIN32
+fi
+OUTDIR=$OS.$PROC
+if [[ "${OS:0:7}" == "MINGW32" ]] ; then # Ex: "MINGW32_NT-6.1"
+  OUTDIR=MINGW32 # MigGW shell if NOT case sensitive
+  # 2013-12-16 Actually, the 64-bits tool chain also reports MINGW32_NT-6.1
+  # So distinguish the two by whether /mingw is mounted on C:\MinGW or C:\MinGW64
+  if mount | grep /mingw | grep 64 > /dev/null ; then
+    OUTDIR=MINGW64 # MigGW shell if NOT case sensitive
+  fi
+fi
+if [[ "${OS:0:7}" == "MINGW64" ]] ; then # Ex: ?
+  OUTDIR=MINGW64
+fi
+if [[ "${OS:0:6}" == "CYGWIN" ]] ; then # Ex: "CYGWIN_NT-6.1-WOW64"
+  OUTDIR=cygwin # Cygwin shell if case sensitive, so use lower case
+fi
+
+# Command line analysis.
+case "$1" in
+  "" | "-h" | "-?" | --help)
+    echo "Build simple C/C++ programs, storing the executables in $OUTDIR/"
+    echo "Usage: ./exe PROGRAM"
+    exit 0
+    ;;
+esac
+
+# Identify the source file and program to build.
+PROGRAM=$1
+shift
+SOURCES=`FileNoCase ${PROGRAM}.c`
+CFLAGS="-std=c99 -Wall" # Force compilation in C, even if there are // comments.
+if [[ "${SOURCES}" == "" ]] ; then
+  SOURCES=`FileNoCase ${PROGRAM}.cpp`
+  CFLAGS="-std=gnu++98 -lstdc++"  # Force compilation in C++, even if plain C.
+  # -lstdc++ prevents error "undefined reference to '__gxx_personality_v0'"
+fi
+if [[ "${SOURCES}" == "" ]] ; then
+  echo "Failed to find ${PROGRAM} source."
+  exit 1
+fi
+
+# Make sure our include directories are accessible
+if [[ -d "/u/JFL/SRC/Include" ]] ; then
+  if [[ ":$C_INCLUDE_PATH:" != *:/u/JFL/SRC/Include:* ]] ; then
+    if [[ "$C_INCLUDE_PATH" == "" ]] ; then
+      export C_INCLUDE_PATH="/u/JFL/SRC/Include"
+    else
+      export C_INCLUDE_PATH="$C_INCLUDE_PATH:/u/JFL/SRC/Include"
+    fi
+  fi
+fi
+echo "# C_INCLUDE_PATH=\"$C_INCLUDE_PATH\""
+
+# Build it.
+# gmake CC=gcc CFLAGS="$CFLAGS" SOURCES="$SOURCES" PROGRAM="$PROGRAM" OS="$OS" $*
+mkdir -p $OUTDIR
+echo "gcc $CFLAGS -U_DEBUG $SOURCES -o $OUTDIR/$PROGRAM"
+gcc $CFLAGS -U_DEBUG $SOURCES -o $OUTDIR/$PROGRAM
+mkdir -p $OUTDIR/debug
+echo "gcc $CFLAGS -D_DEBUG $SOURCES -o $OUTDIR/debug/$PROGRAM"
+gcc $CFLAGS -D_DEBUG $SOURCES -o $OUTDIR/debug/$PROGRAM
+
