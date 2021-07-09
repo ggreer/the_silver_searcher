@@ -565,8 +565,6 @@ for %%p in (%PROCS%) do ( :# Ex: %%p=x86 or %%p=amd64
 set "SRCDIR=!SRCDIR[%PROC%]!"
 if not defined SRCDIR set "SRCDIR=WIN32"
 if not defined bindir set "bindir=%windir%"
-set FOUND
-set SRCDIR
 if not defined FOUND_%SRCDIR% (
   %COMMENT% No ag.exe found for the %SRCDIR% architecture
   call :InstallAg %SRCDIR% bindir
