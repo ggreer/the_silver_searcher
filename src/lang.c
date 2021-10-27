@@ -44,6 +44,7 @@ lang_spec_t langs[] = {
     { "glsl", { "vert", "tesc", "tese", "geom", "frag", "comp" } },
     { "go", { "go" } },
     { "gradle", { "gradle" } },
+    { "graphql", { "graphql", "gql" } },
     { "groovy", { "groovy", "gtmpl", "gpp", "grunit", "gradle" } },
     { "haml", { "haml" } },
     { "handlebars", { "hbs" } },
