@@ -5,6 +5,8 @@
 :#                                                                            #
 :#  Description     Install or upgrade ag.exe				      #
 :#                                                                            #
+:#  Properties 	    jEdit local buffer properties: :encoding=utf-8:tabSize=8: #
+:#                                                                            #
 :#  Notes 	                                                              #
 :#                                                                            #
 :#  Authors     JFL "Jean-François Larvoire" <jf.larvoire@free.fr>            #
@@ -17,11 +19,16 @@
 :#                  Allow testing the script from within the source tree.     #
 :#   2021-07-09 JFL Improved the debugging framework.                         #
 :#                  Use regedit.exe instead of multiple calls to reg.exe.     #
+:#   2021-11-12 JFL Detect Ag installations done by Chocolatey and Scoop,     #
+:#		    and abort this installation if one was found.             #
+:#                  Fixed admin detect in 32-bits shells in 64-bits Windows.  #
+:#                  Pause before exiting after an error, to give time to      #
+:#                  read the error message from within ag_setup.exe.          #
 :#                                                                            #
 :##############################################################################
 
 setlocal EnableExtensions DisableDelayedExpansion &:# Make sure ! characters are preserved
-set "VERSION=2021-07-09"
+set "VERSION=2021-11-12"
 set "SCRIPT=%~nx0"		&:# Script name
 set "SNAME=%~n0"		&:# Script name, without its extension
 set "SPATH=%~dp0"		&:# Script path
@@ -221,8 +228,14 @@ endlocal & set "%~2=%DIR%" & exit /b
 :#----------------------------------------------------------------------------#
 
 :IsAdmin
->NUL 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
-exit /b
+setlocal EnableExtensions DisableDelayedExpansion
+
+set "CONFIG_DIR=%SYSTEMROOT%\system32\config"
+:# In 32-bits cmd shells in 64-bits Window, the config directory is in the native system32
+if defined PROCESSOR_ARCHITEW6432 set "CONFIG_DIR=%SYSTEMROOT%\sysnative\config"
+
+>NUL 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%CONFIG_DIR%\system"
+endlocal & exit /b
 
 :#----------------------------------------------------------------------------#
 
@@ -425,6 +438,7 @@ setlocal EnableDelayedExpansion
 call :IsAdmin
 if errorlevel 1 (
   %ERROR% This setup script must be run as Administrator
+  %PAUSE%
   endlocal & %RETURN% 1
 )
 
@@ -432,6 +446,7 @@ set "UNINSTALL_CMD="
 call :GetRegistryValue "%UNINSTALL_KEY%" UninstallString UNINSTALL_CMD
 if not defined UNINSTALL_CMD (
   %ERROR% No previous instance of The Silver Searcher was found
+  %PAUSE%
   endlocal & %RETURN% 1
 )
 %PREPVAR% UNINSTALL_CMD UNINSTALL_CMD_MSG &:# Make sure %ECHO% displays & characters correctly
@@ -439,6 +454,7 @@ if not defined UNINSTALL_CMD (
 %UNINSTALL_CMD%
 if errorlevel 1 (
   %ERROR% The Silver Searcher uninstallation failed
+  %PAUSE%
   endlocal & %RETURN% 1
 )
 %COMMENT% The Silver Searcher was uninstalled successfully
@@ -479,6 +495,12 @@ set "INSTALLED_FILES="  &:# List of files installed or updated by this script
 %LOG% %~f0 %*
 :# set >>"%LOGFILE%"
 
+:# Use pauses to give time to read the error messages before ag_setup.exe exits.
+:# Assume run by ag_setup.exe when invoked via a temporary copy in %TEMP%.
+:# TODO: Detect the actual parent, and only pause if it's really ag_setup.exe.
+set "PAUSE="
+if not "!SPATH!"=="!SPATH:%TEMP%=!" set "PAUSE=pause"
+
 :# Process command-line arguments
 goto :get_arg
 :next_arg
@@ -492,12 +514,30 @@ if [%1]==[-u] call :UninstallAg & %RETURN%
 if [%1]==[-V] (echo %VERSION%) & exit /b 0
 if [%1]==[-X] set "EXEC=echo" & goto :next_arg
 %ERROR% Unexpected argument: %1
+%PAUSE%
 %RETURN% 1
 
 :start
 call :IsAdmin
 if errorlevel 1 (
   %ERROR% This setup script must be run as Administrator
+  %PAUSE%
+  %RETURN% 1
+)
+
+:# Scoop has a very similar mechanism, with shims in the same directory as scoop.cmd.
+for %%p in (scoop.cmd) do set "SCOOP=%%~dp$PATH:p"
+if defined SCOOP if exist "%SCOOP%ag.exe" (
+  %ERROR% Found another instance of ag.exe installed by Scoop. Please uninstall it first using 'scoop uninstall ag' and retry.
+  %PAUSE%
+  %RETURN% 1
+)
+:# Avoid collisions with other package managers
+:# Chocolatey stores a proxy program called a "shim" in "%ChocolateyInstall%\bin".
+:# That shim points to the actual ag.exe installed somewhere outside of the PATH.
+if defined ChocolateyInstall if exist "%ChocolateyInstall%\bin\ag.exe" (
+  %ERROR% Found another instance of ag.exe installed by Chocolatey. Please uninstall it first using 'choco uninstall ag' and retry.
+  %PAUSE%
   %RETURN% 1
 )
 
@@ -507,6 +547,7 @@ cd "%SPATH%"
 if not exist "win32\ag.exe" if exist "..\..\bin\win32\ag.exe" cd ..\..\bin
 if not exist "win32\ag.exe" (
   %ERROR% Can't find ag.exe masters
+  %PAUSE%
   %RETURN% 1
 )
 
@@ -574,6 +615,7 @@ if not defined FOUND_%SRCDIR% (
 :# Make sure there's something to uninstall
 if not defined INSTALLED_FILES (
   %ERROR% Nothing was installed
+  %PAUSE%
   %RETURN% 1
 )
 set "INSTALLED_FILES=!INSTALLED_FILES:~1!" &:# Remove the initial space
@@ -605,6 +647,7 @@ echo "VersionMinor"="%V_MINOR%"
 %EXEC% regedit.exe /s "%TEMP%\ag_setup.reg"
 if errorlevel 1 (
   %ERROR% Failed to import the uninstall information into the registry
+  %PAUSE%
   %RETURN% 1
 )
 
