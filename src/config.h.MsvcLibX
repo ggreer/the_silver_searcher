@@ -96,7 +96,7 @@
 #define PACKAGE_URL "https://github.com/ggreer/the_silver_searcher"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "2.2.4"
+#define PACKAGE_VERSION "2.2.5"
 
 /* MsvcLibX/Windows port version and date */
 #define PROGRAM_VERSION PACKAGE_VERSION
