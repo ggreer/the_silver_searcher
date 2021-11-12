@@ -162,7 +162,7 @@ or
   
   Notes:
   - This installs a [release](https://github.com/JFLarvoire/the_silver_searcher/releases) of ag.exe optimized for Windows.
-  - winget.exe now is the default command-line package manager for Windows 10.  
+  - winget.exe now is the default command-line package manager for Windows 10 and Windows 11.  
     It is supported on Windows 10 build 1709 or newer.  
     If needed, it can be installed from the Microsoft Store, where it is called "App Installer".  
     It can also be installed manually using instructions on its [github home](https://github.com/microsoft/winget-cli).
@@ -171,6 +171,9 @@ or
      2. In the directory defined in environment variable bindir_%PROCESSOR_ARCHITECTURE%
      3. In the directory defined in environment variable bindir
      4. In the directory defined in environment variable windir
+  - The setup script detects other ag.exe installations done by Chocolatey or Scoop, and aborts if one is found.  
+    Any installation done with another package manager should be removed before installing a new one with winget. Ex:  
+    `choco uninstall ag` or `scoop uninstall ag`
   
 * Chocolatey
 
