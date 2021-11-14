@@ -24,11 +24,12 @@
 :#                  Fixed admin detect in 32-bits shells in 64-bits Windows.  #
 :#                  Pause before exiting after an error, to give time to      #
 :#                  read the error message from within ag_setup.exe.          #
+:#   2021-11-14 JFL Added option -y.                                          #
 :#                                                                            #
 :##############################################################################
 
 setlocal EnableExtensions DisableDelayedExpansion &:# Make sure ! characters are preserved
-set "VERSION=2021-11-12"
+set "VERSION=2021-11-14"
 set "SCRIPT=%~nx0"		&:# Script name
 set "SNAME=%~n0"		&:# Script name, without its extension
 set "SPATH=%~dp0"		&:# Script path
@@ -472,6 +473,7 @@ echo  -?    Display this help
 echo  -u    Uninstalls a previous instance of Ag, instead of installing a new one
 echo  -V    Display the script version
 echo  -X    Display the installation commands to execute, but don't run them
+echo  -y    Do not prompt the user for confirmations
 echo.
 echo Notes:
 echo  * Upgrades previous instances found in the PATH
@@ -490,6 +492,8 @@ set "SRCDIR[AMD64]=WIN64"
 
 set "UNINSTALL_KEY=HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\The Silver Searcher"
 set "INSTALLED_FILES="  &:# List of files installed or updated by this script
+
+set "SILENT=0"
 
 %LOG% --------------------------------------------------------------------
 %LOG% %~f0 %*
@@ -513,6 +517,7 @@ if [%1]==[-d] call :Debug.on & goto :next_arg
 if [%1]==[-u] call :UninstallAg & %RETURN%
 if [%1]==[-V] (echo %VERSION%) & exit /b 0
 if [%1]==[-X] set "EXEC=echo" & goto :next_arg
+if [%1]==[-y] set "SILENT=1" & goto :next_arg
 %ERROR% Unexpected argument: %1
 %PAUSE%
 %RETURN% 1
