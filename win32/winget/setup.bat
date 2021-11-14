@@ -25,6 +25,7 @@
 :#                  Pause before exiting after an error, to give time to      #
 :#                  read the error message from within ag_setup.exe.          #
 :#   2021-11-14 JFL Added option -y.                                          #
+:#                  Fixed the registry update from within ag_setup.exe.       #
 :#                                                                            #
 :##############################################################################
 
@@ -628,7 +629,14 @@ set "INSTALLED_FILES=!INSTALLED_FILES:~1!" &:# Remove the initial space
 
 :# Write the uninstall information into the registry
 :# This is used by winget.exe to locate previous installations.
-%COMMENT% Writing uninstall information into the registry
+%COMMENT% Writing uninstall information into the registry key:
+%COMMENT% !UNINSTALL_KEY!
+set "REGEDIT=regedit.exe"
+:# Gotcha: When running in a 32-bits shell within ag_setup.exe, regedit.exe
+:# runs the 32-bits version, which silently accesses a different registry key:
+:# HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall
+:# In this case, make sure to use the 64-bits version of regedit.exe:
+for %%r in (%WINDIR%\sysnative\regedt32.exe) do if exist %%r set "REGEDIT=%%r"
 call :SplitVer %NEW_AG_VER% V_MAJOR V_MINOR V_PATCH V_BUILD
 set QUOTED_KEY="!UNINSTALL_KEY!"
 set "UNINSTALL_STRING=%windir%\System32\cmd.exe /c del !INSTALLED_FILES! & reg delete !QUOTED_KEY! /f"
@@ -649,7 +657,7 @@ echo "VersionMinor"="%V_MINOR%"
 ) >"%TEMP%\ag_setup.reg"
 %LOG% type "%TEMP%\ag_setup.reg"
 >>"%LOGFILE%" type "%TEMP%\ag_setup.reg"
-%EXEC% regedit.exe /s "%TEMP%\ag_setup.reg"
+%EXEC% %REGEDIT% /s "%TEMP%\ag_setup.reg"
 if errorlevel 1 (
   %ERROR% Failed to import the uninstall information into the registry
   %PAUSE%
