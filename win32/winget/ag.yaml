@@ -10,7 +10,7 @@
 #                                                                             #
 #   History                                                                   #
 #    2020-06-03 JFL Created this file.                                        #
-#    2021-11-14 JFL Updated syntax; Added the x64 architecture entry.         #
+#    2021-11-14 JFL Updated syntax; More tags.                                #
 #                                                                             #
 ###############################################################################
 
@@ -43,9 +43,6 @@ InstallerSwitches:
   SilentWithProgress: -y
 Installers:
 - Architecture: x86
-  InstallerUrl: https://github.com/JFLarvoire/the_silver_searcher/releases/download/!VERSION!-Windows/ag_setup.exe
-  InstallerSha256: !HASH!
-- Architecture: x64
   InstallerUrl: https://github.com/JFLarvoire/the_silver_searcher/releases/download/!VERSION!-Windows/ag_setup.exe
   InstallerSha256: !HASH!
 ManifestType: singleton
