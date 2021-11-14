@@ -42,6 +42,12 @@ IMPORTANT: The Ag release *must* be named `%VERSION%-Windows`, to match the mani
 The files will then be available for download at:  
 https://github.com/JFLarvoire/the_silver_searcher/releases/download/%VERSION%-Windows/  
 
+Then test the winget manifest by running:
+- `winget validate --manifest %VERSION%.yaml`
+- `winget install -m %VERSION%.yaml`
+- `winget list JFLarvoire.Ag`
+- `winget uninstall JFLarvoire.Ag`
+
 The winget manifest %VERSION%.yaml is to be renamed as JFLarvoire.Ag.yaml and pushed to:  
 https://github.com/JFLarvoire/winget-pkgs/tree/master/manifests/j/JFLarvoire/Ag/%VERSION%/JFLarvoire.Ag.yaml  
 Then a pull request is to be submitted to Microsoft at:  
@@ -63,14 +69,12 @@ setup.bat, in turn, installs ag.exe into the first directory that matches one of
  3. In the directory defined in environment variable bindir
  4. In the directory defined in environment variable windir
  
-In case of a problem, setup.bat logs what it's doing into `%TEMP%\ag_setup.log`.
-
 
 Debugging Ag Setup installations
 --------------------------------
 
-setup.bat logs everything it does into file `%TEMP%\ag_setup.log`.  
-Analyzing this file allows tracing what was done, and when. 
+In case of a problem, setup.bat logs everything it does into `%TEMP%\ag_setup.log`.
+Analyzing this file allows to know what was done, and when. 
 
 
 Generating the Chocolatey package
