@@ -12,6 +12,7 @@
 #    2020-06-30 JFL Added the generation of ag_setup.exe and winget manifest. #
 #    2021-07-10 JFL Make release now also generates architecture-specific     #
 #		    zip files, for use by Chocolatey, etc.		      #
+#    2021-11-14 JFL Fixed the hash generation for the latest winget version.  #
 #		    							      #
 ###############################################################################
 
@@ -129,7 +130,7 @@ release:
 	  
 	  :# Get the ag_setup.exe file hash
 	  set "HASH="
-	  for /f "tokens=3" %%v in ('winget hash "!EXE!"') do set "HASH=%%~v"
+	  for /f "tokens=2" %%v in ('winget hash "!EXE!"') do set "HASH=%%~v"
 	  $(MSG) bin\ag_setup.exe HASH=!HASH!
 
 	  :# Build the winget manifest YAML file
