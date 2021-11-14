@@ -66,6 +66,13 @@ setup.bat, in turn, installs ag.exe into the first directory that matches one of
 In case of a problem, setup.bat logs what it's doing into `%TEMP%\ag_setup.log`.
 
 
+Debugging Ag Setup installations
+--------------------------------
+
+setup.bat logs everything it does into file `%TEMP%\ag_setup.log`.  
+Analyzing this file allows tracing what was done, and when. 
+
+
 Generating the Chocolatey package
 ---------------------------------
 
