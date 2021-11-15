@@ -1,0 +1,242 @@
+###############################################################################
+#									      #
+#   File name	    NMakefile						      #
+#									      #
+#   Description     An NMake file for making ag libs, ag, and its releases    #
+#									      #
+#   Notes	    make.bat looks for a default nmake file called NMakeFile. #
+#									      #
+#   History								      #
+#    2017-09-01 JFL jf.larvoire@free.fr created this file.                    #
+#    2018-03-14 JFL Added a source-release target.			      #
+#    2020-06-30 JFL Added the generation of ag_setup.exe and winget manifest. #
+#    2021-07-10 JFL Make release now also generates architecture-specific     #
+#		    zip files, for use by Chocolatey, etc.		      #
+#    2021-11-14 JFL Fixed the hash generation for the latest winget version.  #
+#		    							      #
+###############################################################################
+
+default: all
+
+# This help definition overrides the second one included in All.mak below.
+help:
+    type <<
+Usage: make.bat [options] [nmake_options] [macro_definitions] [targets] ...
+
+Macro definitions:     (They must be quoted, else the = sign will be lost)
+  "DEBUG=1"            Generate the debug version. <==> Target in a Debug\ dir.
+  "OS=WIN32 WIN64"     List of target OSs to build for
+  "WINVER=5.1"         Minimum target OS version. 5.1=WinXP, 6.1=Win7
+
+Targets:
+  all                  Build all available sources (default)
+  clean                Erase all output files
+  distclean            Erase all output files and all configuration files
+  release              Generate a $(OUTDIR)\ag.zip release
+  source-release       Generate a $(OUTDIR)\ag-src.zip release
+<<
+
+# Include common definitions
+!INCLUDE <All.mak>
+
+# Build just the libraries
+libs win32:
+    $(BMAKE) -C win32 $@ 
+
+# Build just the executables
+exes src:
+    $(BMAKE) -C src $@ 
+
+# Create a binary release (bin\ag.zip)
+release:
+    call <<"$(TMP)\ag-release-$(PID).bat"
+	setlocal EnableExtensions EnableDelayedExpansion
+	
+	:# Prepare running 7-zip
+	if not defined ProgramFiles set "ProgramFiles=C:\Program Files"
+	if not exist "%ProgramFiles%\7-zip\7z.exe" (
+	  $(MSG) Error: This requires installing 7-zip
+	  exit /b 1
+	)
+	set PATH=%PATH%;%ProgramFiles%\7-zip
+	set "7ZIP=call :7zip"
+	goto :start
+	
+	:# Get the current date/time
+	:Now
+	setlocal EnableExtensions
+	for /f %%i in ('WMIC OS GET LocalDateTime /value') do for /f "tokens=2 delims==" %%j in ("%%i") do set "dt=%%j"
+	endlocal & set "YEAR=%dt:~,4%" & set "MONTH=%dt:~4,2%" & set "DAY=%dt:~6,2%" & set "HOUR=%dt:~8,2%" & set "MINUTE=%dt:~10,2%" & set "SECOND=%dt:~12,2%" & set "MS=%dt:~15,3%"
+	exit /b
+
+	:# Subroutine that runs 7zip, and abort the script in case of a zipping error
+	:7zip
+	"%ProgramFiles%\7-zip\7z.exe" %*
+	if errorlevel 1 exit 1
+	exit /b 0
+
+	:# Subroutine that adds files to both !ZIP! and !7Z!
+	:AddToZips %*=file_to_add
+	!7ZIP! -- a "!ZIP!" %*
+	if errorlevel 1 exit /b
+	:AddTo7Z %*=file_to_add
+	if defined 7Z !7ZIP! -t7z -- a "!7Z!" %*
+	exit /b
+
+	:# Recreate the zip from scratch
+	:start
+	cd bin
+	set "bindir=!CD!"
+	set "ZIP=!bindir!\ag.zip"			&:# Output ZIP file name
+	set "7Z="
+	if defined HAS_LZMA  set "7Z=!bindir!\ag.7z"	&:# Output 7Z file name
+	set "EXE=!bindir!\ag_setup.exe"			&:# Output EXE file name
+	for %%f in ("!ZIP!" "!7Z!" "!EXE!") do if exist %%f del %%f
+	
+	:# Add the various versions of ag.exe
+	$(HEADLINE) Creating !ZIP! ...
+	for %%d in (DOS WIN95 WINXP WIN32 IA64 WIN64 ARM ARM64) do (
+	  if exist "%%d\ag.exe" (
+	    set "AG=%%d\ag.exe"
+	    $(MSG) Adding !AG!
+	    call :AddToZips "!AG!"
+	  )
+	)
+	
+	:# Add the doc files
+	cd ..
+	$(MSG) Adding README
+	type README.md | FIND "" /V > README.txt	&:# Converts LF to CRLF
+	call :AddToZips README.txt
+	$(MSG) Adding LICENSE
+	type LICENSE | FIND "" /V > LICENSE.txt		&:# Converts LF to CRLF
+	call :AddToZips LICENSE.txt
+
+	$(MSG) ... done
+	
+	:# Get the ag.exe version
+	$(HEADLINE) Getting version from src\config.h.MsvcLibX ...
+	set "VERSION="
+	for /f "tokens=3" %%v in ('findstr /C:"#define PACKAGE_VERSION" src\config.h') do set "VERSION=%%~v"
+	$(MSG) VERSION=!VERSION!
+
+	if defined HAS_LZMA ( :# Skip this if the user does not have the 7-Zip LZMA SDK configured
+	  :# Build ag_setup.exe
+	  $(HEADLINE) Building !EXE! ...
+	  pushd win32\winget
+	  call :AddTo7Z setup.bat
+	  copy /b /y "%LZMA%\bin\7zS2con.sfx" + "!7Z!" "!EXE!"
+	  popd
+	  
+	  :# Get the ag_setup.exe file hash
+	  set "HASH="
+	  for /f "tokens=2" %%v in ('winget hash "!EXE!"') do set "HASH=%%~v"
+	  $(MSG) bin\ag_setup.exe HASH=!HASH!
+
+	  :# Build the winget manifest YAML file
+	  set "YAML=!bindir!\!VERSION!.yaml"		&:# Output YAML file name
+	  $(MSG) Generating !YAML!
+	  if exist "!YAML!" del "!YAML!"
+	  :# Copy every line from ag.yaml, expanding !variables! in the process
+	  for /f "tokens=* delims=0123456789" %%l in ('findstr /n /r "^" win32\winget\ag.yaml') do >> "!YAML!" echo%%l
+
+	  del "!7Z!"
+	  $(MSG) ... done
+	)
+	
+	:# Create architecture-specific releases
+	set ARCHI[DOS]=dos
+	set ARCHI[WIN95]=win95
+	set ARCHI[WINXP]=x86
+	set ARCHI[WIN32]=x86
+	set ARCHI[IA64]=ia64
+	set ARCHI[WIN64]=amd64
+	set ARCHI[ARM]=arm
+	set ARCHI[ARM64]=arm64
+	call :Now
+	set "TODAY=%YEAR%-%MONTH%-%DAY%"
+	for %%d in (DOS WIN95 WINXP WIN32 IA64 WIN64 ARM ARM64) do (
+          set "ARCHI=!ARCHI[%%d]!"
+	  if exist "bin\%%d\ag.exe" (
+	    set "ZIP=!bindir!\ag-%TODAY%-%VERSION%-!ARCHI!.zip"			&:# Output ZIP file name
+	    $(HEADLINE) Creating !ZIP! ...
+	    $(MSG) Adding %%d\ag.exe
+	    cd bin\%%d
+	    !7ZIP! -- a "!ZIP!" ag.exe
+	    cd ..\..
+	    $(MSG) Adding README
+	    !7ZIP! -- a "!ZIP!" README.txt
+	    $(MSG) Adding LICENSE
+	    !7ZIP! -- a "!ZIP!" LICENSE.txt
+	    $(MSG) ... done
+	  )
+	)
+
+	:# Cleanup temporary files
+	del README.txt
+	del LICENSE.txt
+<<
+
+source-release:
+    call <<"$(TMP)\ag-source-release-$(PID).bat"
+	@echo off
+	setlocal EnableExtensions EnableDelayedExpansion
+	goto :main
+	
+	:msg
+	echo %*
+	$(MSG) %*
+	exit /b
+	
+	:main
+	set "MSG=call :msg"
+	
+	:# Select the output directory
+	set "CONFIG.H=config.%COMPUTERNAME%.h"
+	if not exist %CONFIG.H% set "CONFIG.H=config.h"
+	if exist %CONFIG.H% call %CONFIG.H%
+	if not defined OUTDIR (
+	  set "\OUTDIR=\bin"
+	) else if "%OUTDIR%"=="." (
+	  set "\OUTDIR="
+	) else (
+	  set "\OUTDIR=\%OUTDIR%"
+	)
+	
+	:# Set the output file name
+	set "ZIP=!CD!%\OUTDIR%\ag-src.zip"
+	
+	:# Rebuild a new zip file
+	set "PATH=%PATH%;C:\Program Files\7-zip;C:\Program Files\Git\cmd"
+	if exist "%ZIP%" del "%ZIP%"
+	%MSG% Creating "%ZIP%"
+
+	:# Problem: A list size > 8KB confuses the batch parser
+	:# Worse still, commands > 4KB fail. 
+	:# So split large lists into several sub-lists of smaller sizes
+	set "NLIST=0"
+	set "LIST="
+	for /f "delims=" %%f in ('git ls-files') do (
+	  set "FILE=%%f"
+	  set  LIST=!LIST! "!FILE:/=\!"
+	  set "C=!LIST:~3500,1!"
+	  if defined C for %%n in (!NLIST!) do (
+	    set LIST[%%n]=!LIST:~1!
+	    set /A NLIST+=1
+	    set "LIST="
+	  )
+	)
+	if defined LIST for %%n in (!NLIST!) do (
+	  set LIST[%%n]=!LIST:~1!
+	  set /A NLIST+=1
+	  set "LIST="
+	)
+	set /A ILAST=NLIST-1
+	for /l %%i in (0,1,!ILAST!) do (
+	  echo 7z.exe -- a "%ZIP%" !LIST[%%i]!
+	  7z.exe a -- "%ZIP%" !LIST[%%i]!
+	)
+	
+	:# Conclusion
+	%MSG% %ZIP% done
+<<

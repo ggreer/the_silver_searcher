@@ -30,3 +30,18 @@ tests/*.err
 tests/big/*.err
 tests/big/big_file.txt
 the_silver_searcher.spec
+# The following are for Windows/Visual C++ builds
+*.lib
+*.log
+*.pdb
+config.*.bat
+ARM/
+DOS/
+IA64/
+WIN32/
+WIN64/
+WIN95/
+bin/
+lib/
+list/
+obj/

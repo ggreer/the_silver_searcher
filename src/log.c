@@ -7,6 +7,8 @@
 pthread_mutex_t print_mtx = PTHREAD_MUTEX_INITIALIZER;
 static enum log_level log_threshold = LOG_LEVEL_ERR;
 
+pthread_mutex_t print_mtx;
+
 void set_log_level(enum log_level threshold) {
     log_threshold = threshold;
 }
@@ -39,6 +41,8 @@ void log_err(const char *fmt, ...) {
     va_end(args);
 }
 
+extern __thread int worker_id; /* -1 = Main thread; [0 to N-1] = worker thread ID */
+
 void vplog(const unsigned int level, const char *fmt, va_list args) {
     if (level < log_threshold) {
         return;
@@ -50,6 +54,9 @@ void vplog(const unsigned int level, const char *fmt, va_list args) {
     switch (level) {
         case LOG_LEVEL_DEBUG:
             fprintf(stream, "DEBUG: ");
+            /* Display the worker threads ID. This allows filtering the debug output by thread */
+            if (worker_id >= 0)
+                fprintf(stream, "#%d: ", worker_id);
             break;
         case LOG_LEVEL_MSG:
             fprintf(stream, "MSG: ");
@@ -63,8 +70,17 @@ void vplog(const unsigned int level, const char *fmt, va_list args) {
             break;
     }
 
+#ifdef _WIN32 /* Convert paths back to a Windows format */
+    char *msg;
+    vasprintf(&msg, fmt, args);
+    char *pc;
+    for (pc = msg; *pc; pc++) if (*pc == '/') *pc = '\\';
+    fprintf(stream, "%s\n", msg);
+    free(msg);
+#else
     vfprintf(stream, fmt, args);
     fprintf(stream, "\n");
+#endif
     pthread_mutex_unlock(&print_mtx);
 }
 

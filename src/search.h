@@ -33,7 +33,7 @@
 
 extern size_t alpha_skip_lookup[256];
 extern size_t *find_skip_lookup;
-extern uint8_t h_table[H_SIZE] __attribute__((aligned(64)));
+extern uint8_t h_table[H_SIZE];
 
 struct work_queue_t {
     char *path;
@@ -48,6 +48,18 @@ extern pthread_cond_t files_ready;
 extern pthread_mutex_t stats_mtx;
 extern pthread_mutex_t work_queue_mtx;
 
+#if SUPPORT_MULTIPLE_ENCODINGS
+/* Text files encodings supported */
+typedef enum {
+    ENC_UNKNOWN,
+    ENC_WIN_CP, /* Windows System Code Page (Varies depending on localization) */
+    ENC_UTF8,   /* Unicode encoded as UTF-8 */
+    ENC_UTF16,  /* Unicode encoded as UTF-16 */
+    N_ENCODINGS /* Number of encoding constants. Must be last. */
+} ENCODING;
+
+extern __thread int enc; /* Encoding detected for the current file */
+#endif                   /* SUPPORT_MULTIPLE_ENCODINGS */
 
 /* For symlink loop detection */
 #define SYMLOOP_ERROR (-1)

@@ -1,4 +1,4 @@
-#include <errno.h>
+﻿#include <errno.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -8,6 +8,12 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#ifdef _WIN32
+#include <libgen.h>	/* Used for expanding wild cards */
+#include <dirent.h>	/* Used for expanding wild cards */
+#include <fnmatch.h>	/* Used for expanding wild cards */
+#endif
+
 #include "config.h"
 #include "ignore.h"
 #include "lang.h"
@@ -16,11 +22,51 @@
 #include "print.h"
 #include "util.h"
 
+#include <zlib.h>
+
 const char *color_line_number = "\033[1;33m"; /* bold yellow */
 const char *color_match = "\033[30;43m";      /* black with yellow background */
 const char *color_path = "\033[1;32m";        /* bold green */
 
 cli_options opts;
+
+#if SUPPORT_MULTIPLE_ENCODINGS
+#include <iconv.h>
+/* Get the actual name of a code page */
+char *GetCPName(int iCP, LPCPINFOEX lpCpi) {
+    int i;
+    char *pszName = "";
+    CPINFOEX cpi;
+    if (!lpCpi) {
+        lpCpi = &cpi;
+    }
+    if (GetCPInfoEx(iCP, 0, lpCpi)) { /* Most code pages have a good descrition in the CPINFOEX structure */
+        /* (Including many that are not listed in the static list above) */
+        pszName = lpCpi->CodePageName;
+        /* Make a copy because we can't return the address of this one in the local stack frame */
+        /* Skip the code page number copy at the beginning of the CPINFOEX name */
+        while (strchr("0123456789", *pszName)) {
+            pszName++;
+        }
+        while (isspace(*pszName)) {
+            pszName++; /* Skip spaces after the number */
+        }
+        if (*pszName == '(') {
+            pszName++; /* Remove the leading '(' */
+        }
+        pszName = strdup(pszName);
+        i = (int)strlen(pszName) - 1;
+        if (pszName[i] == ')') {
+            pszName[i] = '\0'; /* Remove the trailing ')' */
+        }
+    }
+    /* But some code pages have a description that's an empty string "" */
+    if (!*pszName) {
+        pszName = "(Unknown name)";
+    }
+    return pszName;
+}
+#endif /* SUPPORT_MULTIPLE_ENCODINGS */
 
 /* TODO: try to obey out_fd? */
 void usage(void) {
@@ -112,22 +158,85 @@ Search Options:\n\
   -w --word-regexp        Only match whole words\n\
   -W --width NUM          Truncate match lines after NUM characters\n\
   -z --search-zip         Search contents of compressed (e.g., gzip) files\n\
-\n");
-    printf("File Types:\n\
+");
+#ifdef _WIN32
+    printf("\
+                          Note that Windows zip files are not supported.\n\
+");
+#endif
+    printf("\nFile Types:\n\
 The search can be restricted to certain types of files. Example:\n\
   ag --html needle\n\
   - Searches for 'needle' in files with suffix .htm, .html, .shtml or .xhtml.\n\
 \n\
 For a list of supported file types run:\n\
-  ag --list-file-types\n\n\
-ag was originally created by Geoff Greer. More information (and the latest release)\n\
-can be found at http://geoff.greer.fm/ag\n");
+  ag --list-file-types\n");
+#if SUPPORT_MULTIPLE_ENCODINGS
+    printf("\n\
+Input text encoding for non-ASCII text:\n\
+  It is dynamically identified among one of these supported encodings:\n\
+  o For text piped in via standard input:\n\
+    - The current console code page: Code Page %d = %s\n\
+    - Code Page 65001 = UTF-8\n\
+", consoleCodePage, GetCPName(consoleCodePage, NULL));
+    printf("\
+  o For text read from files:\n\
+    - The Windows System Code Page: Code Page %u = %s\n\
+    - Code Page 65001 = UTF-8\n\
+", systemCodePage, GetCPName(systemCodePage, NULL));
+#if HAS_MSVCLIBX
+    printf("\
+    - Code Page 1200  = UTF-16\n\
+");
+#endif /* HAS_MSVCLIBX */
+#endif /* SUPPORT_MULTIPLE_ENCODINGS */
+#if HAS_MSVCLIBX
+    printf("\n\
+Output text encoding:\n\
+  Ag.exe behaves the same way as Microsoft's own console tools:\n\
+  All output to the console is encoded as UTF-16. This ensures that all Unicode\n\
+  characters are displayed correctly, independently of the current code page.\n\
+  Output to a pipe or a file is encoded in the current console code page.\n\
+  For pipes, this maximizes the chances that characters for your language are\n\
+  processed correctly by further commands in the pipe. But for files, this may\n\
+  produce unexpected results, as the default console code page is often\n\
+  different from the system code page. If you want the output file to be in\n\
+  a specific encoding, change the console code page to the encoding you want.\n\
+  Internally, ag.exe uses UTF-8 for all text. This may cause options like\n\
+  --ackmate, that report character offsets, to produce seemingly incorrect\n\
+  results. When using such options, it is necessary to use code page 65001 to\n\
+  get correct offsets.\n\
+");
+#endif
+#if CONVERT_UNICODE_ESCAPES
+    printf("\n\
+Escape sequences in the PATTERN string: (Except when using -Q|--literal)\n\
+  \\xXX, \\uXXXX & \\UXXXXXXXX are converted to the equivalent Unicode character.\n\
+  Use option --verbose to display the pattern string generated.\n\
+  Caution: \\x80 to \\x9F are invalid Unicode code points. To search for the Euro\n\
+  sign, use either € or \\u20AC, but not \\x80, even for CP 1252 files. Likewise,\n\
+  to search for all non-ASCII characters, use [^\\x00-\\x7F], not [\\x80-\\xFF].\n\
+");
+#endif
+    printf("\n\
+ag was originally created by Geoff Greer. More information, and the latest\n\
+release for Unix/Linux, can be found at http://geoff.greer.fm/ag\n");
+#if HAS_MSVCLIBX
+    printf("\
+This version was ported to Windows by Krzysztof Kowalczyk, then significantly\n\
+enhanced by Jean-François Larvoire. The latest release can be found at\n\
+https://github.com/JFLarvoire/the_silver_searcher/releases\n\
+You can also install it using the Windows package manager:\n\
+winget install \"The Silver Searcher\"\n\
+");
+#endif
 }
 
 void print_version(void) {
     char jit = '-';
     char lzma = '-';
     char zlib = '-';
+    char twoEnc = '-';
 
 #ifdef USE_PCRE_JIT
     jit = '+';
@@ -138,10 +247,28 @@ void print_version(void) {
 #ifdef HAVE_ZLIB_H
     zlib = '+';
 #endif
+#if SUPPORT_MULTIPLE_ENCODINGS
+    twoEnc = '+';
+#endif
 
-    printf("ag version %s\n\n", PACKAGE_VERSION);
+    printf("ag version %s", PACKAGE_VERSION);
+#if defined(HAS_MSVCLIBX)
+#include "stversion.h"
+    printf(" ; Windows port"
+      	   AND_PROGRAM_DATE
+           AND_EXE_OS_NAME
+           AND_MIN_OS_NAME
+           AND_EXE_PROC_NAME
+           DEBUG_VERSION
+	   "\nMsvcLibX " MSVCLIBX_VERSION
+	   " ; PCRE " MSVCLIBX_STRINGIZE(PCRE_MAJOR) "." MSVCLIBX_STRINGIZE(PCRE_MINOR) " " MSVCLIBX_STRINGIZE(PCRE_DATE)
+	   " ; pthreads4w " MSVCLIBX_STRINGIZE(__PTW32_VERSION_MAJOR) "." MSVCLIBX_STRINGIZE(__PTW32_VERSION_MINOR) "." MSVCLIBX_STRINGIZE(__PTW32_VERSION_MICRO)
+	   " ; zlib " ZLIB_VERSION
+    );
+#endif /* defined(HAS_MSVCLIBX) */
+    printf("\n\n");
     printf("Features:\n");
-    printf("  %cjit %clzma %czlib\n", jit, lzma, zlib);
+    printf("  %cjit %clzma %czlib %c2enc\n", jit, lzma, zlib, twoEnc);
 }
 
 void init_options(void) {
@@ -206,6 +333,29 @@ void cleanup_options(void) {
     }
 }
 
+#ifdef HAS_MSVCLIBX
+// Output MsvcLibX debug messages using Ag's log_debug(). This is necessary to
+// avoid having mixed message pieces due to Ag's multithreading.
+// Problem: Most MsvcLibX messages end with an \n, whereas log_debug() adds one anyway.
+//          So remove the final \n, if any, in the MsvcLibX debug messages.
+//	    But since the original message is a const string, we need to duplicate it.
+int ag_debug_put(const char *msg) {
+    char *msg2 = (char *)msg;
+    size_t l = strlen(msg);
+    if (l && msg[l-1] == '\n') {
+      msg2 = strdup(msg);
+      if (msg2) {	// String duplication succeeded
+      	msg2[l-1] = '\0';	// Remove the final \n
+      } else {		// Out of memory?
+      	msg2 = (char *)msg;	// Use the original message
+      }
+    }
+    log_debug("%s", msg2);
+    if (msg2 != (char *)msg) free(msg2);
+    return 0;
+}
+#endif
+
 void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     int ch;
     size_t i;
@@ -267,6 +417,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "group", no_argument, &group, 1 },
         { "heading", no_argument, &opts.print_path, PATH_PRINT_TOP },
         { "help", no_argument, NULL, 'h' },
+        { "help-windows", no_argument, NULL, '?' },
         { "hidden", no_argument, &opts.search_hidden_files, 1 },
         { "ignore", required_argument, NULL, 0 },
         { "ignore-case", no_argument, NULL, 'i' },
@@ -327,6 +478,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         { "stats", no_argument, &opts.stats, 1 },
         { "stats-only", no_argument, NULL, 0 },
         { "unrestricted", no_argument, NULL, 'u' },
+        { "verbose", no_argument, &opts.verbose, 1 },
         { "version", no_argument, &version, 1 },
         { "vimgrep", no_argument, &opts.vimgrep, 1 },
         { "width", required_argument, NULL, 'W' },
@@ -379,7 +531,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     }
 
     char *file_search_regex = NULL;
-    while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:FfHhiLlm:nop:QRrSsvVtuUwW:z0", longopts, &opt_index)) != -1) {
+    while ((ch = getopt_long(argc, argv, "A:aB:C:cDG:g:FfHhiLlm:nop:QRrSsvVtuUwW:z0?", longopts, &opt_index)) != -1) {
         switch (ch) {
             case 'A':
                 if (optarg) {
@@ -427,6 +579,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 break;
             case 'D':
                 set_log_level(LOG_LEVEL_DEBUG);
+#ifdef HAS_MSVCLIBX
+                SET_DEBUG_PUT(ag_debug_put); /* MsvcLibX debug output now goes though ag_debug_puts -> log_debug */
+                DEBUG_ON();                  /* Enable MsvcLibX debug output in the DEBUG version of the program */
+#endif
                 break;
             case 'f':
                 opts.follow_symlinks = 1;
@@ -447,6 +603,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.print_path = PATH_PRINT_TOP;
                 break;
             case 'h':
+            case '?':
                 help = 1;
                 break;
             case 'i':
@@ -475,6 +632,8 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 opts.only_matching = 1;
                 break;
             case 'F':
+                opts.fixed_string = 1;
+                // Fall through as fixed strings are literal strings
             case 'Q':
                 opts.literal = 1;
                 break;
@@ -787,7 +946,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         // use default query
         opts.query = ag_strdup(".");
     }
-    opts.query_len = strlen(opts.query);
+    opts.query_len = (int)strlen(opts.query);
 
     log_debug("Query is %s", opts.query);
 
@@ -795,6 +954,83 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         log_err("Error: No query. What do you want to search for?");
         exit(1);
     }
+
+#if CONVERT_UNICODE_ESCAPES // Work around a limitation of PCRE1 regular expressions, which only support \xXX, but not \uXXXX nor \UXXXXXXXX
+    if ((!opts.literal) || opts.fixed_string) { // Unless the -Q|--literal option was used
+        // Convert \xXX, \uXXXX & \UXXXXXXXX escape sequences in the search string to UTF-8
+	log_debug("Initial query: \"%s\"", opts.query);
+	char *pIn, *pOut, lastC = '\0';
+	for (pIn=pOut=opts.query; *pIn; ) {
+	    int iMaxWidth = 0;
+	    if ((lastC != '\\') && (pIn[0] == '\\')) switch (pIn[1]) {
+	        case 'x': iMaxWidth = 2; break;
+	        case 'u': iMaxWidth = 4; break;
+	        case 'U': iMaxWidth = 8; break;
+	        default:                 break;
+	    }
+	    if (iMaxWidth) {
+	        int nHex;
+		int iCode = 0;
+		char cType = pIn[1];
+	        for (nHex=0; nHex<iMaxWidth; nHex++) { // Scan up to iMaxWidth hexadecimal characters
+		    int iHexDigit;
+		    if ((!isprint(pIn[2+nHex])) || !sscanf(pIn+2+nHex, "%1x", &iHexDigit)) break;
+		    iCode <<= 4;
+		    iCode += iHexDigit;
+		}
+	        if (nHex && iCode) { // We indeed got non nul hexadecimal characters
+		    log_debug("Found escape sequence \\%c%0*X", cType, nHex, iCode);
+		    wchar_t *pWChars = (wchar_t *)&iCode;
+		    int nWChars = 1;
+		    /* TO DO: Use iconv() instead */
+		    if (iCode & 0xFFFF0000) { // Convert the UTF-32 code to UTF-16
+		        int iCode20 = iCode - 0x10000;
+		        if (iCode20 & 0xFFF00000) goto bad_unicode_char; // Can't have more than 20 bits
+		        pWChars = (wchar_t *)&iCode20;
+		        nWChars = 2; // This will be encoded as two surrogate UTF-16 characters
+		        int low10 = iCode20 & 0x3FF;		// Low 10 bits
+		        int hi10 = (iCode20 >> 10) & 0x3FF;	// High 10 bits
+		        pWChars[0] = (wchar_t)(0xD800 + hi10);
+		        pWChars[1] = (wchar_t)(0xDC00 + low10);
+		        log_debug("Converted to 2 UTF-16 words: \\x%04X \\x%04X", pWChars[0], pWChars[1]);
+		    }
+#ifndef WC_ERR_INVALID_CHARS
+#define WC_ERR_INVALID_CHARS      0x00000080  // Why is it not defined, whereas WideCharToMultiByte() is?
+#endif
+		    int nUtf8 = WideCharToMultiByte(CP_UTF8,		  /* CodePage, */
+						    WC_ERR_INVALID_CHARS, /* dwFlags, */
+						    pWChars,		  /* lpWideCharStr, */
+						    nWChars,		  /* cchWideChar, */
+						    pOut,		  /* lpMultiByteStr, */
+						    2+nHex,		  /* cbMultiByte, */
+						    NULL,		  /* lpDefaultChar, */
+						    NULL		  /* lpUsedDefaultChar */
+						    );
+		    if (nUtf8) {
+		        char szBuf[80];
+			int n = sprintf(szBuf, "Converted %*.*s to %d UTF-8 bytes:", nUtf8, nUtf8, pOut, nUtf8);
+			for (int j=0; j<nUtf8; j++) n += sprintf(szBuf+n, " \\x%02X", (unsigned char)(pOut[j]));
+			log_debug("%s", szBuf);
+			pIn += 2+nHex;
+			pOut += nUtf8;
+			lastC = '\0';
+			continue;
+		    }
+		}
+bad_unicode_char:
+		log_err("Error: Invalid Unicode character: \\%c%0*.*X", cType, nHex, nHex, iCode);
+		exit(1);
+	    }
+	    lastC = *(pOut++) = *(pIn++);
+	}
+	*pOut = '\0';
+	opts.query_len = (int)(pOut - opts.query); // strlen(opts.query);
+	log_debug("Updated Query: \"%s\"", opts.query);
+    }
+    if (opts.verbose) printf("Searching for %s \"%s\"\n",
+                             opts.literal ? "literal string" : "regular expression",
+                             opts.query);
+#endif // CONVERT_UNICODE_ESCAPES
 
     if (!is_regex(opts.query)) {
         opts.literal = 1;
@@ -809,9 +1045,47 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     if (argc > 0) {
         *paths = ag_calloc(sizeof(char *), argc + 1);
         *base_paths = ag_calloc(sizeof(char *), argc + 1);
-        for (i = 0; i < (size_t)argc; i++) {
-            path = ag_strdup(argv[i]);
-            path_len = strlen(path);
+        int iArg;
+        for (i = iArg = 0; iArg < argc; iArg++) {
+            path = ag_strdup(argv[iArg]);
+#ifdef _WIN32
+	    /* Begin wildcards expansion block for Windows */
+	    char *pszWild = strpbrk(path, "?*");
+	    if (pszWild && strpbrk(pszWild, "\\/")) {
+		log_err("Error: Wildcards not supported in paths: %s", path);
+		exit(1);
+	    }
+	    if (pszWild) opts.paths_len += 1; // Force displaying file names, even if only one file matches
+	    /* Split the directory name and file name */
+	    char *pattern = basename(ag_strdup(path));
+	    char *basedir = dirname(ag_strdup(path));
+	    /* Scan the requested directory */
+	    DIR *pDir = NULL;
+	    struct dirent *pDE = NULL;
+	    if (pszWild) {
+		pDir = opendir(basedir);
+		if (!pDir) {
+		    log_err("Error opening directory \"%s\": %s", basedir, strerror(errno));
+		    exit(1);
+		}
+	    }
+	    while ((!pszWild) || ((pDE = readdir(pDir)) != NULL)) {
+		if (pDE) {
+		    if (fnmatch(pattern, pDE->d_name, FNM_CASEFOLD) == FNM_NOMATCH) continue;
+		    char *name = pszWild ? pDE->d_name : pattern;
+		    ag_asprintf(&path, "%s\\%s", basedir, name); /* Compute source path */
+		    /* Extend the paths and base_paths lists if needed */
+		    if ((int)i >= argc) {
+			size_t new_size = sizeof(char *) * (i + 2);
+			*paths = ag_realloc(*paths, new_size);
+			*base_paths = ag_realloc(*base_paths, new_size);
+		    }
+		}
+		/* Convert Windows path separators to Unix path separators */
+		char *pc;
+		for (pc = path; *pc; pc++) if (*pc == '\\') *pc = '/';
+#endif
+            path_len = (int)strlen(path);
             /* kill trailing slash */
             if (path_len > 1 && path[path_len - 1] == '/') {
                 path[path_len - 1] = '\0';
@@ -824,7 +1098,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             base_path = realpath(path, NULL);
 #endif
             if (base_path) {
-                base_path_len = strlen(base_path);
+                base_path_len = (int)strlen(base_path);
                 /* add trailing slash */
                 if (base_path_len > 1 && base_path[base_path_len - 1] != '/') {
                     base_path = ag_realloc(base_path, base_path_len + 2);
@@ -833,6 +1107,14 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
                 }
             }
             (*base_paths)[i] = base_path;
+            i += 1;
+#ifdef _WIN32
+		/* If no wildcards, leave the readdir() loop immediately */
+		if (!pszWild) break;
+	    } /* End while (readdir()) */
+	    if (pDir) closedir(pDir);
+	    /* End wildcards expansion block for Windows */
+#endif
         }
         /* Make sure we search these paths instead of stdin. */
         opts.search_stream = 0;
@@ -852,7 +1134,7 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     (*paths)[i] = NULL;
     (*base_paths)[i] = NULL;
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(HAS_MSVCLIBX)
     windows_use_ansi(opts.color_win_ansi);
 #endif
 }

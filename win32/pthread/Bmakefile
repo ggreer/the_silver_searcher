@@ -1,0 +1,72 @@
+# This makefile is compatible with BCB make.  Use "make -fBMakefile" to compile.
+# 
+# The variables $DLLDEST and $LIBDEST hold the destination directories for the
+# dll and the lib, respectively. Probably all that needs to change is $DEVROOT.
+#
+# Currently only the recommended pthreadBC.dll is built by this makefile.
+#
+
+
+PTW32_VER	= 3
+
+DEVROOT	= .
+
+DLLDEST	= $(DEVROOT)\DLL
+LIBDEST	= $(DEVROOT)\DLL
+
+DLLS	= pthreadBC$(PTW32_VER).dll
+
+OPTIM	= /O2
+
+RC	= brcc32
+RCFLAGS	= -i.
+
+CFLAGS	= /q /I. /DHAVE_CONFIG_H=1 /4 /tWD /tWM \
+	  /w-aus /w-asc /w-par
+
+#C cleanup code
+BCFLAGS	= $ (__PTW32_FLAGS) $(CFLAGS)
+
+OBJEXT = obj
+RESEXT = res
+ 
+include common.mk
+
+all: clean $(DLLS)
+
+realclean: clean
+	if exist pthread*.dll del pthread*.dll
+	if exist pthread*.lib del pthread*.lib
+	if exist *.stamp del *.stamp
+
+clean:
+	if exist *.obj del *.obj
+	if exist *.ilk del *.ilk
+	if exist *.ilc del *.ilc
+	if exist *.ild del *.ild
+	if exist *.ilf del *.ilf
+	if exist *.ils del *.ils
+	if exist *.tds del *.tds
+	if exist *.pdb del *.pdb
+	if exist *.exp del *.exp
+	if exist *.map del *.map
+	if exist *.o del *.o
+	if exist *.i del *.i
+	if exist *.res del *.res
+
+
+install: $(DLLS)
+	copy pthread*.dll $(DLLDEST)
+	copy pthread*.lib $(LIBDEST)
+
+$(DLLS): $(DLL_OBJS) $(RESOURCE_OBJS)
+	ilink32 /Tpd /Gi c0d32x.obj $(DLL_OBJS), \
+		$@, ,\
+		cw32mti.lib import32.lib, ,\
+		$(RESOURCE_OBJS)
+
+.c.obj:
+	$(CC) $(OPTIM) $(BCFLAGS) -c $<
+
+.rc.res:
+	$(RC) $(RCFLAGS) $<
