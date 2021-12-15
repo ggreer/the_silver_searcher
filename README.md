@@ -55,38 +55,38 @@ or
 
 * Ubuntu >= 13.10 (Saucy) or Debian >= 8 (Jessie)
 
-        apt-get install silversearcher-ag
+      apt-get install silversearcher-ag
 * Fedora 21 and lower
 
-        yum install the_silver_searcher
+      yum install the_silver_searcher
 * Fedora 22+
 
-        dnf install the_silver_searcher
+      dnf install the_silver_searcher
 * RHEL7+
 
-        yum install epel-release.noarch the_silver_searcher
+      yum install epel-release.noarch the_silver_searcher
 * Gentoo
 
-        emerge -a sys-apps/the_silver_searcher
+      emerge -a sys-apps/the_silver_searcher
 * Arch
 
-        pacman -S the_silver_searcher
+      pacman -S the_silver_searcher
 
 * Slackware
 
-        sbopkg -i the_silver_searcher
+      sbopkg -i the_silver_searcher
 
 * openSUSE
 
-        zypper install the_silver_searcher
+      zypper install the_silver_searcher
 
 * CentOS
 
-        yum install the_silver_searcher
+      yum install the_silver_searcher
 
 * NixOS/Nix/Nixpkgs
 
-        nix-env -iA silver-searcher
+      nix-env -iA silver-searcher
 
 * SUSE Linux Enterprise: Follow [these simple instructions](https://software.opensuse.org/download.html?project=utilities&package=the_silver_searcher).
 
@@ -95,37 +95,37 @@ or
 
 * FreeBSD
 
-        pkg install the_silver_searcher
+      pkg install the_silver_searcher
 * OpenBSD/NetBSD
 
-        pkg_add the_silver_searcher
+      pkg_add the_silver_searcher
 
 ### Windows
 
 * Win32/64
 
   Unofficial daily builds are [available](https://github.com/k-takata/the_silver_searcher-win32).
-  
+
 * winget
 
-        winget install "The Silver Searcher"
-  
+      winget install "The Silver Searcher"
+
   Notes:
   - This installs a [release](https://github.com/JFLarvoire/the_silver_searcher/releases) of ag.exe optimized for Windows.
-  - winget is intended to become the default package manager client for Windows.  
+  - winget is intended to become the default package manager client for Windows.
     As of June 2020, it's still in beta, and can be installed using instructions [there](https://github.com/microsoft/winget-cli).
   - The setup script in the Ag's winget package installs ag.exe in the first directory that matches one of these criteria:
      1. Over a previous instance of ag.exe *from the same [origin](https://github.com/JFLarvoire/the_silver_searcher)* found in the PATH
      2. In the directory defined in environment variable bindir_%PROCESSOR_ARCHITECTURE%
      3. In the directory defined in environment variable bindir
      4. In the directory defined in environment variable windir
-  
+
 * Chocolatey
 
-        choco install ag
+      choco install ag
 * MSYS2
 
-        pacman -S mingw-w64-{i686,x86_64}-ag
+      pacman -S mingw-w64-{i686,x86_64}-ag
 * Cygwin
 
   Run the relevant [`setup-*.exe`](https://cygwin.com/install.html), and select "the\_silver\_searcher" in the "Utils" category.
@@ -137,35 +137,35 @@ or
 1. Install dependencies (Automake, pkg-config, PCRE, LZMA):
     * macOS:
 
-            brew install automake pkg-config pcre xz
+          brew install automake pkg-config pcre xz
         or
 
-            port install automake pkgconfig pcre xz
+          port install automake pkgconfig pcre xz
     * Ubuntu/Debian:
 
-            apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev
+          apt-get install -y automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev
     * Fedora:
 
-            yum -y install pkgconfig automake gcc zlib-devel pcre-devel xz-devel
+          yum -y install pkgconfig automake gcc zlib-devel pcre-devel xz-devel
     * CentOS:
 
-            yum -y groupinstall "Development Tools"
-            yum -y install pcre-devel xz-devel zlib-devel
+          yum -y groupinstall "Development Tools"
+          yum -y install pcre-devel xz-devel zlib-devel
     * openSUSE:
 
-            zypper source-install --build-deps-only the_silver_searcher
+          zypper source-install --build-deps-only the_silver_searcher
 
     * Windows: It's complicated. See [this wiki page](https://github.com/ggreer/the_silver_searcher/wiki/Windows).
 2. Run the build script (which just runs aclocal, automake, etc):
 
-        ./build.sh
+       ./build.sh
 
    On Windows (inside an msys/MinGW shell):
 
-        make -f Makefile.w32
+       make -f Makefile.w32
 3. Make install:
 
-        sudo make install
+       sudo make install
 
 
 ### Building a release tarball
@@ -212,6 +212,6 @@ TextMate users can use Ag with [my fork](https://github.com/ggreer/AckMate) of t
 * [ack.vim](https://github.com/mileszs/ack.vim)
 * [Exuberant Ctags](http://ctags.sourceforge.net/) - Faster than Ag, but it builds an index beforehand. Good for *really* big codebases.
 * [Git-grep](http://git-scm.com/docs/git-grep) - As fast as Ag but only works on git repos.
-* [fzf](https://github.com/junegunn/fzf) - A command-line fuzzy finder 
+* [fzf](https://github.com/junegunn/fzf) - A command-line fuzzy finder
 * [ripgrep](https://github.com/BurntSushi/ripgrep)
 * [Sack](https://github.com/sampson-chen/sack) - A utility that wraps Ack and Ag. It removes a lot of repetition from searching and opening matching files.
