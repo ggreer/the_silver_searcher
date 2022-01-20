@@ -2,6 +2,15 @@
 
 A code searching tool similar to `ack`, with a focus on speed.
 
+```shell
+ag --help
+
+Usage: ag [FILE-TYPE] [OPTIONS] PATTERN [PATH]
+
+  Recursively search for PATTERN in PATH.
+  Like grep or ack, but faster.
+```
+
 [![Build Status](https://travis-ci.org/ggreer/the_silver_searcher.svg?branch=master)](https://travis-ci.org/ggreer/the_silver_searcher)
 
 [![Floobits Status](https://floobits.com/ggreer/ag.svg)](https://floobits.com/ggreer/ag/redirect)
