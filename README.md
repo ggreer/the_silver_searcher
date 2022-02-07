@@ -88,6 +88,10 @@ or
 
         nix-env -iA silver-searcher
 
+* Clear Linux OS
+
+        sudo swupd bundle-add the_silver_searcher
+
 * SUSE Linux Enterprise: Follow [these simple instructions](https://software.opensuse.org/download.html?project=utilities&package=the_silver_searcher).
 
 
