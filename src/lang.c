@@ -28,6 +28,7 @@ lang_spec_t langs[] = {
     { "cshtml", { "cshtml" } },
     { "css", { "css" } },
     { "cython", { "pyx", "pxd", "pxi" } },
+    { "dart", { "dart" } },
     { "delphi", { "pas", "int", "dfm", "nfm", "dof", "dpk", "dpr", "dproj", "groupproj", "bdsgroup", "bdsproj" } },
     { "dlang", { "d", "di" } },
     { "dot", { "dot", "gv" } },

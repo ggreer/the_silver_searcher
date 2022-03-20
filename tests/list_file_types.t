@@ -74,6 +74,9 @@ Language types are output:
   
     --cython
         .pyx  .pxd  .pxi
+
+    --dart
+        .dart
   
     --delphi
         .pas  .int  .dfm  .nfm  .dof  .dpk  .dpr  .dproj  .groupproj  .bdsgroup  .bdsproj
