@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "AG" "1" "December 2016" "" ""
+.TH "AG" "1" "March 2022" "" ""
 .
 .SH "NAME"
 \fBag\fR \- The Silver Searcher\. Like ack, but faster\.
@@ -11,6 +11,9 @@
 .
 .SH "DESCRIPTION"
 Recursively search for PATTERN in PATH\. Like grep or ack, but faster\.
+.
+.P
+PATTERN is a Perl\-Compatible Regular Expression (PCRE)\. Refer to pcre(3), pcrepattern(3) and pcresyntax(3) for details\.
 .
 .SH "OPTIONS"
 .
@@ -252,6 +255,10 @@ Only match whole words\.
 Use NUM worker threads\. Default is the number of CPU cores, with a max of 8\.
 .
 .TP
+\fB\-W \-\-width NUM\fR
+Truncate match lines after NUM characters\.
+.
+.TP
 \fB\-z \-\-search\-zip\fR
 Search contents of compressed files\. Currently, gz and xz are supported\. This option requires that ag is built with lzma and zlib\.
 .
@@ -284,4 +291,4 @@ Use the \fB\-t\fR option to search all text files; \fB\-a\fR to search all files
 ag was originally created by Geoff Greer\. More information (and the latest release) can be found at http://geoff\.greer\.fm/ag
 .
 .SH "SEE ALSO"
-grep(1)
+grep(1), pcre(3), pcrepattern(3), pcresyntax(3)

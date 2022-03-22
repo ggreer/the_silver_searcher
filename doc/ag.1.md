@@ -9,6 +9,8 @@ ag(1) -- The Silver Searcher. Like ack, but faster.
 
 Recursively search for PATTERN in PATH. Like grep or ack, but faster.
 
+PATTERN is a Perl-Compatible Regular Expression (PCRE). Refer to pcre(3), pcrepattern(3) and pcresyntax(3) for details. 
+
 ## OPTIONS
 
   * `--ackmate`:
@@ -259,4 +261,4 @@ release) can be found at http://geoff.greer.fm/ag
 
 ## SEE ALSO
 
-grep(1)
+grep(1), pcre(3), pcrepattern(3), pcresyntax(3)
