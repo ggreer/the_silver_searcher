@@ -351,6 +351,9 @@ Language types are output:
     --swift
         .swift
   
+    --svelte
+        .svelte
+  
     --tcl
         .tcl  .itcl  .itk
   
