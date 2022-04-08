@@ -119,6 +119,7 @@ lang_spec_t langs[] = {
     { "sql", { "sql", "ctl" } },
     { "stata", { "do", "ado" } },
     { "stylus", { "styl" } },
+    { "svelte", { "svelte" } },
     { "swift", { "swift" } },
     { "tcl", { "tcl", "itcl", "itk" } },
     { "terraform", { "tf", "tfvars" } },
