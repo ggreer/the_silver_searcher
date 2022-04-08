@@ -348,11 +348,11 @@ Language types are output:
     --stylus
         .styl
   
-    --swift
-        .swift
-  
     --svelte
         .svelte
+  
+    --swift
+        .swift
   
     --tcl
         .tcl  .itcl  .itk
