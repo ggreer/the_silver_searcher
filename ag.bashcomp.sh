@@ -6,8 +6,6 @@ _ag() {
   cur=$(_get_cword "=")
   prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-  _expand || return 0
-
   lngopt='
     --ackmate
     --ackmate-dir-filter
