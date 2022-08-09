@@ -68,6 +68,7 @@ _ag() {
     --passthrough
     --passthru
     --path-to-ignore
+    --print-all-files
     --print-long-lines
     --print0
     --recurse
@@ -78,6 +79,7 @@ _ag() {
     --skip-vcs-ignores
     --smart-case
     --stats
+    --stats-only
     --unrestricted
     --version
     --vimgrep
