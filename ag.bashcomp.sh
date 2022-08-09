@@ -78,6 +78,7 @@ _ag() {
     --skip-vcs-ignores
     --smart-case
     --stats
+    --stats-only
     --unrestricted
     --version
     --vimgrep
