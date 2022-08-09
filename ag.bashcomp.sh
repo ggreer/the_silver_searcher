@@ -68,6 +68,7 @@ _ag() {
     --passthrough
     --passthru
     --path-to-ignore
+    --print-all-files
     --print-long-lines
     --print0
     --recurse
