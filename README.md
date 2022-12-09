@@ -215,3 +215,4 @@ TextMate users can use Ag with [my fork](https://github.com/ggreer/AckMate) of t
 * [fzf](https://github.com/junegunn/fzf) - A command-line fuzzy finder 
 * [ripgrep](https://github.com/BurntSushi/ripgrep)
 * [Sack](https://github.com/sampson-chen/sack) - A utility that wraps Ack and Ag. It removes a lot of repetition from searching and opening matching files.
+* [the_platinum_searcher](https://github.com/monochromegane/the_platinum_searcher) - A little bit faster
