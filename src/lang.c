@@ -65,6 +65,7 @@ lang_spec_t langs[] = {
     { "julia", { "jl" } },
     { "kotlin", { "kt" } },
     { "less", { "less" } },
+    { "lf", { "lf" } },
     { "liquid", { "liquid" } },
     { "lisp", { "lisp", "lsp" } },
     { "log", { "log" } },
