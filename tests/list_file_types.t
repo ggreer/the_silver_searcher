@@ -186,6 +186,9 @@ Language types are output:
     --less
         .less
   
+    --lf
+        .lf
+  
     --liquid
         .liquid
   
