@@ -31,7 +31,7 @@ Language types are output:
         .bat  .cmd
   
     --bazel
-        .bazel
+        .bazel  .bzl
   
     --bitbake
         .bb  .bbappend  .bbclass  .inc
