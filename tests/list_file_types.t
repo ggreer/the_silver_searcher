@@ -169,7 +169,7 @@ Language types are output:
         .j2
   
     --js
-        .es6  .js  .jsx  .vue
+        .cjs  .es6  .js  .jsx  .mjs  .vue
   
     --json
         .json

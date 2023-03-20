@@ -59,7 +59,7 @@ lang_spec_t langs[] = {
     { "jade", { "jade" } },
     { "java", { "java", "properties" } },
     { "jinja2", { "j2" } },
-    { "js", { "es6", "js", "jsx", "vue" } },
+    { "js", { "cjs", "es6", "js", "jsx", "mjs", "vue" } },
     { "json", { "json" } },
     { "jsp", { "jsp", "jspx", "jhtm", "jhtml", "jspf", "tag", "tagf" } },
     { "julia", { "jl" } },
