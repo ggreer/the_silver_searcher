@@ -7,6 +7,10 @@
 typedef _off64_t off64_t;
 #endif
 
+#ifndef __GLIBC__
+typedef off_t off64_t;
+#endif /* ifndef __GLIBC__ */
+
 #include <assert.h>
 #include <errno.h>
 #include <inttypes.h>
