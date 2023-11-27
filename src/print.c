@@ -142,7 +142,7 @@ void print_line(const char *buf, size_t buf_pos, size_t prev_line_offset) {
 void print_binary_file_matches(const char *path) {
     path = normalize_path(path);
     print_file_separator();
-    fprintf(out_fd, "Binary file %s matches.\n", path);
+    fprintf(out_fd, "Binary file %s matches.", path);
 }
 
 void print_file_matches(const char *path, const char *buf, const size_t buf_len, const match_t matches[], const size_t matches_len) {
