@@ -166,7 +166,7 @@ Language types are output:
         .java  .properties
   
     --jinja2
-        .j2
+        .j2  .jinja
   
     --js
         .es6  .js  .jsx  .vue
