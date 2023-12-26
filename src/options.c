@@ -15,6 +15,7 @@
 #include "options.h"
 #include "print.h"
 #include "util.h"
+#include "alloclist.h"
 
 const char *color_line_number = "\033[1;33m"; /* bold yellow */
 const char *color_match = "\033[30;43m";      /* black with yellow background */
@@ -234,8 +235,10 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     size_t *ext_index = NULL;
     char *extensions = NULL;
     size_t num_exts = 0;
+    alloc_list alist;
 
     init_options();
+    alloc_list_init(&alist);
 
     option_t base_longopts[] = {
         { "ackmate", no_argument, &opts.ackmate, 1 },
@@ -337,9 +340,29 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
     lang_count = get_lang_count();
     longopts_len = (sizeof(base_longopts) / sizeof(option_t));
     full_len = (longopts_len + lang_count + 1);
-    longopts = ag_malloc(full_len * sizeof(option_t));
+
+    longopts = (option_t*)malloc(full_len * sizeof(option_t));
+    if(longopts==NULL){
+        alloc_list_destroy(&alist);
+        die("Memory allocation failed.");
+    }
+    if(alloc_list_add(&alist,longopts)!=0){
+        alloc_list_destroy(&alist);
+        die("Memory allocation failed.");
+    }
+
     memcpy(longopts, base_longopts, sizeof(base_longopts));
-    ext_index = (size_t *)ag_malloc(sizeof(size_t) * lang_count);
+
+    ext_index = (size_t*)malloc(sizeof(size_t) * lang_count);
+    if(ext_index==NULL){
+        alloc_list_destroy(&alist);
+        die("Memory allocation failed.");
+    }
+    if(alloc_list_add(&alist,ext_index)!=0){
+        alloc_list_destroy(&alist);
+        die("Memory allocation failed.");
+    }
+
     memset(ext_index, 0, sizeof(size_t) * lang_count);
 
     for (i = 0; i < lang_count; i++) {
@@ -818,7 +841,17 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
             }
             (*paths)[i] = path;
 #ifdef PATH_MAX
-            tmp = ag_malloc(PATH_MAX);
+
+            tmp = malloc(PATH_MAX);
+            if(tmp==NULL){
+                alloc_list_destroy(&alist);
+                die("Memory allocation failed.");
+            }
+            if(alloc_list_add(&alist,tmp)!=0){
+                alloc_list_destroy(&alist);
+                die("Memory allocation failed.");
+            }
+
             base_path = realpath(path, tmp);
 #else
             base_path = realpath(path, NULL);
@@ -838,11 +871,39 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
         opts.search_stream = 0;
     } else {
         path = ag_strdup(".");
-        *paths = ag_malloc(sizeof(char *) * 2);
-        *base_paths = ag_malloc(sizeof(char *) * 2);
+
+        *paths = malloc(sizeof(char *) * 2);
+        if(*paths==NULL){
+            alloc_list_destroy(&alist);
+            die("Memory allocation failed.");
+        }
+        if(alloc_list_add(&alist,*paths)!=0){
+            alloc_list_destroy(&alist);
+            die("Memory allocation failed.");
+        }
+
+        *base_paths = malloc(sizeof(char *) * 2);
+        if(*base_paths==NULL){
+            alloc_list_destroy(&alist);
+            die("Memory allocation failed.");
+        }
+        if(alloc_list_add(&alist,*base_paths)!=0){
+            alloc_list_destroy(&alist);
+            die("Memory allocation failed.");
+        }
+
         (*paths)[0] = path;
 #ifdef PATH_MAX
-        tmp = ag_malloc(PATH_MAX);
+        tmp = malloc(PATH_MAX);
+        if(tmp==NULL){
+            alloc_list_destroy(&alist);
+            die("Memory allocation failed.");
+        }
+        if(alloc_list_add(&alist,tmp)!=0){
+            alloc_list_destroy(&alist);
+            die("Memory allocation failed.");
+        }
+
         (*base_paths)[0] = realpath(path, tmp);
 #else
         (*base_paths)[0] = realpath(path, NULL);
@@ -855,4 +916,5 @@ void parse_options(int argc, char **argv, char **base_paths[], char **paths[]) {
 #ifdef _WIN32
     windows_use_ansi(opts.color_win_ansi);
 #endif
+    alloc_list_destroy_clean(&alist);
 }
