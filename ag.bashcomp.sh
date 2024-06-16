@@ -1,11 +1,9 @@
 _ag() {
-  local lngopt shtopt split=false
-  local cur prev
+  local cur prev words cword split
+  local lngopt shtopt
 
   COMPREPLY=()
-  cur=$(_get_cword "=")
-  prev="${COMP_WORDS[COMP_CWORD-1]}"
-
+  _init_completion -s || return 0
   _expand || return 0
 
   lngopt='
@@ -96,11 +94,9 @@ _ag() {
   types=$(ag --list-file-types |grep -- '--')
 
   # these options require an argument
-  if [[ "${prev}" == -[ABCGgm] ]] ; then
+  if [[ "${prev}" = -[ABCGgm] ]] ; then
     return 0
   fi
-
-  _split_longopt && split=true
 
   case "${prev}" in
     --ignore-dir) # directory completion
@@ -117,7 +113,9 @@ _ag() {
               return 0;;
   esac
 
-  $split && return 0
+  if [[ ${split} = true ]]; then
+      return 0
+  fi
 
   case "${cur}" in
     -*)
