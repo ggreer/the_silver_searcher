@@ -79,8 +79,8 @@ void generate_alpha_skip(const char *find, size_t f_len, size_t skip_lookup[], c
         if (case_sensitive) {
             skip_lookup[(unsigned char)find[i]] = f_len - i;
         } else {
-            skip_lookup[(unsigned char)tolower(find[i])] = f_len - i;
-            skip_lookup[(unsigned char)toupper(find[i])] = f_len - i;
+            skip_lookup[(unsigned char)tolower((unsigned char)find[i])] = f_len - i;
+            skip_lookup[(unsigned char)toupper((unsigned char)find[i])] = f_len - i;
         }
     }
 }
@@ -94,7 +94,7 @@ int is_prefix(const char *s, const size_t s_len, const size_t pos, const int cas
                 return 0;
             }
         } else {
-            if (tolower(s[i]) != tolower(s[i + pos])) {
+            if (tolower((unsigned char)s[i]) != tolower((unsigned char)s[i + pos])) {
                 return 0;
             }
         }
@@ -112,7 +112,7 @@ size_t suffix_len(const char *s, const size_t s_len, const size_t pos, const int
                 break;
             }
         } else {
-            if (tolower(s[pos - i]) != tolower(s[s_len - i - 1])) {
+            if (tolower((unsigned char)s[pos - i]) != tolower((unsigned char)s[s_len - i - 1])) {
                 break;
             }
         }
@@ -190,7 +190,7 @@ const char *boyer_moore_strnstr(const char *s, const char *find, const size_t s_
     size_t pos = f_len - 1;
 
     while (pos < s_len) {
-        for (i = f_len - 1; i >= 0 && (case_insensitive ? tolower(s[pos]) : s[pos]) == find[i]; pos--, i--) {
+        for (i = f_len - 1; i >= 0 && (case_insensitive ? tolower((unsigned char)s[pos]) : s[pos]) == find[i]; pos--, i--) {
         }
         if (i < 0) {
             return s + pos + 1;
@@ -217,7 +217,7 @@ NO_SANITIZE_ALIGNMENT const char *hash_strnstr(const char *s, const char *find, 
             size_t i;
             // Check putative match
             for (i = 0; i < f_len; i++) {
-                if ((case_sensitive ? R[i] : tolower(R[i])) != find[i])
+                if ((case_sensitive ? R[i] : tolower((unsigned char)R[i])) != find[i])
                     goto next_hash_cell;
             }
             return R; // Found
@@ -229,7 +229,7 @@ NO_SANITIZE_ALIGNMENT const char *hash_strnstr(const char *s, const char *find, 
         size_t i;
         const char *R = s + s_i;
         for (i = 0; i < f_len; i++) {
-            char s_c = case_sensitive ? R[i] : tolower(R[i]);
+            char s_c = case_sensitive ? R[i] : tolower((unsigned char)R[i]);
             if (s_c != find[i])
                 goto next_start;
         }
@@ -459,7 +459,7 @@ int is_wordchar(char ch) {
 int is_lowercase(const char *s) {
     int i;
     for (i = 0; s[i] != '\0'; i++) {
-        if (!isascii(s[i]) || isupper(s[i])) {
+        if (!isascii((unsigned char)s[i]) || isupper((unsigned char)s[i])) {
             return FALSE;
         }
     }

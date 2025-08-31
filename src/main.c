@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
             /* Search routine needs the query to be lowercase */
             char *c = opts.query;
             for (; *c != '\0'; ++c) {
-                *c = (char)tolower(*c);
+                *c = (char)tolower((unsigned char)*c);
             }
         }
         generate_alpha_skip(opts.query, opts.query_len, alpha_skip_lookup, opts.casing == CASE_SENSITIVE);
