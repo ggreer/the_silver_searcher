@@ -36,6 +36,9 @@ Language types are output:
     --bitbake
         .bb  .bbappend  .bbclass  .inc
   
+    --c3
+        .c3  .c3i  .c3t
+  
     --cc
         .c  .h  .xs
   
@@ -329,6 +332,9 @@ Language types are output:
   
     --scheme
         .scm  .ss
+  
+    --seed7
+        .sd7  .s7i
   
     --shell
         .sh  .bash  .csh  .tcsh  .ksh  .zsh  .fish
