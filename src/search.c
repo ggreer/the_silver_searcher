@@ -395,6 +395,10 @@ void search_file(const char *file_full_path) {
 #if HAVE_FOPENCOOKIE
             log_debug("%s is a compressed file. stream searching", file_full_path);
             fp = decompress_open(fd, "r", zip_type);
+            if (fp == NULL) {
+              log_err("Failed to open compressed file %s", file_full_path);
+              goto cleanup;
+            }
             matches_count = search_stream(fp, file_full_path);
             fclose(fp);
 #else
