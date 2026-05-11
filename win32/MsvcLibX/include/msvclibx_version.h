@@ -1,0 +1,1 @@
+#define MSVCLIBX_VERSION "2026-04-16"

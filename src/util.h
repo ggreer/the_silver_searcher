@@ -24,6 +24,10 @@ extern FILE *out_fd;
 
 #define H_SIZE (64 * 1024)
 
+#ifdef _MSC_VER /* Microsoft C compilers do not have a __thread keyword */
+#define __thread __declspec(thread)
+#endif
+
 #ifdef __clang__
 #define NO_SANITIZE_ALIGNMENT __attribute__((no_sanitize("alignment")))
 #else
@@ -42,10 +46,10 @@ typedef struct {
 } match_t;
 
 typedef struct {
-    size_t total_bytes;
-    size_t total_files;
-    size_t total_matches;
-    size_t total_file_matches;
+    long long total_bytes;
+    long total_files;
+    long total_matches;
+    long total_file_matches;
     struct timeval time_start;
     struct timeval time_end;
 } ag_stats;

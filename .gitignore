@@ -30,3 +30,55 @@ tests/*.err
 tests/big/*.err
 tests/big/big_file.txt
 the_silver_searcher.spec
+# These 3 files are regenerated dynamically
+win32/pcre/config.h
+win32/pcre/pcre.h
+win32/pcre/pcre_chartables.c
+# Parts of the sub-projects that we don't depend on
+win32/pthread/manual/
+win32/pthread/tests/
+# Older libraries for reference
+win32/MsvcLibX-*/
+win32/NMaker-*/
+win32/pcre-*/
+win32/pthread-*/
+win32/zlib-*/
+# Microsoft Visual C++ output files
+*.lib
+*.log
+*.pdb
+# NMaker output files
+/configure.bat
+/make.bat
+src/configure.bat
+src/make.bat
+win32/configure.bat
+win32/make.bat
+win32/MsvcLibX/configure.bat
+win32/MsvcLibX/make.bat
+win32/MsvcLibX/src/configure.bat
+win32/MsvcLibX/src/make.bat
+win32/pcre/configure.bat
+win32/pcre/make.bat
+win32/pthread/configure.bat
+win32/pthread/make.bat
+win32/zlib/configure.bat
+win32/zlib/make.bat
+config.*.bat
+bin/
+win32/winget/ag_setup.exe
+# JFL's main development area
+Masters/
+src/c89/
+SyncWithMaster.bat
+SyncWithPublicVersions.bat
+win32/winget/*.png
+# Various types of backup files
+*~
+*#
+*.0??
+*.bak
+# Various types of diff and patch files
+*.dif*
+*.orig
+*.rej

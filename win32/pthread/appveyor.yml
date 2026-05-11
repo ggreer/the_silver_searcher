@@ -1,0 +1,109 @@
+version: 3.0.1.{build}
+
+shallow_clone: true
+clone_depth: 1
+
+branches:
+  only:
+  - cmake
+
+configuration:
+- MinSizeRel
+- Release
+- Debug
+
+environment:
+  DIST_DIR: '%APPVEYOR_BUILD_FOLDER%\dist'
+  CMAKE_DIST_DIR: C:/projects/pthreads4w/dist
+
+  matrix:
+
+    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2015'
+      VCVARSALL: '%ProgramFiles(x86)%\Microsoft Visual Studio 14.0\VC\vcvarsall.bat'
+      ARCHITECTURE: amd64_x86
+      ARCHIVE: VS2015_%CONFIGURATION%_x86_%APPVEYOR_BUILD_NUMBER%
+      GENERATOR: 'NMake Makefiles'
+      TESTING: OFF
+
+    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2015'
+      VCVARSALL: '%ProgramFiles(x86)%\Microsoft Visual Studio 14.0\VC\vcvarsall.bat'
+      ARCHITECTURE: amd64
+      ARCHIVE: VS2015_%CONFIGURATION%_x64_%APPVEYOR_BUILD_NUMBER%
+      GENERATOR: 'NMake Makefiles'
+      TESTING: OFF
+
+    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2015'
+      VCVARSALL: '%ProgramFiles(x86)%\Microsoft Visual Studio 14.0\VC\vcvarsall.bat'
+      ARCHITECTURE: amd64_arm
+      ARCHIVE: VS2015_%CONFIGURATION%_ARM_%APPVEYOR_BUILD_NUMBER%
+      GENERATOR: 'NMake Makefiles'
+      TESTING: OFF
+
+
+    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2017'
+      VCVARSALL: '%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsamd64_arm.bat'
+      ARCHIVE: VS2017_%CONFIGURATION%_ARM_%APPVEYOR_BUILD_NUMBER%
+      GENERATOR: 'NMake Makefiles'
+      TESTING: OFF
+
+    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2017'
+      VCVARSALL: '%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsamd64_arm64.bat'
+      ARCHIVE: VS2017_%CONFIGURATION%_ARM64_%APPVEYOR_BUILD_NUMBER%
+      GENERATOR: 'NMake Makefiles'
+      TESTING: OFF
+
+    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2017'
+      VCVARSALL: '%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat'
+      ARCHIVE: VS2017_%CONFIGURATION%_x86_%APPVEYOR_BUILD_NUMBER%
+      GENERATOR: 'NMake Makefiles'
+      TESTING: ON
+
+    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2017'
+      VCVARSALL: '%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat'
+      ARCHIVE: VS2017_%CONFIGURATION%_x64_%APPVEYOR_BUILD_NUMBER%
+      GENERATOR: 'NMake Makefiles'
+      TESTING: ON
+
+init:
+  - echo BUILD_NUMBER=%APPVEYOR_BUILD_NUMBER%
+
+install:
+
+  # CMake
+  - cmake --version
+
+build:
+  parallel: true
+
+build_script:
+  - if exist "%VCVARSALL%" ( call "%VCVARSALL%" %ARCHITECTURE% )
+
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - mkdir build
+  - cd build
+  - cmake -G"%GENERATOR%"
+          -DCMAKE_BUILD_TYPE=%CONFIGURATION%
+          -DBUILD_NUMBER=%APPVEYOR_BUILD_NUMBER%
+          -DDIST_ROOT="%CMAKE_DIST_DIR%/%APPVEYOR_BUILD_WORKER_IMAGE%"
+          -DENABLE_TESTS=%TESTING%
+          ..
+
+    cmake --build . --config %CONFIGURATION% --target install
+
+after_build:
+  - cd %DIST_DIR%
+  - 7z a -tzip %ARCHIVE%.zip "%APPVEYOR_BUILD_WORKER_IMAGE%"
+  - certutil -hashfile %ARCHIVE%.zip MD5 > %ARCHIVE%.md5
+
+artifacts:
+  - path: dist\$(ARCHIVE).zip
+  - path: dist\$(ARCHIVE).md5
+
+test:
+before_test:
+  - set PATH=%APPVEYOR_BUILD_FOLDER%\build;%PATH%
+test_script:
+  - if exist %APPVEYOR_BUILD_FOLDER%\build\tests\ cd %APPVEYOR_BUILD_FOLDER%\build\tests
+  - if exist %APPVEYOR_BUILD_FOLDER%\build\tests\ ctest -C %CONFIGURATION% -V
+after_test:
+  # TODO process CTest output

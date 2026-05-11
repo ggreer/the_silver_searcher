@@ -26,6 +26,14 @@ enum path_print_behavior {
     PATH_PRINT_NOTHING
 };
 
+#if defined(HAS_MSVCLIBX)
+#define SUPPORT_MULTIPLE_ENCODINGS 1 /* Support Windows System Code Page in addition to UTF-8 */
+
+#if defined(PCRE_MAJOR) /* If we're using PCRE 1 */
+#define CONVERT_UNICODE_ESCAPES 1 // Convert \uXXXX & \UXXXXXXXX escape sequences in the search string to UTF-8
+#endif
+#endif
+
 typedef struct {
     int ackmate;
     pcre *ackmate_dir_filter;
@@ -44,6 +52,7 @@ typedef struct {
     int color_win_ansi;
     int column;
     int context;
+    int fixed_string;
     int follow_symlinks;
     int invert_match;
     int literal;
@@ -64,31 +73,43 @@ typedef struct {
     int print_path;
     int print_all_paths;
     int print_line_numbers;
-    int print_long_lines; /* TODO: support this in print.c */
+    int print_long_lines;  /* TODO: support this in print.c */
     int passthrough;
     pcre *re;
     pcre_extra *re_extra;
+#if SUPPORT_MULTIPLE_ENCODINGS
+    pcre *re2;             /* re, converted into the second text encoding */
+    pcre_extra *re2_extra; /* re_extra, converted likewise */
+#endif                     /* SUPPORT_MULTIPLE_ENCODINGS */
     int recurse_dirs;
     int search_all_files;
     int skip_vcs_ignores;
     int search_binary_files;
     int search_zip_files;
     int search_hidden_files;
-    int search_stream; /* true if tail -F blah | ag */
+    int search_stream;	    /* true if tail -F blah | ag */
     int stats;
     size_t stream_line_num; /* This should totally not be in here */
     int match_found;        /* This should totally not be in here */
     ino_t stdout_inode;
     char *query;
     int query_len;
+#if SUPPORT_MULTIPLE_ENCODINGS
+    char *query2; /* query, converted into the second text encoding */
+    int query2_len;
+#endif /* SUPPORT_MULTIPLE_ENCODINGS */
     char *pager;
     int paths_len;
     int parallel;
+#ifdef _WIN32
+    int unix;		    /* Used for for testing ag.exe in WSL */
+#endif
     int use_thread_affinity;
     int vimgrep;
     size_t width;
     int word_regexp;
     int workers;
+    int verbose;
 } cli_options;
 
 /* global options. parse_options gives it sane values, everything else reads from it */

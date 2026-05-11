@@ -1,0 +1,64 @@
+!IFNDEF NMINCLUDE # Compile-out the initial section for UWIN, but leave it in just in case 
+
+/*
+ * nmake file for uwin pthread library
+ */
+
+VERSION 	= -
+CCFLAGS 	= -V -g $(CC.DLL)
+HAVE_CONFIG_H	== 1
+_MT		== 1
+_timeb		== timeb
+_ftime		== ftime
+_errno		== _ast_errno
+
+$(INCLUDEDIR)	:INSTALLDIR:	pthread.h sched.h
+
+pthread $(VERSION) :LIBRARY: attr.c barrier.c cancel.c cleanup.c condvar.c \
+	create.c dll.c exit.c fork.c global.c misc.c mutex.c private.c \
+	rwlock.c sched.c semaphore.c spin.c sync.c tsd.c nonportable.c
+
+:: ANNOUNCE CONTRIBUTORS COPYING.LIB ChangeLog FAQ GNUmakefile MAINTAINERS \
+	Makefile Makefile.in Makefile.vc NEWS PROGRESS README README.WinCE \
+	TODO WinCE-PORT install-sh errno.c tests tests.mk acconfig.h \
+	config.guess config.h.in config.sub configure configure.in signal.c \
+	README.CV README.NONPORTABLE pthread.dsp pthread.dsw
+
+!ELSE
+
+###############################################################################
+#									      #
+#   File name	    NMakefile						      #
+#									      #
+#   Description     An NMake file for making the pthread library for Ag       #
+#									      #
+#   Notes	    make.bat looks for a default nmake file called NMakeFile. #
+#									      #
+#   History								      #
+#    2026-03-15 JFL jf.larvoire@free.fr converted this from uwin to NMaker.   #
+#		    							      #
+###############################################################################
+
+pthread_default: lib
+
+help:
+    type <<
+Usage: make.bat [options] [nmake_options] [macro_definitions] [targets] ...
+
+Macro definitions:     (They must be quoted, else the = sign will be lost)
+  "DEBUG=1"            Generate the debug version. <==> Target in a Debug\ dir.
+  "OS=WIN32 WIN64"     List of target OSs to build for
+  "WINVER=5.1"         Minimum target OS version. 5.1=WinXP, 6.1=Win7
+
+Targets:
+  dll VC-dll           Build pthread.dll
+  lib VC-lib           Build pthread.lib (Default)
+  VCE-dll VSE-dll      Other DLL versions, with C++ and SEH exceptions resp.
+  VCE-lib VSE-lib      Other lib versions, with C++ and SEH exceptions resp.
+  clean                Erase all output files
+<<
+
+!INCLUDE <All.mak>
+
+!ENDIF # Defined(NMINCUDE)
+

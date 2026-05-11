@@ -1,0 +1,33 @@
+###############################################################################
+#									      #
+#   File name	    NMakefile						      #
+#									      #
+#   Description     An NMake file for making ag libs, ag, and its releases    #
+#									      #
+#   Notes	    make.bat looks for a default nmake file called NMakeFile. #
+#									      #
+#   History								      #
+#    2017-09-01 JFL jf.larvoire@free.fr created this file.                    #
+#		    							      #
+###############################################################################
+
+default: all
+
+# This help definition overrides the second one included in All.mak below.
+help:
+    type <<
+Usage: make.bat [options] [nmake_options] [macro_definitions] [targets] ...
+
+Macro definitions:     (They must be quoted, else the = sign will be lost)
+  "DEBUG=1"            Generate the debug version. <==> Target in a Debug\ dir.
+  "OS=WIN32 WIN64"     List of target OSs to build for
+  "WINVER=5.1"         Minimum target OS version. 5.1=WinXP, 6.1=Win7
+
+Targets:
+  all                  Build all available sources (default)
+  clean                Erase all output files
+<<
+
+# Include common definitions
+!INCLUDE <All.mak>
+

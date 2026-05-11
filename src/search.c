@@ -4,7 +4,12 @@
 
 size_t alpha_skip_lookup[256];
 size_t *find_skip_lookup;
-uint8_t h_table[H_SIZE] __attribute__((aligned(64)));
+#ifdef _MSC_VER /* MS Visual C++ */
+#define ALIGNAS(N) __declspec(align(N))
+#else /* GNU C */
+#define ALIGNAS(N) __attribute__((aligned(N)))
+#endif
+uint8_t ALIGNAS(64) h_table[H_SIZE];
 
 work_queue_t *work_queue = NULL;
 work_queue_t *work_queue_tail = NULL;
@@ -15,21 +20,159 @@ pthread_mutex_t work_queue_mtx = PTHREAD_MUTEX_INITIALIZER;
 
 symdir_t *symhash = NULL;
 
+#if SUPPORT_MULTIPLE_ENCODINGS
+/* Names of the encodings. Must match enum in search.h. */
+char *szEncoding[] = {
+    "unknown",
+    "Windows",
+    "UTF-8",
+    "UTF-16",
+};
+
+#if 0
+#if ((sizeof(szEncoding) / sizeof(char *)) != N_ENCODINGS)
+#error Mismatch between the enum ENCODING list and the szEncoding list.
+#endif
+#endif
+
+#if HAS_MSVCLIBX /* Then use the encoding detection routine there */
+
+#include <iconv.h> /* GetBufferEncoding() detects Windows, UTF8, UTF16, UTF32 encodings */
+ENCODING detect_encoding(const char *buf, const size_t buf_len) {
+    switch (GetBufferEncoding(buf, buf_len, BE_TEST_BINARY | BE_TEST_SYSTEM | BE_TEST_UTF8 | BE_TEST_UTF16)) {
+    case CP_UNDEFINED: return ENC_UNKNOWN;
+    case CP_UTF8:  return ENC_UTF8;
+    case CP_UTF16: return ENC_UTF16;
+    case CP_ACP:
+    default:       return ENC_WIN_CP;
+    }
+}
+
+#else /* Define simple encoding detection routines here */
+
+int CountUtf8CharBytes(const char *buf, const size_t buf_len) {
+    if (buf_len == 0)
+        return 0; /* Empty buffer */
+    if (!(buf[0] & 0x80))
+        return 1; /* This is an ASCII character */
+    /* Else the first character is the beginning of a multi-byte UTF-8 sequence */
+    if (buf_len == 1)
+        return 0; /* Truncated sequence => Invalid UTF-8 */
+    if ((buf[1] & 0xC0) != 0x80)
+        return 0; /* Not a continuation character => Invalid UTF-8 */
+    if ((buf[0] & 0xE0) == 0xC0)
+        return 2; /* Valid 2-byte sequence */
+    if (buf_len == 2)
+        return 0; /* Truncated sequence => Invalid UTF-8 */
+    if ((buf[2] & 0xC0) != 0x80)
+        return 0; /* Not a continuation character => Invalid UTF-8 */
+    if ((buf[0] & 0xF0) == 0xE0)
+        return 3; /* Valid 3-byte sequence */
+    if (buf_len == 3)
+        return 0; /* Truncated sequence => Invalid UTF-8 */
+    if ((buf[3] & 0xC0) != 0x80)
+        return 0; /* Not a continuation character => Invalid UTF-8 */
+    if ((buf[0] & 0xF8) == 0xF0)
+        return 4; /* Valid 4-byte sequence */
+    return 0;     /* There are no valid UTF-8 sequences > 4 bytes */
+}
+
+/* Use heuristics to guess a likely encoding. */
+/* (It's not possible to find the encoding correctly in all cases.) */
+/* I considered using the uchardet library, but we don't need to support ANY encoding,
+   just the two most likely, which are the Windows System Code Page, and UTF-8.
+   (The same two 8-bit encodings supported by Windows itself, in Notepad, etc.) */
+/* MBCS code pages (China/Korea/Japan) are only partially supported. (Fixed strings will work, but ranges of chars will not.) */
+/* UTF-16 and UTF-32 are NOT supported for now. */
+ENCODING detect_encoding(const char *buf, const size_t buf_len) {
+    size_t iOffset;
+    int iFoundNonAscii = FALSE;
+    int nValidUtf8 = 0;
+    /* First check if there's an UTF-8 BOM. This is very quick. */
+    if ((buf_len >= 3) && !memcmp(buf, "\xEF\xBB\xBF", 3)) {
+        return ENC_UTF8;
+    }
+    /* Then scan non-ASCII characters, and see if they're all valid UTF-8 or not. */
+    for (iOffset = 0; iOffset < buf_len; iOffset++) {
+        int n;
+        if (!(buf[iOffset] & 0x80)) {
+            continue; /* This is an ASCII character */
+        }
+        iFoundNonAscii = TRUE;
+        n = CountUtf8CharBytes(buf + iOffset, buf_len - iOffset);
+        if (!n) {
+            return ENC_WIN_CP; /* Invalid UTF-8 => Assume this is the Windows System Code Page. */
+        }
+        nValidUtf8 += 1;
+        if (nValidUtf8 > 20) {
+            return ENC_UTF8; /* Heuristic: If we've got enough valid ones, assume they're all valid. */
+        }
+        iOffset += n - 1; /* Skip the UTF-8 character. (All but the last byte, which will be skipped by the for loop) */
+    }
+    if (!iFoundNonAscii) {
+        return ENC_WIN_CP;	/* Actually could be a TBD ENC_ASCII */
+    }
+    return ENC_UTF8;
+}
+#endif
+
+__thread int enc = ENC_UNKNOWN; /* The current file encoding */
+#endif                          /* SUPPORT_MULTIPLE_ENCODINGS */
+
 /* Returns: -1 if skipped, otherwise # of matches */
-ssize_t search_buf(const char *buf, const size_t buf_len,
+ssize_t search_buf(const char *buf, size_t buf_len,
                    const char *dir_full_path) {
     int binary = -1; /* 1 = yes, 0 = no, -1 = don't know */
     size_t buf_offset = 0;
 
+#if SUPPORT_MULTIPLE_ENCODINGS
+    /* Detect the data encoding */
+    enc = detect_encoding(buf, buf_len);
+    log_debug("File %s encoding is %s.", dir_full_path, szEncoding[enc]);
+#endif /* SUPPORT_MULTIPLE_ENCODINGS */
+
     if (opts.search_stream) {
+	log_debug("Searching in stream, so skipping binary test");
         binary = 0;
-    } else if (!opts.search_binary_files && opts.mmap) { /* if not using mmap, binary files have already been skipped */
+    } else if (!opts.search_binary_files && opts.mmap && (enc != ENC_UTF16)) { /* if not using mmap, binary files have already been skipped */
+	log_debug("Doing binary test");
         binary = is_binary((const void *)buf, buf_len);
         if (binary) {
             log_debug("File %s is binary. Skipping...", dir_full_path);
             return -1;
         }
+    } else {
+	log_debug("Skipping binary test as sbf=%d, mmap=%d, enc=%d", opts.search_binary_files, opts.mmap, enc);
     }
+
+    char *query = opts.query;
+    int query_len = opts.query_len;
+
+#if SUPPORT_MULTIPLE_ENCODINGS
+    const char *buf0 = buf;
+    /* Depending on the data encoding, select the corresponding query */
+    switch (enc) {
+    case ENC_UTF8:
+	break;
+    case ENC_UTF16:
+        size_t buf2_len = buf_len * 2;
+        char *buf2 = malloc(buf2_len); /* Allocate a temporary buffer for the UTF-8 conversion */
+        if (buf2) {
+            buf2_len = WideCharToMultiByte(CP_UTF8, 0, (LPCWCH)buf, buf_len/2, buf2, buf2_len, NULL, NULL);
+            if (buf2_len) {
+		buf = (const char *)buf2;
+		buf_len = buf2_len;
+	    }
+        }
+	break;
+    default: /* ASCII, or Windows System Code Page */
+        /* Use the non-UTF8 query for pure ASCII too, as it should be faster */
+        query = opts.query2;
+        query_len = opts.query2_len;
+        break;
+    }
+    log_debug("Using the %s query: %s", (query == opts.query) ? "UTF-8" : "ANSI", query);
+#endif /* SUPPORT_MULTIPLE_ENCODINGS */
 
     size_t matches_len = 0;
     match_t *matches;
@@ -51,26 +194,26 @@ ssize_t search_buf(const char *buf, const size_t buf_len,
         matches_spare = 0;
     }
 
-    if (!opts.literal && opts.query_len == 1 && opts.query[0] == '.') {
+    if (!opts.literal && query_len == 1 && query[0] == '.') {
         matches_size = 1;
         matches = matches == NULL ? ag_malloc(matches_size * sizeof(match_t)) : matches;
         matches[0].start = 0;
         matches[0].end = buf_len;
         matches_len = 1;
-    } else if (opts.literal) {
+    } else if (opts.literal) { /* Searching for a literal string */
         const char *match_ptr = buf;
 
         while (buf_offset < buf_len) {
 /* hash_strnstr only for little-endian platforms that allow unaligned access */
 #if defined(__i386__) || defined(__x86_64__)
             /* Decide whether to fall back on boyer-moore */
-            if ((size_t)opts.query_len < 2 * sizeof(uint16_t) - 1 || opts.query_len >= UCHAR_MAX) {
-                match_ptr = boyer_moore_strnstr(match_ptr, opts.query, buf_len - buf_offset, opts.query_len, alpha_skip_lookup, find_skip_lookup, opts.casing == CASE_INSENSITIVE);
+            if ((size_t)query_len < 2 * sizeof(uint16_t) - 1 || query_len >= UCHAR_MAX) {
+                match_ptr = boyer_moore_strnstr(match_ptr, query, buf_len - buf_offset, query_len, alpha_skip_lookup, find_skip_lookup, opts.casing == CASE_INSENSITIVE);
             } else {
-                match_ptr = hash_strnstr(match_ptr, opts.query, buf_len - buf_offset, opts.query_len, h_table, opts.casing == CASE_SENSITIVE);
+                match_ptr = hash_strnstr(match_ptr, query, buf_len - buf_offset, query_len, h_table, opts.casing == CASE_SENSITIVE);
             }
 #else
-            match_ptr = boyer_moore_strnstr(match_ptr, opts.query, buf_len - buf_offset, opts.query_len, alpha_skip_lookup, find_skip_lookup, opts.casing == CASE_INSENSITIVE);
+            match_ptr = boyer_moore_strnstr(match_ptr, query, buf_len - buf_offset, query_len, alpha_skip_lookup, find_skip_lookup, opts.casing == CASE_INSENSITIVE);
 #endif
 
             if (match_ptr == NULL) {
@@ -79,7 +222,7 @@ ssize_t search_buf(const char *buf, const size_t buf_len,
 
             if (opts.word_regexp) {
                 const char *start = match_ptr;
-                const char *end = match_ptr + opts.query_len;
+                const char *end = match_ptr + query_len;
 
                 /* Check whether both start and end of the match lie on a word
                  * boundary
@@ -91,7 +234,7 @@ ssize_t search_buf(const char *buf, const size_t buf_len,
                     /* It's a match */
                 } else {
                     /* It's not a match */
-                    match_ptr += find_skip_lookup[0] - opts.query_len + 1;
+                    match_ptr += find_skip_lookup[0] - query_len + 1;
                     buf_offset = match_ptr - buf;
                     continue;
                 }
@@ -100,22 +243,32 @@ ssize_t search_buf(const char *buf, const size_t buf_len,
             realloc_matches(&matches, &matches_size, matches_len + matches_spare);
 
             matches[matches_len].start = match_ptr - buf;
-            matches[matches_len].end = matches[matches_len].start + opts.query_len;
+            matches[matches_len].end = matches[matches_len].start + query_len;
             buf_offset = matches[matches_len].end;
             log_debug("Match found. File %s, offset %lu bytes.", dir_full_path, matches[matches_len].start);
             matches_len++;
-            match_ptr += opts.query_len;
+            match_ptr += query_len;
 
             if (opts.max_matches_per_file > 0 && matches_len >= opts.max_matches_per_file) {
                 log_err("Too many matches in %s. Skipping the rest of this file.", dir_full_path);
                 break;
             }
         }
-    } else {
+    } else { /* Searching for a regular expression */
         int offset_vector[3];
+        pcre *re = opts.re;
+        pcre_extra *re_extra = opts.re_extra;
+#if SUPPORT_MULTIPLE_ENCODINGS
+        if (enc != ENC_UTF8) { /* ASCII, or Windows System Code Page */
+            /* Use the non-UTF8 regular expression for pure ASCII too, as it should be faster */
+            re = opts.re2;
+            re_extra = opts.re2_extra;
+        }
+#endif /* SUPPORT_MULTIPLE_ENCODINGS */
         if (opts.multiline) {
+            int rv = 0;
             while (buf_offset < buf_len &&
-                   (pcre_exec(opts.re, opts.re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
+                   (rv = pcre_exec(re, re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
                 log_debug("Regex match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
                 buf_offset = offset_vector[1];
                 if (offset_vector[0] == offset_vector[1]) {
@@ -134,6 +287,9 @@ ssize_t search_buf(const char *buf, const size_t buf_len,
                     break;
                 }
             }
+            if (rv == PCRE_ERROR_BADUTF8) { /* We must let it known to the user that the file was not searched */
+                log_err("Invalid UTF-8 encoding in %s. Skipping this file.", dir_full_path);
+            }
         } else {
             while (buf_offset < buf_len) {
                 const char *line;
@@ -143,8 +299,11 @@ ssize_t search_buf(const char *buf, const size_t buf_len,
                 }
                 size_t line_offset = 0;
                 while (line_offset < line_len) {
-                    int rv = pcre_exec(opts.re, opts.re_extra, line, line_len, line_offset, 0, offset_vector, 3);
+                    int rv = pcre_exec(re, re_extra, line, line_len, line_offset, 0, offset_vector, 3);
                     if (rv < 0) {
+                        if (rv == PCRE_ERROR_BADUTF8) { /* We must let it known to the user that the file was not searched */
+                            log_err("Invalid UTF-8 encoding in %s. Skipping this file.", dir_full_path);
+                        }
                         break;
                     }
                     size_t line_to_buf = buf_offset + line_offset;
@@ -220,6 +379,10 @@ multiline_done:
         free(matches);
     }
 
+#if SUPPORT_MULTIPLE_ENCODINGS
+    if ((void *)buf != (void *)buf0) free((void *)buf);
+#endif /* SUPPORT_MULTIPLE_ENCODINGS */
+
     /* FIXME: handle case where matches_len > SSIZE_MAX */
     return (ssize_t)matches_len;
 }
@@ -232,11 +395,39 @@ ssize_t search_stream(FILE *stream, const char *path) {
     ssize_t line_len = 0;
     size_t line_cap = 0;
     size_t i;
-
+#if HAS_MSVCLIBX /* Short term workaround for MsvcLibX lack of support for Unicode on stdin */
+#include "iconv.h"
+    UINT cp = 0;
+#endif
     print_init_context();
 
     for (i = 1; (line_len = getline(&line, &line_cap, stream)) > 0; i++) {
         ssize_t result;
+#if HAS_MSVCLIBX                   /* Short term workaround for MsvcLibX lack of support for Unicode on stdin */
+        if (fileno(stream) == 0) { /* If reading from stdin */
+            struct stat s;
+            fstat(0, &s);
+            if ((cp == 0) || (cp == CP_ASCII)) { /* A file may begin with ASCII lines, then further down prove to be ANSI or UTF8 */
+                cp = GetBufferEncoding(line, strlen(line), 0);
+                if (!cp) {
+		    if (S_ISFIFO(s.st_mode)) { /* If it's a pipe, Windows converted it to the console code page */
+			cp = consoleCodePage;
+		    } else { /* It's a file. The encoding varies */
+			cp = systemCodePage; /* Assume it's in the system code page */
+		    }
+                }
+                if (cp != CP_ASCII) log_debug("Standard input is code page %u", cp);
+            }
+            if ((cp != CP_UTF8) && ((cp != CP_ASCII))) {
+                if ((line_len * 4) >= (ssize_t)line_cap) {  /* Prevent buffer overflows */
+                    line_cap = (line_len * 4) + 1; /* Worst case size for UTF-8 characters */
+                    line = realloc(line, line_cap);
+                    if (!line) return -1; /* Out of memory */
+                }
+                line_len = ConvertString(line, line_cap, cp, CP_UTF8);
+            }
+        }
+#endif
         opts.stream_line_num = i;
         result = search_buf(line, line_len, path);
         if (result > 0) {
@@ -441,9 +632,12 @@ cleanup:
     }
 }
 
+__thread int worker_id = -1; /* Also used by log_debug() */
+
 void *search_file_worker(void *i) {
     work_queue_t *queue_item;
-    int worker_id = *(int *)i;
+
+    worker_id = *(int *)i;
 
     log_debug("Worker %i started", worker_id);
     while (TRUE) {
@@ -456,7 +650,7 @@ void *search_file_worker(void *i) {
             }
             pthread_cond_wait(&files_ready, &work_queue_mtx);
         }
-        queue_item = work_queue;
+        queue_item = (work_queue_t *)work_queue;
         work_queue = work_queue->next;
         if (work_queue == NULL) {
             work_queue_tail = NULL;
@@ -470,7 +664,7 @@ void *search_file_worker(void *i) {
 }
 
 static int check_symloop_enter(const char *path, dirkey_t *outkey) {
-#ifdef _WIN32
+#if defined(_WIN32) // && !defined(HAS_MSVCLIBX)
     return SYMLOOP_OK;
 #else
     struct stat buf;
@@ -503,7 +697,7 @@ static int check_symloop_enter(const char *path, dirkey_t *outkey) {
 }
 
 static int check_symloop_leave(dirkey_t *dirkey) {
-#ifdef _WIN32
+#if defined(_WIN32) // && !defined(HAS_MSVCLIBX)
     return SYMLOOP_OK;
 #else
     symdir_t *item_found = NULL;
@@ -604,7 +798,7 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
         queue_item = NULL;
         dir = dir_list[i];
         ag_asprintf(&dir_full_path, "%s/%s", path, dir->d_name);
-#ifndef _WIN32
+#if !defined(_WIN32) || defined(MSVCLIBX)
         if (opts.one_dev) {
             struct stat s;
             if (lstat(dir_full_path, &s) != 0) {

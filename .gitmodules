@@ -1,0 +1,3 @@
+[submodule "win32/NMaker"]
+	path = win32/NMaker
+	url = https://github.com/JFLarvoire/NMaker
