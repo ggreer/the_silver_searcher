@@ -4,7 +4,7 @@
 #include <getopt.h>
 #include <sys/stat.h>
 
-#include <pcre.h>
+#include "pcre2_wrap.h"
 
 #define DEFAULT_AFTER_LEN 2
 #define DEFAULT_BEFORE_LEN 2
@@ -28,15 +28,17 @@ enum path_print_behavior {
 
 typedef struct {
     int ackmate;
-    pcre *ackmate_dir_filter;
-    pcre_extra *ackmate_dir_filter_extra;
+    pcre2_code *ackmate_dir_filter;
+    /* Note: Write-only, never read, so usable as a multi-thread dummy. */
+    pcre2_match_data *ackmate_dir_filter_data;
     size_t after;
     size_t before;
     enum case_behavior casing;
     const char *file_search_string;
     int match_files;
-    pcre *file_search_regex;
-    pcre_extra *file_search_regex_extra;
+    pcre2_code *file_search_regex;
+    /* Note: Write-only, never read, so usable as a multi-thread dummy. */
+    pcre2_match_data *file_search_regex_data;
     int color;
     char *color_line_number;
     char *color_match;
@@ -66,8 +68,7 @@ typedef struct {
     int print_line_numbers;
     int print_long_lines; /* TODO: support this in print.c */
     int passthrough;
-    pcre *re;
-    pcre_extra *re_extra;
+    pcre2_code *re;
     int recurse_dirs;
     int search_all_files;
     int skip_vcs_ignores;

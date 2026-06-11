@@ -21,7 +21,7 @@ addons:
     packages:
       - automake
       - liblzma-dev
-      - libpcre3-dev
+      - libpcre2-dev
       - pkg-config
       - zlib1g-dev
 

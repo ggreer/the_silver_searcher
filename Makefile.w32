@@ -19,7 +19,7 @@ SRCS = \
 OBJS = $(subst .c,.o,$(SRCS))
 
 CFLAGS = -O2 -Isrc/win32 -DPACKAGE_VERSION=\"$(VERSION)\"
-LIBS = -lz -lpthread -lpcre -llzma -lshlwapi
+LIBS = -lz -lpthread -lpcre2 -llzma -lshlwapi
 TARGET = ag.exe
 
 all : $(TARGET)

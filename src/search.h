@@ -5,7 +5,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
-#include <pcre.h>
+#include "pcre2_wrap.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

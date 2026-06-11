@@ -16,7 +16,7 @@ m4_ifdef(
     [AM_SILENT_RULES],
     [AM_SILENT_RULES([yes])])
 
-PKG_CHECK_MODULES([PCRE], [libpcre])
+PKG_CHECK_MODULES([PCRE2], [libpcre2-8])
 
 m4_include([m4/ax_pthread.m4])
 AX_PTHREAD(
@@ -29,7 +29,7 @@ if ! echo "$CFLAGS" | "$GREP" '\(^\|[[[:space:]]]\)-O' > /dev/null; then
     CFLAGS="$CFLAGS -O2"
 fi
 
-CFLAGS="$CFLAGS $PTHREAD_CFLAGS $PCRE_CFLAGS -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -Wshadow"
+CFLAGS="$CFLAGS $PTHREAD_CFLAGS $PCRE2_CFLAGS -Wall -Wextra -Wformat=2 -Wno-format-nonliteral -Wshadow"
 CFLAGS="$CFLAGS -Wpointer-arith -Wcast-qual -Wmissing-prototypes -Wno-missing-braces -std=gnu89 -D_GNU_SOURCE"
 LDFLAGS="$LDFLAGS"
 
@@ -55,8 +55,6 @@ AS_IF([test "x$enable_lzma" != "xno"], [
     AC_CHECK_HEADERS([lzma.h])
     PKG_CHECK_MODULES([LZMA], [liblzma])
 ])
-
-AC_CHECK_DECL([PCRE_CONFIG_JIT], [AC_DEFINE([USE_PCRE_JIT], [], [Use PCRE JIT])], [], [#include <pcre.h>])
 
 AC_CHECK_DECL([CPU_ZERO, CPU_SET], [AC_DEFINE([USE_CPU_SET], [], [Use CPU_SET macros])] , [], [#include <sched.h>])
 AC_CHECK_HEADERS([sys/cpuset.h err.h])
