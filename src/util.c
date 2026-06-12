@@ -313,19 +313,29 @@ void realloc_matches(match_t **matches, size_t *matches_size, size_t matches_len
     *matches = ag_realloc(*matches, *matches_size * sizeof(match_t));
 }
 
-void compile_study(pcre **re, pcre_extra **re_extra, char *q, const int pcre_opts, const int study_opts) {
-    const char *pcre_err = NULL;
-    int pcre_err_offset = 0;
+void compile_jit(pcre2_code **re, pcre2_match_data **re_data, char *q, const int pcre_opts) {
+    int pcre_err = 0;
+    PCRE2_SIZE pcre_err_offset = 0;
 
-    *re = pcre_compile(q, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
+    *re = pcre2_compile((PCRE2_SPTR)q, PCRE2_ZERO_TERMINATED, pcre_opts, &pcre_err, &pcre_err_offset, NULL);
     if (*re == NULL) {
-        die("Bad regex! pcre_compile() failed at position %i: %s\nIf you meant to search for a literal string, run ag with -Q",
+        PCRE2_UCHAR buffer[256];
+        pcre2_get_error_message(pcre_err, buffer, sizeof(buffer));
+        die("Bad regex! pcre2_compile() failed at position %lu: %s\nIf you meant to search for a literal string, run ag with -Q",
             pcre_err_offset,
-            pcre_err);
+            buffer);
     }
-    *re_extra = pcre_study(*re, study_opts, &pcre_err);
-    if (*re_extra == NULL) {
-        log_debug("pcre_study returned nothing useful. Error: %s", pcre_err);
+
+    int jit_result = pcre2_jit_compile(*re, PCRE2_JIT_COMPLETE);
+    if (jit_result < 0) {
+        log_debug("pcre2_jit_compile returned an error: %d", jit_result);
+    }
+
+    if (re_data) {
+        *re_data = pcre2_match_data_create_from_pattern(*re, NULL);
+        if (*re_data == NULL) {
+            die("pcre2_match_data_create_from_pattern indicated no memory");
+        }
     }
 }
 

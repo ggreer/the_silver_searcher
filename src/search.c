@@ -15,6 +15,9 @@ pthread_mutex_t work_queue_mtx = PTHREAD_MUTEX_INITIALIZER;
 
 symdir_t *symhash = NULL;
 
+/* A per-thread match data instance matching opts.re */
+static __thread pcre2_match_data *re_data = NULL;
+
 /* Returns: -1 if skipped, otherwise # of matches */
 ssize_t search_buf(const char *buf, const size_t buf_len,
                    const char *dir_full_path) {
@@ -112,10 +115,16 @@ ssize_t search_buf(const char *buf, const size_t buf_len,
             }
         }
     } else {
-        int offset_vector[3];
+        if (!re_data) {
+            re_data = pcre2_match_data_create_from_pattern(opts.re, NULL);
+            if (re_data == NULL) {
+                die("pcre2_match_data_create_from_pattern indicated no memory");
+            }
+        }
+        PCRE2_SIZE *offset_vector = pcre2_get_ovector_pointer(re_data);
         if (opts.multiline) {
             while (buf_offset < buf_len &&
-                   (pcre_exec(opts.re, opts.re_extra, buf, buf_len, buf_offset, 0, offset_vector, 3)) >= 0) {
+                   (pcre2_match(opts.re, (PCRE2_SPTR)buf, buf_len, buf_offset, 0, re_data, NULL)) >= 0) {
                 log_debug("Regex match found. File %s, offset %i bytes.", dir_full_path, offset_vector[0]);
                 buf_offset = offset_vector[1];
                 if (offset_vector[0] == offset_vector[1]) {
@@ -143,7 +152,7 @@ ssize_t search_buf(const char *buf, const size_t buf_len,
                 }
                 size_t line_offset = 0;
                 while (line_offset < line_len) {
-                    int rv = pcre_exec(opts.re, opts.re_extra, line, line_len, line_offset, 0, offset_vector, 3);
+                    int rv = pcre2_match(opts.re, (PCRE2_SPTR)line, line_len, line_offset, 0, re_data, NULL);
                     if (rv < 0) {
                         break;
                     }
@@ -596,7 +605,6 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
         goto search_dir_cleanup;
     }
 
-    int offset_vector[3];
     int rc = 0;
     work_queue_t *queue_item;
 
@@ -626,8 +634,8 @@ void search_dir(ignores *ig, const char *base_path, const char *path, const int 
 
         if (!is_directory(path, dir)) {
             if (opts.file_search_regex) {
-                rc = pcre_exec(opts.file_search_regex, NULL, dir_full_path, strlen(dir_full_path),
-                               0, 0, offset_vector, 3);
+                rc = pcre2_match(opts.file_search_regex, (PCRE2_SPTR)dir_full_path, strlen(dir_full_path),
+                               0, 0, opts.file_search_regex_data, NULL);
                 if (rc < 0) { /* no match */
                     log_debug("Skipping %s due to file_search_regex.", dir_full_path);
                     goto cleanup;

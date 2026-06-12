@@ -202,7 +202,7 @@ static int ackmate_dir_match(const char *dir_name) {
         return 0;
     }
     /* we just care about the match, not where the matches are */
-    return pcre_exec(opts.ackmate_dir_filter, NULL, dir_name, strlen(dir_name), 0, 0, NULL, 0);
+    return pcre2_match(opts.ackmate_dir_filter, (PCRE2_SPTR)dir_name, strlen(dir_name), 0, 0, opts.ackmate_dir_filter_data, NULL);
 }
 
 /* This is the hottest code in Ag. 10-15% of all execution time is spent here */
