@@ -205,12 +205,23 @@ static int ackmate_dir_match(const char *dir_name) {
     return pcre_exec(opts.ackmate_dir_filter, NULL, dir_name, strlen(dir_name), 0, 0, NULL, 0);
 }
 
-/* This is the hottest code in Ag. 10-15% of all execution time is spent here */
+/* This is the hottest code in Ag. 10-15% of all execution time is spent here
+ *
+ * Returns 1 if the file is ignored, -1 if an invert pattern explicitly
+ * un-ignores it, and 0 if no pattern matches. */
 static int path_ignore_search(const ignores *ig, const char *path, const char *filename) {
     char *temp;
     int temp_start_pos;
     size_t i;
     int match_pos;
+
+    for (i = 0; i < ig->invert_regexes_len; i++) {
+        if (fnmatch(ig->invert_regexes[i], filename, fnmatch_flags) == 0) {
+            log_debug("file %s not ignored because name matches regex pattern !%s", filename, ig->invert_regexes[i]);
+            return -1;
+        }
+        log_debug("pattern !%s doesn't match file %s", ig->invert_regexes[i], filename);
+    }
 
     match_pos = binary_search(filename, ig->names, 0, ig->names_len);
     if (match_pos >= 0) {
@@ -265,15 +276,6 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
         }
     }
 
-    for (i = 0; i < ig->invert_regexes_len; i++) {
-        if (fnmatch(ig->invert_regexes[i], filename, fnmatch_flags) == 0) {
-            log_debug("file %s not ignored because name matches regex pattern !%s", filename, ig->invert_regexes[i]);
-            free(temp);
-            return 0;
-        }
-        log_debug("pattern !%s doesn't match file %s", ig->invert_regexes[i], filename);
-    }
-
     for (i = 0; i < ig->regexes_len; i++) {
         if (fnmatch(ig->regexes[i], filename, fnmatch_flags) == 0) {
             log_debug("file %s ignored because name matches regex pattern %s", filename, ig->regexes[i]);
@@ -285,7 +287,7 @@ static int path_ignore_search(const ignores *ig, const char *path, const char *f
 
     int rv = ackmate_dir_match(temp);
     free(temp);
-    return rv;
+    return rv ? 1 : 0;
 }
 
 /* This function is REALLY HOT. It gets called for every file */
@@ -346,38 +348,53 @@ int filename_filter(const char *path, const struct dirent *dir, void *baton) {
 
     const ignores *ig = scandir_baton->ig;
 
+    char *slash_name = NULL;
+    if (is_directory(path, dir)) {
+#ifndef HAVE_DIRENT_DNAMLEN
+        if (!filename_len) {
+            filename_len = strlen(filename);
+        }
+#endif
+        if (filename[filename_len - 1] != '/') {
+            ag_asprintf(&slash_name, "%s/", filename);
+        }
+    }
+
     while (ig != NULL) {
         if (extension) {
             int match_pos = binary_search(extension, ig->extensions, 0, ig->extensions_len);
             if (match_pos >= 0) {
                 log_debug("file %s ignored because name matches extension %s", filename, ig->extensions[match_pos]);
+                free(slash_name);
                 return 0;
             }
         }
 
-        if (path_ignore_search(ig, path_start, filename)) {
+        int rv = path_ignore_search(ig, path_start, filename);
+        if (slash_name) {
+            /* A directory can be matched by patterns with or without a
+             * trailing slash. An invert pattern matching either form
+             * un-ignores it, no matter what the other form matched. */
+            int slash_rv = path_ignore_search(ig, path_start, slash_name);
+            if (slash_rv == -1) {
+                rv = -1;
+            } else if (slash_rv == 1 && rv == 0) {
+                rv = 1;
+            }
+        }
+        if (rv == 1) {
+            free(slash_name);
             return 0;
         }
-
-        if (is_directory(path, dir)) {
-#ifndef HAVE_DIRENT_DNAMLEN
-            if (!filename_len) {
-                filename_len = strlen(filename);
-            }
-#endif
-            if (filename[filename_len - 1] != '/') {
-                char *temp;
-                ag_asprintf(&temp, "%s/", filename);
-                int rv = path_ignore_search(ig, path_start, temp);
-                free(temp);
-                if (rv) {
-                    return 0;
-                }
-            }
+        if (rv == -1) {
+            log_debug("%s not ignored because of invert pattern", filename);
+            free(slash_name);
+            return 1;
         }
         ig = ig->parent;
     }
 
+    free(slash_name);
     log_debug("%s not ignored", filename);
     return 1;
 }
