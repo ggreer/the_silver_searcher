@@ -262,6 +262,10 @@ void print_file_matches(const char *path, const char *buf, const size_t buf_len,
                                 fputc('\n', out_fd);
                             }
                         }
+                        /* A final stream match still occupies one output line. */
+                        if (j == buf_len && opts.search_stream && !opts.only_matching && !opts.passthrough) {
+                            fputc('\n', out_fd);
+                        }
                         /* skip remaining characters if truncation width exceeded, needs to be done
                          * before highlight opening */
                         if (j < buf_len && opts.width > 0 && j - print_context.prev_line_offset >= opts.width) {
